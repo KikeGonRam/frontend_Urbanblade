@@ -273,10 +273,52 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
    --audit-level=high`, mismo shape que el job de frontend en `barber`.
    Primer run de CI de este repo confirmado en verde (`gh run view --log`
    revisado línea por línea, no solo el estado "success").
-9. **Expansión fuera del scope de los 4 dashboards**: `routes/api.php` ya
-   cubre citas, pagos, clientes, inventario, servicios, usuarios, reportes,
-   configuración, notificaciones, social, chatbot — evaluar cuáles migrar
-   después de que los dashboards estén en paridad.
+9. **Expansión fuera del scope de los 4 dashboards.** A diferencia de las
+   fases 1-7, aquí NO hay una página Inertia/Vue de referencia que portar
+   — citas, clientes, pagos, pedidos, inventario, servicios y usuarios
+   siguen siendo Blade puro en `barber` (nunca migrados en la fase
+   Inertia; confirmado: `resources/views/{appointments,clients,payments}/
+   index.blade.php` existen, `resources/views/{Pages/Appointments,
+   Pages/Clients}` de Inertia no). Esto es trabajo de diseño/construcción
+   más original que las fases anteriores, no solo una traducción Vue→Vue.
+   Orden recomendado (de menor a mayor complejidad/riesgo, mismo criterio
+   que llevó a hacer recepcionista antes que admin en las fases 4-7):
+   - **9.1 Clientes** (admin): CRUD simple, sin manejo de dinero. El punto
+     de partida más bajo en riesgo para asentar los patrones de esta fase
+     (listas paginadas/filtrables, formularios, tablas) antes de tocar
+     dinero o citas.
+   - **9.2 Citas** (admin/recepción): lista + crear + editar + cambiar
+     estado + walk-in. Ya existe el endpoint de calendario (fase 7); esta
+     fase permite además regresarle a `Calendar.vue` el botón "Editar
+     Cita" que hoy no tiene destino.
+   - **9.3 Pagos** (admin/recepción): cobro + historial. Maneja dinero
+     real — aplicar el mismo patrón ya establecido en `barber` (guardrail
+     #13 de ese repo: nunca confiar en un monto que mande el cliente,
+     siempre releer el precio real del lado servidor) también del lado
+     Nuxt (nunca calcular el monto a cobrar en el frontend y enviarlo, solo
+     mandar los IDs y dejar que `barber` calcule).
+   - **9.4 Pedidos** (bandeja de recepción + tienda/carrito del cliente):
+     subsistema más grande, evaluar partir en sub-fases si crece mucho
+     (recepción ve/gestiona pedidos; el cliente compra — catálogo, carrito,
+     checkout).
+   - **9.5 Inventario** (productos + movimientos, admin).
+   - **9.6 Servicios + Usuarios** (admin) — CRUD ya con los patrones
+     asentados de 9.1-9.5.
+   - **9.7 "Mi Espacio" de barbero** (Mi Agenda, Mi Portafolio, Mi
+     Horario, Mi Perfil).
+   - **9.8 Autoservicio de cliente** (Mis Citas, Tienda, Carrito, Mis
+     Pedidos, Nuestros Barberos, Mis Facturas) — el flujo de compra/reserva
+     desde el punto de vista del cliente, subsistema propio.
+   - **9.9 Reportes, Campañas, Sorteos, Logs, Configuración** (admin,
+     menor frecuencia de uso) — al final.
+   - **Analítica**: bloqueada por ahora — `resources/views/analytics/
+     index.blade.php` en `barber` tampoco tiene versión Inertia/API propia
+     todavía; retomar solo si `barber` construye esa base primero.
+   Cada sub-fase sigue el mismo ciclo que 1-8: leer el Blade + el
+   controlador API real de `barber` (nunca asumir el shape), enriquecer el
+   endpoint API si expone modelos crudos en vez de campos ya formateados,
+   escribir el test de API correspondiente, verificar en vivo con una
+   cuenta real, actualizar este SKILL con lo aprendido.
 10. **Retiro de las páginas Inertia** en `barber` — solo cuando Nuxt alcance
     paridad funcional confirmada; mientras tanto ambas pueden coexistir
     (Inertia como fallback) sin romper nada, ya que son rutas distintas.
