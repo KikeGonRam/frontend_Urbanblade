@@ -220,8 +220,45 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
      `rgba(255,255,255,...)` fijo del original — invisible en el tema
      claro "libreta". Corregido con `currentColor` + clases Tailwind y
      `inkRgba()` de `utils/chartTheme`.
-7. **Dashboard Administrador** + `Calendar.vue` (el más grande, dejarlo para
-   el final como se hizo en Inertia).
+7. ✅ **DONE** — Dashboard Administrador + `Calendar.vue`:
+   - `adminPayload()` en el backend (kpis, 4 gráficas, agenda de hoy,
+     actividad reciente, `analysisInsights()` portado tal cual — mismo
+     cache key `dashboard_insights` que la versión Inertia, comparten el
+     cómputo). Se omiten a propósito `maintenanceMode` y los botones de
+     mantenimiento/backup del header (rutas Blade que no existen aquí).
+     Las predicciones IA NO pasan por este endpoint: se llaman directo
+     desde el frontend a `/api/v1/admin/predictions/*` con el Bearer
+     token real que ya trae la sesión — más simple que el puente
+     `getWebApiToken` que necesitaba la versión Inertia (esa corre bajo
+     sesión web).
+   - `components/dashboard/Administrador.vue`: KPIs con sparkline,
+     insights de negocio, panel con 3 tabs (actividad/estaciones en
+     vivo/top del mes), sección "Analítica avanzada" plegable (4
+     gráficas + predicciones IA + telemetría chatbot). Verificado en vivo
+     con la cuenta admin real en ambos temas — la pestaña "Estaciones"
+     mostró datos reales (0 ocupados, 1 libre, el único barbero real), y
+     las 3 llamadas a `/admin/predictions/*` devolvieron 200 con datos
+     reales.
+   - **Nuevo endpoint backend**: `GET /api/v1/appointments/calendar-data`
+     (no existía ni como API antes — solo como ruta web con sesión +
+     permiso `citas.gestionar`). Restringido por rol
+     administrador/recepcionista vía Bearer token. Cubierto por
+     `AppointmentCalendarApiTest`.
+   - `pages/appointments/calendar.vue`: FullCalendar 6.1.21 (misma
+     versión pinneada que `barber`), filtro por barbero, modal de detalle
+     al hacer clic. Nuevo middleware `staff` (admin/recepcionista) que
+     hace `fetchMe()` si el usuario aún no cargó — a diferencia de
+     `/dashboard`, esta página puede ser el punto de entrada directo.
+     El tema de FullCalendar se reescribió con las variables CSS del
+     sistema de temas en vez de los hex fijos del original (mismo fix que
+     charts/lealtad, aplicado aquí también). `useNavigation.ts` ya marca
+     `/appointments/calendar` como `implemented: true`.
+   - Bug real encontrado y corregido: `GET /barbers` (para el dropdown de
+     filtro) devuelve `{data: [...]}` con el nombre anidado en
+     `user.name`, no un array plano con `name` — el dropdown quedaba
+     vacío en silencio hasta corregirlo.
+   - Esto cierra las fases 1-7 del plan (todo el alcance de dashboards +
+     calendario).
 8. **CORS hardening + CI de este repo** (ESLint + `nuxt build`, sin PHP
    aquí — workflow propio en `.github/workflows/` de `frontend-urban`).
 9. **Expansión fuera del scope de los 4 dashboards**: `routes/api.php` ya
@@ -322,17 +359,21 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
 
 ## Estado actual (ver también commits de este repo)
 
-- Fases 1 (identidad visual), 2 (auth), 3 (shell/layout), 4 (dashboard
-  recepcionista), 5 (dashboard barbero) y 6 (dashboard cliente) completas —
-  ver detalle en cada punto de la lista de fases arriba. Las seis
-  verificadas en vivo en el navegador (no solo build/typecheck) contra la
-  API real de `barber`.
+- **Fases 1-7 completas** — los 4 dashboards por rol, el shell/layout
+  compartido, y el calendario de citas. Ver detalle de cada una en la
+  lista de fases arriba. Todas verificadas en vivo en el navegador (no
+  solo build/typecheck) contra la API real de `barber`, en ambos extremos
+  del set de temas (noir/libreta) donde aplicaba.
 - `barber`: `config/cors.php` publicado y configurado; endpoint de
-  dashboard enriquecido para los 3 roles no-admin, con tests de cobertura
-  nuevos (`DashboardApiTest`, con `tearDown()` tras un fallo intermitente
-  real). CI confirmado en verde en cada push (un fallo real de Larastan en
-  el camino, corregido con entradas de baseline).
-- Pendiente: eslint en este repo, dashboard de admin + calendario (fase 7),
-  y todo lo posterior. `nuxt build` de fases 3-6 quedó sin correr por
-  pedido explícito del usuario de dejar el dev server activo — correrlo
-  antes o junto con el próximo push.
+  dashboard enriquecido para los 4 roles; nuevo endpoint de calendario
+  (`GET /api/v1/appointments/calendar-data`); tests de cobertura nuevos
+  (`DashboardApiTest`, `AppointmentCalendarApiTest`, ambos con
+  `tearDown()`). CI confirmado en verde en cada push (un fallo real de
+  Larastan en el camino, corregido con entradas de baseline). Scribe
+  regenerado tras el nuevo endpoint.
+- Pendiente: eslint en este repo (fase 8), y la fase 9 (expansión más allá
+  de dashboards+calendario — citas/pagos/clientes/inventario/etc., todo
+  ya expuesto en `routes/api.php` de `barber`, falta construir las
+  páginas Nuxt). `nuxt build` de fases 3-7 quedó sin correr por pedido
+  explícito del usuario de dejar el dev server activo — correrlo antes o
+  junto con el próximo push, ya sin ese pedido activo.
