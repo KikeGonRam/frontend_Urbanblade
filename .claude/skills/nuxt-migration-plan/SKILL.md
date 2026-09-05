@@ -259,8 +259,20 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
      vacío en silencio hasta corregirlo.
    - Esto cierra las fases 1-7 del plan (todo el alcance de dashboards +
      calendario).
-8. **CORS hardening + CI de este repo** (ESLint + `nuxt build`, sin PHP
-   aquí — workflow propio en `.github/workflows/` de `frontend-urban`).
+8. ✅ **DONE** — ESLint + CI de este repo: `@nuxt/eslint` (config plana
+   autogenerada a partir del propio proyecto — ya incluye
+   `vue/multi-word-component-names: off` para pages/layouts/componentes
+   por convención de Nuxt, confirmado forzando la regla a 'error' y
+   viendo que sí marcaba `Administrador.vue`/`Cliente.vue`/etc. antes de
+   volver a 'off'). Un solo warning real (`vue/no-v-html` en
+   `ShellNavIcon`), silenciado puntualmente con comentario — el `paths`
+   viene de literales propios en `useNavigation.ts`, nunca de input de
+   usuario. `typescript` fijado a `^5.7` (el install por default trajo
+   TS 7.0, que `typescript-eslint` todavía no soporta).
+   `.github/workflows/ci.yml`: lint + build + `npm audit
+   --audit-level=high`, mismo shape que el job de frontend en `barber`.
+   Primer run de CI de este repo confirmado en verde (`gh run view --log`
+   revisado línea por línea, no solo el estado "success").
 9. **Expansión fuera del scope de los 4 dashboards**: `routes/api.php` ya
    cubre citas, pagos, clientes, inventario, servicios, usuarios, reportes,
    configuración, notificaciones, social, chatbot — evaluar cuáles migrar
@@ -359,11 +371,11 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
 
 ## Estado actual (ver también commits de este repo)
 
-- **Fases 1-7 completas** — los 4 dashboards por rol, el shell/layout
-  compartido, y el calendario de citas. Ver detalle de cada una en la
-  lista de fases arriba. Todas verificadas en vivo en el navegador (no
-  solo build/typecheck) contra la API real de `barber`, en ambos extremos
-  del set de temas (noir/libreta) donde aplicaba.
+- **Fases 1-8 completas** — identidad visual, auth, shell/layout, los 4
+  dashboards por rol, el calendario de citas, y ESLint+CI de este repo.
+  Ver detalle de cada una en la lista de fases arriba. Todas verificadas
+  de verdad (en vivo en el navegador para 1-7, log de CI línea por línea
+  para la 8) — no solo "el estado dice success"/build local.
 - `barber`: `config/cors.php` publicado y configurado; endpoint de
   dashboard enriquecido para los 4 roles; nuevo endpoint de calendario
   (`GET /api/v1/appointments/calendar-data`); tests de cobertura nuevos
@@ -371,9 +383,12 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
   `tearDown()`). CI confirmado en verde en cada push (un fallo real de
   Larastan en el camino, corregido con entradas de baseline). Scribe
   regenerado tras el nuevo endpoint.
-- Pendiente: eslint en este repo (fase 8), y la fase 9 (expansión más allá
-  de dashboards+calendario — citas/pagos/clientes/inventario/etc., todo
-  ya expuesto en `routes/api.php` de `barber`, falta construir las
-  páginas Nuxt). `nuxt build` de fases 3-7 quedó sin correr por pedido
-  explícito del usuario de dejar el dev server activo — correrlo antes o
-  junto con el próximo push, ya sin ese pedido activo.
+- `frontend-urban` ya tiene su propio CI (lint+build+audit) — primer run
+  confirmado en verde.
+- Pendiente: fase 9 (expansión más allá de dashboards+calendario —
+  citas/pagos/clientes/inventario/etc., todo ya expuesto en
+  `routes/api.php` de `barber`, falta construir las páginas Nuxt).
+  `nuxt build`/`eslint` de este repo ya corren en CI en cada push, ya no
+  hace falta correrlos manualmente antes de cada commit (aunque seguir
+  haciéndolo local antes de push, como ya es costumbre, sigue siendo
+  buena idea).
