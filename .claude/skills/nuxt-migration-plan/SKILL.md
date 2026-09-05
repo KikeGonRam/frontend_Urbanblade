@@ -200,7 +200,26 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
    `utils/chartTheme.ts` — rompía toda la página con un error de Vite HMR,
    y como el crash pasaba en la navegación posterior al login, el síntoma
    visible era "el login falla" aunque `POST /auth/login` sí devolvía 200.
-6. **Dashboard Cliente**.
+6. ✅ **DONE** — Dashboard Cliente: `clientPayload()` en el backend (sin
+   cambios de `phpstan-baseline.neon` — `clientMetrics()` ya devolvía
+   arrays curados para `next_appointment`, a diferencia de recepción/
+   barbero). `components/dashboard/{Cliente,MembershipCard}.vue` —
+   `MembershipCard` portado casi verbatim (tilt 3D, flip a QR, contador de
+   puntos, confetti al subir de nivel), `member.downloadUrl` siempre
+   `null` (la tarjeta PDF vive en una ruta Blade que no existe aquí).
+   Verificado en vivo con la cuenta cliente real, ambos temas — QR real
+   generado por `MemberCardService`, flip de tarjeta, anillo de progreso.
+   Dos bugs reales encontrados y corregidos:
+   - El backend nunca mandaba `sparkHighlights` para cliente (igual que la
+     versión Inertia, que depende del default de prop de Vue para este rol
+     específico) pero la interfaz TS de Nuxt lo declaraba requerido —
+     tumbaba la página entera con un 500. Se volvió opcional con
+     `?? []` en el template, mismo patrón que se reforzó en
+     `AnalyticsInsights.vue` para cualquier consumidor futuro.
+   - La grilla de beneficios y el track del anillo de lealtad usaban
+     `rgba(255,255,255,...)` fijo del original — invisible en el tema
+     claro "libreta". Corregido con `currentColor` + clases Tailwind y
+     `inkRgba()` de `utils/chartTheme`.
 7. **Dashboard Administrador** + `Calendar.vue` (el más grande, dejarlo para
    el final como se hizo en Inertia).
 8. **CORS hardening + CI de este repo** (ESLint + `nuxt build`, sin PHP
@@ -271,6 +290,23 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
   `POST /auth/login` real devolvía 200). Si un flujo falla de forma que no
   cuadra con el código que se tocó, revisar la consola del navegador antes
   de asumir que el bug está en el archivo que se acaba de editar.
+- **Cada dashboard Inertia porteado puede tener campos que el controlador
+  NUNCA envía para ese rol específico** (el prop se llena solo por el
+  default de Vue) — no asumir que porque `defineProps` del original lo
+  marca sin default explícito, el backend siempre lo manda. Revisar el
+  controlador PHP real, no solo el `defineProps` del `.vue` original, y
+  declarar esos campos opcionales (`campo?: Tipo`) en la interfaz TS de
+  Nuxt en vez de requeridos — un campo requerido-pero-ausente no da error
+  de TypeScript en runtime, tumba la página con un 500 real.
+- **Cualquier color fijo tipo `rgba(255,255,255,...)`/blanco copiado de un
+  componente original de barber es sospechoso aquí** — ese código asumía
+  fondo siempre oscuro; con los 4 temas reales (uno de ellos claro,
+  "libreta") un blanco a baja opacidad puede quedar invisible. Cambiar por
+  `currentColor` + una clase Tailwind (`text-ink/25`, `text-gold`, etc.) o
+  por `inkRgba()`/`goldHex()` de `utils/chartTheme.ts` en vez de copiar el
+  valor literal. Ya pasó dos veces (charts en fase 1, tarjeta de lealtad en
+  fase 6) — revisar visualmente en AMBOS extremos del set de temas (uno
+  oscuro, "libreta"), no solo el default.
 - **Nombres de componentes = ruta del archivo bajo `app/components/`**: un
   componente en `components/shell/NavIcon.vue` se autorregistra como
   `<ShellNavIcon>`, no `<NavIcon>` — usar el nombre corto no da error de
@@ -287,15 +323,16 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
 ## Estado actual (ver también commits de este repo)
 
 - Fases 1 (identidad visual), 2 (auth), 3 (shell/layout), 4 (dashboard
-  recepcionista) y 5 (dashboard barbero) completas — ver detalle en cada
-  punto de la lista de fases arriba. Las cinco verificadas en vivo en el
-  navegador (no solo build/typecheck) contra la API real de `barber`.
+  recepcionista), 5 (dashboard barbero) y 6 (dashboard cliente) completas —
+  ver detalle en cada punto de la lista de fases arriba. Las seis
+  verificadas en vivo en el navegador (no solo build/typecheck) contra la
+  API real de `barber`.
 - `barber`: `config/cors.php` publicado y configurado; endpoint de
-  dashboard enriquecido para recepcionista y barbero, con tests de
-  cobertura nuevos (`DashboardApiTest`, con `tearDown()` tras un fallo
-  intermitente real). CI confirmado en verde en cada push (un fallo real de
-  Larastan en el camino, corregido con entradas de baseline).
-- Pendiente: eslint en este repo, dashboards de cliente/admin + calendario
-  (fases 6-7), y todo lo posterior. `nuxt build` de fases 3-5 quedó sin
-  correr por pedido explícito del usuario de dejar el dev server activo —
-  correrlo antes o junto con el próximo push.
+  dashboard enriquecido para los 3 roles no-admin, con tests de cobertura
+  nuevos (`DashboardApiTest`, con `tearDown()` tras un fallo intermitente
+  real). CI confirmado en verde en cada push (un fallo real de Larastan en
+  el camino, corregido con entradas de baseline).
+- Pendiente: eslint en este repo, dashboard de admin + calendario (fase 7),
+  y todo lo posterior. `nuxt build` de fases 3-6 quedó sin correr por
+  pedido explícito del usuario de dejar el dev server activo — correrlo
+  antes o junto con el próximo push.
