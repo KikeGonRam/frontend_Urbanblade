@@ -46,6 +46,11 @@ const fullName = computed(() => user.value?.name ?? '')
       :full-name="fullName"
     />
 
+    <DashboardAdministrador
+      v-else-if="dashboard?.role === 'administrador'"
+      :data="(dashboard.data as any)"
+    />
+
     <section v-else-if="dashboard" class="ui-card-premium p-5">
       <header class="mb-4">
         <p class="text-sm uppercase tracking-widest text-muted">UrbanBlade</p>
