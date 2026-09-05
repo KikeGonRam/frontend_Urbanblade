@@ -23,6 +23,10 @@ export function goldHex(): string {
   return cssVar('--gold', '#d4af37')
 }
 
+// Paleta categórica (validada: banda de luminosidad oscura, ΔE CVD >= 8 frente
+// al fondo de tarjeta #111) para gráficas con varias series del mismo tipo.
+export const UB_CATEGORICAL = ['#3987e5', '#d95926', '#199e70', '#c98500', '#d55181', '#008300']
+
 export function chartScale() {
   return {
     ticks: { color: inkRgba(0.4), font: { size: 10 } },

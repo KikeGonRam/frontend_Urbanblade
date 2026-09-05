@@ -13,7 +13,7 @@ const { apiFetch } = useApi()
 // useAuth().fetchMe() limpia la sesión y el próximo guard manda a /login.
 await callOnce(fetchMe)
 
-const { data: dashboard, pending, error } = await useAsyncData('dashboard', () =>
+const { data: dashboard, pending, error, refresh } = await useAsyncData('dashboard', () =>
   apiFetch<DashboardResponse>('/dashboard'),
 )
 
@@ -29,6 +29,13 @@ const firstName = computed(() => (user.value?.name ?? 'Usuario').split(' ')[0])
       v-else-if="dashboard?.role === 'recepcionista'"
       :data="(dashboard.data as any)"
       :first-name="firstName"
+    />
+
+    <DashboardBarbero
+      v-else-if="dashboard?.role === 'barbero'"
+      :data="(dashboard.data as any)"
+      :first-name="firstName"
+      @refresh="refresh"
     />
 
     <section v-else-if="dashboard" class="ui-card-premium p-5">
