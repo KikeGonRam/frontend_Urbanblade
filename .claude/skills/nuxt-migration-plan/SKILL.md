@@ -283,10 +283,33 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
    más original que las fases anteriores, no solo una traducción Vue→Vue.
    Orden recomendado (de menor a mayor complejidad/riesgo, mismo criterio
    que llevó a hacer recepcionista antes que admin en las fases 4-7):
-   - **9.1 Clientes** (admin): CRUD simple, sin manejo de dinero. El punto
-     de partida más bajo en riesgo para asentar los patrones de esta fase
-     (listas paginadas/filtrables, formularios, tablas) antes de tocar
-     dinero o citas.
+   - ✅ **DONE — 9.1 Clientes** (admin): `pages/clients/index.vue` — lista
+     con búsqueda + filtro de segmento (vip/nuevo/activo/inactivo,
+     calculado por `ClientSegmentService` en `barber`), paginación,
+     crear/editar (modal) y eliminar. Middleware nuevo `admin` (solo
+     administrador — más estricto que `staff`). Las tarjetas de resumen
+     usan la segmentación real de la API en vez de los 4 contadores del
+     Blade original (total/con_citas/sin_citas/este_mes), que esta API no
+     expone. Verificado en vivo con la cuenta admin real, ambos temas:
+     crear, editar (200 confirmado por red) y eliminar (verificado por
+     curl directo — el `confirm()` nativo viene deshabilitado en el
+     navegador sandbox de esta sesión, "returned false to the page").
+     **Bug real encontrado y corregido — aplica a TODA la fase 9, no solo
+     Clientes**: `Client`, `Barber` y `Service` usan el trait `HasSlug`
+     (`app/Traits/HasSlug.php` en `barber`), que sobreescribe
+     `getRouteKeyName()` a `'slug'`. Las rutas `PUT`/`DELETE
+     .../{client|barber|service}` en `barber` ligan por **slug**, no por
+     `id` — aunque el payload de la API incluya ambos campos y `id` sea lo
+     más natural de usar a simple vista. Usar `id` para esas URLs da un
+     404 real ("No query results for model") incluso con el registro
+     recién creado y confirmable por `Model::find($id)` en tinker — la
+     inconsistencia está en qué campo usa el *route binding*, no en si el
+     registro existe. **Antes de construir cualquier página que edite/
+     borre un `Client`, `Barber` o `Service` real, revisar si el modelo
+     usa `HasSlug` y armar la URL con `.slug`, no con `.id`.** Otros
+     modelos (`Appointment`, `Payment`, `Order`, `Product`, `User`) no
+     tienen este trait — para esos, `id` sigue siendo correcto, pero
+     conviene grep-ear `use HasSlug` en el modelo antes de asumirlo.
    - **9.2 Citas** (admin/recepción): lista + crear + editar + cambiar
      estado + walk-in. Ya existe el endpoint de calendario (fase 7); esta
      fase permite además regresarle a `Calendar.vue` el botón "Editar
@@ -427,9 +450,9 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
   regenerado tras el nuevo endpoint.
 - `frontend-urban` ya tiene su propio CI (lint+build+audit) — primer run
   confirmado en verde.
-- Pendiente: fase 9 (expansión más allá de dashboards+calendario —
-  citas/pagos/clientes/inventario/etc., todo ya expuesto en
-  `routes/api.php` de `barber`, falta construir las páginas Nuxt).
+- Fase 9 en curso — planificada en 9.1-9.9 (ver arriba). **9.1 Clientes
+  completo** (CRUD admin) y verificado en vivo. Pendiente: 9.2 (Citas) en
+  adelante.
   `nuxt build`/`eslint` de este repo ya corren en CI en cada push, ya no
   hace falta correrlos manualmente antes de cada commit (aunque seguir
   haciéndolo local antes de push, como ya es costumbre, sigue siendo
