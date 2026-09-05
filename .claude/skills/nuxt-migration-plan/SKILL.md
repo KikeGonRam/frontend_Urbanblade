@@ -130,15 +130,23 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
 0. **Confirmar decisiones de esta sección con el usuario si se desvían**
    (rendering mode, dónde vive el token) — de lo contrario, proceder con los
    defaults documentados arriba.
-1. **Scaffold + identidad visual** (en progreso / hecho el scaffold base):
-   Nuxt 4 + `@nuxtjs/tailwindcss` (o Tailwind manual), portar tokens de
-   color/tipografía del tema negro/dorado de `barber`, `nuxt.config.ts` con
-   `routeRules` híbridos.
-2. **Auth**: página de login, composable/store de auth (Pinia), guardado del
-   token, middleware de ruta `auth`, llamadas a `POST /api/v1/auth/login`,
-   `GET /api/v1/auth/me`, `POST /api/v1/auth/logout`,
-   `POST /api/v1/auth/refresh-token`. Requiere `config/cors.php` en `barber`
-   ya configurado para `http://localhost:3000`.
+1. ✅ **DONE** — Scaffold + identidad visual: Nuxt 4 + `@nuxtjs/tailwindcss`,
+   4 temas portados 1:1 (`app/assets/css/main.css`, `tailwind.config.ts`),
+   `useTheme()` (cookie `ub_theme` + script anti-flash en `nuxt.config.ts`).
+   Verificado en vivo: cambio de tema, persistencia, sin flash al recargar.
+2. ✅ **DONE** — Auth: `app/composables/useAuth.ts` (login/me/logout contra
+   `POST /api/v1/auth/login`, `GET /api/v1/auth/me`, `POST /api/v1/auth/logout`
+   — `refresh-token` aún no consumido, queda para cuando haya necesidad real
+   de renovar sesión), `app/composables/useApi.ts` (fetch autenticado
+   genérico + manejo de 401), middleware `auth`/`guest`
+   (`app/middleware/`), `pages/login.vue`, `pages/dashboard/index.vue` (smoke
+   test). Token en cookie `ub_token` (no httpOnly — sin BFF que la esconda).
+   `config/cors.php` publicado y configurado en `barber`
+   (`CORS_ALLOWED_ORIGINS`, default `http://localhost:3000`,
+   `supports_credentials: false`). Verificado en vivo end-to-end contra la
+   API real: login con cuenta `cliente@urbanblade.mx`, persistencia tras
+   reload, logout, guard `auth` (redirige a `/login?redirect=...`
+   preservando destino), guard `guest` (ya autenticado → `/dashboard`).
 3. **Shell/layout compartido**: portar `AppLayout.vue` + `DashboardHeader.vue`
    + navegación por rol.
 4. **Dashboard Recepcionista** (mismo orden que Inertia: fue el primero ahí
@@ -179,13 +187,24 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
 - **`npm install` en este repo puede necesitar `--legacy-peer-deps`** por un
   bug conocido de npm 10.9.0 con el grafo de peer-dependencies de Nuxt 4
   (`Cannot read properties of null (reading 'edgesOut')` en arborist).
-- Antes de cada push a este repo: `eslint` + `nuxt build` limpios (no hay
-  PHPUnit/Pint aquí, es un repo JS puro).
+- Antes de cada push a este repo: `nuxt build` limpio (no hay PHPUnit/Pint
+  aquí, es un repo JS puro). **`eslint` todavía no tiene config en este
+  repo** (`npx eslint .` falla con "couldn't find eslint.config.js") —
+  agregarlo es trabajo pendiente, no asumir que ya corre en CI de este repo
+  porque tampoco existe todavía un workflow aquí (ver fase 8).
 - Nunca commitear `.env`/`.env.*` (ya excluidos en `.gitignore`) — la URL
   base de la API (`NUXT_PUBLIC_API_BASE`) y cualquier clave van ahí.
+- Cambios que tocan `barber` (CORS, enriquecer `Api/Dashboard/DashboardController`,
+  etc.) siguen las reglas de ESE repo: `.\test.ps1` limpio antes de push
+  (nunca `php artisan test` directo), Pint, confirmar CI real vía `gh run
+  list`/`gh run view` — nunca asumir que pasó.
 
 ## Estado actual (ver también commits de este repo)
 
-Scaffold Nuxt 4.5.2 creado, dependencias instaladas, remoto `origin`
-configurado y confirmado vacío antes del primer push. Ninguna fase de la
-lista de arriba está empezada todavía más allá del scaffold base.
+- Fase 1 (identidad visual) y Fase 2 (auth) completas — ver detalle en cada
+  punto de la lista de fases arriba. Ambas verificadas en vivo en el
+  navegador contra la API real de `barber` (no solo build/typecheck).
+- `barber`: `config/cors.php` publicado y configurado; CI confirmado en
+  verde tras el cambio.
+- Pendiente: eslint en este repo, layout/shell compartido (fase 3), y todo
+  lo posterior.
