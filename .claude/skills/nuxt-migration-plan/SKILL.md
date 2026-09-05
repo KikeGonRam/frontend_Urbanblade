@@ -178,7 +178,28 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
    dinámicas de Eloquent+Mongo que ya estaba baseline en la versión Inertia
    de este controlador no lo estaba aquí) — agregadas las 7 entradas
    correspondientes a `phpstan-baseline.neon`.
-5. **Dashboard Barbero**.
+5. ✅ **DONE** — Dashboard Barbero: mismo tratamiento que recepcionista en
+   `Api/Dashboard/DashboardController` (método `barberPayload()`, mismas
+   entradas de `phpstan-baseline.neon` ampliadas — no duplicadas, mismo
+   archivo). `components/dashboard/Barbero.vue` con Bar+Doughnut de
+   Chart.js. Aprobar/Rechazar llaman directo a
+   `PATCH /api/v1/appointments/{id}/status` vía `useApi()` — sin CSRF que
+   rodear (Bearer auth), más simple que el `<form>` nativo que usaba la
+   versión Inertia por necesidad, no una limitación aquí. `kpis.rating`
+   sigue hardcodeado a 4.9 en `DashboardService::buildBarberMetrics()` —
+   bug preexistente conocido, otra sesión ya lo está arreglando en paralelo
+   (ramas `claude/frosty-ptolemy-cc74c6`/`elastic-elion-ec69a1` en
+   `barber`); no tocar ese cálculo desde aquí para no pisar ese trabajo.
+   Verificado en vivo con la cuenta barbero real, ambos temas — KPIs y
+   estados vacíos correctos; el flujo de aprobar/rechazar NO se probó
+   clic-a-clic porque `barber_db` no tiene citas reales ahora mismo y crear
+   una sintética escribiría en el Atlas compartido real (contra las
+   guardrails del proyecto) — sí reutiliza el mismo `apiFetch()` ya probado
+   para `/dashboard` y `/auth/me`. Bug real encontrado y corregido:
+   `UB_CATEGORICAL` se usaba en `Barbero.vue` pero nunca se exportó desde
+   `utils/chartTheme.ts` — rompía toda la página con un error de Vite HMR,
+   y como el crash pasaba en la navegación posterior al login, el síntoma
+   visible era "el login falla" aunque `POST /auth/login` sí devolvía 200.
 6. **Dashboard Cliente**.
 7. **Dashboard Administrador** + `Calendar.vue` (el más grande, dejarlo para
    el final como se hizo en Inertia).
@@ -236,6 +257,20 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
   localmente (`docker exec ... phpstan --generate-baseline` mete ruido de
   falsos positivos locales que no están en CI, per
   `feedback_local_phpstan_unreliable` en memoria).
+- **Nuevos tests de `barber` que crean `User`/`MobileApiToken` con
+  email/token fijos necesitan `tearDown()`**: `mongo-test` es un contenedor
+  persistente en local (a diferencia del `mongo:7` efímero de CI) — sin
+  limpieza, correr la misma prueba dos veces deja tokens con el mismo
+  `token_hash` apuntando a usuarios distintos, y la prueba empieza a fallar
+  con 401 de forma intermitente. Copiar el patrón de `tearDown()` de
+  `ClientBarberReviewTest`/`DashboardApiTest`, no solo el de `setUp()`.
+- **Un export faltante en un `.ts` compartido (`utils/chartTheme.ts`, etc.)
+  no siempre truena donde se usa** — puede manifestarse como un error de
+  Vite HMR en OTRA página (aquí: la navegación post-login a `/dashboard`
+  crasheó, y el síntoma visible fue "el login no funciona" aunque el
+  `POST /auth/login` real devolvía 200). Si un flujo falla de forma que no
+  cuadra con el código que se tocó, revisar la consola del navegador antes
+  de asumir que el bug está en el archivo que se acaba de editar.
 - **Nombres de componentes = ruta del archivo bajo `app/components/`**: un
   componente en `components/shell/NavIcon.vue` se autorregistra como
   `<ShellNavIcon>`, no `<NavIcon>` — usar el nombre corto no da error de
@@ -251,15 +286,16 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
 
 ## Estado actual (ver también commits de este repo)
 
-- Fases 1 (identidad visual), 2 (auth), 3 (shell/layout) y 4 (dashboard
-  recepcionista) completas — ver detalle en cada punto de la lista de fases
-  arriba. Las cuatro verificadas en vivo en el navegador (no solo
-  build/typecheck) contra la API real de `barber`.
+- Fases 1 (identidad visual), 2 (auth), 3 (shell/layout), 4 (dashboard
+  recepcionista) y 5 (dashboard barbero) completas — ver detalle en cada
+  punto de la lista de fases arriba. Las cinco verificadas en vivo en el
+  navegador (no solo build/typecheck) contra la API real de `barber`.
 - `barber`: `config/cors.php` publicado y configurado; endpoint de
-  dashboard enriquecido para recepcionista con test de cobertura nuevo;
-  ambos con CI confirmado en verde (el segundo tras un primer fallo real de
-  Larastan, corregido con una entrada de baseline).
-- Pendiente: eslint en este repo, dashboards de barbero/cliente/admin +
-  calendario (fases 5-7), y todo lo posterior. `nuxt build` de fases 3 y 4
-  quedó sin correr por pedido explícito del usuario de dejar el dev server
-  activo — correrlo antes o junto con el próximo push.
+  dashboard enriquecido para recepcionista y barbero, con tests de
+  cobertura nuevos (`DashboardApiTest`, con `tearDown()` tras un fallo
+  intermitente real). CI confirmado en verde en cada push (un fallo real de
+  Larastan en el camino, corregido con entradas de baseline).
+- Pendiente: eslint en este repo, dashboards de cliente/admin + calendario
+  (fases 6-7), y todo lo posterior. `nuxt build` de fases 3-5 quedó sin
+  correr por pedido explícito del usuario de dejar el dev server activo —
+  correrlo antes o junto con el próximo push.
