@@ -169,3 +169,42 @@ html[data-theme="libreta"] {
         color: #000;
     }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   COMPONENTES UI — subset portado de barber/resources/css/app.css
+   Solo las clases puramente CSS (sin dependencia de Alpine/x-data), que sí
+   aplican tal cual a un shell reconstruido en Vue.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@layer components {
+    .ui-card {
+        @apply rounded-[0.875rem] border border-line bg-card;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    }
+
+    .ui-card-premium {
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(160deg, var(--card-premium-from) 0%, var(--card-premium-to) 100%);
+        border: 1px solid var(--line);
+        border-radius: 1.25rem;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+        transition: all 400ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .ui-card-premium::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(120deg, rgba(255, 255, 255, 0.04), transparent 40%);
+        pointer-events: none;
+    }
+
+    .ui-panel {
+        background: linear-gradient(180deg, var(--panel-from) 0%, var(--panel-to) 100%);
+        border: 1px solid var(--line);
+        border-radius: 1rem;
+        color: var(--ink);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+    }
+}

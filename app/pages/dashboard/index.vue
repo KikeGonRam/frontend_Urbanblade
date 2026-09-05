@@ -1,42 +1,32 @@
 <script setup lang="ts">
-definePageMeta({ middleware: 'auth' })
+definePageMeta({ middleware: 'auth', layout: 'dashboard' })
 
-const { user, fetchMe, logout } = useAuth()
+const { user, fetchMe } = useAuth()
 
-// Confirma el token contra /auth/me al entrar — si el token quedó
-// inválido/expirado, useAuth().fetchMe() lo limpia y el próximo guard lo
-// manda a /login.
+// Confirma el token contra /auth/me al entrar — si quedó inválido/expirado,
+// useAuth().fetchMe() limpia la sesión y el próximo guard manda a /login.
 await callOnce(fetchMe)
-
-async function onLogout() {
-  await logout()
-  await navigateTo('/login')
-}
 </script>
 
 <template>
-  <div class="min-h-screen p-8 font-sans text-ink">
-    <header class="mb-8 flex items-center justify-between">
-      <div>
-        <p class="text-sm uppercase tracking-widest text-muted">UrbanBlade</p>
-        <h1 class="mt-1 text-2xl font-semibold text-ink">Dashboard (verificación de auth)</h1>
-      </div>
-      <button
-        type="button"
-        class="rounded-lg border border-line px-4 py-2 text-sm hover:border-gold-dim"
-        @click="onLogout"
-      >
-        Cerrar sesión
-      </button>
+  <div class="p-4 sm:p-6 lg:p-8">
+    <header class="mb-6">
+      <p class="text-sm uppercase tracking-widest text-muted">UrbanBlade</p>
+      <h1 class="mt-1 text-2xl font-semibold text-ink">Dashboard</h1>
     </header>
 
-    <section v-if="user" class="rounded-xl border border-line bg-card p-5">
+    <section v-if="user" class="ui-card-premium p-5">
       <p class="text-sm text-muted">Sesión activa vía token Bearer (mobile_api_tokens):</p>
       <dl class="mt-3 space-y-1 text-sm">
         <div><dt class="inline text-muted">Nombre: </dt><dd class="inline">{{ user.name }}</dd></div>
         <div><dt class="inline text-muted">Email: </dt><dd class="inline">{{ user.email }}</dd></div>
         <div><dt class="inline text-muted">Roles: </dt><dd class="inline">{{ user.roles.join(', ') }}</dd></div>
       </dl>
+      <p class="mt-4 text-xs text-muted">
+        El resto del sidebar (Citas, Clientes, Pagos…) ya está armado por rol — se activa
+        página por página en las siguientes fases. Los ítems marcados "Próx." aún no
+        tienen página propia en este repo.
+      </p>
     </section>
     <p v-else class="text-sm text-muted">Cargando datos del usuario…</p>
   </div>
