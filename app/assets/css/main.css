@@ -1,0 +1,171 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SISTEMA DE TOKENS DE COLOR — UrbanBlade Design System
+   ───────────────────────────────────────────────────────────────────────────
+   Portado 1:1 desde barber/resources/css/app.css (mismo repo de origen de la
+   migración Inertia). Cuatro temas completos, elegidos por el usuario y
+   aplicados vía data-theme="..." en <html>.
+
+   Diferencia clave frente a barber: allá el tema se renderiza en servidor
+   (Blade lee auth()->user()->theme). Aquí, con auth por Bearer token en el
+   cliente, no hay sesión de servidor que leer en SSR — el tema se guarda en
+   una cookie legible (`ub_theme`) y se aplica con un script inline
+   bloqueante en <head> (ver nuxt.config.ts) para evitar flash, más el
+   composable useTheme() (app/composables/useTheme.ts) para cambiarlo en
+   caliente.
+
+   :root                       → tema por defecto ("noir": negro + oro)
+   html[data-theme="acero"]    → grafito + cobre  ("Taller de Acero")
+   html[data-theme="salon"]    → verde inglés + latón ("Salón Inglés")
+   html[data-theme="libreta"]  → único tema CLARO: marfil + tinta + oro
+
+   --gold-rgb / --gold-dim-rgb / --ink-rgb son los mismos colores que --gold /
+   --gold-dim / --ink pero como canales "R G B" (sin comas): así los alimenta
+   tailwind.config.ts con rgb(var(--x-rgb) / <alpha-value>), lo que permite
+   que utilidades con opacidad (bg-gold/10, border-ink/[0.06], text-ink/50...)
+   cambien de color con el tema, no solo a opacidad completa.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── "Sastrería Nocturna" (default) — negro + oro ── */
+:root {
+    --bg-main:   #0a0a0a;
+    --bg-card:   #161616;
+    --bg-accent: #1f1f1f;
+    --panel:     #111111;
+
+    --ink:      #f2f2f2;
+    --ink-rgb:  242 242 242;
+    --muted:    #9c9c9c;
+
+    --line:  #2c2c2c;
+
+    --gold:          #d4af37;
+    --gold-dim:      #a8842c;
+    --gold-rgb:      212 175 55;
+    --gold-dim-rgb:  168 132 44;
+    --gold-glow:     rgba(212, 175, 55, 0.28);
+
+    --card-premium-from: #1b1b1b;
+    --card-premium-to:   #0d0d0d;
+    --panel-from:        #151515;
+    --panel-to:          #0a0a0a;
+
+    --bg-topbar:    rgba(10, 10, 10, 0.93);
+    --bg-bottomnav: rgba(10, 10, 10, 0.97);
+
+    --dot-color: rgba(255, 255, 255, 0.03);
+}
+
+/* ── "Taller de Acero" — grafito frío + cobre ── */
+html[data-theme="acero"] {
+    --bg-main:   #111317;
+    --bg-card:   #1a1d22;
+    --bg-accent: #22262c;
+    --panel:     #14171b;
+
+    --ink:      #eef0f2;
+    --ink-rgb:  238 240 242;
+    --muted:    #8f95a0;
+
+    --line:  #2c3038;
+
+    --gold:          #c1703d;
+    --gold-dim:      #9c5a30;
+    --gold-rgb:      193 112 61;
+    --gold-dim-rgb:  156 90 48;
+    --gold-glow:     rgba(193, 112, 61, 0.28);
+
+    --card-premium-from: #1d2026;
+    --card-premium-to:   #121418;
+    --panel-from:        #191c21;
+    --panel-to:          #0f1114;
+
+    --bg-topbar:    rgba(17, 19, 23, 0.93);
+    --bg-bottomnav: rgba(17, 19, 23, 0.97);
+
+    --dot-color: rgba(193, 112, 61, 0.04);
+}
+
+/* ── "Salón Inglés" — verde inglés muy oscuro + latón ── */
+html[data-theme="salon"] {
+    --bg-main:   #0b1210;
+    --bg-card:   #141c19;
+    --bg-accent: #1c2621;
+    --panel:     #0f1614;
+
+    --ink:      #eef2ee;
+    --ink-rgb:  238 242 238;
+    --muted:    #93a49b;
+
+    --line:  #26332c;
+
+    --gold:          #c9a24a;
+    --gold-dim:      #a1813a;
+    --gold-rgb:      201 162 74;
+    --gold-dim-rgb:  161 129 58;
+    --gold-glow:     rgba(201, 162, 74, 0.28);
+
+    --card-premium-from: #17201c;
+    --card-premium-to:   #0d1310;
+    --panel-from:        #131c18;
+    --panel-to:          #0a0f0d;
+
+    --bg-topbar:    rgba(11, 18, 16, 0.93);
+    --bg-bottomnav: rgba(11, 18, 16, 0.97);
+
+    --dot-color: rgba(201, 162, 74, 0.04);
+}
+
+/* ── "Libreta de Barbero" — único tema claro. Marfil + tinta + oro ── */
+html[data-theme="libreta"] {
+    --bg-main:   #f3ede0;
+    --bg-card:   #fffbf3;
+    --bg-accent: #ece2cc;
+    --panel:     #f7f1e4;
+
+    --ink:      #241e18;
+    --ink-rgb:  36 30 24;
+    --muted:    #7a6f60;
+
+    --line:  #e2d5b8;
+
+    --gold:          #b8860b;
+    --gold-dim:      #8a6608;
+    --gold-rgb:      184 134 11;
+    --gold-dim-rgb:  138 102 8;
+    --gold-glow:     rgba(184, 134, 11, 0.20);
+
+    --card-premium-from: #fffdf8;
+    --card-premium-to:   #f3ede0;
+    --panel-from:        #fbf6ea;
+    --panel-to:          #efe6d2;
+
+    --bg-topbar:    rgba(243, 237, 224, 0.92);
+    --bg-bottomnav: rgba(243, 237, 224, 0.96);
+
+    --dot-color: rgba(30, 42, 60, 0.035);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BASE STYLES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@layer base {
+    body {
+        color: var(--ink);
+        background-color: var(--bg-main);
+        background-image: radial-gradient(circle at 2px 2px, var(--dot-color) 1px, transparent 0);
+        background-size: 24px 24px;
+        min-height: 100vh;
+        font-family: theme('fontFamily.sans');
+        transition: background-color 300ms ease, color 300ms ease;
+    }
+
+    ::selection {
+        background: var(--gold);
+        color: #000;
+    }
+}
