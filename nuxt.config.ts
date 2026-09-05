@@ -14,6 +14,15 @@ export default defineNuxtConfig({
     ],
   },
 
+  runtimeConfig: {
+    public: {
+      // Base de la API JSON de barber, con /api/v1 incluido. Ver
+      // .claude/skills/nuxt-migration-plan/SKILL.md — auth por Bearer token
+      // (mobile_api_tokens), no por sesión/cookie.
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8000/api/v1',
+    },
+  },
+
   app: {
     head: {
       // Aplica el tema guardado en cookie ANTES de pintar, para evitar el
