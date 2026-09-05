@@ -50,7 +50,7 @@ const ICONS: Record<string, string> = {
 }
 
 /** Único path real hoy — todo lo demás se muestra pero deshabilitado ("Próximamente") hasta su fase. */
-const IMPLEMENTED_PATHS = new Set(['/dashboard', '/appointments/calendar'])
+const IMPLEMENTED_PATHS = new Set(['/dashboard', '/appointments/calendar', '/clients'])
 
 function item(label: string, to: string, icon: string, primary = false, badge: number | null = null): NavItem {
   return { label, to, icon: ICONS[icon] ?? '', primary, badge, implemented: IMPLEMENTED_PATHS.has(to) }
