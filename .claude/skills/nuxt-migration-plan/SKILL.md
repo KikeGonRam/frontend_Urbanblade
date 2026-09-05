@@ -147,8 +147,19 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
    API real: login con cuenta `cliente@urbanblade.mx`, persistencia tras
    reload, logout, guard `auth` (redirige a `/login?redirect=...`
    preservando destino), guard `guest` (ya autenticado → `/dashboard`).
-3. **Shell/layout compartido**: portar `AppLayout.vue` + `DashboardHeader.vue`
-   + navegación por rol.
+3. ✅ **DONE** — Shell/layout compartido: `app/components/shell/`
+   (`AppSidebar` con rail colapsable + acordeón, `MobileTopbar`,
+   `MobileBottomNav`, `MobileDrawer`), `useNavigation()` (mismas secciones
+   por rol que `NavigationMenu::sections()`, mapeadas a rutas propias de
+   este repo — items sin página propia se muestran deshabilitados con
+   badge "Próx." en vez de linkear a un 404), `useShellState()`
+   (rail/acordeón persistidos en localStorage), `layouts/dashboard.vue`.
+   Verificado en vivo: colapso/expansión del rail, acordeón, iconos,
+   resaltado de ruta activa, topbar/bottom-nav/drawer móvil, logout desde
+   sidebar y desde el drawer. Bug real encontrado y corregido en el camino:
+   `NavIcon.vue` vive en `components/shell/`, así que Nuxt lo autorregistra
+   como `ShellNavIcon`, no `NavIcon` — usar el nombre corto renderizaba un
+   custom element vacío en vez del ícono.
 4. **Dashboard Recepcionista** (mismo orden que Inertia: fue el primero ahí
    también) — consumir `GET /api/dashboard`, enriquecer el controlador API
    en `barber` con los mismos campos computados que ya tiene la vista
@@ -198,13 +209,28 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
   etc.) siguen las reglas de ESE repo: `.\test.ps1` limpio antes de push
   (nunca `php artisan test` directo), Pint, confirmar CI real vía `gh run
   list`/`gh run view` — nunca asumir que pasó.
+- **Nombres de componentes = ruta del archivo bajo `app/components/`**: un
+  componente en `components/shell/NavIcon.vue` se autorregistra como
+  `<ShellNavIcon>`, no `<NavIcon>` — usar el nombre corto no da error de
+  build, solo un warning de Vue en consola ("Failed to resolve component")
+  y renderiza un custom element vacío. Ya pasó una vez (fase 3); revisar la
+  consola del navegador, no solo que compile, al agregar componentes en
+  subcarpetas.
+- Cuando el usuario pide explícitamente dejar el dev server corriendo para
+  probar él mismo, no se corre `nuxt build` antes de ese push (`nuxt dev` y
+  `nuxt build` comparten `.nuxt/` como scratch y pueden pisarse) — la
+  verificación en vivo contra el dev server real sustituye al build check
+  ese turno; correrlo en el siguiente push normal si no se hizo.
 
 ## Estado actual (ver también commits de este repo)
 
-- Fase 1 (identidad visual) y Fase 2 (auth) completas — ver detalle en cada
-  punto de la lista de fases arriba. Ambas verificadas en vivo en el
-  navegador contra la API real de `barber` (no solo build/typecheck).
+- Fases 1 (identidad visual), 2 (auth) y 3 (shell/layout) completas — ver
+  detalle en cada punto de la lista de fases arriba. Las tres verificadas
+  en vivo en el navegador (no solo build/typecheck) contra la API real de
+  `barber`, incluyendo responsive móvil/tablet/desktop.
 - `barber`: `config/cors.php` publicado y configurado; CI confirmado en
   verde tras el cambio.
-- Pendiente: eslint en este repo, layout/shell compartido (fase 3), y todo
-  lo posterior.
+- Pendiente: eslint en este repo, los 4 dashboards + calendario (fases
+  4-7), y todo lo posterior. `nuxt build` de fase 3 quedó sin correr por
+  pedido explícito del usuario de dejar el dev server activo — correrlo
+  antes o junto con el próximo push.
