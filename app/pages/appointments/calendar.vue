@@ -74,6 +74,7 @@ const legend = [
 
 const modal = reactive({
   open: false,
+  id: '',
   color: '',
   title: '',
   time: '',
@@ -87,6 +88,7 @@ function onEventClick(info: EventClickArg) {
   const start = info.event.start
   const end = info.event.end
 
+  modal.id = info.event.id
   modal.color = info.event.backgroundColor
   modal.title = info.event.title
   modal.time = start
@@ -204,9 +206,15 @@ const calendarOptions: CalendarOptions = {
           </div>
 
           <div class="mt-8 flex gap-3">
+            <NuxtLink
+              :to="`/appointments?edit=${modal.id}`"
+              class="flex-1 rounded-xl bg-gold py-3 text-center text-[11px] font-black uppercase tracking-widest text-black transition-all hover:bg-gold-dim"
+            >
+              Editar Cita
+            </NuxtLink>
             <button
               type="button"
-              class="flex-1 rounded-xl border border-line bg-ink/5 py-3 text-center text-[11px] font-black uppercase tracking-widest text-muted transition-all hover:text-ink"
+              class="rounded-xl border border-line bg-ink/5 px-5 py-3 text-center text-[11px] font-black uppercase tracking-widest text-muted transition-all hover:text-ink"
               @click="modal.open = false"
             >
               Cerrar

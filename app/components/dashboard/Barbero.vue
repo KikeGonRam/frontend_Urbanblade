@@ -5,6 +5,7 @@ import type { DashboardInsight } from '~/components/dashboard/AnalyticsInsights.
 
 interface BarberAppointment {
   id: string
+  code: string
   estado: string
   hora_inicio: string
   hora_fin: string
@@ -15,6 +16,7 @@ interface BarberAppointment {
 
 interface BarberPending {
   id: string
+  code: string
   fecha: string
   hora_inicio: string
   cliente: string
@@ -59,12 +61,14 @@ function statusStyle(estado: string) {
 
 const actingOn = ref<string | null>(null)
 
-async function setStatus(id: string, estado: 'confirmada' | 'cancelada') {
+async function setStatus(appt: BarberPending, estado: 'confirmada' | 'cancelada') {
   if (estado === 'cancelada' && !confirm('¿Rechazar esta solicitud de cita?')) return
 
-  actingOn.value = id
+  actingOn.value = appt.id
   try {
-    await apiFetch(`/appointments/${id}/status`, { method: 'PATCH', body: { estado } })
+    // Appointment usa HasPublicCode -> getRouteKeyName() = 'code', no 'id'
+    // (ver .claude/skills/urbanblade-guardrails/SKILL.md en barber).
+    await apiFetch(`/appointments/${appt.code}/status`, { method: 'PATCH', body: { estado } })
     emit('refresh')
   } finally {
     actingOn.value = null
@@ -186,7 +190,7 @@ const servicesOptions = {
               type="button"
               :disabled="actingOn === appt.id"
               class="rounded-lg bg-gold px-4 py-2 text-[9px] font-black uppercase tracking-widest text-black transition hover:bg-gold-dim disabled:opacity-50"
-              @click="setStatus(appt.id, 'confirmada')"
+              @click="setStatus(appt, 'confirmada')"
             >
               Aprobar
             </button>
@@ -194,7 +198,7 @@ const servicesOptions = {
               type="button"
               :disabled="actingOn === appt.id"
               class="px-2 text-[9px] font-black uppercase tracking-widest text-ink/40 transition hover:text-red-400 disabled:opacity-50"
-              @click="setStatus(appt.id, 'cancelada')"
+              @click="setStatus(appt, 'cancelada')"
             >
               Rechazar
             </button>
