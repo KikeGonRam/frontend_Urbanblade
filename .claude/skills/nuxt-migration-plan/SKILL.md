@@ -160,10 +160,24 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
    `NavIcon.vue` vive en `components/shell/`, así que Nuxt lo autorregistra
    como `ShellNavIcon`, no `NavIcon` — usar el nombre corto renderizaba un
    custom element vacío en vez del ícono.
-4. **Dashboard Recepcionista** (mismo orden que Inertia: fue el primero ahí
-   también) — consumir `GET /api/dashboard`, enriquecer el controlador API
-   en `barber` con los mismos campos computados que ya tiene la vista
-   Inertia equivalente.
+4. ✅ **DONE** — Dashboard Recepcionista: `Api/Dashboard/DashboardController`
+   enriquecido en `barber` con el mismo shape curado que la vista Inertia
+   (kpis/nextAppointments/pendingOrders/flowChart/sparkHighlights) — cubierto
+   por `tests/Feature/DashboardApiTest.php` (la capa API no tenía tests
+   antes). `components/dashboard/{DashboardHeader,AnalyticsInsights,
+   AnalyticsCta,Recepcion}.vue` + `utils/chartTheme.ts` +
+   `plugins/chart.client.ts` (Chart.js, colores leídos de las variables CSS
+   del tema en vez de blanco fijo como el original — aquí los 4 temas son
+   reales). `pages/dashboard/index.vue` hace `GET /dashboard` y enruta por
+   `role`; roles sin fase propia todavía ven un aviso que apunta de vuelta a
+   la versión Inertia. Verificado en vivo con la cuenta recepcionista real,
+   en tema claro y oscuro — KPIs y estados vacíos correctos (la BD real
+   está en cero tras el wipe, así que 0/$0 en todo es el resultado
+   esperado, no un bug). Gotcha real encontrado y corregido en el camino:
+   la enriquecida rompió Larastan en CI (el mismo patrón de propiedades
+   dinámicas de Eloquent+Mongo que ya estaba baseline en la versión Inertia
+   de este controlador no lo estaba aquí) — agregadas las 7 entradas
+   correspondientes a `phpstan-baseline.neon`.
 5. **Dashboard Barbero**.
 6. **Dashboard Cliente**.
 7. **Dashboard Administrador** + `Calendar.vue` (el más grande, dejarlo para
@@ -209,6 +223,19 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
   etc.) siguen las reglas de ESE repo: `.\test.ps1` limpio antes de push
   (nunca `php artisan test` directo), Pint, confirmar CI real vía `gh run
   list`/`gh run view` — nunca asumir que pasó.
+- **Enriquecer un método del `Api/Dashboard/DashboardController` que ya
+  tenía su versión Inertia probablemente necesita entradas nuevas en
+  `phpstan-baseline.neon`**: el patrón de propiedades dinámicas de
+  Eloquent+MongoDB (`appt->client->user->name`, `appt->service->nombre`,
+  campos de `Order`) ya está baseline para `Dashboard/DashboardController`
+  (la versión Inertia) pero NO se propaga automáticamente al mismo código
+  copiado a `Api/Dashboard/DashboardController` — ya causó un fallo real de
+  CI en la fase 4 (commit `0758d25` → arreglado en `d854520`). Copiar las
+  entradas de baseline análogas (mismo mensaje, mismo `identifier`, mismo
+  `count`, solo cambia el `path`) en vez de regenerar el baseline completo
+  localmente (`docker exec ... phpstan --generate-baseline` mete ruido de
+  falsos positivos locales que no están en CI, per
+  `feedback_local_phpstan_unreliable` en memoria).
 - **Nombres de componentes = ruta del archivo bajo `app/components/`**: un
   componente en `components/shell/NavIcon.vue` se autorregistra como
   `<ShellNavIcon>`, no `<NavIcon>` — usar el nombre corto no da error de
@@ -224,13 +251,15 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
 
 ## Estado actual (ver también commits de este repo)
 
-- Fases 1 (identidad visual), 2 (auth) y 3 (shell/layout) completas — ver
-  detalle en cada punto de la lista de fases arriba. Las tres verificadas
-  en vivo en el navegador (no solo build/typecheck) contra la API real de
-  `barber`, incluyendo responsive móvil/tablet/desktop.
-- `barber`: `config/cors.php` publicado y configurado; CI confirmado en
-  verde tras el cambio.
-- Pendiente: eslint en este repo, los 4 dashboards + calendario (fases
-  4-7), y todo lo posterior. `nuxt build` de fase 3 quedó sin correr por
-  pedido explícito del usuario de dejar el dev server activo — correrlo
-  antes o junto con el próximo push.
+- Fases 1 (identidad visual), 2 (auth), 3 (shell/layout) y 4 (dashboard
+  recepcionista) completas — ver detalle en cada punto de la lista de fases
+  arriba. Las cuatro verificadas en vivo en el navegador (no solo
+  build/typecheck) contra la API real de `barber`.
+- `barber`: `config/cors.php` publicado y configurado; endpoint de
+  dashboard enriquecido para recepcionista con test de cobertura nuevo;
+  ambos con CI confirmado en verde (el segundo tras un primer fallo real de
+  Larastan, corregido con una entrada de baseline).
+- Pendiente: eslint en este repo, dashboards de barbero/cliente/admin +
+  calendario (fases 5-7), y todo lo posterior. `nuxt build` de fases 3 y 4
+  quedó sin correr por pedido explícito del usuario de dejar el dev server
+  activo — correrlo antes o junto con el próximo push.
