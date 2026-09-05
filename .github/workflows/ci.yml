@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  frontend:
+    name: Frontend (ESLint + build + audit)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install Node dependencies
+        # --legacy-peer-deps: npm arborist bug with Nuxt 4's peer-dependency
+        # graph (see .claude/skills/nuxt-migration-plan/SKILL.md) — same
+        # workaround needed locally.
+        run: npm ci --legacy-peer-deps
+
+      - name: ESLint
+        run: npx eslint . --max-warnings=0
+
+      - name: Build
+        run: npm run build
+        env:
+          NUXT_PUBLIC_API_BASE: http://localhost:8000/api/v1
+
+      - name: npm audit (high/critical)
+        run: npm audit --audit-level=high
