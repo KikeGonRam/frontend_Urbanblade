@@ -310,10 +310,65 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
      modelos (`Appointment`, `Payment`, `Order`, `Product`, `User`) no
      tienen este trait — para esos, `id` sigue siendo correcto, pero
      conviene grep-ear `use HasSlug` en el modelo antes de asumirlo.
-   - **9.2 Citas** (admin/recepción): lista + crear + editar + cambiar
-     estado + walk-in. Ya existe el endpoint de calendario (fase 7); esta
-     fase permite además regresarle a `Calendar.vue` el botón "Editar
-     Cita" que hoy no tiene destino.
+   - ✅ **DONE — 9.2 Citas** (admin/recepción): `pages/appointments/index.vue`
+     — lista (hasta 50 más recientes, filtros por estado/barbero vía nuevos
+     query params en `GET /api/v1/appointments`), crear (modal con
+     buscador de cliente tipo "buscar y seleccionar", selects de
+     barbero/servicio, fecha/hora, notas) y editar (mismo modal, incluye
+     cambiar `estado` a cualquiera de los 6 valores — `update()` en
+     `barber` no impone máquina de estados, a diferencia de
+     `PATCH .../status` que sí la tiene). Se omiten a propósito las 4
+     tarjetas de resumen del Blade original (Total/Hoy/Pendientes/
+     Completadas): la API solo devuelve hasta 50 citas recientes, así que
+     un "Total" calculado sobre ese subconjunto sería un número fabricado,
+     no un agregado global real — decisión de correctness, no un olvido.
+     Nuevo endpoint backend `GET /api/v1/appointments/calendar-data` (fase
+     7) ahora tiene destino real: `calendar.vue` agrega un link "Editar
+     Cita" a `` `/appointments?edit=${id}` ``, y `appointments/index.vue`
+     lee ese query param en `onMounted` para abrir el modal de edición
+     pre-rellenado. Middleware `staff` reusado (mismo admin/recepcionista
+     que el calendario).
+     **Bug real encontrado y corregido — mismo patrón que el de 9.1 pero
+     con OTRO trait**: `Appointment` no usa `HasSlug`, usa
+     `HasPublicCode` (`app/Traits/HasPublicCode.php` en `barber`), que
+     sobreescribe `getRouteKeyName()` a `'code'`. Usar `.id` en las URLs
+     de `PUT`/`PATCH .../status` da el mismo 404 fantasma que ya se vio
+     con `Client` — confirmado con un test PHPUnit desechable
+     (`DebugRouteBindingTest`, creado solo para diagnosticar, borrado tras
+     confirmar la causa) que reprodujo el 404 mientras `Appointment::find($id)`
+     sí encontraba el registro. Esto además reveló que **`Barbero.vue` de
+     la fase 5 llevaba este mismo bug roto en producción desde que se
+     escribió** (`setStatus()` usaba `appt.id` para
+     `PATCH /appointments/{id}/status`) — nunca se detectó porque en ese
+     momento `barber_db` no tenía citas reales con las que probar
+     clic-a-clic. Corregido en ambos lugares: `Barbero.vue` (`setStatus()`
+     ahora recibe el objeto `BarberPending` completo y usa `.code`,
+     `:disabled` sigue comparando por `.id` para el estado de carga) y
+     `appointments/index.vue`. Confirmado exhaustivamente por
+     `grep -rl getRouteKeyName app/Models app/Traits` en `barber`: **solo
+     existen estos dos traits en todo el repo** (`HasSlug` → `Client`,
+     `Barber`, `Service`; `HasPublicCode` → solo `Appointment`) — `Payment`,
+     `Order`, `Product`, `User` no tienen ninguno, así que `.id` sigue
+     siendo correcto para las fases 9.3+ sin necesidad de re-verificar cada
+     vez.
+     Cambios en `barber`: `barberPayload()` ahora incluye `code` en
+     `barberToday`/`barberPending` (antes solo mandaba `id`, inútil para
+     el PATCH real); filtros `estado`/`barber_id`/`fecha` agregados a
+     `AppointmentController::index()` (100% aditivo, sin params = mismo
+     comportamiento que antes); nueva entrada de `phpstan-baseline.neon`
+     olvidada en el primer push (`tests/Feature/DashboardApiTest.php`
+     accede a `$pendingAppointment->code` directo) — CI la agarró porque
+     el Larastan local no la mostraba entre sus ~108 falsos positivos
+     preexistentes; corregida y confirmada en verde con una segunda
+     corrida completa de `.\test.ps1` + `pint --test` + Larastan local
+     antes de repush. Verificado en vivo con la cuenta recepcionista real:
+     como `barber_db` no tenía servicios reales (colección vacía tras el
+     wipe), se creó un servicio de prueba claramente etiquetado
+     (`"TEMP TEST SERVICE (borrar)"`) vía tinker, se usó para probar
+     crear → editar (cambio de estado a "Confirmada") → el deep-link
+     "Editar Cita" desde el calendario, y se borró junto con la cita de
+     prueba inmediatamente después — mismo patrón que la limpieza de datos
+     sintéticos de la fase 9.1.
    - **9.3 Pagos** (admin/recepción): cobro + historial. Maneja dinero
      real — aplicar el mismo patrón ya establecido en `barber` (guardrail
      #13 de ese repo: nunca confiar en un monto que mande el cliente,
@@ -450,8 +505,11 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
   regenerado tras el nuevo endpoint.
 - `frontend-urban` ya tiene su propio CI (lint+build+audit) — primer run
   confirmado en verde.
-- Fase 9 en curso — planificada en 9.1-9.9 (ver arriba). **9.1 Clientes
-  completo** (CRUD admin) y verificado en vivo. Pendiente: 9.2 (Citas) en
+- Fase 9 en curso — planificada en 9.1-9.9 (ver arriba). **9.1 Clientes** y
+  **9.2 Citas** completos (CRUD admin/recepción) y verificados en vivo.
+  9.2 además cerró el botón "Editar Cita" del calendario (fase 7) y
+  corrigió un bug de route-binding que llevaba roto desde la fase 5
+  (`Barbero.vue`) — ver detalle en 9.2 arriba. Pendiente: 9.3 (Pagos) en
   adelante.
   `nuxt build`/`eslint` de este repo ya corren en CI en cada push, ya no
   hace falta correrlos manualmente antes de cada commit (aunque seguir
