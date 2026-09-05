@@ -18,6 +18,7 @@ const { data: dashboard, pending, error, refresh } = await useAsyncData('dashboa
 )
 
 const firstName = computed(() => (user.value?.name ?? 'Usuario').split(' ')[0])
+const fullName = computed(() => user.value?.name ?? '')
 </script>
 
 <template>
@@ -36,6 +37,13 @@ const firstName = computed(() => (user.value?.name ?? 'Usuario').split(' ')[0])
       :data="(dashboard.data as any)"
       :first-name="firstName"
       @refresh="refresh"
+    />
+
+    <DashboardCliente
+      v-else-if="dashboard?.role === 'cliente'"
+      :data="(dashboard.data as any)"
+      :first-name="firstName"
+      :full-name="fullName"
     />
 
     <section v-else-if="dashboard" class="ui-card-premium p-5">

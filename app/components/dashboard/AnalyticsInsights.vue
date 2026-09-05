@@ -10,7 +10,8 @@ export interface DashboardInsight {
   progress_value: number | null
 }
 
-withDefaults(defineProps<{ insights: DashboardInsight[], titulo?: string }>(), {
+withDefaults(defineProps<{ insights?: DashboardInsight[], titulo?: string }>(), {
+  insights: () => [],
   titulo: 'Analítica avanzada',
 })
 
