@@ -123,9 +123,11 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
       >
         <header class="flex shrink-0 items-center justify-between border-b border-line bg-main/40 px-5 py-4">
           <div class="flex items-center gap-3">
-            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-gold/20 bg-gold/10">
+            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gold/20 bg-gold/10">
               <svg class="h-5 w-5 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                <circle cx="12" cy="12" r="9" stroke-width="1.5" />
+                <path stroke-linecap="round" d="M9 10h.01M15 10h.01" stroke-width="2" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.5 14.5c.7.9 1.9 1.5 3.5 1.5s2.8-.6 3.5-1.5" />
               </svg>
             </div>
             <div>
@@ -152,9 +154,11 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
 
         <div ref="chatBox" class="flex-1 space-y-3 overflow-y-auto overscroll-contain px-4 py-4">
           <div v-for="msg in messages" :key="msg.id" :class="msg.role === 'user' ? 'flex justify-end' : 'flex justify-start gap-2'">
-            <div v-if="msg.role === 'bot'" class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-gold/20 bg-gold/10">
-              <svg class="h-3 w-3 text-gold/60" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2a2 2 0 012 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 017 7h1a1 1 0 110 2h-1v1a2 2 0 01-2 2H5a2 2 0 01-2-2v-1H2a1 1 0 110-2h1a7 7 0 017-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 012-2zM9 9a5 5 0 00-5 5v3h16v-3a5 5 0 00-5-5H9z" />
+            <div v-if="msg.role === 'bot'" class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-gold/20 bg-gold/10">
+              <svg class="h-3.5 w-3.5 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <circle cx="12" cy="12" r="9" stroke-width="1.5" />
+                <path stroke-linecap="round" d="M9 10h.01M15 10h.01" stroke-width="2" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.5 14.5c.7.9 1.9 1.5 3.5 1.5s2.8-.6 3.5-1.5" />
               </svg>
             </div>
             <div class="flex max-w-[82%] flex-col" :class="msg.role === 'user' ? 'items-end' : 'items-start'">
@@ -200,7 +204,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
           </div>
 
           <div v-if="typing" class="flex justify-start gap-2">
-            <div class="h-6 w-6 shrink-0 rounded-lg border border-gold/20 bg-gold/10" />
+            <div class="h-6 w-6 shrink-0 rounded-full border border-gold/20 bg-gold/10" />
             <div class="flex items-center gap-2 rounded-2xl rounded-tl-sm border border-line bg-accent px-4 py-3">
               <span class="text-[10px] text-muted">Escribiendo</span>
               <span class="flex items-center gap-1.5">
