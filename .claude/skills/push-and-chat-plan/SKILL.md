@@ -519,6 +519,27 @@ el sidebar para no confundir ambos affordances.
 `.\test.ps1` x2 (299 tests) tras los arreglos de coherencia/contexto, CI en
 verde en ambos repos (`barber@df9ba1e`, `frontend-urban@9577ddc`).
 
+**Tercera ronda, mismo día: el usuario probó en su propio navegador (no en
+el Browser pane) y mandó una captura real** mostrando que "si ayudame"
+(seguimiento a una pregunta sobre gestión de usuarios) devolvía un FAQ
+genérico de bienvenida para clientes nuevos, ignorando tanto el rol admin
+como el tema recién hablado. Reproducido exacto en `barber@93677aa`: la
+keyword suelta `'ayuda'` de la categoría de FAQ generales calzaba por
+substring dentro de "ayudame" en `matchesKeywords()`, secuestrando
+cualquier seguimiento afirmativo corto antes de que el mensaje llegara a
+la rama de admin, la capa de inteligencia, o el proveedor de IA. **Primer
+intento fallido, vale la pena recordarlo**: cambiar `matchesKeywords()` a
+coincidencia por palabra completa (`\bword\b`) sí evita el falso positivo
+de 'ayuda', pero rompe coincidencias plurales de las que otras categorías
+dependen (`'usuario'` dejaba de calzar con "usuarios"). El arreglo real
+fue quitar la keyword `'ayuda'` (la específicamente problemática), no
+cambiar la estrategia de comparación en general. Reverificado con la
+reproducción exacta: ahora cae correctamente hasta el proveedor de IA, que
+responde de forma coherente sobre gestión de usuarios y dirigiéndose al
+usuario por nombre — gracias a que el arreglo de contexto de la ronda
+anterior ya le da el historial real. `.\test.ps1` x2 (302 tests), CI en
+verde.
+
 ## Guardrails específicos de este plan
 
 - No tocar `ChatbotContextService`'s comportamiento de sesión para el
