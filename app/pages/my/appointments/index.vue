@@ -9,6 +9,8 @@
  * `productos[]`) se omite a propósito: Tienda/Carrito (Fase 9.4) ya cubre por
  * completo la compra de productos, y duplicarla aquí sería redundante.
  */
+import { loadStripe, type Stripe, type StripeCardElement, type StripeElements } from '@stripe/stripe-js'
+
 definePageMeta({ middleware: ['auth', 'client'], layout: 'dashboard' })
 
 interface AppointmentRow {
@@ -20,6 +22,8 @@ interface AppointmentRow {
   estado: string
   notas: string | null
   precio_cobrado: number | null
+  has_payment?: boolean
+  is_chargeable?: boolean
   barber: { id: string | null, slug: string | null, user: { name: string | null } }
   service: { id: string | null, nombre: string | null, precio: number | null, duracion_min: number | null }
 }
@@ -40,6 +44,7 @@ const ESTADO_CLASS: Record<string, string> = {
 }
 
 const { apiFetch } = useApi()
+const config = useRuntimeConfig()
 
 const { data: response, pending, error, refresh } = await useAsyncData(
   'my-appointments',
@@ -66,6 +71,10 @@ function canManage(appt: AppointmentRow) {
   const startsAt = new Date(`${appt.fecha}T${appt.hora_inicio}`)
 
   return startsAt.getTime() > Date.now()
+}
+
+function canPay(appt: AppointmentRow) {
+  return Boolean(appt.is_chargeable) && !appt.has_payment
 }
 
 function fmtDate(fecha: string) {
@@ -128,6 +137,120 @@ async function cancelAppointment(appt: AppointmentRow) {
     cancelling.value = null
   }
 }
+
+// ── Pagar con tarjeta (autopago, Fase B) ─────────────────────────────────
+// Mismo patrón que payments/index.vue (staff) para el Stripe Element, pero
+// sin llamar a POST /payments al final: un cliente no tiene permiso ahí, y
+// no lo necesita -- StripeWebhookController::onSucceeded() en barber ya
+// registra el Payment en cuanto Stripe confirma el cobro, sin importar quién
+// creó el PaymentIntent. Por eso aquí solo hace falta refrescar el listado
+// hasta que has_payment se ponga en true.
+let stripe: Stripe | null = null
+let elements: StripeElements | null = null
+let cardElement: StripeCardElement | null = null
+const cardElementRef = ref<HTMLDivElement | null>(null)
+const stripeConfigured = Boolean(config.public.stripeKey)
+
+const showPay = ref(false)
+const payingAppt = ref<AppointmentRow | null>(null)
+const payError = ref('')
+const payProcessing = ref(false)
+const payConfirming = ref(false)
+const paySucceeded = ref(false)
+
+async function openPay(appt: AppointmentRow) {
+  payingAppt.value = appt
+  payError.value = ''
+  paySucceeded.value = false
+  showPay.value = true
+  await nextTick()
+  await ensureStripeMounted()
+}
+
+function closePay() {
+  showPay.value = false
+  payingAppt.value = null
+  teardownStripe()
+}
+
+async function ensureStripeMounted() {
+  if (!stripeConfigured || cardElement) return
+
+  stripe = await loadStripe(config.public.stripeKey)
+  if (!stripe) return
+
+  elements = stripe.elements()
+  cardElement = elements.create('card', {
+    style: { base: { fontFamily: 'Figtree, sans-serif', fontSize: '15px', color: 'inherit' }, invalid: { color: '#f87171' } },
+  })
+  if (cardElementRef.value) cardElement.mount(cardElementRef.value)
+  cardElement.on('change', ({ error: elError }) => { payError.value = elError?.message ?? '' })
+}
+
+function teardownStripe() {
+  cardElement?.unmount()
+  cardElement = null
+  elements = null
+  payError.value = ''
+}
+
+async function payWithCard() {
+  if (!payingAppt.value || !stripe || !cardElement) return
+
+  payProcessing.value = true
+  payError.value = ''
+  try {
+    const intentRes = await apiFetch<{ data: { client_secret: string } }>('/payments/stripe-intent', {
+      method: 'POST',
+      body: { appointment_id: payingAppt.value.id },
+    })
+
+    const result = await stripe.confirmCardPayment(intentRes.data.client_secret, {
+      payment_method: { card: cardElement },
+    })
+
+    if (result.error) {
+      payError.value = result.error.message ?? 'Error al procesar el pago.'
+
+      return
+    }
+
+    if (result.paymentIntent?.status === 'succeeded') {
+      paySucceeded.value = true
+      await waitForPaymentToRegister()
+    }
+  } catch (err: unknown) {
+    payError.value = (err as { data?: { message?: string } })?.data?.message ?? 'No se pudo conectar con Stripe.'
+  } finally {
+    payProcessing.value = false
+  }
+}
+
+// El webhook de Stripe registra el pago de forma asíncrona (normalmente en
+// segundos) -- se reintenta el refresh unas cuantas veces en vez de asumir
+// que ya está listo justo después de confirmar el cobro con Stripe.
+async function waitForPaymentToRegister() {
+  const appointmentId = payingAppt.value?.id
+  if (!appointmentId) return
+
+  payConfirming.value = true
+  try {
+    for (let attempt = 0; attempt < 5; attempt++) {
+      await new Promise((resolve) => setTimeout(resolve, 2000))
+      await refresh()
+      const updated = appointments.value.find((a) => a.id === appointmentId)
+      if (updated?.has_payment) {
+        closePay()
+
+        return
+      }
+    }
+  } finally {
+    payConfirming.value = false
+  }
+}
+
+onUnmounted(() => teardownStripe())
 </script>
 
 <template>
@@ -174,17 +297,26 @@ async function cancelAppointment(appt: AppointmentRow) {
           <span class="rounded-full border px-2 py-0.5 text-[10px] font-black uppercase" :class="ESTADO_CLASS[appt.estado]">{{ ESTADO_LABEL[appt.estado] ?? appt.estado }}</span>
         </div>
         <p v-if="appt.notas" class="mb-3 text-sm text-muted">{{ appt.notas }}</p>
-        <div v-if="canManage(appt)" class="flex gap-2">
-          <button type="button" class="rounded-lg border border-line px-3 py-1.5 text-xs text-muted hover:text-ink" @click="openReschedule(appt)">
-            Reagendar
-          </button>
+        <div class="flex flex-wrap gap-2">
           <button
-            type="button" :disabled="cancelling === appt.id"
-            class="rounded-lg border border-red-500/20 px-3 py-1.5 text-xs text-red-400 hover:bg-red-500/10 disabled:opacity-50"
-            @click="cancelAppointment(appt)"
+            v-if="canPay(appt) && stripeConfigured" type="button"
+            class="rounded-lg bg-gold px-3 py-1.5 text-xs font-semibold text-black hover:bg-gold-dim"
+            @click="openPay(appt)"
           >
-            {{ cancelling === appt.id ? 'Cancelando…' : 'Cancelar' }}
+            Pagar con tarjeta
           </button>
+          <template v-if="canManage(appt)">
+            <button type="button" class="rounded-lg border border-line px-3 py-1.5 text-xs text-muted hover:text-ink" @click="openReschedule(appt)">
+              Reagendar
+            </button>
+            <button
+              type="button" :disabled="cancelling === appt.id"
+              class="rounded-lg border border-red-500/20 px-3 py-1.5 text-xs text-red-400 hover:bg-red-500/10 disabled:opacity-50"
+              @click="cancelAppointment(appt)"
+            >
+              {{ cancelling === appt.id ? 'Cancelando…' : 'Cancelar' }}
+            </button>
+          </template>
         </div>
       </div>
     </div>
@@ -231,6 +363,41 @@ async function cancelAppointment(appt: AppointmentRow) {
             <button type="button" class="rounded-lg border border-line px-4 py-2 text-sm text-muted hover:text-ink" @click="showForm = false">Cancelar</button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <div v-if="showPay" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" @click.self="!payProcessing && !payConfirming && closePay()">
+      <div class="w-full max-w-sm rounded-2xl border border-line bg-card p-6">
+        <h2 class="mb-1 text-lg font-semibold text-ink">Pagar con tarjeta</h2>
+        <p class="mb-4 text-sm text-muted">
+          {{ payingAppt?.service.nombre }} · {{ payingAppt ? fmtDate(payingAppt.fecha) : '' }}
+        </p>
+
+        <template v-if="!paySucceeded">
+          <div ref="cardElementRef" class="rounded-lg border border-line bg-main px-3 py-3" />
+          <p v-if="payError" class="mt-2 text-sm text-red-400">{{ payError }}</p>
+          <p class="mt-2 text-[11px] text-muted">Beta: el monto se calcula del lado del servidor, nunca se envía desde aquí.</p>
+          <div class="mt-5 flex gap-3">
+            <button
+              type="button" :disabled="payProcessing" class="flex-1 rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-black hover:bg-gold-dim disabled:opacity-50"
+              @click="payWithCard"
+            >
+              {{ payProcessing ? 'Procesando…' : 'Pagar' }}
+            </button>
+            <button type="button" :disabled="payProcessing" class="rounded-lg border border-line px-4 py-2 text-sm text-muted hover:text-ink" @click="closePay">
+              Cancelar
+            </button>
+          </div>
+        </template>
+
+        <template v-else>
+          <div class="rounded-lg border border-emerald-500/25 bg-emerald-500/10 p-4 text-sm text-emerald-300">
+            Pago recibido. {{ payConfirming ? 'Confirmando con el sistema…' : 'Listo.' }}
+          </div>
+          <button type="button" class="mt-4 w-full rounded-lg border border-line px-4 py-2 text-sm text-muted hover:text-ink" @click="closePay">
+            Cerrar
+          </button>
+        </template>
       </div>
     </div>
   </div>
