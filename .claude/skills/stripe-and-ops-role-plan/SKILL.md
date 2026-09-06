@@ -1,6 +1,6 @@
 ---
 name: stripe-and-ops-role-plan
-description: Plan y arquitectura para dos iniciativas nuevas — robustecer la integración de Stripe (y más adelante, autopago del cliente), y un nuevo rol "ingeniero" con panel de estado del servidor (Laravel Pulse) + todo lo que ve administrador. Leer antes de tocar StripeWebhookController, PaymentController::stripeIntent(), RolePermissionSeeder, o cualquier página nueva de sistema/ops.
+description: Plan y arquitectura para dos iniciativas nuevas — robustecer la integración de Stripe (y más adelante, autopago del cliente), y un nuevo rol "ingeniero" de solo lectura (dashboards/analítica/reportes/estado del servidor, sin gestionar nada de negocio) con Laravel Pulse. Leer antes de tocar StripeWebhookController, PaymentController::stripeIntent(), RolePermissionSeeder, o cualquier página nueva de sistema/ops.
 ---
 
 # Stripe (robustecer + autopago futuro) y rol "ingeniero" — plan y arquitectura
@@ -14,11 +14,16 @@ Pedido del dueño del proyecto (2026-09-06), después de cerrar push-and-chat-pl
    (Fase A), luego evaluar el autopago del cliente como fase aparte (Fase B,
    alcance a definir cuando se aborde).
 2. Un rol nuevo, **"ingeniero"**, para alguien de sistemas: ve todo lo
-   técnico (estado del servidor, colas, errores, analítica avanzada) **y
-   además todo lo que ve `administrador`** hoy (citas, pagos, clientes,
-   etc.) — no es un rol aparte y limitado, es un superset de administrador.
-   Decisión tomada: usar **Laravel Pulse** (paquete oficial) como base del
-   monitoreo, en vez de construir todo a medida.
+   técnico (estado del servidor, colas, errores) y el comportamiento de
+   cada módulo (dashboards, analítica, reportes) — pero **sin capacidad de
+   gestionar nada de negocio** (nada de crear/editar/eliminar usuarios,
+   clientes, servicios, barberos, configuración; sí puede sacar reportes).
+   Corregido el 2026-09-06 después de una primera versión de este plan que
+   lo planteaba como superset de `administrador` — el usuario fue
+   explícito en que eso no debía pasar, precisamente para no ampliar la
+   superficie de riesgo si esta cuenta se compromete. Decisión tomada:
+   usar **Laravel Pulse** (paquete oficial) como base del monitoreo, en
+   vez de construir todo a medida.
 
 **IMPORTANTE — antes de escribir código**: releer directamente en `barber`
 los archivos citados en cada sección (líneas exactas) — este plan puede
@@ -115,7 +120,20 @@ sin confirmar).
 
 ---
 
-## Parte 2: Rol "ingeniero" (técnico + superset de administrador)
+## Parte 2: Rol "ingeniero" (técnico + solo lectura de negocio — CORREGIDO 2026-09-06)
+
+**Corrección importante del usuario, después de la primera versión de este
+plan**: NO es un superset de `administrador` con las mismas 11
+`*.gestionar`. El usuario fue explícito: *"no va a poder la realización de
+crear usuarios, etc. — todo lo que tenga que ver para que no se comprometa
+este rol es para el dashboard de cada módulo de comportamiento, pero sí
+debe sacar reportes"*. Es decir: **ingeniero ve el comportamiento/las
+métricas de cada módulo (dashboards, analítica, reportes) y el estado del
+servidor, pero cero capacidad de gestionar (crear/editar/eliminar) nada de
+negocio** — ni usuarios, ni clientes, ni servicios, ni barberos, ni
+configuración, ni inventario. Menos superficie de permisos = menos riesgo
+si esta cuenta se ve comprometida, que fue exactamente el razonamiento del
+usuario.
 
 ### Decisión: Laravel Pulse como base del monitoreo — con un matiz técnico real
 
@@ -145,21 +163,31 @@ sí implica trabajo de infraestructura antes de instalarlo:
 1. `composer require laravel/pulse`, publicar config/migraciones, correr
    las migraciones de Pulse **contra la conexión SQLite dedicada**, no
    contra `mongodb` (default) ni contra `mongo-test` (los tests).
-2. Nueva variable `sistema.ver` en `RolePermissionSeeder.php` (nueva
-   permission, junto a las 11 ya existentes).
-3. Rol `ingeniero`: **mismo set de permisos que `administrador` (los 11) +
-   `sistema.ver`** — no es un rol aparte con su propio subconjunto, es
-   administrador más una cosa. Al seedearlo, construir su lista de
-   permisos como `array_merge($administradorPermisos, ['sistema.ver'])`
-   en vez de copiar la lista a mano, para que nunca se desincronicen si
-   `administrador` gana un permiso nuevo más adelante.
-4. **Auditoría necesaria, no opcional**: todo lugar que hoy dice
-   `role.custom:administrador` (en `routes/api.php` y `routes/web.php`)
-   necesita agregar `,ingeniero` para que el rol nuevo de verdad vea "todo
-   lo que ve administrador" — es un cambio mecánico pero amplio, hay que
-   revisarlo ruta por ruta, no asumir que hay un atajo (`EnsureUserHasRole`
-   ya compara contra una lista explícita de roles permitidos por ruta, no
-   hay herencia de roles en el middleware actual).
+2. Nueva permission `sistema.ver` en `RolePermissionSeeder.php`, junto a
+   las 11 ya existentes.
+3. Rol `ingeniero`: **solo `reportes.ver`, `logs.ver`, y el nuevo
+   `sistema.ver`** — NADA de los permisos `*.gestionar` (citas, pagos,
+   inventario, clientes, servicios, usuarios, barberos, configuración).
+   No hereda de `administrador`; es un rol independiente y deliberadamente
+   angosto: ve comportamiento/métricas de cada módulo (dashboard,
+   analítica, reportes) y el estado del servidor, pero no puede crear,
+   editar ni eliminar nada de negocio. Menos superficie de permisos si
+   esta cuenta se ve comprometida — razón explícita del usuario.
+4. **Auditoría por RUTA, no por rol en bloque** — más fina que "agregar
+   ingeniero donde esté administrador": revisar `routes/api.php` y
+   agregar `ingeniero` únicamente a las rutas de **solo lectura** que
+   correspondan a dashboard/analítica/reportes/logs (p. ej.
+   `Api\Dashboard\DashboardController`, `Api\Analytics\AnalyticsController`,
+   `Api\Report\ReportController`/`Api\Admin\Report\ReportAdminController`,
+   `Api\Log\LogController`, y el nuevo `Api\Admin\System\SystemController`).
+   **Nunca** agregarlo a rutas de creación/edición/eliminación
+   (`Api\Admin\User\*`, `Api\Admin\Client\*`, `Api\Admin\Barber\*` de
+   escritura, `Api\Service\ServiceManagementController` de escritura,
+   `Api\Setting\SettingController` de escritura, `Api\Admin\Inventory\*`
+   de escritura) — esas se quedan exclusivas de `administrador`. Si una
+   ruta ya mezcla lectura y escritura en el mismo controlador con
+   middleware a nivel de clase (no por método), puede hacer falta separar
+   el middleware por método en vez de por controlador completo.
 5. Nuevo controlador `Api\Admin\System\SystemController` (o similar):
    expone una vista curada de lo que Pulse ya recolecta (throughput de
    colas, jobs fallidos, excepciones recientes, tiempo de respuesta) más
@@ -177,14 +205,13 @@ sí implica trabajo de infraestructura antes de instalarlo:
    nuevo — contrato externo, guardrail #11.
 
 **Frontend (`frontend-urban`)**:
-8. `useNavigation.ts`: nueva sección "Sistema" (o el nombre que se prefiera)
-   visible solo para `ingeniero`, con el link al nuevo dashboard. Además,
-   **las secciones "Gestión"/"Análisis" que hoy solo se muestran a
-   `isAdmin` deben mostrarse también a `isEngineer`** (mismo criterio que
-   el backend: ingeniero ve todo lo que ve administrador). Se necesita un
-   nuevo booleano `isEngineer` junto a `isAdmin`/`isReception`/etc., y
-   cambiar cada `if (isAdmin.value)` relevante a `if (isAdmin.value ||
-   isEngineer.value)`.
+8. `useNavigation.ts`: nuevo booleano `isEngineer` (`hasRole('ingeniero')`).
+   Nueva sección "Sistema" visible solo para `ingeniero`. La sección
+   "Análisis" (Analítica, Reportes, y — si ya existiera — Logs) se muestra
+   también a `isEngineer`, igual que a `isAdmin`. La sección **"Gestión"
+   (Barberos, Reseñas, Usuarios, Servicios, Productos, Configuración) NO
+   se le muestra a `ingeniero`** — son pantallas de creación/edición, fuera
+   de su alcance por diseño.
 9. Página nueva `pages/system/index.vue`: tarjetas de estado (colas,
    jobs fallidos, excepciones recientes, ping Mongo/Redis, última
    ejecución de comandos programados), reusando el patrón visual ya
@@ -239,10 +266,12 @@ sí implica trabajo de infraestructura antes de instalarlo:
 - Nunca tocar el monto de un `PaymentIntent`/webhook a partir de lo que
   manda el cliente o Stripe — sigue siendo la regla del guardrail #13 en
   `barber`, y ya se respeta hoy; no romperla al ampliar el webhook.
-- El rol `ingeniero` es un superset de `administrador`, no un reemplazo —
-  cualquier ruta nueva que se agregue a `administrador` en el futuro
-  también debería considerarse para `ingeniero` (por eso el
-  `array_merge` en el seeder en vez de una lista copiada a mano).
+- El rol `ingeniero` es de solo lectura por diseño (`reportes.ver`,
+  `logs.ver`, `sistema.ver`) — nunca agregarlo a una ruta de
+  creación/edición/eliminación aunque parezca conveniente o "más simple"
+  en el momento. Si una futura ruta nueva de solo lectura (otro reporte,
+  otro dashboard) tiene sentido para este rol, agregarla explícitamente
+  ruta por ruta, no dándole `administrador` completo como atajo.
 - Pulse usa su propia conexión de BD (SQLite dedicada) — nunca apuntarlo a
   la conexión `mongodb` por defecto ni a `mongo-test`, y nunca dejar que
   sus migraciones corran contra la base compartida con `spark/`.
