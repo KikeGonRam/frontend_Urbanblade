@@ -774,9 +774,32 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
    endpoint API si expone modelos crudos en vez de campos ya formateados,
    escribir el test de API correspondiente, verificar en vivo con una
    cuenta real, actualizar este SKILL con lo aprendido.
-10. **Retiro de las páginas Inertia** en `barber` — solo cuando Nuxt alcance
-    paridad funcional confirmada; mientras tanto ambas pueden coexistir
-    (Inertia como fallback) sin romper nada, ya que son rutas distintas.
+10. ✅ **DONE (2026-09-06) — Retiro de las páginas Inertia** en `barber`.
+    El dueño del proyecto confirmó explícitamente la paridad y pidió el
+    retiro. Alcance real (más chico de lo que sugiere "retirar las páginas
+    Inertia"): `barber` solo tenía DOS cosas construidas con Inertia — los
+    4 dashboards por rol y el calendario de citas (ver
+    `barber/.claude/skills/inertia-vue-migration/SKILL.md`, ahora marcado
+    como registro histórico retirado). El resto del sitio en `barber`
+    (citas CRUD, clientes, pagos, pedidos, inventario, servicios, usuarios,
+    reportes, campañas, sorteos, logs, configuración) **nunca fue Inertia**
+    — es Blade+Alpine y sigue siéndolo sin cambios; Nuxt tiene sus propias
+    páginas equivalentes desde la Fase 9, pero las originales Blade en
+    `barber` siguen vivas para quien no use Nuxt todavía.
+    Las rutas web `dashboard` y `appointments.calendar` de `barber` ahora
+    redirigen (302) a `config('app.frontend_url')` (env `FRONTEND_URL`,
+    default `http://localhost:3000`) en vez de renderizar Inertia — sin
+    handoff de sesión: `barber` no le pasa ningún token a Nuxt en la
+    redirección, cada uno maneja su propia autenticación por separado
+    (igual que siempre: Bearer token en Nuxt, sesión de Laravel en Blade).
+    Verificado en vivo con la cuenta admin real: login en `barber` →
+    `/dashboard` → redirige a `localhost:3000/dashboard` (ya autenticado
+    ahí por una sesión Nuxt previa de la misma sesión de navegador) →
+    `/appointments-calendar` → redirige a
+    `localhost:3000/appointments/calendar`; una página Blade normal
+    (`/appointments`) se verificó aparte para confirmar que sus links de
+    navegación a "Dashboard" (`route('dashboard')`) siguen funcionando sin
+    editarlos, porque solo cambió el destino de la ruta, no su nombre.
 
 ## Guardrails específicos de esta migración
 
