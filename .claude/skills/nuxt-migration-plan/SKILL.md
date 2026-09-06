@@ -529,8 +529,41 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
      `OrderService`/`InventoryService` deja un `InventoryMovement` con
      trazabilidad — borrar solo el `Order`/`Product` no es limpieza
      completa, hay que borrar también los movimientos que generó.
-   - **9.6 Servicios + Usuarios** (admin) — CRUD ya con los patrones
-     asentados de 9.1-9.5.
+   - ✅ **DONE — 9.6 Servicios + Usuarios** (admin): `pages/services/
+     index.vue` — catálogo con filtros `q`/`categoria`/`activo`,
+     crear/editar/eliminar. `Api/Service/ServiceManagementController`
+     ya existía (de una fase anterior de la API móvil, previa a este
+     plan de migración) pero le faltaba el filtro `q` y — más
+     importante — nunca mandaba `slug`: `Service` usa `HasSlug` ->
+     `getRouteKeyName() = 'slug'` (guardrail #20 de `barber`, mismo
+     gotcha que Client/Barber en 9.1), así que sin ese campo esta
+     página habría repetido el mismo 404 fantasma en editar/eliminar.
+     `pages/users/index.vue` — cuentas de acceso (no clientes) con
+     filtros `q`/`role`, crear/editar (rol + contraseña opcional al
+     editar), eliminar (oculto para la fila del propio admin logueado,
+     reflejando el guard de auto-eliminación que ya hacía el backend).
+     `Api/User/UserController` no necesitó NINGÚN cambio — ya estaba
+     completo (list+filtros, CRUD, sync de perfil Barber/Client según
+     el rol asignado, guard de auto-eliminación) desde antes de esta
+     fase, solo le faltaba cobertura de test.
+     **Hallazgo grande de esta fase, no específico de Servicios/
+     Usuarios**: escribir el test de creación de usuario reveló que
+     `User`/`Appointment`/`Product` usan `SoftDeletes` en `barber`, y
+     que casi todos los `tearDown()` de esa suite (~30 archivos,
+     acumulados en todo el historial del proyecto) hacían
+     `Model::query()->delete()` creyendo que borraba de verdad —
+     documentado en detalle como guardrail #22 de `barber`, incluye que
+     esto también había dejado pedidos/citas/usuarios de prueba
+     "fantasma" en el Atlas real de sesiones anteriores de esta misma
+     migración (ya limpiados con `forceDelete()`). No es un bug de este
+     repo ni de esta fase en particular, pero sí bloqueaba que los
+     tests de esta fase pasaran limpio, así que se corrigió aquí.
+     Verificado en vivo con la cuenta admin real: servicio temporal
+     creado → editado por slug (200, no 404) → confirmado; usuario
+     barbero temporal creado → confirmado que se sincronizó su perfil
+     `Barber` automáticamente → ambos borrados con `forceDelete()`
+     (un `delete()` normal solo los habría ocultado, por el hallazgo de
+     arriba).
    - **9.7 "Mi Espacio" de barbero** (Mi Agenda, Mi Portafolio, Mi
      Horario, Mi Perfil).
    - **9.8 Autoservicio de cliente** (Mis Citas, Tienda, Carrito, Mis
@@ -704,22 +737,28 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
 - `frontend-urban` ya tiene su propio CI (lint+build+audit) — primer run
   confirmado en verde.
 - Fase 9 en curso — planificada en 9.1-9.9 (ver arriba). **9.1 Clientes**,
-  **9.2 Citas**, **9.3 Pagos**, **9.4 Pedidos** y **9.5 Inventario**
-  completos y verificados en vivo. 9.2 además cerró el botón "Editar
-  Cita" del calendario (fase 7) y corrigió un bug de route-binding que
-  llevaba roto desde la fase 5 (`Barbero.vue`); 9.3 agregó el flujo
-  completo de cobro con preview de lealtad/rifa y descubrió que los
-  campos `decimal:2` de `barber` serializan como string; 9.4 agregó
-  tienda/carrito/pedidos completos, resolvió que el carrito no puede
-  vivir en sesión de servidor (vive en `useCart()`/localStorage) y
-  encontró una segunda divergencia local-vs-CI de Larastan; 9.5 evitó
-  repetir el bug de `decimal:2` (lo atrapó un test antes de shipear),
-  encontró la CAUSA RAÍZ real de las tres divergencias local-vs-CI de
-  Larastan de esta sesión (caché de resultados stale en
-  `/tmp/phpstan` dentro del contenedor `barber-app`, documentado como
-  guardrail #21 en `barber`) y encontró un hueco de limpieza real
-  (`InventoryMovement` huérfano dejado por la fase 9.4) (ver detalle de
-  cada una arriba). Pendiente: 9.6 (Servicios + Usuarios) en adelante.
+  **9.2 Citas**, **9.3 Pagos**, **9.4 Pedidos**, **9.5 Inventario** y
+  **9.6 Servicios + Usuarios** completos y verificados en vivo. 9.2
+  además cerró el botón "Editar Cita" del calendario (fase 7) y corrigió
+  un bug de route-binding que llevaba roto desde la fase 5
+  (`Barbero.vue`); 9.3 agregó el flujo completo de cobro con preview de
+  lealtad/rifa y descubrió que los campos `decimal:2` de `barber`
+  serializan como string; 9.4 agregó tienda/carrito/pedidos completos,
+  resolvió que el carrito no puede vivir en sesión de servidor (vive en
+  `useCart()`/localStorage) y encontró una segunda divergencia local-vs-CI
+  de Larastan; 9.5 evitó repetir el bug de `decimal:2` (lo atrapó un
+  test antes de shipear), encontró la CAUSA RAÍZ real de las tres
+  divergencias local-vs-CI de Larastan de esta sesión (caché de
+  resultados stale en `/tmp/phpstan` dentro del contenedor
+  `barber-app`, guardrail #21 en `barber`) y encontró un hueco de
+  limpieza real (`InventoryMovement` huérfano dejado por la fase 9.4);
+  9.6 encontró que `User`/`Appointment`/`Product` usan `SoftDeletes` en
+  `barber`, que gran parte de esa suite de tests llevaba "limpiando"
+  datos de prueba sin realmente borrarlos desde siempre, y que eso
+  también había dejado datos fantasma en el Atlas real de fases
+  anteriores de esta misma migración — todo documentado como guardrail
+  #22 en `barber` (ver detalle de cada hallazgo arriba). Pendiente: 9.7
+  (Mi Espacio de barbero) en adelante.
   `nuxt build`/`eslint` de este repo ya corren en CI en cada push, ya no
   hace falta correrlos manualmente antes de cada commit (aunque seguir
   haciéndolo local antes de push, como ya es costumbre, sigue siendo
