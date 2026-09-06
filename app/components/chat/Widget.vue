@@ -4,9 +4,13 @@
  * (resources/views/components/chatbot.blade.php en barber), consumiendo la
  * misma API en cascada. Historial real vía useChatbot() (Fase 3-4, ver
  * .claude/skills/push-and-chat-plan/SKILL.md) en vez de reiniciar en cada
- * carga de página como el widget Blade.
+ * carga de página como el widget Blade. Timestamps, reintentar y calificar
+ * respuesta (👍/👎) se agregaron después, inspirados en cómo lo resuelven
+ * otros widgets de asistencia ya establecidos (ver useChatbot.ts).
  */
-const { messages, typing, loadHistory, sendMessage, clearHistory } = useChatbot()
+import type { ChatMessage } from '~/composables/useChatbot'
+
+const { messages, typing, loadHistory, sendMessage, retry, sendFeedback, clearHistory } = useChatbot()
 const { user, hasRole } = useAuth()
 
 const open = ref(false)
@@ -31,6 +35,10 @@ const quickChips = computed(() => {
 
   return ['¿Qué servicios ofrecen?', '¿Cómo agendar una cita?']
 })
+
+function fmtTime(iso: string) {
+  return new Date(iso).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })
+}
 
 function scrollBottom() {
   nextTick(() => {
@@ -63,6 +71,12 @@ async function send() {
 function quickSend(text: string) {
   input.value = text
   send()
+}
+
+async function retryClick(msg: ChatMessage) {
+  await retry(msg)
+  if (!open.value) unread.value++
+  scrollBottom()
 }
 
 async function onClear() {
@@ -137,17 +151,51 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
         </header>
 
         <div ref="chatBox" class="flex-1 space-y-3 overflow-y-auto overscroll-contain px-4 py-4">
-          <div v-for="(msg, i) in messages" :key="i" :class="msg.role === 'user' ? 'flex justify-end' : 'flex justify-start gap-2'">
+          <div v-for="msg in messages" :key="msg.id" :class="msg.role === 'user' ? 'flex justify-end' : 'flex justify-start gap-2'">
             <div v-if="msg.role === 'bot'" class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-gold/20 bg-gold/10">
               <svg class="h-3 w-3 text-gold/60" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 2a2 2 0 012 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 017 7h1a1 1 0 110 2h-1v1a2 2 0 01-2 2H5a2 2 0 01-2-2v-1H2a1 1 0 110-2h1a7 7 0 017-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 012-2zM9 9a5 5 0 00-5 5v3h16v-3a5 5 0 00-5-5H9z" />
               </svg>
             </div>
-            <div
-              class="max-w-[82%] whitespace-pre-line break-words rounded-2xl px-3.5 py-2.5 text-[12px] leading-relaxed"
-              :class="msg.role === 'user' ? 'rounded-tr-sm bg-gold font-medium text-black' : 'rounded-tl-sm border border-line bg-accent text-ink'"
-            >
-              {{ msg.text }}
+            <div class="flex max-w-[82%] flex-col" :class="msg.role === 'user' ? 'items-end' : 'items-start'">
+              <div
+                class="whitespace-pre-line break-words rounded-2xl px-3.5 py-2.5 text-[12px] leading-relaxed"
+                :class="msg.role === 'user' ? 'rounded-tr-sm bg-gold font-medium text-black' : 'rounded-tl-sm border border-line bg-accent text-ink'"
+              >
+                {{ msg.text }}
+              </div>
+              <div class="mt-1 flex items-center gap-2 px-1">
+                <span class="text-[9px] text-muted/50">{{ fmtTime(msg.timestamp) }}</span>
+                <button
+                  v-if="msg.retryText" type="button"
+                  class="text-[9px] font-bold uppercase tracking-wide text-gold/80 hover:text-gold"
+                  @click="retryClick(msg)"
+                >
+                  Reintentar
+                </button>
+                <template v-if="msg.role === 'bot' && msg.question">
+                  <button
+                    type="button" aria-label="Respuesta útil"
+                    class="text-muted/50 transition-colors hover:text-emerald-400"
+                    :class="{ 'text-emerald-400': msg.feedback === 'up' }"
+                    :disabled="msg.feedback !== null" @click="sendFeedback(msg, true)"
+                  >
+                    <svg class="h-3 w-3" viewBox="0 0 24 24" :fill="msg.feedback === 'up' ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14z" />
+                    </svg>
+                  </button>
+                  <button
+                    type="button" aria-label="Respuesta no útil"
+                    class="text-muted/50 transition-colors hover:text-red-400"
+                    :class="{ 'text-red-400': msg.feedback === 'down' }"
+                    :disabled="msg.feedback !== null" @click="sendFeedback(msg, false)"
+                  >
+                    <svg class="h-3 w-3" viewBox="0 0 24 24" :fill="msg.feedback === 'down' ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M10 15v4a3 3 0 003 3l4-9V2H5.72a2 2 0 00-2 1.7l-1.38 9a2 2 0 002 2.3H10z" />
+                    </svg>
+                  </button>
+                </template>
+              </div>
             </div>
           </div>
 
