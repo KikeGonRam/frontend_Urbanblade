@@ -433,10 +433,62 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
      `npm run dev` de nuevo; un `npm run build` limpio (sin errores)
      confirmó que el código en sí nunca estuvo roto, solo el estado del
      servidor de desarrollo.
-   - **9.4 Pedidos** (bandeja de recepción + tienda/carrito del cliente):
-     subsistema más grande, evaluar partir en sub-fases si crece mucho
-     (recepción ve/gestiona pedidos; el cliente compra — catálogo, carrito,
-     checkout).
+   - ✅ **DONE — 9.4 Pedidos** (bandeja de recepción + tienda/carrito del
+     cliente): no hizo falta partir en sub-fases. Nuevos endpoints en
+     `barber`: `GET /products` (catálogo público, mismo criterio
+     `Product::scopeAvailableForSale()` que `Client\StoreController` web),
+     `GET/POST /orders` + `PATCH /orders/{id}/cancel` (branching por rol
+     dentro del controlador, mismo patrón que `appointments.index()` —
+     cliente ve/crea/cancela los suyos, admin/recepción ven y gestionan
+     todos), `PATCH /orders/{id}/deliver` + `GET /orders/{id}/receipt`
+     (staff). Nuevo `App\Http\Controllers\Api\Order\OrderController`.
+     **Decisión de arquitectura clave**: el carrito NO vive en el backend
+     — `CartService` (web) lo guarda en sesión de Laravel, pero un cliente
+     Bearer-token no tiene sesión de servidor (mismo motivo por el que
+     `frontend-urban` nunca adoptó Sanctum SPA con cookies). El carrito
+     real vive en `composables/useCart.ts` (localStorage de este
+     navegador, mismo patrón que `useShellState()`); el checkout solo
+     manda `{product_id, cantidad}` a `POST /orders`, y
+     `OrderService::place()` sigue siendo la única fuente de verdad del
+     precio (relee `Product::precio_venta`, ignora cualquier precio que
+     llegue en el request — mismo guardrail #13 que ya aplicaba al
+     checkout web). Cuatro páginas: `pages/store/index.vue` (catálogo +
+     agregar al carrito), `pages/cart/index.vue` (editar cantidades +
+     pagar), `pages/my/orders/index.vue` (historial propio + cancelar),
+     `pages/orders/index.vue` (bandeja admin/recepción: stats, entregar
+     con modal de método de pago, cancelar, descargar recibo). Nuevo
+     middleware `client.ts` (cliente-only, mismo molde que `admin`/`staff`).
+     El recibo de pedido se descarga distinto al de pagos: `Order` no
+     tiene un campo `comprobante_pdf` cacheado como `Payment`, así que el
+     endpoint regresa el PDF crudo en cada llamada y el frontend lo pide
+     con `responseType: 'blob'` y dispara la descarga con un
+     `URL.createObjectURL` — no hay una `receipt_url` pública que abrir
+     directo como en pagos.
+     **Mismo gotcha de `decimal:2` que en 9.3, aplicado preventivamente
+     esta vez**: `Order::$total` y `Product::$precio_venta` usan ese cast
+     (serializan como string) — el controlador nuevo ya castea todo a
+     `(float)` explícito antes de responder, así que el bug de "$NaN" de
+     la fase pasada no se repitió aquí.
+     **Segundo hallazgo de divergencia local-vs-CI de Larastan en esta
+     misma fase** (además del de la fase 9.3): el primer push pasó
+     Larastan en local pero falló en CI con 2 errores nuevos, esta vez en
+     el propio archivo de test (`Order::find($id)->client_id` y
+     `$order->fresh()->estado` resolvían a un tipo unión
+     `Order|Collection<Order>` distinto en CI) — arreglado copiando el
+     mensaje exacto del log de CI a `phpstan-baseline.neon` en vez de
+     adivinar. Confirma otra vez la regla de este repo: nunca confiar en
+     que "pasó en local" basta, siempre revisar el log real de CI
+     (`gh run view --log`) antes de dar una fase por cerrada.
+     Verificado en vivo end-to-end con la cuenta cliente real
+     (`cliente@urbanblade.mx`) y la de recepción
+     (`valeria.villanueva69@gmail.com`): como `barber_db` no tenía
+     productos reales, se creó uno temporal claramente etiquetado
+     (`"TEMP TEST PRODUCT (borrar)"`), se agregó al carrito, se pagó
+     (checkout → `Mis Pedidos` con el folio real), apareció en la bandeja
+     de recepción con las stats correctas, se entregó (cambio de estado +
+     método de pago), el endpoint de recibo respondió 200, y se borraron
+     el producto y el pedido de prueba inmediatamente después — mismo
+     patrón de limpieza que 9.1-9.3.
    - **9.5 Inventario** (productos + movimientos, admin).
    - **9.6 Servicios + Usuarios** (admin) — CRUD ya con los patrones
      asentados de 9.1-9.5.
@@ -588,13 +640,16 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
 - `frontend-urban` ya tiene su propio CI (lint+build+audit) — primer run
   confirmado en verde.
 - Fase 9 en curso — planificada en 9.1-9.9 (ver arriba). **9.1 Clientes**,
-  **9.2 Citas** y **9.3 Pagos** completos y verificados en vivo. 9.2
-  además cerró el botón "Editar Cita" del calendario (fase 7) y corrigió
-  un bug de route-binding que llevaba roto desde la fase 5
+  **9.2 Citas**, **9.3 Pagos** y **9.4 Pedidos** completos y verificados
+  en vivo. 9.2 además cerró el botón "Editar Cita" del calendario (fase
+  7) y corrigió un bug de route-binding que llevaba roto desde la fase 5
   (`Barbero.vue`); 9.3 agregó el flujo completo de cobro con preview de
   lealtad/rifa y descubrió que los campos `decimal:2` de `barber`
-  serializan como string (ver detalle de cada una arriba). Pendiente:
-  9.4 (Pedidos) en adelante.
+  serializan como string; 9.4 agregó tienda/carrito/pedidos completos,
+  resolvió que el carrito no puede vivir en sesión de servidor (vive en
+  `useCart()`/localStorage) y encontró una segunda divergencia local-vs-CI
+  de Larastan (ver detalle de cada una arriba). Pendiente: 9.5
+  (Inventario) en adelante.
   `nuxt build`/`eslint` de este repo ya corren en CI en cada push, ya no
   hace falta correrlos manualmente antes de cada commit (aunque seguir
   haciéndolo local antes de push, como ya es costumbre, sigue siendo
