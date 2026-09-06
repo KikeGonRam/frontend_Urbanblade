@@ -608,9 +608,87 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
      vacío después, por ser una cuenta demo real, no desechable), modal
      de "Publicar trabajo" abre correctamente (el flujo de subida de
      archivo completo ya estaba cubierto por el test de arriba).
-   - **9.8 Autoservicio de cliente** (Mis Citas, Tienda, Carrito, Mis
-     Pedidos, Nuestros Barberos, Mis Facturas) — el flujo de compra/reserva
-     desde el punto de vista del cliente, subsistema propio.
+   - ✅ **DONE — 9.8 Autoservicio de cliente** (Mis Citas, Nuestros
+     Barberos, Mis Facturas — Tienda/Carrito/Mis Pedidos ya venían de la
+     9.4). Decisión de alcance deliberada: la compra de productos como
+     add-on al reservar una cita (`StoreClientAppointmentRequest.productos[]`,
+     usada por `Client\ClientAppointmentController::store()` en la web) se
+     omite a propósito — Tienda/Carrito (9.4) ya cubre por completo la
+     compra de productos, duplicarla aquí sería redundante.
+     `Api/Appointment/AppointmentController::index()` (rama cliente)
+     enriquecido vía `ResourceCollection::additional()` con `stats`
+     (total/próximas/completadas/canceladas), `next` (próxima cita con
+     barbero+servicio cargados) y `cancellation_policy_hours`
+     (`BarbershopSetting::cached()->politica_cancelacion`, default 24) —
+     mismo cálculo que la vista web "Mis Citas", antes solo disponible ahí.
+     `update()` ahora rama por rol: cliente dueño de la cita solo puede
+     tocar barbero/servicio/fecha/hora/notas (nunca `client_id`/`estado`)
+     vía un método privado nuevo `rescheduleAsClient()`, bloqueado si la
+     cita ya no está pendiente/confirmada o ya inició (`clientCanManage()`,
+     puerto exacto de `ClientAppointmentController::canClientManage()` en
+     la web) — el reagendamiento regresa la cita a `pendiente` para que el
+     barbero la reconfirme, igual que la web. `destroy()` (cancelación del
+     cliente) ganó el mismo gate de horas de anticipación que la web
+     (`BarbershopSetting.politica_cancelacion`, default 24h) — antes la API
+     permitía cancelar en cualquier momento, sin la protección de negocio
+     que sí tenía la vista Blade.
+     `Api/Payment/PaymentController::index()`/`receipt()` ampliados para
+     servir también al cliente dueño (antes 100% staff-only,
+     `role.custom:administrador,recepcionista`): esas dos rutas se movieron
+     fuera de ese grupo de middleware al área autenticada general, con
+     branching por rol dentro del controlador — el resto de rutas de pagos
+     (aprobar/rechazar/crear/eliminar/stripe-intent) siguen siendo
+     exclusivas de staff, sin cambios. `indexForClient()` (privado, nuevo)
+     replica `Client\ClientInvoiceController::index()` de la web: pagos de
+     las propias citas del cliente con `total_pagado`/`total_citas`.
+     "Nuestros Barberos" no necesitó ningún cambio de backend —
+     `CatalogController::barbers()/showBarber()/storeReview()` (públicos,
+     de una fase anterior de la API móvil) ya cubrían el catálogo, el
+     detalle con portafolio/reseñas, y el envío de reseña con las mismas
+     reglas de elegibilidad de `BarberReviewService`.
+     Frontend: `pages/my/appointments/index.vue` (stats + próxima cita +
+     reagendar + cancelar, con aviso inline si la política de cancelación
+     bloquea la acción), `pages/barbers/index.vue` (catálogo público) +
+     `pages/barbers/[slug].vue` (detalle: portafolio, reseñas, formulario
+     de reseña visible solo si `hasRole('cliente') && can_review`),
+     `pages/my/invoices/index.vue` (historial de pagos propios + descarga
+     de comprobante). Nota de colisión preexistente (no introducida en
+     esta fase, no se tocó): la nav de admin también apunta un ítem
+     "Barberos" a `/barbers` (pensado como gestión, aún sin construir) —
+     ahora que `/barbers` existe como catálogo público de cliente, un
+     admin que lo abra verá el catálogo, no una futura pantalla de
+     gestión; si se construye gestión de barberos más adelante, necesitará
+     una ruta distinta.
+     Cubierto por `tests/Feature/ClientSelfServiceApiTest.php` en `barber`
+     (stats/next/policy en el índice, reagendar con éxito/bloqueo por
+     estado terminal/bloqueo por dueño incorrecto, cancelar bloqueado/
+     permitido según ventana de política, pagos escopados al dueño +
+     acceso a recibo ajeno bloqueado). Gotcha nuevo encontrado aquí:
+     `Appointment` usa `HasPublicCode`, cuyo `$code` no está en el PHPDoc
+     del modelo base de Eloquent — Larastan lo marca como
+     `property.notFound` en archivos de test aunque funcione en runtime;
+     mismo problema con `$fecha` (cast a date, pero tipado `string` en el
+     PHPDoc) al llamar `->toDateString()` directo. Solución ya usada por
+     `BarberWorkspaceApiTest` de la fase anterior: `getAttribute('code')`
+     en vez de `->code`, y comparar con `substr((string) $appointment->fecha, 0, 10)`
+     en vez de encadenar `->toDateString()`. **Lección de proceso**: esto
+     se coló a un primer push porque solo se corrió Larastan en frío antes
+     de escribir el archivo de test, no después de agregarlo — CI lo
+     atrapó y se corrigió en un commit de seguimiento
+     (`a0f9c4f`/frontend aparte). Verificado en vivo con la cuenta cliente
+     real (`cliente@urbanblade.mx`) en ambos temas: servicio + 2 citas
+     temporales creadas por tinker (una lejana, otra dentro de la ventana
+     de política) → stats/próxima cita correctos → reagendar con éxito vía
+     UI (fecha/hora cambiaron, quedó en pendiente) → pago temporal creado
+     → "Mis Facturas" mostró el total y el botón "Descargar" devolvió 200
+     del endpoint de recibo → todo (servicio, ambas citas, el pago)
+     borrado con `forceDelete()`/`delete()` al terminar, dejando `barber_db`
+     en el mismo estado de cero datos operativos que antes de la
+     verificación. La cancelación bloqueada/permitida por política se
+     verificó solo por test de API, no en vivo — el diálogo `confirm()`
+     del navegador se descarta automáticamente en este entorno de
+     automatización antes de que la petición salga, así que no es una
+     forma confiable de probar ese flujo específico en el navegador.
    - **9.9 Reportes, Campañas, Sorteos, Logs, Configuración** (admin,
      menor frecuencia de uso) — al final.
    - **Analítica**: bloqueada por ahora — `resources/views/analytics/
@@ -803,9 +881,16 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
   portafolio con soporte de video, horario, perfil con foto) — parte de
   esta fase la construyó otro proveedor de IA en la misma sesión usando
   este mismo plan como handoff, y aplicó correctamente la lección de
-  SoftDeletes de la fase anterior sin volver a romperlo (ver detalle de
-  cada hallazgo arriba). Pendiente: 9.8 (Autoservicio de cliente) en
-  adelante.
+  SoftDeletes de la fase anterior sin volver a romperlo; 9.8 agregó
+  Autoservicio de cliente completo (Mis Citas con reagendar/cancelar
+  respetando la política de cancelación del negocio, Nuestros Barberos,
+  Mis Facturas) y encontró que el gotcha de PHPDoc de Larastan con
+  `Appointment::$code`/`$fecha` (ya resuelto en 9.7 dentro de
+  `BarberWorkspaceApiTest`) también aplica a cualquier test nuevo que use
+  esos campos directamente — y que correr Larastan en frío antes de
+  escribir el archivo de test, sin repetirlo después, deja pasar
+  justo ese tipo de error hasta CI (ver detalle arriba). Pendiente: 9.9
+  en adelante.
   `nuxt build`/`eslint` de este repo ya corren en CI en cada push, ya no
   hace falta correrlos manualmente antes de cada commit (aunque seguir
   haciéndolo local antes de push, como ya es costumbre, sigue siendo
