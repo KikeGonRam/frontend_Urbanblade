@@ -388,8 +388,40 @@ sí implica trabajo de infraestructura antes de instalarlo:
    Operación — y `/system` renderiza los datos reales del backend,
    incluyendo visiblemente los 4,171 jobs fallidos de la Fase 3 en rojo.
    `npm run lint` y `npm run build` en verde, CI verde confirmado.
-5. ⏳ **Stripe Fase B**: alcance a definir con el usuario cuando se llegue
-   aquí (autopago del cliente).
+5. ✅ **DONE (barber commit `b8e86d9`)** — **Stripe Fase B**: alcance
+   elegido (el usuario delegó "lo más recomendado") — autopago del
+   cliente sobre su **propia cita**, reusando la infraestructura de
+   Fase A tal cual. `POST /api/v1/payments/stripe-intent` ahora también
+   acepta el rol `cliente`, restringido a la cita cuyo `client_id`
+   coincide con su propio perfil — staff conserva acceso sin
+   restricción. **Ningún cambio hizo falta para completar el cobro**:
+   `StripeWebhookController::onSucceeded()` ya enruta por
+   `PaymentService::create()` sin importar quién creó el PaymentIntent,
+   así que el mismo flujo de descuento/puntos/PDF/notificación aplica
+   igual a un pago iniciado por el cliente que por staff.
+   La ruta se movió fuera del grupo `role.custom:administrador,
+   recepcionista` (ese middleware habría bloqueado a `cliente` antes de
+   que el controlador pudiera revisar la propiedad) al grupo general
+   `mobile.auth` — el propio controlador es ahora la única autoridad
+   real, y revisa el rol ANTES de validar el payload (para que un rol
+   no autorizado reciba 403 y no un 422 por sondear un `appointment_id`
+   cualquiera).
+   Gap cerrado de paso: el endpoint no tenía guard propio de "cita
+   cobrable" ni de "ya tiene pago" — antes solo lo evitaba la propia UI
+   de staff (`chargeable()` ya filtra por esto). Abrir el endpoint a
+   clientes obligaba a que el servidor fuera la única autoridad: un
+   cliente podía haber conseguido que Stripe le cobrara la tarjeta para
+   una cita que el webhook luego rechazaría registrar en silencio. Ambos
+   checks (`AppointmentStatusService::CHARGEABLE`, `payments()->exists()`)
+   ahora viven en el propio endpoint, antes de llamar a Stripe.
+   4 tests nuevos (cliente paga su propia cita, cliente bloqueado de la
+   cita de otro cliente, cita no cobrable rechazada, cita ya pagada
+   rechazada). `.\test.ps1` verde (325 tests, +4), `pint`/Larastan
+   limpios, Scribe regenerado, CI verde.
+   Sin cambios de frontend en esta fase — la UI de autopago (formulario
+   de tarjeta con Stripe Elements en la página de la cita del cliente)
+   queda para cuando el usuario pida construirla; el backend ya está
+   listo para recibirla.
 6. ⏳ **Cierre**: reporte final, CI verde en ambos repos.
 
 ## Guardrails específicos de este plan
