@@ -308,9 +308,58 @@ sí implica trabajo de infraestructura antes de instalarlo:
    problema, y frontend/security sin cambios).
    Aún sin rutas ni páginas para el rol — eso es la fase 3 (backend) y 4
    (frontend) de abajo.
-3. ⏳ **Rol ingeniero — backend**: `SystemController`, ruta, auditoría de
-   `role.custom:administrador` → agregar `,ingeniero` en todo el repo,
-   Scribe.
+3. ✅ **DONE (barber commit `97609c6`)** — **Rol ingeniero — backend**:
+   nuevo `GET /api/v1/admin/system/status` (`SystemController`): ping real
+   de Mongo Atlas y Redis con latencia (no solo "la conexión existe"),
+   tamaño de la cola y total de jobs fallidos, y última corrida
+   (éxito/fallo/cuándo/cuánto tardó) de cada una de las 12 tareas de
+   `routes/console.php` — vía `ScheduledTaskMonitor`
+   (`App\Services\System`), que escucha los eventos
+   `ScheduledTaskFinished`/`ScheduledTaskFailed` que el propio scheduler
+   de Laravel ya dispara en cada corrida de `schedule:run`, sin tener que
+   instrumentar cada `Schedule::command()` a mano (solo se les agregó
+   `->description()` para un nombre limpio). Truco necesario: `routes/
+   console.php` solo se carga en contexto de consola
+   (`bootstrap/app.php`), así que en una petición HTTP normal el
+   `Schedule` del contenedor llega vacío — `SystemController` lo detecta y
+   hace `require_once` del archivo él mismo, seguro porque cada request de
+   php-fpm arranca una `Application` nueva.
+   Auditoría ruta por ruta de `role.custom:administrador` en
+   `routes/api.php`: se agregó `,ingeniero` **solo** a los endpoints de
+   solo lectura (dashboards, reportes, predicciones, logs, el nuevo
+   `system/status`) más `permission.custom:reportes.ver` / `logs.ver` /
+   `sistema.ver` como defensa en profundidad — nunca a rutas de gestión
+   (usuarios, clientes, barberos, servicios, inventario, configuración,
+   campañas, sorteos, reseñas siguen siendo solo administrador).
+   Hallazgo a mitad de esta fase: 5 controladores (`DashboardAdminController`,
+   `ReportAdminController`, `PredictionController`, `ReportController`,
+   `LogController`) tenían además su propio guard interno
+   (`authorizeAdmin()`/`abort_if` con `hasRole('administrador')` fijo a
+   ese único rol) que habría bloqueado a ingeniero con 403 incluso
+   después de pasar el middleware de la ruta — verificado en vivo con
+   `curl` antes de asumir que el middleware solo bastaba. Los 5 se
+   actualizaron para aceptar también `hasRole('ingeniero')`.
+   Nuevo test `EngineerRoleAuthorizationTest` prueba el límite completo de
+   punta a punta (HTTP + Bearer token real, no solo el middleware en
+   aislamiento): ingeniero llega a los 7 endpoints de solo lectura y
+   recibe 403 en los 12 endpoints de gestión que motivaron la corrección
+   original del alcance de este rol. `SystemControllerTest` cubre la
+   forma de la respuesta y que `ScheduledTaskMonitor` registre
+   éxito/fallo correctamente (con un `Event` real de
+   `Illuminate\Console\Scheduling`, no un mock — Larastan marcaba tipos
+   incompatibles con Mockery en los eventos tipados). `.\test.ps1` x2 en
+   verde (321 tests, +6 sobre la fase anterior), `pint --test` limpio,
+   Larastan sin errores nuevos (sí hubo que resolver un
+   `method.notFound` real en `getMongoDB()` con un `@var` de tipo, no un
+   baseline), Scribe regenerado, CI verde confirmado.
+   **Hallazgo aparte, reportado al usuario, no tocado en este commit**:
+   el propio `system/status` reveló en producción real 4,171 jobs
+   fallidos en la cola (`AppointmentNotification`, causa raíz: límite
+   diario de envíos de Gmail SMTP excedido, viene fallando desde mediados
+   de julio) — exactamente el tipo de problema que este dashboard existe
+   para exponer. Pendiente de decisión del usuario (cambiar proveedor de
+   correo, purgar los fallidos, etc.), no es responsabilidad de esta fase
+   de infraestructura arreglarlo.
 4. ⏳ **Rol ingeniero — frontend**: nav, página de sistema, `isEngineer` en
    las secciones que ya existen.
 5. ⏳ **Stripe Fase B**: alcance a definir con el usuario cuando se llegue
