@@ -56,7 +56,7 @@ const IMPLEMENTED_PATHS = new Set([
   '/services', '/users',
   '/barber/agenda', '/barber/portfolio', '/barber/schedule', '/barber/profile',
   '/my/appointments', '/barbers', '/my/invoices',
-  '/campaigns', '/raffles', '/logs', '/settings', '/reports',
+  '/campaigns', '/raffles', '/logs', '/settings', '/reports', '/analytics',
 ])
 
 function item(label: string, to: string, icon: string, primary = false, badge: number | null = null): NavItem {

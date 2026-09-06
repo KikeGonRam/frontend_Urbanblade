@@ -80,5 +80,6 @@ export default defineNuxtConfig({
     '/logs': { ssr: false },
     '/settings': { ssr: false },
     '/reports': { ssr: false },
+    '/analytics': { ssr: false },
   },
 })
