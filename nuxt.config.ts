@@ -19,7 +19,10 @@ export default defineNuxtConfig({
       // Base de la API JSON de barber, con /api/v1 incluido. Ver
       // .claude/skills/nuxt-migration-plan/SKILL.md — auth por Bearer token
       // (mobile_api_tokens), no por sesión/cookie.
-      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8000/api/v1',
+      // 127.0.0.1, no "localhost": el navegador prueba IPv6 (::1) primero
+      // para "localhost", y Docker no escucha ahí en el puerto 8000 -- eso
+      // agrega varios segundos de espera a cada carga antes de caer a IPv4.
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://127.0.0.1:8000/api/v1',
       // Clave PUBLICABLE de Stripe (pk_...) — segura de exponer en el
       // cliente por diseño, es la misma que barber expone en el <script>
       // de payments/create.blade.php vía config('services.stripe.key').
