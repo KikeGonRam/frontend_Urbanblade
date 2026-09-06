@@ -61,5 +61,11 @@ export default defineNuxtConfig({
     '/clients/**': { ssr: false },
     '/payments': { ssr: false },
     '/payments/**': { ssr: false },
+    '/orders': { ssr: false },
+    '/orders/**': { ssr: false },
+    '/store': { ssr: false },
+    '/store/**': { ssr: false },
+    '/cart': { ssr: false },
+    '/my/**': { ssr: false },
   },
 })
