@@ -489,7 +489,46 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
      método de pago), el endpoint de recibo respondió 200, y se borraron
      el producto y el pedido de prueba inmediatamente después — mismo
      patrón de limpieza que 9.1-9.3.
-   - **9.5 Inventario** (productos + movimientos, admin).
+   - ✅ **DONE — 9.5 Inventario** (productos admin-only + movimientos
+     admin/recepción): `Api/Inventory/InventoryController` ya existía
+     (fases anteriores de la API móvil, antes de este plan de migración)
+     con `products()`/`movements()`/`storeProduct()`/`updateProduct()`/
+     `destroyProduct()`/`storeMovement()` — se enriqueció en esta fase
+     con lo que le faltaba frente a `Inventory\ProductController`/
+     `InventoryMovementController` (web): filtros `q`/`bajo_stock` en
+     productos, `q`/`fecha_desde`/`fecha_hasta` en movimientos,
+     `stats`/`categorias`/`tipos` en `meta`, y dos endpoints nuevos —
+     `GET /inventory/low-stock` y
+     `POST /inventory/products/{id}/mark-ordered` — para el panel de
+     "stock bajo pendiente de atención" que la vista Blade comparte
+     entre productos y movimientos.
+     **Bug de `decimal:2` atrapado antes de shipear, no después**: al
+     escribir el test de regresión (mismo patrón que ya mordió en 9.3 y
+     9.4) se encontró que `productPayload()` nunca casteaba
+     `precio_compra`/`precio_venta` a float — arreglado en el mismo commit
+     que agregó los filtros, así que nunca llegó a `frontend-urban` como
+     bug.
+     `pages/inventory/products/index.vue` (middleware `admin`, CRUD
+     completo) y `pages/inventory/movements/index.vue` (middleware
+     `staff`, historial + registrar movimiento — recepción solo ve
+     "salida" como opción, mismo criterio que ya aplica el backend en
+     `storeMovement()`). Ambas páginas comparten el panel de stock bajo.
+     Verificado en vivo con la cuenta admin real y un producto temporal
+     etiquetado (`"TEMP TEST PRODUCT (borrar)"`, stock bajo a propósito):
+     apareció en el panel de stock bajo con las stats correctas →
+     "Marcar como pedido" → registrar una entrada de 20 unidades limpió
+     el flag `pending_restock` y quitó el producto del panel
+     automáticamente → editar/eliminar confirmados. **Encontrado y
+     corregido un hueco de limpieza real de la fase 9.4**: al borrar el
+     `Order`/`Product` de prueba de esa fase nunca se borró el
+     `InventoryMovement` que `OrderService::place()` había creado como
+     efecto secundario — quedó huérfano en `barber_db` (con
+     `product_id` apuntando a un producto ya borrado) hasta que esta
+     fase lo encontró al revisar el historial de movimientos. **Lección
+     para limpiezas futuras**: cualquier flujo que pase por
+     `OrderService`/`InventoryService` deja un `InventoryMovement` con
+     trazabilidad — borrar solo el `Order`/`Product` no es limpieza
+     completa, hay que borrar también los movimientos que generó.
    - **9.6 Servicios + Usuarios** (admin) — CRUD ya con los patrones
      asentados de 9.1-9.5.
    - **9.7 "Mi Espacio" de barbero** (Mi Agenda, Mi Portafolio, Mi
@@ -562,6 +601,31 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
   `token_hash` apuntando a usuarios distintos, y la prueba empieza a fallar
   con 401 de forma intermitente. Copiar el patrón de `tearDown()` de
   `ClientBarberReviewTest`/`DashboardApiTest`, no solo el de `setUp()`.
+- **Antes de confiar en un `docker exec barber-app vendor/bin/phpstan
+  analyse` local que dice "[OK] No errors" tras escribir/editar un
+  archivo nuevo, correr `vendor/bin/phpstan clear-result-cache
+  --configuration=phpstan.neon.dist` primero.** Causa raíz confirmada en
+  esta misma sesión (Fases 9.3, 9.4 y 9.5, tres veces seguidas): el
+  contenedor `barber-app` es de larga duración, y la caché de resultados
+  de Larastan en `/tmp/phpstan` dentro de ese contenedor puede reportar
+  "sin errores" para un `tests/Feature/*ApiTest.php` recién creado que
+  en realidad sí tiene errores nuevos — CI (que siempre arranca en frío)
+  sí los encuentra, y limpiar la caché local reproduce exactamente lo
+  mismo que CI a la primera. Documentado como guardrail #21 en
+  `barber/.claude/skills/urbanblade-guardrails/SKILL.md` — la regla
+  aplica a cualquier archivo nuevo/editado en `app/`, `routes/` o
+  `tests/` de ese repo, no solo a los de esta migración.
+- **Cualquier limpieza de datos de prueba que haya pasado por
+  `OrderService::place()`/`InventoryService::registerMovement()` deja un
+  `InventoryMovement` además del `Order`/`Product` — hay que borrar los
+  tres, no solo los dos obvios.** Encontrado en Fase 9.5: un
+  `InventoryMovement` huérfano (con `product_id` apuntando a un
+  `Product` ya borrado en la limpieza de la Fase 9.4) quedó en
+  `barber_db` hasta que apareció en el historial de movimientos de esta
+  fase. Antes de dar por completada la limpieza de cualquier dato
+  temporal de prueba que haya tocado inventario (crear un pedido,
+  registrar una salida/entrada manual, etc.), revisar
+  `InventoryMovement::where('product_id', ...)` también.
 - **Un export faltante en un `.ts` compartido (`utils/chartTheme.ts`, etc.)
   no siempre truena donde se usa** — puede manifestarse como un error de
   Vite HMR en OTRA página (aquí: la navegación post-login a `/dashboard`
@@ -640,16 +704,22 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
 - `frontend-urban` ya tiene su propio CI (lint+build+audit) — primer run
   confirmado en verde.
 - Fase 9 en curso — planificada en 9.1-9.9 (ver arriba). **9.1 Clientes**,
-  **9.2 Citas**, **9.3 Pagos** y **9.4 Pedidos** completos y verificados
-  en vivo. 9.2 además cerró el botón "Editar Cita" del calendario (fase
-  7) y corrigió un bug de route-binding que llevaba roto desde la fase 5
-  (`Barbero.vue`); 9.3 agregó el flujo completo de cobro con preview de
-  lealtad/rifa y descubrió que los campos `decimal:2` de `barber`
-  serializan como string; 9.4 agregó tienda/carrito/pedidos completos,
-  resolvió que el carrito no puede vivir en sesión de servidor (vive en
-  `useCart()`/localStorage) y encontró una segunda divergencia local-vs-CI
-  de Larastan (ver detalle de cada una arriba). Pendiente: 9.5
-  (Inventario) en adelante.
+  **9.2 Citas**, **9.3 Pagos**, **9.4 Pedidos** y **9.5 Inventario**
+  completos y verificados en vivo. 9.2 además cerró el botón "Editar
+  Cita" del calendario (fase 7) y corrigió un bug de route-binding que
+  llevaba roto desde la fase 5 (`Barbero.vue`); 9.3 agregó el flujo
+  completo de cobro con preview de lealtad/rifa y descubrió que los
+  campos `decimal:2` de `barber` serializan como string; 9.4 agregó
+  tienda/carrito/pedidos completos, resolvió que el carrito no puede
+  vivir en sesión de servidor (vive en `useCart()`/localStorage) y
+  encontró una segunda divergencia local-vs-CI de Larastan; 9.5 evitó
+  repetir el bug de `decimal:2` (lo atrapó un test antes de shipear),
+  encontró la CAUSA RAÍZ real de las tres divergencias local-vs-CI de
+  Larastan de esta sesión (caché de resultados stale en
+  `/tmp/phpstan` dentro del contenedor `barber-app`, documentado como
+  guardrail #21 en `barber`) y encontró un hueco de limpieza real
+  (`InventoryMovement` huérfano dejado por la fase 9.4) (ver detalle de
+  cada una arriba). Pendiente: 9.6 (Servicios + Usuarios) en adelante.
   `nuxt build`/`eslint` de este repo ya corren en CI en cada push, ya no
   hace falta correrlos manualmente antes de cada commit (aunque seguir
   haciéndolo local antes de push, como ya es costumbre, sigue siendo
