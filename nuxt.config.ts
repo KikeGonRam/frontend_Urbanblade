@@ -20,6 +20,11 @@ export default defineNuxtConfig({
       // .claude/skills/nuxt-migration-plan/SKILL.md — auth por Bearer token
       // (mobile_api_tokens), no por sesión/cookie.
       apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:8000/api/v1',
+      // Clave PUBLICABLE de Stripe (pk_...) — segura de exponer en el
+      // cliente por diseño, es la misma que barber expone en el <script>
+      // de payments/create.blade.php vía config('services.stripe.key').
+      // Fase 9.3 (Pagos): cobro con tarjeta (beta) vía Stripe Elements.
+      stripeKey: process.env.NUXT_PUBLIC_STRIPE_KEY || '',
     },
   },
 
@@ -54,5 +59,7 @@ export default defineNuxtConfig({
     '/appointments/**': { ssr: false },
     '/clients': { ssr: false },
     '/clients/**': { ssr: false },
+    '/payments': { ssr: false },
+    '/payments/**': { ssr: false },
   },
 })
