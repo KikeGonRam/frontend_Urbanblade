@@ -1,6 +1,6 @@
 ---
 name: stripe-and-ops-role-plan
-description: Plan y arquitectura para dos iniciativas nuevas — robustecer la integración de Stripe (y más adelante, autopago del cliente), y un nuevo rol "ingeniero" de solo lectura (dashboards/analítica/reportes/estado del servidor, sin gestionar nada de negocio) con Laravel Pulse. Leer antes de tocar StripeWebhookController, PaymentController::stripeIntent(), RolePermissionSeeder, o cualquier página nueva de sistema/ops.
+description: CERRADO (2026-09-06, ver "Reporte final") — histórico de cómo se robusteció Stripe (webhook ampliado + autopago del cliente) y se agregó el rol "ingeniero" de solo lectura (Laravel Pulse + dashboards/reportes/estado del servidor). Leer antes de tocar StripeWebhookController, PaymentController::stripeIntent(), RolePermissionSeeder, SystemController o cualquier ruta que hoy acepte el rol ingeniero.
 ---
 
 # Stripe (robustecer + autopago futuro) y rol "ingeniero" — plan y arquitectura
@@ -422,7 +422,44 @@ sí implica trabajo de infraestructura antes de instalarlo:
    de tarjeta con Stripe Elements en la página de la cita del cliente)
    queda para cuando el usuario pida construirla; el backend ya está
    listo para recibirla.
-6. ⏳ **Cierre**: reporte final, CI verde en ambos repos.
+6. ✅ **DONE (2026-09-06)** — **Cierre**: ver "Reporte final" abajo.
+
+## Reporte final (2026-09-06)
+
+Las 6 fases de este plan quedaron completas. Resumen por fase, con
+commit y estado de CI en el momento de cerrarla:
+
+| Fase | Qué | Repo / commit | CI |
+|---|---|---|---|
+| 1. Stripe Fase A | Webhook ampliado (payment_failed avisa a staff; charge.refunded y charge.dispute.created nuevos), tests, `.env.example` | barber `d2dfa9a` | ✅ |
+| 2. Rol ingeniero — infra | Laravel Pulse en conexión SQLite dedicada, permiso `sistema.ver` + rol `ingeniero` de solo lectura, `Gate::viewPulse` | barber `0c5301d` | ✅ |
+| 3. Rol ingeniero — backend | `GET /admin/system/status` (Mongo/Redis/cola/tareas programadas), auditoría de rutas, 5 controladores con guard interno corregido | barber `97609c6` | ✅ |
+| 4. Rol ingeniero — frontend | Página `/system`, nav con sección "Sistema" y "Análisis" recortado, middleware `engineer.ts` | frontend-urban `a345100` | ✅ |
+| 5. Stripe Fase B | Autopago del cliente sobre su propia cita vía `stripe-intent`, sin tocar el webhook | barber `b8e86d9` | ✅ |
+| 6. Cierre | Este reporte | — | ✅ |
+
+**Trabajo adicional hecho en el camino** (fuera del alcance original del
+plan, pero parte de la misma sesión de trabajo):
+- Fix de CORS para permitir que el frontend desplegado en Vercel
+  (`frontend-urbanblade*.vercel.app`, cualquier deploy del proyecto)
+  llame al backend — barber `dde578b`.
+- Sistema de marca/mascotas (Bladebot, Nava, Bruno) en páginas de error
+  y como widget flotante, más el ícono SVG de UrbanBlade reemplazando
+  el PNG anterior — ya existía como trabajo del usuario sin comitear en
+  ambos repos, se comiteó y subió: barber `f2753c8`, frontend-urban
+  `856b44c`.
+
+**Pendiente, fuera de este plan, señalado al usuario y sin resolver
+todavía**: `GET /admin/system/status` reveló 4,171 jobs de cola
+fallidos reales en producción (`AppointmentNotification`, límite diario
+de Gmail SMTP excedido desde mediados de julio). Requiere una decisión
+del usuario (cambiar proveedor de correo, purgar los fallidos, etc.),
+no se tocó en ninguna fase de este plan.
+
+**Explícitamente no construido** (a propósito, no es un pendiente
+olvidado): la pantalla de autopago con tarjeta (Stripe Elements) en la
+página de la cita del cliente en el frontend. El backend ya la soporta
+por completo (Fase B); la UI se construye cuando el usuario la pida.
 
 ## Guardrails específicos de este plan
 
