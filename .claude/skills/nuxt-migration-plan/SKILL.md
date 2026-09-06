@@ -1023,12 +1023,18 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
   y descubrió que `whereHasMorph` con wildcard `'*'` (usado por el filtro
   de causante de Logs en la web) no funciona sobre MongoDB. Con 9.9
   completa, las **9 sub-fases planeadas de la Fase 9 quedan todas
-  hechas**, y con Analítica y el retiro de las páginas Inertia (paso 10 del
-  plan) también completos (2026-09-06), la migración funcional de barber a
-  Nuxt no tiene fases pendientes conocidas — solo queda, eventualmente,
-  decidir si/cuándo retirar también el resto del sitio Blade+Alpine en
-  `barber` (nunca fue Inertia, así que es una decisión aparte, no cubierta
-  por el retiro ya hecho).
+  hechas**, y con Analítica, el retiro de las páginas Inertia, y el retiro
+  del RESTO del panel Blade+Alpine (citas, clientes, pagos, pedidos,
+  inventario, servicios, usuarios, barberos, campañas, sorteos, reportes,
+  configuración, logs, y todo el autoservicio de cliente/barbero) también
+  completos — los tres el mismo día (2026-09-06) — `barber` quedó reducido
+  a: la landing pública, `/servicios`+`/equipo/{id}`, auth (login/registro/
+  recuperación de contraseña/verificación), perfil, notificaciones, chatbot,
+  el muro social (`/descubrir`, todavía "Próx." aquí en Nuxt),
+  `reviews.index` (`/resenas`, también "Próx." aquí), un endpoint de
+  respaldo de BD, y la tarjeta de membresía en PDF del cliente — ninguna de
+  esas tiene página propia en Nuxt todavía. La migración funcional de
+  barber a Nuxt no tiene fases pendientes conocidas.
   `nuxt build`/`eslint` de este repo ya corren en CI en cada push, ya no
   hace falta correrlos manualmente antes de cada commit (aunque seguir
   haciéndolo local antes de push, como ya es costumbre, sigue siendo
