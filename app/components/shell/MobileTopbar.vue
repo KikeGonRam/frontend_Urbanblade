@@ -9,6 +9,7 @@ const { user } = useAuth()
     </NuxtLink>
 
     <div class="flex items-center gap-3">
+      <ShellPushToggle />
       <span
         class="flex h-8 w-8 items-center justify-center rounded-full bg-gold/20 text-xs font-semibold text-gold"
         :title="user?.name"

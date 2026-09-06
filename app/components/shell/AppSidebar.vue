@@ -36,17 +36,20 @@ async function onLogout() {
         <span :class="{ 'lg:hidden': !railCollapsed }">UB</span>
         <span class="hidden" :class="{ 'lg:inline': !railCollapsed }">Urban<span class="text-gold">Blade</span></span>
       </NuxtLink>
-      <button
-        type="button"
-        class="ml-auto hidden rounded-lg p-1.5 text-muted hover:bg-accent hover:text-ink lg:block"
-        :aria-label="railCollapsed ? 'Expandir menú' : 'Colapsar menú'"
-        @click="toggleRail"
-      >
-        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path v-if="railCollapsed" d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
-          <path v-else d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
-      </button>
+      <div class="ml-auto flex items-center gap-1">
+        <ShellPushToggle />
+        <button
+          type="button"
+          class="hidden rounded-lg p-1.5 text-muted hover:bg-accent hover:text-ink lg:block"
+          :aria-label="railCollapsed ? 'Expandir menú' : 'Colapsar menú'"
+          @click="toggleRail"
+        >
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path v-if="railCollapsed" d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+            <path v-else d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+      </div>
     </div>
 
     <nav class="flex-1 space-y-4 overflow-y-auto px-2 py-4">
