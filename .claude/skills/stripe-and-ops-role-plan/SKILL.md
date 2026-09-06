@@ -274,8 +274,40 @@ sí implica trabajo de infraestructura antes de instalarlo:
    calculado server-side vía mock de `StripePaymentService`, tope de
    canje de puntos rechazado con 422). `.\test.ps1` x2 en verde (313 tests),
    `pint --test` limpio, CI verde confirmado (`gh run view` → `success`).
-2. ⏳ **Rol ingeniero — infraestructura**: Dockerfile (sqlite), Pulse
-   instalado y migrado, permission/rol seedeados.
+2. ✅ **DONE (barber commit `0c5301d`)** — **Rol ingeniero —
+   infraestructura**: `Dockerfile` ahora instala `pdo_sqlite`/`sqlite3`
+   (Pulse no soporta MongoDB, la conexión por defecto de este proyecto).
+   Nueva conexión `'sqlite'` en `config/database.php` apuntando a
+   `database/pulse.sqlite` (archivo local, fuera de Atlas, no compartido
+   con `spark/` — Pulse solo guarda métricas efímeras de requests/jobs/
+   excepciones, no datos de negocio). `laravel/pulse` instalado vía
+   Composer, config/migración publicadas
+   (`database/migrations/2026_09_06_142509_create_pulse_tables.php`), y
+   ya migrado (tablas `pulse_values`/`pulse_entries`/`pulse_aggregates`
+   creadas en el sqlite local). El archivo `pulse.sqlite` no existe solo
+   en esta versión de Laravel (`touch` agregado a `.docker/entrypoint.sh`
+   y a los jobs `backend`/`smoke` de CI, antes de cualquier `migrate`).
+   `/pulse` (la ruta que el propio paquete auto-registra) queda protegida
+   por un `Gate::define('viewPulse', ...)` explícito en
+   `AppServiceProvider::boot()` — administrador o ingeniero solamente —
+   en vez de depender del default-deny silencioso de Pulse por ability no
+   definida (verificado con `curl` sin sesión → 403).
+   `RolePermissionSeeder` siembra el permiso nuevo `sistema.ver` y el rol
+   `ingeniero` con **exactamente** `reportes.ver` + `logs.ver` +
+   `sistema.ver` — nada de `*.gestionar`, deliberadamente NO superset de
+   administrador (la corrección que el usuario pidió sobre la primera
+   versión de este plan). Nuevo test `RolePermissionSeederTest` fija esa
+   invariante con dos aserciones: la lista exacta de permisos de
+   ingeniero, y que sea subconjunto estricto de administrador — para que
+   un futuro cambio que copie mal la lista de permisos (el error que
+   motivó la corrección) truene en CI en vez de llegar a producción.
+   `.\test.ps1` en verde (315 tests, +2 sobre la fase anterior), `pint
+   --test` limpio, Larastan sin errores nuevos, CI verde confirmado (los
+   3 jobs — backend con el step nuevo "Create Pulse SQLite database",
+   smoke con `migrate --seed` corriendo también la migración de Pulse sin
+   problema, y frontend/security sin cambios).
+   Aún sin rutas ni páginas para el rol — eso es la fase 3 (backend) y 4
+   (frontend) de abajo.
 3. ⏳ **Rol ingeniero — backend**: `SystemController`, ruta, auditoría de
    `role.custom:administrador` → agregar `,ingeniero` en todo el repo,
    Scribe.
