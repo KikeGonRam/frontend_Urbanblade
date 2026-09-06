@@ -1039,6 +1039,22 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
   hace falta correrlos manualmente antes de cada commit (aunque seguir
   haciéndolo local antes de push, como ya es costumbre, sigue siendo
   buena idea).
+- **Muro Inspiración + Reseñas (2026-09-06, mismo día, después del cierre de
+  arriba)**: las últimas dos páginas listadas "Próx." se construyeron.
+  `pages/social/feed.vue` — feed estilo Instagram consumiendo
+  `Api\Social\SocialController::feed()`, que se amplió de forma aditiva en
+  `barber` con `media` (tipo imagen/video), `comments` (últimos 3) y
+  `barber.slug`/`foto` (`images` se conservó tal cual). De paso se encontró
+  y arregló un bug real: la ruta no tenía NINGÚN middleware de auth, así que
+  `is_reacted`/`is_saved` siempre daban `false` aunque el cliente mandara un
+  token válido — se agregó `OptionalMobileApiToken` (resuelve el usuario si
+  hay token, pero nunca lo exige) para que el feed siga siendo público y a la
+  vez refleje el estado real del usuario. `pages/reviews/index.vue` — tabla
+  admin-only consumiendo `Api\Review\ReviewController`, que no existía antes
+  de esta fase (se construyó desde cero, puerto de `Barber\ReviewController`
+  web). Con esto, `barber` retiró también `/descubrir` y `reviews.index` (ver
+  guardrail #19 en el skill de `barber`) — ya no queda ningún ítem "Próx." en
+  la navegación de Nuxt.
 
 ## Reporte final (2026-09-06) — migración cerrada
 
@@ -1073,11 +1089,14 @@ retirar lo que ya no hacía falta en `barber`: primero las páginas Inertia+Vue
 (los 4 dashboards y el calendario — lo único que `barber` había migrado a
 Inertia), y el mismo día, confirmando que aplicaba el mismo criterio, el
 resto del panel Blade+Alpine (que nunca fue Inertia, pero tenía la misma
-paridad confirmada). `barber` quedó reducido a lo que Nuxt no cubre todavía:
-landing pública, catálogo público de servicios/barberos, auth, perfil,
-notificaciones, chatbot, el muro social y las reseñas de barberos (ambos
-listados "Próximamente" en la nav de Nuxt, nunca construidos aquí), un
-endpoint de respaldo de BD, y la tarjeta de membresía en PDF del cliente.
+paridad confirmada). Ese mismo día, más tarde, se cerraron también las
+últimas dos páginas "Próximamente": Muro Inspiración (`pages/social/feed.vue`)
+y Reseñas (`pages/reviews/index.vue`), lo que permitió retirar en `barber`
+sus equivalentes Blade (`/descubrir`, `reviews.index`). `barber` quedó
+reducido a lo que Nuxt no cubre y no tiene planeado cubrir: landing pública,
+catálogo público de servicios/barberos, auth, perfil, notificaciones,
+chatbot, un endpoint de respaldo de BD, y la tarjeta de membresía en PDF del
+cliente. La nav de Nuxt ya no tiene ningún ítem marcado "Próx.".
 
 **Cicatrices que vale la pena conocer** (detalle completo en cada fase
 arriba; esto es solo el índice):
@@ -1119,7 +1138,9 @@ arriba; esto es solo el índice):
   (SoftDeletes, entre otras) sin tener que redescubrirlas, y ambos repos
   quedaron verificados igual de a fondo.
 
-**Estado real al cerrar este reporte:** ambos repos con CI en verde en cada
-push de esta migración, sin fases pendientes conocidas del lado Nuxt. Lo que
-queda en `barber` como Blade es una decisión consciente (páginas sin
-equivalente en Nuxt), no deuda técnica de la migración.
+**Estado real al cerrar este reporte (actualizado tras Muro/Reseñas):** ambos
+repos con CI en verde en cada push de esta migración, sin fases pendientes
+conocidas del lado Nuxt — ni un solo ítem de la nav queda marcado "Próx.".
+Lo que queda en `barber` como Blade es una decisión consciente (páginas sin
+equivalente en Nuxt y sin planes de tenerlo), no deuda técnica de la
+migración.
