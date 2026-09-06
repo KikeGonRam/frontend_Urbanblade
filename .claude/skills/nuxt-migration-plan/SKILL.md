@@ -1039,3 +1039,87 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
   hace falta correrlos manualmente antes de cada commit (aunque seguir
   haciéndolo local antes de push, como ya es costumbre, sigue siendo
   buena idea).
+
+## Reporte final (2026-09-06) — migración cerrada
+
+Resumen ejecutivo de todo el proyecto, de principio a fin, para quien retome
+este repo sin haber visto las fases una por una arriba.
+
+**Qué se construyó.** Un frontend Nuxt 4 completo (SPA/hybrid, SSR desactivado
+en toda el área autenticada) que reemplaza por completo la experiencia de
+usuario de `barber`: login/sesión propia por Bearer token (`mobile_api_tokens`,
+no Sanctum), shell responsive (sidebar desktop/tablet, drawer + bottom-nav
+móvil, 4 temas), y páginas para los 4 roles — administrador, recepcionista,
+barbero, cliente — cubriendo dashboards, citas + calendario, clientes, pagos,
+pedidos/tienda/carrito, inventario, servicios, usuarios, barberos (catálogo
+público + autoservicio de cliente), reportes, campañas, sorteos, logs,
+configuración, y un centro de análisis con gráficas reales (Chart.js) sobre
+los mismos insights que antes solo veía Spark/el dashboard académico.
+
+**Cómo se hizo.** Fases 1-8: infraestructura, identidad visual, auth, shell,
+los 4 dashboards, calendario de citas — paridad con lo que en `barber` había
+sido migrado a Inertia+Vue. Fase 9 (9.1-9.9): el resto del panel, que en
+`barber` seguía siendo Blade+Alpine puro y nunca había pasado por Inertia —
+clientes, citas avanzadas, pagos, pedidos, inventario, servicios+usuarios,
+espacio de barbero, autoservicio de cliente, y reportes/campañas/sorteos/
+logs/configuración. Fase final: Analítica (bloqueada varias semanas porque
+`barber` no tenía API para eso — se construyó esa base primero, en el mismo
+hilo de trabajo, cuando se confirmó que era el único bloqueo real).
+
+**El cierre, mismo día (2026-09-06).** Con las 9 sub-fases + Analítica
+confirmadas con paridad funcional real (no solo "se ve parecido" — cada una
+verificada en vivo contra cuentas reales), el dueño del proyecto pidió
+retirar lo que ya no hacía falta en `barber`: primero las páginas Inertia+Vue
+(los 4 dashboards y el calendario — lo único que `barber` había migrado a
+Inertia), y el mismo día, confirmando que aplicaba el mismo criterio, el
+resto del panel Blade+Alpine (que nunca fue Inertia, pero tenía la misma
+paridad confirmada). `barber` quedó reducido a lo que Nuxt no cubre todavía:
+landing pública, catálogo público de servicios/barberos, auth, perfil,
+notificaciones, chatbot, el muro social y las reseñas de barberos (ambos
+listados "Próximamente" en la nav de Nuxt, nunca construidos aquí), un
+endpoint de respaldo de BD, y la tarjeta de membresía en PDF del cliente.
+
+**Cicatrices que vale la pena conocer** (detalle completo en cada fase
+arriba; esto es solo el índice):
+- `decimal:2` en modelos de `barber` serializa a JSON como string, no número
+  — rompe aritmética ingenua en el cliente si no se hace `Number()` en ambos
+  operandos (Fase 9.3).
+- El carrito no puede vivir en sesión de servidor una vez que el frontend es
+  una SPA aparte — vive en `useCart()`/localStorage (Fase 9.4).
+- Larastan en el contenedor `barber-app` cachea resultados en `/tmp/phpstan`
+  entre ejecuciones; sin `clear-result-cache` antes de analizar, un
+  desarrollador puede ver "0 errores" localmente y fallar en CI (guardrail
+  #21 en `barber`, encontrado 3 veces independientes en esta migración antes
+  de identificar la causa raíz en 9.5).
+- `User`/`Appointment`/`Product` en `barber` usan `SoftDeletes` — un
+  `Model::query()->delete()` en un `tearDown()` de test NO borra de verdad,
+  deja el registro oculto para siempre en el Mongo local persistente (y ya
+  había dejado datos fantasma en el Atlas real de fases anteriores). Hace
+  falta `withTrashed()->forceDelete()` (guardrail #22 en `barber`).
+- `Appointment` usa `HasPublicCode` → su ruta/API se identifica por `code`,
+  no por `id` — un test o llamada que use `id` directamente devuelve 404.
+  Mismo patrón con `Client`/`Barber`/`Service`, que usan `slug` (guardrail
+  #20 en `barber`).
+- El cast genérico `'array'` de Eloquent serializa a un STRING JSON al
+  escribir en MongoDB, que no puede compararlo como array nativo en un
+  `where()` — silencioso mientras nadie escriba por Eloquent (Spark escribe
+  `analytics_insights` directo con pymongo, así que nunca se notó hasta que
+  un test de esta migración usó `::create()`; ver Fase Analítica en
+  `barber`).
+- `route()` de Laravel truena si la ruta no existe — a diferencia de los
+  `Route::has()` defensivos usados en la navegación, varios componentes
+  Blade globales (command-palette, notification-toaster) y 8 clases de
+  Notification tenían `route()` hardcodeado a páginas que se retiraron; se
+  encontraron y corrigieron todas antes de que causaran un 500 real o un
+  enlace roto en un correo (ver el retiro del panel Blade en `barber`).
+- Este mismo plan sirvió una vez como *handoff* entre proveedores de IA
+  distintos en la misma sesión (Codex terminó parte de la Fase 9.7 cuando
+  el otro proveedor se quedó sin tokens) — el patrón funcionó: el segundo
+  proveedor retomó el trabajo, aplicó las lecciones ya documentadas aquí
+  (SoftDeletes, entre otras) sin tener que redescubrirlas, y ambos repos
+  quedaron verificados igual de a fondo.
+
+**Estado real al cerrar este reporte:** ambos repos con CI en verde en cada
+push de esta migración, sin fases pendientes conocidas del lado Nuxt. Lo que
+queda en `barber` como Blade es una decisión consciente (páginas sin
+equivalente en Nuxt), no deuda técnica de la migración.
