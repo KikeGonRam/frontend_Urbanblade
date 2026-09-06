@@ -19,5 +19,6 @@
 
     <ShellMobileBottomNav />
     <ShellMobileDrawer />
+    <ChatWidget />
   </div>
 </template>
