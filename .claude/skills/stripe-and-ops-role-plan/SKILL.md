@@ -249,7 +249,31 @@ sí implica trabajo de infraestructura antes de instalarlo:
    "estado del servidor" para la v1, o si además quiere métricas de
    CPU/memoria del host (eso requiere el binario `pulse:check` corriendo
    con acceso al sistema, más contenedor Docker friction).
-1. ⏳ **Stripe Fase A**: tests + webhook ampliado + `.env.example`.
+1. ✅ **DONE (barber commit `d2dfa9a`)** — **Stripe Fase A**: tests + webhook
+   ampliado + `.env.example`. `StripeWebhookController` ahora maneja 4 tipos
+   de evento (antes solo `payment_intent.succeeded` de verdad procesaba
+   algo, el resto ni se leía): `payment_intent.succeeded` (sin cambios de
+   fondo, ya enrutaba por `PaymentService::create()`), `payment_intent.
+   payment_failed` (antes solo loggeaba, ahora también avisa a
+   staff vía `AppointmentNotifier::sendStaff()`, subject "Pago con tarjeta
+   fallido"), `charge.refunded` (nuevo — busca el `Payment` local por
+   `stripe_payment_id`, si existe avisa a staff con el monto reembolsado;
+   si no hay match local, no-op silencioso, sin reversión automática de
+   puntos/cita — eso queda para cuando se definan esas reglas de negocio) y
+   `charge.dispute.created` (nuevo — mismo patrón de solo avisar). Monto
+   sigue calculándose 100% server-side desde `precio_cobrado`/`service.
+   precio` (guardrail #13), nunca del payload de Stripe — cubierto
+   explícitamente en test con un monto absurdo (999999) en el payload que
+   el webhook debe ignorar. `.env.example` documentado con las 3 claves de
+   Stripe y qué rompe si falta cada una. Tests nuevos:
+   `StripeWebhookControllerTest` (8 casos: firma inválida, monto
+   server-computed, idempotencia en reintentos de Stripe, fallido+aviso,
+   reembolso sin match, reembolso con match+aviso, disputa sin match,
+   evento no manejado = no-op) y 3 casos nuevos en `PaymentApiTest` para
+   `stripeIntent()` (gate solo-staff, monto con descuento de lealtad
+   calculado server-side vía mock de `StripePaymentService`, tope de
+   canje de puntos rechazado con 422). `.\test.ps1` x2 en verde (313 tests),
+   `pint --test` limpio, CI verde confirmado (`gh run view` → `success`).
 2. ⏳ **Rol ingeniero — infraestructura**: Dockerfile (sqlite), Pulse
    instalado y migrado, permission/rol seedeados.
 3. ⏳ **Rol ingeniero — backend**: `SystemController`, ruta, auditoría de
