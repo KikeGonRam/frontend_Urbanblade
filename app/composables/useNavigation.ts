@@ -47,6 +47,7 @@ const ICONS: Record<string, string> = {
   analytics: '<path d="M3 3v18h18"/><path d="M18.7 8.3l-4.2 4.2-2.8-2.8L7 14.4"/>',
   reviews: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
   raffles: '<circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/>',
+  system: '<rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>',
 }
 
 /** Único path real hoy — todo lo demás se muestra pero deshabilitado ("Próximamente") hasta su fase. */
@@ -57,7 +58,7 @@ const IMPLEMENTED_PATHS = new Set([
   '/barber/agenda', '/barber/portfolio', '/barber/schedule', '/barber/profile',
   '/my/appointments', '/barbers', '/my/invoices',
   '/campaigns', '/raffles', '/logs', '/settings', '/reports', '/analytics',
-  '/social/feed', '/reviews',
+  '/social/feed', '/reviews', '/system',
 ])
 
 function item(label: string, to: string, icon: string, primary = false, badge: number | null = null): NavItem {
@@ -79,6 +80,7 @@ export function useNavigation() {
   const isReception = computed(() => hasRole('recepcionista'))
   const isBarber = computed(() => hasRole('barbero'))
   const isClient = computed(() => hasRole('cliente'))
+  const isEngineer = computed(() => hasRole('ingeniero'))
 
   const sections = computed<NavSection[]>(() => {
     if (!user.value) return []
@@ -136,6 +138,35 @@ export function useNavigation() {
           item('Campañas', '/campaigns', 'campaigns'),
           item('Sorteos', '/raffles', 'raffles'),
           item('Logs', '/logs', 'logs'),
+        ],
+      })
+    }
+
+    // ingeniero: mismo criterio de solo lectura que el backend (guardrail
+    // #24 en barber/.claude/skills/urbanblade-guardrails) -- ve Reportes y
+    // Logs (los únicos ítems de "Análisis" que su rol también puede
+    // consultar en la API), más su propia sección de estado del servidor.
+    // Nunca ve "Gestión" ni el resto de "Análisis" (Analítica/Campañas/
+    // Sorteos), que siguen siendo solo administrador.
+    if (isEngineer.value) {
+      out.push({
+        key: 'analisis',
+        title: 'Análisis',
+        collapsible: true,
+        items: [
+          item('Reportes', '/reports', 'reports'),
+          item('Logs', '/logs', 'logs'),
+        ],
+      })
+    }
+
+    if (isAdmin.value || isEngineer.value) {
+      out.push({
+        key: 'sistema',
+        title: 'Sistema',
+        collapsible: true,
+        items: [
+          item('Estado del Servidor', '/system', 'system', true),
         ],
       })
     }

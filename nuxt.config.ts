@@ -30,6 +30,7 @@ export default defineNuxtConfig({
 
   app: {
     head: {
+      link: [{ rel: 'icon', type: 'image/svg+xml', href: '/images/urbanblade-mark.svg' }],
       // Aplica el tema guardado en cookie ANTES de pintar, para evitar el
       // flash de tema incorrecto (FOUC) — equivalente a que barber lo
       // renderice en servidor via data-theme en <html> (ver
@@ -83,5 +84,6 @@ export default defineNuxtConfig({
     '/analytics': { ssr: false },
     '/social/**': { ssr: false },
     '/reviews': { ssr: false },
+    '/system': { ssr: false },
   },
 })

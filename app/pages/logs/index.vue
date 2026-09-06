@@ -5,7 +5,7 @@
  * amplió en esta misma fase con event/fecha_desde/fecha_hasta/causer y el
  * bloque de stats para llegar a paridad con la vista Blade.
  */
-definePageMeta({ middleware: ['auth', 'admin'], layout: 'dashboard' })
+definePageMeta({ middleware: ['auth', 'engineer'], layout: 'dashboard' })
 
 interface LogRow {
   id: string

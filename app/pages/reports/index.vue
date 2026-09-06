@@ -9,7 +9,7 @@
  * ReportAdminController::exportReport()/listReports()/generateCustomReport(),
  * que son placeholders sin persistencia ni archivo real.
  */
-definePageMeta({ middleware: ['auth', 'admin'], layout: 'dashboard' })
+definePageMeta({ middleware: ['auth', 'engineer'], layout: 'dashboard' })
 
 type Period = 'dia' | 'semana' | 'mes' | 'trimestre' | 'año'
 
