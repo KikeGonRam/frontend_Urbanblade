@@ -564,8 +564,50 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
      `Barber` automáticamente → ambos borrados con `forceDelete()`
      (un `delete()` normal solo los habría ocultado, por el hallazgo de
      arriba).
-   - **9.7 "Mi Espacio" de barbero** (Mi Agenda, Mi Portafolio, Mi
-     Horario, Mi Perfil).
+   - ✅ **DONE — 9.7 "Mi Espacio" de barbero** (Mi Agenda, Mi Portafolio,
+     Mi Horario, Mi Perfil). Nota: gran parte de esta fase la construyó
+     otro proveedor de IA (Codex) en la misma sesión de trabajo, usando
+     el mismo plan/handoff — quedó sin terminar solo la comprobación
+     visual en vivo (autorizada explícitamente por el dueño del
+     proyecto para usar la cuenta demo `barbero@urbanblade.mx`), que
+     se completó después junto con el commit+push de ambos repos.
+     `GET /barber/agenda` (nuevo) — agenda propia con navegación por
+     periodo (día/semana) + offset, filtro de estado, y el mismo bloque
+     de stats (completadas, ingreso histórico, productividad %,
+     conteos por estado) que ya calculaba la vista web "Mi Agenda".
+     `Api/Barber/BarberPortfolioController` enriquecido: el índice
+     ahora regresa `media` (id/url/type/mime_type, soporta video además
+     de imagen) y stats agregadas (trabajos/reacciones/comentarios/
+     guardados); `store()` acepta `media[]` con mimetypes de video
+     (mp4/webm/mov/avi/mpeg/ogg) hasta 50MB, manteniendo el contrato
+     `images[]` anterior funcionando para no romper otro consumidor.
+     `POST /barber/profile` (nuevo, en `ProfileController`) — el
+     barbero edita especialidades/descripción/foto usando
+     `UpdateBarberProfileRequest`, que ya existía desde una fase previa
+     de la API móvil pero nunca se había conectado a una ruta.
+     `showBarberProfile()` enriquecido con `foto_url`, rating promedio
+     calculado en vivo desde `BarberReview` (antes leía un campo
+     precalculado que podía quedar obsoleto), `member_since`,
+     `years_experience` y `portfolio_total`.
+     `pages/barber/{agenda,schedule,portfolio,profile}.vue` + nuevo
+     middleware `barber.ts` (barbero-only, mismo molde que admin/staff/
+     cliente). `pages/barber/schedule.vue` no necesitó cambios de
+     backend — `GET/PUT /barber/schedule` ya estaba completo.
+     Cubierto por `tests/Feature/BarberWorkspaceApiTest.php` en
+     `barber` (agenda scoping/stats, y horario+portafolio+perfil de
+     punta a punta con un archivo de imagen falso real vía
+     `UploadedFile::fake()`); su `tearDown()` ya usa
+     `withTrashed()->forceDelete()` para `Appointment`/`User` desde el
+     principio, aplicando directamente la lección de la guardrail #22
+     (encontrada en la fase anterior) sin tener que redescubrirla.
+     Verificado en vivo con la cuenta barbero real en ambos temas
+     (claro "libreta" y oscuro "noir"): agenda con estado vacío
+     correcto, horario guarda y confirma ("Horario actualizado
+     correctamente"), perfil guarda y confirma ("Perfil actualizado";
+     el valor de prueba usado para confirmar el guardado se revirtió a
+     vacío después, por ser una cuenta demo real, no desechable), modal
+     de "Publicar trabajo" abre correctamente (el flujo de subida de
+     archivo completo ya estaba cubierto por el test de arriba).
    - **9.8 Autoservicio de cliente** (Mis Citas, Tienda, Carrito, Mis
      Pedidos, Nuestros Barberos, Mis Facturas) — el flujo de compra/reserva
      desde el punto de vista del cliente, subsistema propio.
@@ -757,8 +799,13 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
   datos de prueba sin realmente borrarlos desde siempre, y que eso
   también había dejado datos fantasma en el Atlas real de fases
   anteriores de esta misma migración — todo documentado como guardrail
-  #22 en `barber` (ver detalle de cada hallazgo arriba). Pendiente: 9.7
-  (Mi Espacio de barbero) en adelante.
+  #22 en `barber`; 9.7 agregó Mi Espacio de barbero completo (agenda,
+  portafolio con soporte de video, horario, perfil con foto) — parte de
+  esta fase la construyó otro proveedor de IA en la misma sesión usando
+  este mismo plan como handoff, y aplicó correctamente la lección de
+  SoftDeletes de la fase anterior sin volver a romperlo (ver detalle de
+  cada hallazgo arriba). Pendiente: 9.8 (Autoservicio de cliente) en
+  adelante.
   `nuxt build`/`eslint` de este repo ya corren en CI en cada push, ya no
   hace falta correrlos manualmente antes de cada commit (aunque seguir
   haciéndolo local antes de push, como ya es costumbre, sigue siendo
