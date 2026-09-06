@@ -299,9 +299,40 @@ con B y agregar persistencia después, es un cambio de alcance de fase 2
    `NotificationPreferencesApiTest`, `AppointmentNotificationChannelsTest`,
    `WebPushServiceTest`. Verificado: Pint, Larastan en frío, `.\test.ps1` x2
    (275 tests) — todo limpio, CI en verde en `main`. Scribe regenerado.
-2. ⏳ **Push — frontend**: service worker, `usePush()`, toggle de
-   suscripción, verificado en vivo con una suscripción real del navegador
-   (Chrome/Edge locales soportan Web Push en `localhost` sin HTTPS).
+2. ✅ **DONE (frontend-urban `8ee95e0`, barber `9bae88a`)** — Push — frontend:
+   `public/sw.js` (push + notificationclick), `plugins/push.client.ts`
+   (registra el SW al cargar, nunca pide permiso sin gesto del usuario),
+   `usePush()` (permission/subscribe/unsubscribe), `ShellPushToggle.vue`
+   (campana en sidebar desktop + topbar móvil — Nuxt no tiene pantalla de
+   perfil propia todavía, así que el toggle vive en el shell en vez de un
+   formulario dedicado; se oculta por completo si el navegador reporta
+   permiso "denied", porque eso no se puede resetear desde la página).
+   **Limitación real del entorno de pruebas, no del código**: el Browser
+   pane de esta sesión bloquea la API de Notification globalmente —
+   confirmado que `Notification.permission` ya es `"denied"` incluso en un
+   sitio externo no relacionado (`web.dev`) antes de que esta app corriera
+   siquiera — y el registro del service worker falla por la misma razón.
+   No se pudo probar el flujo con un permiso real concedido. Lo que SÍ se
+   verificó en vivo: `sw.js` se sirve correctamente (200, contenido
+   correcto), la cadena completa API de punta a punta simulando el payload
+   real que produce `PushManager.subscribe()` (clave VAPID real obtenida →
+   `POST /push/subscribe` → persistida en Mongo contra el usuario correcto
+   de la sesión), y cero regresión visual en sidebar/topbar con la campana
+   oculta (desktop y mobile). **Bug real encontrado durante esa misma
+   verificación y corregido en `barber`** (commit `9bae88a`): la validación
+   de una clave de suscripción corrupta ocurre de forma perezosa dentro del
+   Generator que devuelve `WebPush::flush()`, no en `queueNotification()` —
+   la primera versión de `WebPushService::sendToUser()` solo envolvía
+   `queueNotification()` en try/catch, así que una sola suscripción mal
+   formada tiraba una excepción no capturada que mataba el envío a
+   cualquier otra suscripción en el mismo lote. Reescrito para usar
+   `sendOneNotification()` una por una, cada una en su propio try/catch —
+   aísla el fallo por completo. También se inyectó el logger de Laravel al
+   cliente `WebPush` (si no, su aviso de "instala GMP/BCMath" usa
+   `trigger_error()`, que PHPUnit convierte en fallo de test y que en
+   producción ensuciaría el log de errores de PHP). Test de regresión nuevo
+   con claves VAPID reales + una clave mal formada. `.\test.ps1` x2 (276
+   tests), ESLint + `npm run build` limpios, CI en verde en ambos repos.
 3. ⏳ **Chat — backend**: confirmar comportamiento de sesión sin cookie
    (paso 1 de la sección de piezas), `ChatMessage` model, persistencia
    paralela en `ChatbotContextService`, `getHistory()` con lectura desde
