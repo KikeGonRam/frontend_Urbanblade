@@ -362,6 +362,19 @@ con B y agregar persistencia después, es un cambio de alcance de fase 2
    `ChatbotContextService` (serían 500 fatal si alguna vez se invocan) —
    flaggeado como tarea aparte, no tocado aquí porque ninguna página de Nuxt
    planeada consume esos dos endpoints.
+   **Arreglado después, en `barber` commit `9a304c5`**, junto con dos bugs
+   más encontrados en la misma pasada (auditoría completa de cada entrada
+   `identifier: method.notFound` del baseline de Larastan — a diferencia de
+   `property.notFound`, que en este repo es un patrón de falso positivo ya
+   aceptado por las propiedades dinámicas de Mongo, un método que no existe
+   casi siempre es un bug real): `ChatbotIntelligenceService` llamaba a un
+   scope `Payment::recent()` que nunca existió (rompía la "Respuesta
+   Inteligente" — la capa rápida local del chatbot — para cualquier cliente
+   autenticado con perfil, silenciado por el try/catch de
+   `ChatbotController::query()`), y arreglar eso destapó un segundo bug en
+   la misma línea nunca antes alcanzado: `Payment::average()`/`sum()` sobre
+   `monto` (`decimal:2`) devuelven `MongoDB\BSON\Decimal128`, que ni
+   `round()` ni `(float)` aceptan directamente.
 4. ✅ **DONE (frontend-urban `10191e5`)** — Chat — frontend:
    `components/chat/Widget.vue` (reconstrucción 1:1 del widget Blade —
    burbuja flotante, panel teleportado, chips rápidos por rol idénticos a
