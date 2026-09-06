@@ -689,8 +689,83 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
      del navegador se descarta automáticamente en este entorno de
      automatización antes de que la petición salga, así que no es una
      forma confiable de probar ese flujo específico en el navegador.
-   - **9.9 Reportes, Campañas, Sorteos, Logs, Configuración** (admin,
-     menor frecuencia de uso) — al final.
+   - ✅ **DONE — 9.9 Reportes, Campañas, Sorteos, Logs, Configuración**
+     (admin, menor frecuencia de uso). `barber` tenía DOS sistemas de
+     reportes en paralelo: `Api/Report/ReportController` (usa
+     `ReportService`, ya genera Excel/PDF/CSV reales) y
+     `Api/Admin/Report/ReportAdminController` (agregaciones propias más
+     ricas para dashboards — revenue/appointments/inventory/clients — pero
+     con `exportReport()`/`listReports()`/`generateCustomReport()` como
+     placeholders sin archivo ni persistencia real). La página usa ambos
+     por lo que cada uno hace bien: tableros del primero, descargas del
+     segundo — no se tocó ninguno de los dos placeholders.
+     Campañas y Sorteos no tenían NINGÚN endpoint de API antes de esta
+     fase (solo Blade) — se crearon `Api\Campaign\CampaignController`
+     (index con segment_counts + últimas 10, store con el mismo
+     `CampaignDispatcher` que ya usaba la web) y
+     `Api\Raffle\RaffleController` (index paginado + stats
+     total/reclamados/vigentes), ambos puerto exacto de sus controladores
+     web equivalentes.
+     `Api\Log\LogController` y `Api\Setting\SettingController` sí
+     existían pero estaban incompletos respecto a su versión web: Logs le
+     faltaban los filtros event/fecha_desde/fecha_hasta/causer y el bloque
+     de stats (total/hoy/creates/updates/deletes) que
+     `Log\ActivityLogController` (web) ya tenía; Configuración ignoraba
+     `datos_bancarios` (clabe/banco/beneficiario/concepto) por completo —
+     configurar la cuenta para pagos por transferencia solo funcionaba
+     desde el formulario Blade, nunca desde la API/Nuxt.
+     Gotcha nuevo: el filtro `causer` de Logs no se pudo portar tal cual
+     de la web — `whereHasMorph('causer', '*', ...)` con wildcard genera
+     un `Illuminate\Database\Query\Expression` que el driver de MongoDB no
+     sabe convertir a string ("Object of class ...Expression could not be
+     converted to string"). Se resolvió distinto en la API: primero se
+     buscan los IDs de `User` que matchean el nombre, luego se filtra
+     `causer_id` directamente (asume que el causante siempre es un
+     `User`, cierto en este sistema) — la version web sigue usando el
+     wildcard y sigue funcionando ahí porque corre sobre SQL, no Mongo.
+     Bug real encontrado y corregido en el nuevo `CampaignController`
+     (existía también en la web, no tocado ahí por estar fuera de
+     alcance): `$data['cta_label'] ?: null` truena con "Undefined array
+     key" cuando el campo nullable no viene en el body, porque
+     `validate()` omite las claves nullable ausentes — hace falta
+     `($data['cta_label'] ?? null) ?: null`.
+     De paso se corrigió un test flaky de la fase anterior
+     (`ClientSelfServiceApiTest::test_client_cannot_cancel_within_the_policy_window`):
+     fijaba `fecha` a "hoy" mientras derivaba `hora_inicio` de `now()+2h`,
+     lo que se rompe si la suite corre cerca de medianoche y el objetivo
+     cae al día siguiente — ahora ambos se derivan del mismo `Carbon`
+     instance. Y en el archivo de test nuevo de Logs, `Activity::count()`
+     global resultó no ser determinista: LogsActivity en varios modelos
+     dejaba ~40k registros reales acumulados de sesiones anteriores de
+     este mismo proyecto de migración — se agregó un
+     `Activity::query()->delete()` en el `setUp()` de ese test para tener
+     una base limpia (no es un problema real de producción, solo de
+     aislamiento entre archivos de test que comparten el mismo Mongo
+     local persistente).
+     Frontend: `pages/reports/index.vue` (4 tableros + selector de
+     periodo + botones de descarga que hacen `apiFetch` con
+     `responseType: 'blob'` y disparan la descarga con un `<a>` temporal —
+     patrón necesario porque el endpoint de exportación exige el Bearer
+     token, así que un `<a href>` plano no serviría), `pages/campaigns/index.vue`,
+     `pages/raffles/index.vue`, `pages/logs/index.vue`,
+     `pages/settings/index.vue`. Se encontró y corrigió de paso un bug en
+     `.gitignore`: el patrón `logs` (sin `/` inicial) ignoraba silenciosamente
+     todo el árbol `app/pages/logs/` en cualquier profundidad, no solo un
+     directorio de logs en la raíz — se acotó a `/logs`.
+     Verificado en vivo con la cuenta admin real
+     (`kikeramirez160418@gmail.com`) en ambos temas: toggle de
+     mantenimiento activado/desactivado (reversible), datos bancarios
+     guardados y confirmados vía GET, luego revertidos a vacío; campaña
+     real enviada al único cliente real (1 destinatario, mensaje
+     claramente marcado "temporal") y confirmada por el mensaje de éxito,
+     el registro se borró después con `Campaign::delete()` (no usa
+     SoftDeletes); sorteos con estado vacío correcto (cero resultados
+     reales todavía); logs reales (~4800 registros) filtrados por evento
+     y por causante, ambos filtros devolvieron exactamente lo esperado;
+     reportes con los 4 tableros mostrando datos reales (1 cliente, cero
+     citas/productos) y una descarga real de Excel de ingresos confirmada
+     por network log (200 OK, sin bytes fabricados — el archivo lo generó
+     `ReportService` de verdad).
    - **Analítica**: bloqueada por ahora — `resources/views/analytics/
      index.blade.php` en `barber` tampoco tiene versión Inertia/API propia
      todavía; retomar solo si `barber` construye esa base primero.
@@ -889,8 +964,17 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
   `BarberWorkspaceApiTest`) también aplica a cualquier test nuevo que use
   esos campos directamente — y que correr Larastan en frío antes de
   escribir el archivo de test, sin repetirlo después, deja pasar
-  justo ese tipo de error hasta CI (ver detalle arriba). Pendiente: 9.9
-  en adelante.
+  justo ese tipo de error hasta CI (ver detalle arriba); 9.9 (la última
+  sub-fase planeada) agregó Reportes/Campañas/Sorteos/Logs/Configuración
+  — Campañas y Sorteos no tenían ninguna API antes (solo Blade), Logs y
+  Configuración tenían API pero incompleta respecto a la web (filtros/
+  stats faltantes en Logs, `datos_bancarios` ignorado en Configuración),
+  y descubrió que `whereHasMorph` con wildcard `'*'` (usado por el filtro
+  de causante de Logs en la web) no funciona sobre MongoDB. Con 9.9
+  completa, las **9 sub-fases planeadas de la Fase 9 quedan todas
+  hechas** — pendiente solo Analítica (bloqueada, ver nota arriba) y el
+  retiro de las páginas Inertia (paso 10 del plan, solo cuando se
+  confirme paridad total).
   `nuxt build`/`eslint` de este repo ya corren en CI en cada push, ya no
   hace falta correrlos manualmente antes de cada commit (aunque seguir
   haciéndolo local antes de push, como ya es costumbre, sigue siendo
