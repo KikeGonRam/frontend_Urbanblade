@@ -467,6 +467,58 @@ feedback del backend con `helpful: true` — confirmado directo en el cache,
 no solo que la UI cambiaba de color. `.\test.ps1` x2 (292 tests), CI en
 verde en ambos repos.
 
+**Segunda ronda (mismo día): probando el "Reintentar" en vivo se
+encontraron dos bugs reales de coherencia, y el usuario reportó por su
+cuenta que el bot "pierde el contexto".**
+
+Forzando un error de red real (fetch interceptado en el navegador, no un
+mock del backend) se confirmó que retry funciona — pero preguntando
+"cuanto cuesta un fade" el bot respondió con un extracto de Wikipedia
+sobre **ingeniería de audio**. Dos bugs reales en `barber` commit
+`3ed29bf`:
+1. `ChatbotExternalDataService::getHairstyleInfo()` — las llaves del mapeo
+   estilo→artículo de Wikipedia nunca coincidían con lo que le manda el
+   caller, así que SIEMPRE usaba la palabra suelta ('fade') como título
+   literal, resolviendo a la página de desambiguación genérica en vez del
+   corte de cabello. Verificado uno por uno contra la API real: 3 de los 7
+   títulos originales ni existían. Los 7 corregidos y reverificados.
+2. `ChatbotController::matchesKeywords()` no quitaba acentos — "cuanto
+   cuesta" (sin acento, como escribe casi todo el mundo) nunca calzaba con
+   la keyword `'cuánto cuesta'` y caía hasta Wikipedia/IA en vez de la
+   respuesta local de precios. Agregado `stripAccents()`.
+
+El usuario reportó por separado, sin que se lo pidiera, que el bot pierde
+el contexto entre preguntas — **y tenía razón, con causa raíz real**, no
+solo percepción: en `barber` commit `df9ba1e` se encontró que
+`ChatbotContextService::getConversationHistory()` (el corazón del "motor
+de memoria" — `findSimilarQuestions()`, `isFollowUp()`,
+`getAugmentedContext()`, `generateAugmentedPrompt()`) seguía leyendo
+EXCLUSIVAMENTE de sesión, aunque `addMessage()` ya persistía a Mongo desde
+la Fase 3 — la persistencia era de solo escritura desde el punto de vista
+del motor. Un cliente Bearer-token (Nuxt) nunca comparte sesión entre
+requests, así que cada mensaje llegaba sin memoria de nada anterior. Se
+encontraron además, en la misma investigación, dos bugs más en el mismo
+archivo con la misma causa raíz (comparar por `type === 'user'` cuando
+`addMessage()` JAMÁS ha guardado nada con ese tipo, en ningún lugar del
+código, desde siempre — ni para Nuxt ni para el widget Blade):
+`findSimilarQuestions()` nunca encontraba coincidencias (la rama de
+"memoria instantánea" de la cascada, la más rápida de todas, estaba muerta
+desde que se escribió), y `formatHistoryForAI()` etiquetaba SIEMPRE como
+"Bot" el mensaje del propio cliente y nunca incluía la respuesta real del
+bot en el contexto que se le manda a la IA. Los tres arreglados y
+verificados individualmente contra datos reales antes de escribir tests.
+
+También, a petición del usuario ("dime el ícono y colores que quieres"),
+se cambió el ícono del bot (antes un foco/bombilla y un glifo tipo
+circuito sin relación entre sí) por una carita sonriente consistente en
+header y avatar de mensaje, en `gold` (el token de marca ya usado en toda
+la app, adaptado automáticamente a los 4 temas — no se introdujo ningún
+color nuevo), deliberadamente distinto de la campana de push ya usada en
+el sidebar para no confundir ambos affordances.
+
+`.\test.ps1` x2 (299 tests) tras los arreglos de coherencia/contexto, CI en
+verde en ambos repos (`barber@df9ba1e`, `frontend-urban@9577ddc`).
+
 ## Guardrails específicos de este plan
 
 - No tocar `ChatbotContextService`'s comportamiento de sesión para el
