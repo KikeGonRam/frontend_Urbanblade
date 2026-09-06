@@ -360,8 +360,34 @@ sí implica trabajo de infraestructura antes de instalarlo:
    para exponer. Pendiente de decisión del usuario (cambiar proveedor de
    correo, purgar los fallidos, etc.), no es responsabilidad de esta fase
    de infraestructura arreglarlo.
-4. ⏳ **Rol ingeniero — frontend**: nav, página de sistema, `isEngineer` en
-   las secciones que ya existen.
+4. ✅ **DONE (frontend-urban commit `a345100`)** — **Rol ingeniero —
+   frontend**: nueva página `/system` (puerto de `GET /api/v1/admin/
+   system/status`): tarjetas de entorno/versión (Laravel/PHP/conexión de
+   cola), pills de estado de Mongo/Redis con latencia, contador de jobs
+   pendientes/fallidos, y tabla de última corrida de cada tarea
+   programada — mismo patrón visual que `logs/index.vue`/`reports/
+   index.vue` (`.ui-card`, pills de color por estado, tokens `text-ink`/
+   `text-muted`/`text-gold`).
+   `useNavigation.ts`: nuevo `isEngineer`, sección **"Sistema"**
+   (administrador + ingeniero) apuntando a `/system`, y **"Análisis"**
+   ahora también visible para ingeniero pero recortada a **solo
+   Reportes/Logs** (nunca Analítica/Campañas/Sorteos, que siguen siendo
+   exclusivos de administrador) — refleja exactamente la misma
+   auditoría de permisos ya hecha en el backend, no un criterio nuevo.
+   Gap encontrado y corregido a mitad de esta fase: `reports/index.vue`
+   y `logs/index.vue` usaban el middleware `admin` (`hasRole
+   ('administrador')` únicamente) — aunque el backend ya permitía
+   `ingeniero` en esas dos rutas de API desde la Fase 3, el propio
+   frontend lo habría redirigido a `/dashboard` antes de intentar
+   siquiera la llamada. Nuevo middleware `engineer.ts`
+   (administrador O ingeniero) reemplaza a `admin` en esas dos páginas
+   únicamente — el resto de páginas admin-only no se tocó.
+   Verificado en vivo en el navegador con un usuario ingeniero real
+   (login real, token Bearer real): la navegación muestra exactamente
+   Principal/Análisis(Reportes+Logs)/Sistema — nada de Gestión ni
+   Operación — y `/system` renderiza los datos reales del backend,
+   incluyendo visiblemente los 4,171 jobs fallidos de la Fase 3 en rojo.
+   `npm run lint` y `npm run build` en verde, CI verde confirmado.
 5. ⏳ **Stripe Fase B**: alcance a definir con el usuario cuando se llegue
    aquí (autopago del cliente).
 6. ⏳ **Cierre**: reporte final, CI verde en ambos repos.
