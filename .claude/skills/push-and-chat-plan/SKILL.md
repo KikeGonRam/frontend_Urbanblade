@@ -333,10 +333,35 @@ con B y agregar persistencia después, es un cambio de alcance de fase 2
    producción ensuciaría el log de errores de PHP). Test de regresión nuevo
    con claves VAPID reales + una clave mal formada. `.\test.ps1` x2 (276
    tests), ESLint + `npm run build` limpios, CI en verde en ambos repos.
-3. ⏳ **Chat — backend**: confirmar comportamiento de sesión sin cookie
-   (paso 1 de la sección de piezas), `ChatMessage` model, persistencia
-   paralela en `ChatbotContextService`, `getHistory()` con lectura desde
-   Mongo para usuarios autenticados.
+3. ✅ **DONE (barber `48b36e5`)** — Chat — backend: confirmado en vivo, antes
+   de escribir código, que dos `POST /api/v1/chatbot/query` seguidos con el
+   mismo Bearer token (sin cookie) devolvían historial vacío en el segundo —
+   exactamente el riesgo que este plan anticipó. **Landmine adicional
+   encontrado en el camino, igual al de `social/feed` antes de su
+   enriquecimiento**: `chatbot/query` no tenía NINGÚN middleware de auth, así
+   que `auth()->user()` siempre era `null` para cualquier llamada API —
+   arreglado con el mismo `mobile.auth.optional` (mensaje sigue siendo
+   público/usable por invitados, pero un token válido ahora sí se reconoce).
+   Modelo `ChatMessage` (Mongo) nuevo +
+   `ChatbotContextService::persistMessage()`, enganchado al único punto
+   (`addMessage()`) por el que ya pasan las 5 ramas de la cascada de
+   respuesta — cero cambios en `ChatbotController`. Aditivo de verdad: el
+   motor de sesión (memoria/follow-up/preguntas similares) que usa el widget
+   Blade sigue exactamente igual. `Api\Chatbot\ChatbotManagementController::
+   getHistory()` ahora lee la copia persistida en vez de sesión;
+   `clearHistory()` limpia ambas. Tests nuevos a nivel servicio
+   (`ChatbotContextServiceTest`) y HTTP (`ChatbotApiTest`) — **gotcha de
+   testing real**: un mensaje genérico tipo "hola" no calza con ninguna
+   palabra clave de `manualLogic()` y cae hasta un proveedor de IA real,
+   tardando ~70s; se usó "cual es el horario" (resuelve por reglas locales,
+   sin red) en todos los tests nuevos. `.\test.ps1` x2 (285 tests), Pint,
+   Larastan en frío, CI en verde — todo limpio. Scribe regenerado.
+   **Bug pre-existente encontrado de paso, fuera de alcance de esta fase**:
+   `Api\Chatbot\ChatbotManagementController::getLearningStats()`/
+   `trainFromHistory()` llaman a métodos que no existen en
+   `ChatbotContextService` (serían 500 fatal si alguna vez se invocan) —
+   flaggeado como tarea aparte, no tocado aquí porque ninguna página de Nuxt
+   planeada consume esos dos endpoints.
 4. ⏳ **Chat — frontend**: `ChatWidget.vue`, `useChatbot.ts`, montado en el
    layout autenticado, verificado en vivo contra las 4 cuentas reales
    (distintos roles ven las mismas sugerencias que en Blade, o las
