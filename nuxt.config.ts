@@ -68,5 +68,9 @@ export default defineNuxtConfig({
     '/cart': { ssr: false },
     '/my/**': { ssr: false },
     '/inventory/**': { ssr: false },
+    '/services': { ssr: false },
+    '/services/**': { ssr: false },
+    '/users': { ssr: false },
+    '/users/**': { ssr: false },
   },
 })

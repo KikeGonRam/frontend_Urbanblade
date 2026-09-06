@@ -53,6 +53,7 @@ const ICONS: Record<string, string> = {
 const IMPLEMENTED_PATHS = new Set([
   '/dashboard', '/appointments', '/appointments/calendar', '/clients', '/payments',
   '/orders', '/store', '/cart', '/my/orders', '/inventory/products', '/inventory/movements',
+  '/services', '/users',
 ])
 
 function item(label: string, to: string, icon: string, primary = false, badge: number | null = null): NavItem {
