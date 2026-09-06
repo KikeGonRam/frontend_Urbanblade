@@ -369,12 +369,70 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
      "Editar Cita" desde el calendario, y se borró junto con la cita de
      prueba inmediatamente después — mismo patrón que la limpieza de datos
      sintéticos de la fase 9.1.
-   - **9.3 Pagos** (admin/recepción): cobro + historial. Maneja dinero
-     real — aplicar el mismo patrón ya establecido en `barber` (guardrail
-     #13 de ese repo: nunca confiar en un monto que mande el cliente,
-     siempre releer el precio real del lado servidor) también del lado
-     Nuxt (nunca calcular el monto a cobrar en el frontend y enviarlo, solo
-     mandar los IDs y dejar que `barber` calcule).
+   - ✅ **DONE — 9.3 Pagos** (admin/recepción): `pages/payments/index.vue`
+     — historial con filtros (búsqueda + método + barbero + rango de
+     fecha), tarjetas de stats (hoy/mes/total/por método) y el flujo
+     "Nuevo Cobro" completo: selector de citas cobrables (nuevo
+     `GET /appointments/chargeable`, puerto de la consulta que usaba
+     `Payment\AppointmentController::create()`, web) con preview de
+     descuento de nivel + canje de puntos + premio de rifa
+     (`utils/loyaltyCharge.ts`, puerto directo de
+     `resources/js/loyalty-charge.js`), tres métodos de pago (efectivo/
+     transferencia/tarjeta beta vía Stripe Elements). `pages/payments/
+     pending.vue` — revisión de comprobantes de transferencia
+     (aprobar/rechazar), antes solo alcanzable como vista Blade con
+     sesión. **El monto nunca se calcula en el frontend para cobrar**:
+     el preview de lealtad es solo para que el staff vea el desglose —
+     lo que se manda a `POST /payments` es el precio base de la cita
+     (igual que el input readonly del Blade original), y
+     `PaymentService::create()` en `barber` vuelve a calcular todo del
+     lado servidor (guardrail #13 de ese repo), igual que ya hacía el
+     intento de Stripe.
+     Nuevos endpoints en `barber`: `GET /appointments/chargeable`,
+     `GET /payments/pending`, `POST /payments/{id}/approve|reject`;
+     `GET /payments` ganó filtros (`q`/`barbero_id`/`fecha_desde`/
+     `fecha_hasta`, aditivo) y `stats`/`pending_count` en `meta`.
+     Cubierto por `tests/Feature/AppointmentChargeableApiTest.php` y
+     `tests/Feature/PaymentApiTest.php`.
+     **Bug real encontrado y corregido — nueva categoría, no la del
+     route-key**: `Payment::$monto`/`$propina` usan el cast `decimal:2`
+     de Laravel, que **siempre serializa como string** (`"225.00"`) para
+     no perder precisión — sumar dos de esos campos con el operador `+`
+     de JS concatena en vez de sumar (`"225.00" + "0.00"` →
+     `"225.000.00"`), y `Number(...)` de esa cadena da `NaN`. La tabla
+     de historial mostraba literalmente "$NaN" como total hasta
+     corregirlo envolviendo con `Number()` antes de sumar y tipando esos
+     campos como `string` en las interfaces TS (no `number`) para que no
+     vuelva a colarse. **Cualquier campo de un modelo de `barber` con
+     cast `decimal:2` (buscar `'campo' => 'decimal:2'` en el modelo) hay
+     que tratarlo como string en Nuxt** — `fmtMoney()`/mostrarlo solo
+     funciona porque `Number()` internamente lo parsea bien; el peligro
+     es la aritmética directa entre dos de esos campos.
+     Verificado en vivo con la cuenta recepcionista real: como
+     `barber_db` no tenía citas cobrables ni servicios reales, se creó
+     un cliente+servicio+cita+premio de rifa temporales claramente
+     etiquetados ("TEMP TEST ... (borrar)") vía tinker para ejercer el
+     flujo completo (selección, descuento VIP 10%, canje de 20 puntos,
+     toggle de premio de rifa a $0, cobro real en efectivo → aparece en
+     el historial con stats actualizadas), y se borraron todos los
+     registros temporales inmediatamente después — mismo patrón que
+     9.1/9.2. El cobro con tarjeta (Stripe) se dejó construido para
+     paridad con el Blade original pero **no se pudo verificar en vivo**:
+     tanto `barber/.env` como el nuevo `frontend-urban/.env` solo tienen
+     la clave pública placeholder (`pk_test_REEMPLAZAR_...`), igual que
+     ya pasaba en el formulario Blade equivalente — no es una regresión
+     de esta fase.
+     Gotcha de entorno (no de código) encontrado en el camino: el
+     servidor `nuxt dev` de este repo llevaba corriendo desde el inicio
+     de la sesión (varias horas, sobrevivió la compactación de contexto)
+     y entró en un estado corrupto de Vite (503s + "does not provide an
+     export named" en módulos ya arreglados hace fases) justo después de
+     `npm install @stripe/stripe-js` — instalar una dependencia nueva con
+     el dev server corriendo invalida su cache de `optimizeDeps`. Se
+     resolvió matando el proceso node en el puerto 3000 y arrancando
+     `npm run dev` de nuevo; un `npm run build` limpio (sin errores)
+     confirmó que el código en sí nunca estuvo roto, solo el estado del
+     servidor de desarrollo.
    - **9.4 Pedidos** (bandeja de recepción + tienda/carrito del cliente):
      subsistema más grande, evaluar partir en sub-fases si crece mucho
      (recepción ve/gestiona pedidos; el cliente compra — catálogo, carrito,
@@ -488,6 +546,30 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
   `nuxt build` comparten `.nuxt/` como scratch y pueden pisarse) — la
   verificación en vivo contra el dev server real sustituye al build check
   ese turno; correrlo en el siguiente push normal si no se hizo.
+- **Cualquier campo de un modelo de `barber` con cast `decimal:2`
+  (`Payment::$monto`/`$propina`/`ocr_monto_detectado`, y probablemente
+  `Order`/`Product` en fases futuras — grep `'decimal:2'` en
+  `app/Models/*.php` antes de asumir un tipo) llega a Nuxt como **string**
+  en el JSON, no como number, por diseño de Laravel (preserva precisión).
+  Mostrarlo solo (`fmtMoney()`/interpolación) funciona porque `Number()`
+  lo parsea bien, pero sumarlo/restarlo directo con otro campo así usando
+  `+`/`-` de JS es peligroso: `+` concatena strings en vez de sumar
+  (`"225.00" + "0.00"` → `"225.000.00"`, un NaN disfrazado). Tipar estos
+  campos como `string` en la interfaz TS (no `number`) y envolver con
+  `Number(...)` antes de cualquier aritmética — no solo antes de mostrar.
+  Encontrado en fase 9.3 (la columna "Total" del historial de pagos
+  mostraba "$NaN").
+- **Un `nuxt dev` que lleva corriendo muchas horas (sobrevive incluso la
+  compactación de contexto de la sesión) puede entrar en un estado
+  corrupto de Vite** (503 en assets, "does not provide an export named
+  X" en módulos que ya funcionaban hace fases) — especialmente después de
+  `npm install <paquete-nuevo>` con el servidor todavía corriendo, que
+  invalida su cache de `optimizeDeps`. Antes de diagnosticar el código
+  como roto, correr `npm run build` limpio: si compila sin errores, el
+  problema es el estado del dev server, no el código — matar el proceso
+  node en el puerto (`Get-NetTCPConnection -LocalPort 3000` +
+  `Stop-Process`) y volver a correr `npm run dev` lo resuelve. Pasó en
+  fase 9.3 justo después de instalar `@stripe/stripe-js`.
 
 ## Estado actual (ver también commits de este repo)
 
@@ -505,12 +587,14 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
   regenerado tras el nuevo endpoint.
 - `frontend-urban` ya tiene su propio CI (lint+build+audit) — primer run
   confirmado en verde.
-- Fase 9 en curso — planificada en 9.1-9.9 (ver arriba). **9.1 Clientes** y
-  **9.2 Citas** completos (CRUD admin/recepción) y verificados en vivo.
-  9.2 además cerró el botón "Editar Cita" del calendario (fase 7) y
-  corrigió un bug de route-binding que llevaba roto desde la fase 5
-  (`Barbero.vue`) — ver detalle en 9.2 arriba. Pendiente: 9.3 (Pagos) en
-  adelante.
+- Fase 9 en curso — planificada en 9.1-9.9 (ver arriba). **9.1 Clientes**,
+  **9.2 Citas** y **9.3 Pagos** completos y verificados en vivo. 9.2
+  además cerró el botón "Editar Cita" del calendario (fase 7) y corrigió
+  un bug de route-binding que llevaba roto desde la fase 5
+  (`Barbero.vue`); 9.3 agregó el flujo completo de cobro con preview de
+  lealtad/rifa y descubrió que los campos `decimal:2` de `barber`
+  serializan como string (ver detalle de cada una arriba). Pendiente:
+  9.4 (Pedidos) en adelante.
   `nuxt build`/`eslint` de este repo ya corren en CI en cada push, ya no
   hace falta correrlos manualmente antes de cada commit (aunque seguir
   haciéndolo local antes de push, como ya es costumbre, sigue siendo
