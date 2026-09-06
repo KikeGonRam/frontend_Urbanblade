@@ -766,9 +766,37 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
      citas/productos) y una descarga real de Excel de ingresos confirmada
      por network log (200 OK, sin bytes fabricados — el archivo lo generó
      `ReportService` de verdad).
-   - **Analítica**: bloqueada por ahora — `resources/views/analytics/
-     index.blade.php` en `barber` tampoco tiene versión Inertia/API propia
-     todavía; retomar solo si `barber` construye esa base primero.
+   - ✅ **DONE (2026-09-06) — Analítica**. Estaba bloqueada porque
+     `resources/views/analytics/index.blade.php` en `barber` no tenía
+     ninguna versión API — el dueño del proyecto pidió retomarla
+     "cuando barber tenga esa base" y, al confirmar que seguía sin
+     existir, autorizó construirla ahí primero. Se creó
+     `Api\Analytics\AnalyticsController` en `barber` (puerto exacto de
+     `Analytics\AnalyticsController` web: mismo `AnalyticsInsightService`,
+     mismas secciones/kpis/spark_flow/visual_coverage, serializados a
+     JSON) — ver el historial de `barber` para el detalle completo,
+     incluyendo un bug real que encontró y arregló de paso: el cast
+     `'array'` en `AnalyticsInsight.roles`/`grafica` hacía que Eloquent
+     serializara a un STRING JSON al escribir, que MongoDB no podía
+     comparar como array nativo — rompía silenciosamente el filtro por
+     rol para cualquier registro insertado vía Eloquent (nunca se notó en
+     producción porque Spark escribe esa colección directo con pymongo,
+     con arrays BSON nativos, sin pasar por ese cast).
+     `pages/analytics/index.vue`: vista simple de una columna para
+     cliente/barbero, vista completa con tabs + KPIs + gráficas reales
+     (Bar/Doughnut/Line de `vue-chartjs`, ya usado por los dashboards)
+     para administrador/recepcionista. Recorte deliberado frente al Blade
+     original (401 líneas): los tipos visuales heatmap/matrix/factor-list
+     se muestran como lista de texto en vez de visualizaciones custom, y
+     no hay panel de diagnóstico colapsable ni accesos rápidos — el
+     contenido y las gráficas reales sí están completos.
+     Verificado en vivo con las cuentas admin y cliente reales, insertando
+     filas de prueba con `DB::connection('mongodb')->table(...)->insert()`
+     (no `AnalyticsInsight::create()`, que antes de la corrección del
+     cast no era queryable por rol) — confirmado el tablero completo con
+     KPIs/tabs/gráficas para admin y la vista simple de recomendación para
+     cliente, ambas con datos reales renderizados; todas las filas de
+     prueba borradas después.
    Cada sub-fase sigue el mismo ciclo que 1-8: leer el Blade + el
    controlador API real de `barber` (nunca asumir el shape), enriquecer el
    endpoint API si expone modelos crudos en vez de campos ya formateados,
@@ -995,9 +1023,12 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
   y descubrió que `whereHasMorph` con wildcard `'*'` (usado por el filtro
   de causante de Logs en la web) no funciona sobre MongoDB. Con 9.9
   completa, las **9 sub-fases planeadas de la Fase 9 quedan todas
-  hechas** — pendiente solo Analítica (bloqueada, ver nota arriba) y el
-  retiro de las páginas Inertia (paso 10 del plan, solo cuando se
-  confirme paridad total).
+  hechas**, y con Analítica y el retiro de las páginas Inertia (paso 10 del
+  plan) también completos (2026-09-06), la migración funcional de barber a
+  Nuxt no tiene fases pendientes conocidas — solo queda, eventualmente,
+  decidir si/cuándo retirar también el resto del sitio Blade+Alpine en
+  `barber` (nunca fue Inertia, así que es una decisión aparte, no cubierta
+  por el retiro ya hecho).
   `nuxt build`/`eslint` de este repo ya corren en CI en cada push, ya no
   hace falta correrlos manualmente antes de cada commit (aunque seguir
   haciéndolo local antes de push, como ya es costumbre, sigue siendo
