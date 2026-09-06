@@ -52,7 +52,7 @@ const ICONS: Record<string, string> = {
 /** Único path real hoy — todo lo demás se muestra pero deshabilitado ("Próximamente") hasta su fase. */
 const IMPLEMENTED_PATHS = new Set([
   '/dashboard', '/appointments', '/appointments/calendar', '/clients', '/payments',
-  '/orders', '/store', '/cart', '/my/orders',
+  '/orders', '/store', '/cart', '/my/orders', '/inventory/products', '/inventory/movements',
 ])
 
 function item(label: string, to: string, icon: string, primary = false, badge: number | null = null): NavItem {
