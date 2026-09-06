@@ -201,10 +201,13 @@ onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
 
           <div v-if="typing" class="flex justify-start gap-2">
             <div class="h-6 w-6 shrink-0 rounded-lg border border-gold/20 bg-gold/10" />
-            <div class="flex items-center gap-1.5 rounded-2xl rounded-tl-sm border border-line bg-accent px-4 py-3">
-              <span class="h-1.5 w-1.5 animate-bounce rounded-full bg-muted" style="animation-delay:0s" />
-              <span class="h-1.5 w-1.5 animate-bounce rounded-full bg-muted" style="animation-delay:0.15s" />
-              <span class="h-1.5 w-1.5 animate-bounce rounded-full bg-muted" style="animation-delay:0.3s" />
+            <div class="flex items-center gap-2 rounded-2xl rounded-tl-sm border border-line bg-accent px-4 py-3">
+              <span class="text-[10px] text-muted">Escribiendo</span>
+              <span class="flex items-center gap-1.5">
+                <span class="h-1.5 w-1.5 animate-bounce rounded-full bg-muted" style="animation-delay:0s" />
+                <span class="h-1.5 w-1.5 animate-bounce rounded-full bg-muted" style="animation-delay:0.15s" />
+                <span class="h-1.5 w-1.5 animate-bounce rounded-full bg-muted" style="animation-delay:0.3s" />
+              </span>
             </div>
           </div>
         </div>
