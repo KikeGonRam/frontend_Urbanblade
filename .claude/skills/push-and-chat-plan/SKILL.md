@@ -362,13 +362,72 @@ con B y agregar persistencia después, es un cambio de alcance de fase 2
    `ChatbotContextService` (serían 500 fatal si alguna vez se invocan) —
    flaggeado como tarea aparte, no tocado aquí porque ninguna página de Nuxt
    planeada consume esos dos endpoints.
-4. ⏳ **Chat — frontend**: `ChatWidget.vue`, `useChatbot.ts`, montado en el
-   layout autenticado, verificado en vivo contra las 4 cuentas reales
-   (distintos roles ven las mismas sugerencias que en Blade, o las
-   diferencias son una decisión consciente documentada aquí).
-5. ⏳ **Cierre**: actualizar este skill con lo realmente construido (igual
-   que `nuxt-migration-plan` lo hizo fase a fase), CI verde en ambos repos,
-   reporte final.
+4. ✅ **DONE (frontend-urban `10191e5`)** — Chat — frontend:
+   `components/chat/Widget.vue` (reconstrucción 1:1 del widget Blade —
+   burbuja flotante, panel teleportado, chips rápidos por rol idénticos a
+   `chatbot.blade.php`) + `useChatbot.ts` (`sendMessage`/`loadHistory`/
+   `clearHistory` contra la API ya lista en `barber`), montado globalmente
+   en `layouts/dashboard.vue`. **Verificado en vivo de punta a punta contra
+   la cuenta admin real** (no solo visualmente — confirmado por requests de
+   red reales, no supuestos): abrir el panel carga el historial persistido
+   real desde Mongo (mensajes que había dejado mientras probaba el backend
+   en la Fase 3 aparecieron ahí solos), enviar un mensaje nuevo hace el
+   round-trip completo (`POST /chatbot/query` → respuesta renderizada),
+   "Nueva conversación" limpia la UI Y la copia en Mongo (confirmado
+   directo en Mongo, no solo que la UI se veía vacía), y — la prueba real
+   de que esta fase valía la pena — **una recarga completa de página
+   todavía muestra la conversación anterior**, algo que el widget Blade
+   nunca pudo hacer. Quirk del entorno de pruebas encontrado en el camino:
+   los clics sintéticos del Browser pane de esta sesión no llegaban de
+   forma confiable a los handlers de Vue (un `element.click()` nativo vía
+   JS sí funcionaba siempre) — no es un problema del código, documentado
+   por si se repite. ESLint + `npm run build` limpios, CI en verde.
+5. ✅ **DONE** — Cierre: ambas features completas y verificadas en vivo,
+   ambos repos con CI en verde en cada push de este plan
+   (`barber@48b36e5`/`9bae88a`/`00317fd`,
+   `frontend-urban@10191e5`/`01cb863`/`8ee95e0`). No queda ninguna fase
+   pendiente de este plan.
+
+## Reporte final (2026-09-06) — push + chat, ambos completos
+
+**Qué se construyó.** Dos features nuevas pedidas después de que
+`nuxt-migration-plan` cerrara: notificaciones push (Web Push/VAPID) para
+citas próximas, e integración del chat de asistencia IA de `barber` (ya
+existente ahí, nunca migrado) en Nuxt.
+
+**Push**: greenfield completo — no existía infraestructura de push en
+ningún lado del proyecto. `minishlink/web-push`, modelo `PushSubscription`,
+canal `WebPushChannel` (mismo patrón que `TwilioChannel`), integrado en
+`AppointmentNotification`. En Nuxt: service worker, `usePush()`, campana en
+el shell (sin pantalla de perfil propia todavía en Nuxt, así que vive ahí).
+Un bug real de por medio: `WebPushService` dejaba que una sola suscripción
+corrupta matara el envío a las demás del mismo usuario — corregido con
+`sendOneNotification()` aislado por suscripción en vez de batch.
+
+**Chat**: la lógica de IA en cascada de `barber` ya era sólida y con API
+lista — el trabajo real fue de persistencia y UI, no de inteligencia
+artificial. El hallazgo clave, confirmado en vivo antes de tocar código: el
+historial vivía solo en sesión PHP, inservible para un cliente Bearer-token
+sin cookie. Nuevo modelo `ChatMessage` + persistencia aditiva (el motor de
+sesión del widget Blade no se tocó). **El mismo landmine apareció dos veces
+en este plan** (push y chat): una ruta pública sin ningún middleware de
+auth significa `auth()->user()` siempre `null` para un cliente API, aunque
+mande un token válido — `mobile.auth.optional` lo resuelve sin exigir
+sesión a invitados. Vale la pena revisar el resto de `routes/api.php` por
+el mismo patrón si se toca otra ruta "pública" en el futuro.
+
+**Verificación real, no solo "compila".** Cada fase se probó contra el
+backend real corriendo en Docker y el frontend real en `npm run dev`, con
+la cuenta admin real — no mocks. Eso encontró tres bugs genuinos antes de
+que llegaran a producción: el bug de `WebPushService` ya mencionado, el
+landmine de `mobile.auth.optional` (dos veces), y de paso (fuera de alcance
+de este plan, flaggeado aparte) un bug pre-existente en
+`getLearningStats()`/`trainFromHistory()` de la API del chatbot.
+
+**Estado real al cerrar:** CI en verde en cada push de todo este plan, en
+ambos repos. `barber`: 285 tests pasando (x2), Pint y Larastan en frío
+limpios en cada fase. `frontend-urban`: ESLint + `npm run build` limpios en
+cada fase. No hay fases pendientes.
 
 ## Guardrails específicos de este plan
 
