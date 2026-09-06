@@ -72,5 +72,6 @@ export default defineNuxtConfig({
     '/services/**': { ssr: false },
     '/users': { ssr: false },
     '/users/**': { ssr: false },
+    '/barber/**': { ssr: false },
   },
 })
