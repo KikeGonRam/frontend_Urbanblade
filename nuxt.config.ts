@@ -75,5 +75,10 @@ export default defineNuxtConfig({
     '/barber/**': { ssr: false },
     '/barbers': { ssr: false },
     '/barbers/**': { ssr: false },
+    '/campaigns': { ssr: false },
+    '/raffles': { ssr: false },
+    '/logs': { ssr: false },
+    '/settings': { ssr: false },
+    '/reports': { ssr: false },
   },
 })
