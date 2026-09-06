@@ -442,6 +442,31 @@ ambos repos. `barber`: 285 tests pasando (x2), Pint y Larastan en frío
 limpios en cada fase. `frontend-urban`: ESLint + `npm run build` limpios en
 cada fase. No hay fases pendientes.
 
+## Post-cierre (2026-09-06, mismo día): mejoras al chat inspiradas en otros widgets
+
+El usuario pidió explícitamente revisar cómo resuelven el chat de
+asistencia otros sitios (cualquier categoría, no solo barberías) y traer
+lo que sirviera. Se revisó el widget "Fin" de Intercom (dogfooded en su
+propio sitio de marketing): timestamp + disclosure "AI Agent" bajo el
+primer mensaje, navegación con tabs (Inicio/Mensajes/Ayuda/Noticias, no
+aplicable aquí — es un helpdesk completo, nuestro caso de uso es un solo
+concierge), y la posibilidad de calificar respuestas.
+
+Se adoptó lo que sí encajaba: timestamp bajo cada mensaje, botón
+"Reintentar" en errores de red/rate-limit (reenvía el texto original en
+vez de que el usuario tenga que retiparlo), y calificación 👍/👎 por
+respuesta. Esta última no fue solo estética — destapó que
+`ChatbotLearningService::recordFeedback()` ya existía en el backend, pero
+las 5 ramas de `ChatbotController::query()` lo llamaban con `$wasHelpful`
+hardcodeado en `true`: el sistema de aprendizaje nunca había recibido una
+señal negativa real de nadie. Nuevo endpoint `POST /api/v1/chatbot/feedback`
+(`barber` commit `60b4d40`) le da al frontend una forma de mandar la señal
+real; `frontend-urban` commit `b067c5e` consume ese endpoint. Verificado en
+vivo: un clic real de 👍 produjo un `POST` real que quedó en el cache de
+feedback del backend con `helpful: true` — confirmado directo en el cache,
+no solo que la UI cambiaba de color. `.\test.ps1` x2 (292 tests), CI en
+verde en ambos repos.
+
 ## Guardrails específicos de este plan
 
 - No tocar `ChatbotContextService`'s comportamiento de sesión para el
