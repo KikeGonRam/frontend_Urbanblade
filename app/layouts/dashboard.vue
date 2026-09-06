@@ -20,5 +20,6 @@
     <ShellMobileBottomNav />
     <ShellMobileDrawer />
     <ChatWidget />
+    <BrandMascotCompanion />
   </div>
 </template>

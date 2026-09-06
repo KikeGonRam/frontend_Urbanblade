@@ -32,8 +32,8 @@ async function onLogout() {
     :class="railCollapsed ? 'lg:w-[88px]' : 'lg:w-[264px]'"
   >
     <div class="flex h-16 shrink-0 items-center gap-2 border-b border-line px-4">
+      <BrandBrandMark class="h-9 w-9 shrink-0" />
       <NuxtLink to="/dashboard" class="truncate font-analytics text-lg font-semibold text-ink">
-        <span :class="{ 'lg:hidden': !railCollapsed }">UB</span>
         <span class="hidden" :class="{ 'lg:inline': !railCollapsed }">Urban<span class="text-gold">Blade</span></span>
       </NuxtLink>
       <div class="ml-auto flex items-center gap-1">

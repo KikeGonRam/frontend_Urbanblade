@@ -35,6 +35,7 @@ async function onSubmit() {
 <template>
   <div class="flex min-h-screen items-center justify-center p-6 font-sans text-ink">
     <div class="w-full max-w-sm rounded-xl border border-line bg-card p-8">
+      <BrandBrandMark class="mb-5 h-12 w-12" />
       <p class="text-sm uppercase tracking-widest text-muted">UrbanBlade</p>
       <h1 class="mt-1 font-analytics text-2xl font-semibold text-ink">Iniciar sesión</h1>
 
