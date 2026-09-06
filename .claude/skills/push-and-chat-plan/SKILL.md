@@ -276,13 +276,29 @@ con B y agregar persistencia después, es un cambio de alcance de fase 2
    en la UI) antes de escribir código de UI — la arquitectura de backend
    (VAPID, `WebPushChannel`, `ChatMessage`) puede avanzar en paralelo sin
    esperar esas respuestas, ya que no depende de ellas.
-1. ⏳ **Push — backend**: VAPID keys, `PushSubscription` model,
-   `WebPushChannel`, `toWebPush()` en `AppointmentNotification`, endpoints
-   `push/subscribe`+`push/vapid-public-key`, `push` en
-   `notificationPreferences()`, endpoint API de preferences. Test de
-   integración nuevo (`PushSubscriptionApiTest` o similar, mismo patrón que
-   `ReviewApiTest`/`SocialApiTest` de esta sesión). Pint + Larastan en frío +
-   `.\test.ps1` x2 antes de dar la fase por cerrada.
+1. ✅ **DONE (barber, commit `00317fd`)** — Push — backend: `minishlink/web-push`
+   (no un paquete Laravel atado a migraciones MySQL — este repo es Mongo),
+   claves VAPID generadas y guardadas en `.env` local (nunca commiteadas;
+   placeholders en `.env.example`), modelo `PushSubscription`,
+   `WebPushChannel` (mismo patrón que `TwilioChannel`) + `WebPushService`
+   (mismo patrón "sin VAPID configurado → log y no-op" que `MessagingService`
+   ya usa para Twilio), `toWebPush()` en `AppointmentNotification` + canal
+   `push` agregado a `via()`, `push` en `User::notificationPreferences()`
+   (default `false`, igual que `sms`/`whatsapp` — canal opt-in). Endpoints
+   nuevos: `GET api/v1/push/vapid-public-key`, `POST`/`DELETE
+   api/v1/push/subscribe`, y `GET`/`PATCH api/v1/notifications/preferences`
+   (la versión web ya existía por sesión/CSRF, Nuxt necesitaba su propia).
+   **Gotcha real encontrado y corregido en el camino**: tanto la versión web
+   como la nueva API de `updatePreferences()` hacían `$user->update([
+   'notification_preferences' => $prefs])` con un array armado desde cero
+   cada vez — cualquiera de las dos hubiera borrado en silencio cualquier
+   preferencia puesta por la otra (p. ej. activar "push" desde Nuxt y luego
+   guardar el formulario web sin ese campo lo hubiera vuelto a apagar). Las
+   dos ahora hacen `array_merge($user->notificationPreferences(), $nuevos)`
+   en vez de reemplazar el array completo. Tests nuevos: `PushApiTest`,
+   `NotificationPreferencesApiTest`, `AppointmentNotificationChannelsTest`,
+   `WebPushServiceTest`. Verificado: Pint, Larastan en frío, `.\test.ps1` x2
+   (275 tests) — todo limpio, CI en verde en `main`. Scribe regenerado.
 2. ⏳ **Push — frontend**: service worker, `usePush()`, toggle de
    suscripción, verificado en vivo con una suscripción real del navegador
    (Chrome/Edge locales soportan Web Push en `localhost` sin HTTPS).
