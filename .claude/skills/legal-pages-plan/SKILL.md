@@ -80,8 +80,7 @@ alcance por ahora y se documenta aquí para si se pide después.
    cargan bien, banner de borrador visible, mobile (375px) correcto. En
    `/register`, confirmado con JS que el botón está `disabled: true`
    hasta marcar el checkbox y `false` después.
-6. ✅ Cierre: commit `[pendiente de hash -- ver el commit que agrega este
-   cierre]`, CI verde.
+6. ✅ Cierre: commit `0662267`, CI verde.
 
 **Nota para el usuario, repetida en ambas páginas**: este contenido
 cubre la estructura que exige la LFPDPPP y es un punto de partida sólido,
