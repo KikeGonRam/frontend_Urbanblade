@@ -52,40 +52,40 @@ async function onLogout() {
       </div>
     </div>
 
-    <nav class="flex-1 space-y-4 overflow-y-auto px-2 py-4">
+    <nav class="flex-1 space-y-5 overflow-y-auto px-3 py-5">
       <div v-for="section in sections" :key="section.key">
         <button
           v-if="section.collapsible"
           type="button"
-          class="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left text-xs font-semibold uppercase tracking-wider text-muted hover:text-ink"
+          class="flex w-full items-center justify-between rounded-lg px-2 py-1 text-left text-[10px] font-black uppercase tracking-[0.18em] text-muted/70 transition-colors hover:text-ink"
           :class="{ 'lg:justify-center': railCollapsed }"
           @click="toggleSection(section.key)"
         >
           <span :class="{ 'lg:hidden': railCollapsed }">{{ section.title }}</span>
           <svg
-            class="h-3.5 w-3.5 shrink-0 transition-transform"
+            class="h-3 w-3 shrink-0 transition-transform"
             :class="{ 'rotate-180': openSections[section.key], 'lg:hidden': railCollapsed }"
-            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
           >
             <path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
         </button>
-        <p v-else class="px-2 py-1.5 text-xs font-semibold uppercase tracking-wider text-muted" :class="{ 'lg:hidden': railCollapsed }">
+        <p v-else class="px-2 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-muted/70" :class="{ 'lg:hidden': railCollapsed }">
           {{ section.title }}
         </p>
 
         <ul
           v-show="!section.collapsible || openSections[section.key] || railCollapsed"
-          class="mt-1 space-y-0.5"
+          class="mt-2 space-y-1"
         >
           <li v-for="navItem in section.items" :key="navItem.to">
             <NuxtLink
               v-if="navItem.implemented"
               :to="navItem.to"
-              class="flex items-center gap-3 rounded-xl border-l-2 px-2.5 py-2 text-sm font-medium transition-all"
+              class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all"
               :class="[
                 railCollapsed ? 'lg:justify-center' : '',
-                isActive(navItem.to) ? 'border-gold bg-gold/10 text-gold shadow-[0_0_0_1px_rgba(212,175,55,0.08)]' : 'border-transparent text-ink hover:border-line hover:bg-accent',
+                isActive(navItem.to) ? 'bg-gold/15 font-bold text-gold' : 'font-medium text-ink/80 hover:bg-accent hover:text-ink',
               ]"
             >
               <ShellNavIcon :paths="navItem.icon" />
@@ -100,7 +100,7 @@ async function onLogout() {
             </NuxtLink>
             <span
               v-else
-              class="flex cursor-not-allowed items-center gap-3 rounded-lg px-2.5 py-2 text-sm text-muted/50"
+              class="flex cursor-not-allowed items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-muted/50"
               :class="{ 'lg:justify-center': railCollapsed }"
             >
               <ShellNavIcon :paths="navItem.icon" />
@@ -119,19 +119,19 @@ async function onLogout() {
 
     <div class="shrink-0 border-t border-line p-3">
       <div
-        class="flex items-center gap-2 rounded-xl border border-line bg-panel p-2"
+        class="flex items-center gap-2.5 rounded-xl p-2 transition-colors hover:bg-accent"
         :class="{ 'lg:justify-center': railCollapsed }"
       >
-        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gold/20 text-xs font-semibold text-gold">
+        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gold/20 text-xs font-bold text-gold">
           {{ (user?.name ?? 'U').slice(0, 2).toUpperCase() }}
         </div>
         <div class="min-w-0" :class="{ 'lg:hidden': railCollapsed }">
-          <p class="truncate text-sm text-ink">{{ user?.name }}</p>
-          <p class="truncate text-xs text-muted">{{ user?.roles.join(', ') }}</p>
+          <p class="truncate text-sm font-semibold text-ink">{{ user?.name }}</p>
+          <p class="truncate text-xs capitalize text-muted">{{ user?.roles.join(', ') }}</p>
         </div>
         <button
           type="button"
-          class="ml-auto shrink-0 rounded-lg p-1.5 text-muted hover:bg-accent hover:text-ink"
+          class="ml-auto shrink-0 rounded-lg p-1.5 text-muted hover:bg-card hover:text-ink"
           :class="{ 'lg:hidden': railCollapsed }"
           aria-label="Cerrar sesión"
           @click="onLogout"
