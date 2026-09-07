@@ -1,6 +1,6 @@
 ---
 name: auth-polish-plan
-description: Plan para las 4 mejoras recomendadas tras auth-pages-plan — medidor de fuerza de contraseña, transición entre páginas de auth, feedback visible de rate-limit, y login social (Google). Leer antes de tocar register.vue, reset-password.vue, login.vue, useAuth.ts, AppServiceProvider (rate limiters), o AuthController en barber.
+description: CERRADO (2026-09-06) — histórico de cómo se implementaron las 4 mejoras recomendadas tras auth-pages-plan: medidor de fuerza de contraseña, transición entre páginas, feedback visible de rate-limit, y login social con Google (código completo pero inerte hasta que el usuario ponga credenciales reales). Leer antes de tocar register.vue, reset-password.vue, login.vue, useAuth.ts, useRetryCountdown.ts, usePasswordStrength.ts, pages/auth/callback.vue, o SocialAuthController/AppServiceProvider en barber.
 ---
 
 # Mejoras de auth (fuerza de contraseña, transiciones, rate-limit, social login) — plan
@@ -35,63 +35,70 @@ citados en cada fase — mismo criterio que los planes anteriores.
 
 ---
 
-## Fases
+## Fases — todas ✅ DONE (2026-09-06)
 
-1. ⏳ **Medidor de fuerza de contraseña** (solo frontend): heurística propia
-   ligera en `register.vue`/`reset-password.vue` (longitud, mayúsculas,
-   números, símbolos — sin traer una librería como `zxcvbn`, que pesa ~800KB
-   minified y es overkill para un formulario de 2 campos). Barra de 4 segmentos
-   con los colores del tema (rojo→ámbar→dorado→verde esmeralda), label
-   ("Débil"/"Aceptable"/"Buena"/"Excelente"). Nuevo composable
-   `usePasswordStrength(password: Ref<string>)` en
-   `app/composables/usePasswordStrength.ts`, reusado por ambas páginas.
-2. ⏳ **Transición entre páginas de auth**: `definePageMeta({ pageTransition:
-   { name: 'auth', mode: 'out-in' } })` en las 4 páginas + clases CSS globales
-   `.auth-enter-active/.auth-leave-active` (fade + slight scale) en
-   `main.css` — Nuxt/Vue Router requieren que las clases de transición vivan en
-   CSS global, no en un componente con `<style scoped>` (el `<AuthShell>` no
-   puede definirlas él solo).
-3. ⏳ **Feedback visible de rate-limit**: en `login.vue`/`register.vue`/
-   `forgot-password.vue`/`reset-password.vue`, detectar status 429 en el catch
-   y leer el header `Retry-After` (via `error.response.headers` -- confirmar
-   que `$fetch`/`ofetch` expone headers en el objeto de error antes de asumirlo,
-   revisar en la implementación) para mostrar "Demasiados intentos. Espera
-   {n} segundos." con una cuenta regresiva simple (`setInterval`) en vez del
-   mensaje genérico.
-4. ⏳ **Login social (Google)** — **alcance recortado a Google únicamente**:
-   Apple Sign-In requiere una cuenta de Apple Developer de pago ($99/año) más
-   verificación de dominio y generación de un client secret firmado con JWT —
-   fuera de lo que tiene sentido implementar sin que el usuario ya tenga esa
-   cuenta. Google OAuth es gratis de configurar (Google Cloud Console).
-   - Backend: `composer require laravel/socialite`. Nuevo
-     `Api\Auth\SocialAuthController` con `redirect()` (arma la URL de Google)
-     y `callback()` (recibe el código, busca/crea el `User` por email, asigna
-     rol `cliente` igual que `register()`, emite token, redirige al frontend
-     con el token en la URL — mismo patrón que `ResetPassword::createUrlUsing()`
-     usa `frontend_url`). Nuevas env vars `GOOGLE_CLIENT_ID`,
-     `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`.
-   - Frontend: botón "Continuar con Google" en login.vue/register.vue que
-     navega a `{apiBase}/auth/google/redirect`; nueva página
-     `pages/auth/callback.vue` que lee el token de la URL, lo guarda (mismo
-     `useAuth()`) y redirige a `/dashboard`.
-   - **Bloqueador real, no evitable**: esta fase quedará con el código
-     completo pero **inerte hasta que el usuario cree su propio proyecto en
-     Google Cloud Console** (OAuth consent screen + credenciales) y pegue
-     `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` reales en `.env` — no es algo
-     que se pueda generar ni probar de verdad sin esas credenciales. Se deja
-     documentado paso a paso en `.env.example` qué hacer, y se verifica todo
-     lo demás (rutas, redirect building, manejo de errores) sin poder
-     completar un login real de punta a punta.
-5. ⏳ **Verificación**: `.\test.ps1` x2 + Pint + Larastan en frío (backend,
-   fases 3-4); `npm run lint` + `npm run build` (frontend, todas las fases); en
-   vivo en el Browser pane — medidor de fuerza reaccionando al escribir,
-   transición visible entre login↔register, forzar un 429 real (6+ intentos
-   seguidos) y confirmar el mensaje de espera, y el flujo de Google hasta donde
-   se pueda probar sin credenciales reales (ruta de redirect se arma bien,
-   callback maneja un código inválido con un error claro).
-6. ⏳ **Cierre**: reporte final, CI verde en ambos repos, y una nota clara al
-   usuario de qué le falta poner (las credenciales de Google) para que el login
-   social funcione de verdad.
+1. ✅ **Medidor de fuerza de contraseña** (frontend-urban `729b066`):
+   `usePasswordStrength.ts` (4 criterios: longitud≥8, mayúsculas+minúsculas,
+   dígito, símbolo u longitud≥12), `<AuthPasswordStrength>` (barra de 4
+   segmentos + label) en `register.vue`/`reset-password.vue`. **Bug real
+   encontrado probando en vivo**: `score 0` era ambiguo entre "campo vacío" y
+   "no cumple ningún criterio" (p.ej. escribir solo "abc" no mostraba ninguna
+   barra ni label, como si el campo siguiera vacío) — se agregó
+   `displayScore` con piso de 1 en cuanto hay cualquier texto, para que una
+   contraseña real (aunque mala) siempre muestre algo.
+2. ✅ **Transición entre páginas**: `pageTransition: { name: 'auth', mode:
+   'out-in' }` en las 4 páginas + `.auth-enter-active`/`.auth-leave-active`
+   en `main.css` (confirmado necesario vivir en CSS global, no en el
+   `<style scoped>` de `<AuthShell>` — Vue Router aplica esas clases
+   directo sobre `<NuxtPage>`).
+3. ✅ **Feedback visible de rate-limit**: `useRetryCountdown.ts` lee el header
+   `Retry-After` de un 429 (confirmado que sí llega en `error.response.headers`
+   vía ofetch, sin necesidad de cambios en el backend) y muestra una cuenta
+   regresiva real, botón deshabilitado mientras tanto. **Verificado forzando
+   el throttle real**: 7 llamadas seguidas a `forgot-password` desde curl (el
+   límite es 6/min) → la 7ª dio 429, y la UI mostró "Espera 56s" bajando en
+   vivo hasta 46s antes de continuar la prueba.
+4. ✅ **Login social (Google)** — alcance recortado a Google únicamente
+   (Apple Sign-In sigue fuera de alcance, requiere cuenta de pago):
+   - Backend (barber `99af874`): `laravel/socialite` instalado (esto bajó
+     `guzzlehttp/guzzle` de 8.1.0 a 7.15.5 -- ningún release de Socialite
+     soporta Guzzle 8 todavía; el downgrade cae dentro del rango que
+     `laravel/framework`/`laravel/boost` ya aceptaban, `composer audit`
+     limpio, suite completa verde después). Nuevo `SocialAuthController`
+     (`redirect()`/`callback()`), rutas `GET auth/google/redirect` y
+     `.../callback` (`throttle:10,1`). `callback()` espeja exactamente la
+     asignación de rol de `register()` — siempre `cliente`, nunca algo que
+     el propio flujo de OAuth pueda elegir.
+   - Frontend (frontend-urban `729b066`): botón "Continuar con Google" (logo
+     real multicolor) en login/register; nueva `pages/auth/callback.vue` que
+     lee el token de la URL, lo guarda, y limpia la URL con
+     `history.replaceState` antes de redirigir a `/dashboard` (nunca deja el
+     token visible en el historial).
+   - **Bloqueador real, no evitable, confirmado tal cual se anticipó**: sin
+     `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` reales (el usuario debe
+     generarlos en Google Cloud Console — pasos documentados en
+     `.env.example`), `redirect()` responde 503 en vez de romper — verificado
+     en vivo con `curl` (`503` confirmado). Todo lo demás sí se verificó de
+     punta a punta con `Socialite::fake()` en tests, y en el navegador: la
+     URL del botón apunta al endpoint correcto, y la página de callback
+     muestra su estado de error correctamente cuando no hay token en la URL.
+5. ✅ **Verificación**: `.\test.ps1` verde (338 tests, +5 sobre la fase
+   anterior: `SocialAuthApiTest`), Pint/Larastan en frío limpios (2 errores
+   de tipo nuevos por `stateless()` no estar en el contrato `Provider` de
+   Socialite, resueltos con `@var AbstractProvider`, no baseline), Scribe
+   regenerado (2 rutas nuevas documentadas). `npm run lint`/`npm run build`
+   verdes. Todo verificado en vivo en el Browser pane, no solo con tests
+   automatizados (medidor de fuerza en las 3 franjas, transición sin errores
+   de consola, rate-limit real forzado y contado en vivo, botón/página de
+   Google).
+6. ✅ **Cierre**: CI verde en ambos repos — barber `99af874`, frontend-urban
+   `729b066`.
+
+**Nota para el usuario, no resuelta aquí**: el login con Google está
+completo pero no funcionará hasta que generes tus propias credenciales en
+[Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+(gratis) y las pongas en `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` de tu
+`.env` real — los pasos exactos están comentados en `.env.example`.
 
 ## Guardrails específicos de este plan
 
