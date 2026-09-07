@@ -71,7 +71,7 @@ async function submit() {
           :src="user.avatar_url"
           :alt="`Foto de ${user.name}`"
           class="h-12 w-12 rounded-full object-cover"
-        />
+        >
         <div>
           <p
             class="text-[10px] font-black uppercase tracking-[0.18em] text-gold"
@@ -101,7 +101,7 @@ async function submit() {
             autocomplete="tel"
             placeholder="Tu número de teléfono"
             class="w-full rounded-lg border border-line bg-main px-3 py-2 text-ink focus:border-gold focus:outline-none"
-          />
+          >
         </div>
         <div>
           <label for="fecha-nacimiento" class="mb-1 block text-sm text-muted"
@@ -114,7 +114,7 @@ async function submit() {
             required
             autocomplete="bday"
             class="w-full rounded-lg border border-line bg-main px-3 py-2 text-ink focus:border-gold focus:outline-none"
-          />
+          >
         </div>
         <p v-if="errorMessage" class="text-sm text-red-400">
           {{ errorMessage }}

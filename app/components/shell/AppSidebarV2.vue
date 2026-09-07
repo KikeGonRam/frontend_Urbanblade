@@ -167,7 +167,7 @@ async function onLogout() {
         :alt="`Foto de ${user.name}`"
         class="ub-sidebar__avatar object-cover"
         @error="avatarFailed = true"
-      /><span v-else class="ub-sidebar__avatar">{{
+      ><span v-else class="ub-sidebar__avatar">{{
         (user?.name ?? "U").slice(0, 2).toUpperCase()
       }}</span
       ><span v-show="!railCollapsed"

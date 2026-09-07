@@ -43,7 +43,7 @@ watch(
         v-model="search"
         type="search"
         placeholder="Buscar clientes, citas, servicios…"
-      />
+      >
     </label>
 
     <div class="ub-desktop-topbar__actions">
@@ -69,7 +69,7 @@ watch(
           :alt="`Foto de ${user.name}`"
           class="ub-sidebar__avatar object-cover"
           @error="avatarFailed = true"
-        />
+        >
         <span v-else class="ub-sidebar__avatar">{{
           (user?.name ?? "U").slice(0, 2).toUpperCase()
         }}</span>
