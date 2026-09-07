@@ -161,19 +161,27 @@ async function onLogout() {
       class="ub-sidebar__profile"
       :class="{ 'is-collapsed': railCollapsed }"
     >
-      <img
-        v-if="user?.avatar_url && !avatarFailed"
-        :src="user.avatar_url"
-        :alt="`Foto de ${user.name}`"
-        class="ub-sidebar__avatar object-cover"
-        @error="avatarFailed = true"
-      ><span v-else class="ub-sidebar__avatar">{{
-        (user?.name ?? "U").slice(0, 2).toUpperCase()
-      }}</span
-      ><span v-show="!railCollapsed"
-        ><strong>{{ user?.name }}</strong
-        ><small>{{ user?.roles.join(", ") }}</small></span
-      ><button
+      <NuxtLink
+        to="/profile"
+        class="ub-sidebar__profile-link"
+        :class="{ 'is-collapsed': railCollapsed }"
+        title="Mi perfil"
+      >
+        <img
+          v-if="user?.avatar_url && !avatarFailed"
+          :src="user.avatar_url"
+          :alt="`Foto de ${user.name}`"
+          class="ub-sidebar__avatar object-cover"
+          @error="avatarFailed = true"
+        ><span v-else class="ub-sidebar__avatar">{{
+          (user?.name ?? "U").slice(0, 2).toUpperCase()
+        }}</span
+        ><span v-show="!railCollapsed"
+          ><strong>{{ user?.name }}</strong
+          ><small>{{ user?.roles.join(", ") }}</small></span
+        >
+      </NuxtLink>
+      <button
         v-show="!railCollapsed"
         type="button"
         aria-label="Cerrar sesión"

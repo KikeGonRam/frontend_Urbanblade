@@ -62,7 +62,7 @@ watch(
         </select>
       </label>
       <ShellPushToggle />
-      <div class="ub-topbar-profile">
+      <NuxtLink to="/profile" class="ub-topbar-profile" title="Mi perfil">
         <img
           v-if="user?.avatar_url && !avatarFailed"
           :src="user.avatar_url"
@@ -77,7 +77,7 @@ watch(
           ><strong>{{ user?.name }}</strong
           ><small>{{ user?.roles.join(", ") }}</small></span
         >
-      </div>
+      </NuxtLink>
     </div>
   </header>
 </template>

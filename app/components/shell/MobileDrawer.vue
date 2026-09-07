@@ -51,13 +51,15 @@ async function onLogout() {
       </div>
 
       <div class="flex items-center gap-2 border-t border-line pt-3">
-        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gold/20 text-xs font-semibold text-gold">
-          {{ (user?.name ?? 'U').slice(0, 2).toUpperCase() }}
-        </div>
-        <div class="min-w-0">
-          <p class="truncate text-sm text-ink">{{ user?.name }}</p>
-          <p class="truncate text-xs text-muted">{{ user?.roles.join(', ') }}</p>
-        </div>
+        <NuxtLink to="/profile" class="flex min-w-0 flex-1 items-center gap-2 rounded-lg p-1 hover:bg-accent" @click="drawerOpen = false">
+          <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gold/20 text-xs font-semibold text-gold">
+            {{ (user?.name ?? 'U').slice(0, 2).toUpperCase() }}
+          </div>
+          <div class="min-w-0">
+            <p class="truncate text-sm text-ink">{{ user?.name }}</p>
+            <p class="truncate text-xs text-muted">{{ user?.roles.join(', ') }}</p>
+          </div>
+        </NuxtLink>
         <button type="button" class="ml-auto shrink-0 text-sm text-gold" @click="onLogout">
           Cerrar sesión
         </button>

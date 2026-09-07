@@ -10,12 +10,13 @@ const { user } = useAuth()
 
     <div class="flex items-center gap-3">
       <ShellPushToggle />
-      <span
+      <NuxtLink
+        to="/profile"
         class="flex h-8 w-8 items-center justify-center rounded-full bg-gold/20 text-xs font-semibold text-gold"
         :title="user?.name"
       >
         {{ (user?.name ?? 'U').slice(0, 2).toUpperCase() }}
-      </span>
+      </NuxtLink>
     </div>
   </header>
 </template>
