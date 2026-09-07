@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Line } from 'vue-chartjs'
+import { Bar } from 'vue-chartjs'
 import { chartScale, fmtInt } from '~/utils/chartTheme'
 import type { DashboardInsight } from '~/components/dashboard/AnalyticsInsights.vue'
 
@@ -32,28 +32,30 @@ const kpiCards = computed(() => [
 
 const hasFlow = computed(() => (props.data.flowChart.values ?? []).some((v) => v))
 
+/*
+ * Barras tipo "cápsula" (borderRadius alto + grosor fijo) en vez de la
+ * línea que tenía antes -- son horas discretas del día (buckets), no una
+ * serie continua, así que barras representan mejor "cuántas citas en esta
+ * hora" que una línea que sugiere interpolación entre horas. Mismo tipo de
+ * gráfica que el template de referencia usaba para su tarjeta de pagos por
+ * día de la semana.
+ */
 const flowChartData = computed(() => ({
   labels: props.data.flowChart.labels ?? [],
   datasets: [{
     label: 'Citas',
     data: props.data.flowChart.values ?? [],
-    borderColor: '#6366f1',
-    backgroundColor: 'rgba(99,102,241,0.1)',
-    borderWidth: 2.5,
-    fill: true,
-    cubicInterpolationMode: 'monotone' as const,
-    pointRadius: 3,
-    pointHoverRadius: 6,
-    pointBackgroundColor: '#0d0d0d',
-    pointBorderColor: '#6366f1',
-    pointBorderWidth: 2,
+    backgroundColor: 'rgba(99,102,241,0.55)',
+    hoverBackgroundColor: '#6366f1',
+    borderRadius: 999,
+    borderSkipped: false,
+    barThickness: 14,
   }],
 }))
 
 const flowChartOptions = {
   responsive: true,
   maintainAspectRatio: false,
-  interaction: { intersect: false, mode: 'index' as const },
   plugins: {
     legend: { display: false },
     tooltip: {
@@ -138,7 +140,7 @@ const flowChartOptions = {
           <h3 class="mt-0.5 text-sm font-black uppercase text-ink">Flujo Operativo</h3>
         </div>
         <div v-if="hasFlow" class="h-52">
-          <Line :data="flowChartData" :options="flowChartOptions" />
+          <Bar :data="flowChartData" :options="flowChartOptions" />
         </div>
         <div v-else class="flex h-52 items-center justify-center rounded-xl border border-dashed border-ink/[0.06]">
           <p class="text-xs font-bold uppercase tracking-widest text-ink/45">Sin flujo registrado hoy</p>
