@@ -33,49 +33,44 @@ async function onSubmit() {
 </script>
 
 <template>
-  <div class="flex min-h-screen items-center justify-center p-6 font-sans text-ink">
-    <div class="w-full max-w-sm rounded-xl border border-line bg-card p-8">
-      <BrandBrandMark class="mb-5 h-12 w-12" />
-      <p class="text-sm uppercase tracking-widest text-muted">UrbanBlade</p>
-      <h1 class="mt-1 font-analytics text-2xl font-semibold text-ink">Iniciar sesión</h1>
+  <AuthShell mascot="nava-panther.png" mascot-name="Nava">
+    <h1 class="mb-1 text-center text-lg font-black uppercase tracking-widest text-white">
+      Bienvenido <span class="font-serif text-base italic normal-case text-gold">de nuevo</span>
+    </h1>
+    <p class="mb-6 text-center text-[10px] font-bold uppercase tracking-widest text-muted">Introduce tus credenciales para continuar</p>
 
-      <form class="mt-6 space-y-4" @submit.prevent="onSubmit">
-        <div>
-          <label for="email" class="mb-1 block text-sm text-muted">Correo</label>
-          <input
-            id="email"
-            v-model="email"
-            type="email"
-            required
-            autocomplete="email"
-            class="w-full rounded-lg border border-line bg-main px-3 py-2 text-ink focus:border-gold focus:outline-none"
-          >
-        </div>
-
-        <div>
-          <label for="password" class="mb-1 block text-sm text-muted">Contraseña</label>
-          <input
-            id="password"
-            v-model="password"
-            type="password"
-            required
-            autocomplete="current-password"
-            class="w-full rounded-lg border border-line bg-main px-3 py-2 text-ink focus:border-gold focus:outline-none"
-          >
-        </div>
-
-        <p v-if="errorMessage" class="text-sm text-red-400">
-          {{ errorMessage }}
-        </p>
-
-        <button
-          type="submit"
-          :disabled="loading"
-          class="w-full rounded-lg bg-gold px-4 py-2 font-semibold text-black transition hover:bg-gold-dim disabled:opacity-50"
+    <form class="space-y-4" @submit.prevent="onSubmit">
+      <div>
+        <label for="email" class="mb-1 block text-sm text-muted">Correo</label>
+        <input
+          id="email" v-model="email" type="email" required autofocus autocomplete="username" placeholder="tu@email.com"
+          class="w-full rounded-lg border border-line bg-main px-3 py-2 text-ink focus:border-gold focus:outline-none"
         >
-          {{ loading ? 'Ingresando…' : 'Ingresar' }}
-        </button>
-      </form>
-    </div>
-  </div>
+      </div>
+
+      <div>
+        <div class="mb-1 flex items-center justify-between">
+          <label for="password" class="block text-sm text-muted">Contraseña</label>
+          <NuxtLink to="/forgot-password" class="text-[10px] font-bold uppercase tracking-widest text-muted hover:text-gold">¿Olvidaste tu contraseña?</NuxtLink>
+        </div>
+        <input
+          id="password" v-model="password" type="password" required autocomplete="current-password" placeholder="••••••••"
+          class="w-full rounded-lg border border-line bg-main px-3 py-2 text-ink focus:border-gold focus:outline-none"
+        >
+      </div>
+
+      <p v-if="errorMessage" class="text-sm text-red-400">{{ errorMessage }}</p>
+
+      <button
+        type="submit" :disabled="loading"
+        class="w-full rounded-lg bg-gold px-4 py-2 font-semibold text-black transition hover:bg-gold-dim disabled:opacity-50"
+      >
+        {{ loading ? 'Ingresando…' : 'Ingresar' }}
+      </button>
+
+      <p class="pt-2 text-center text-[10px] font-bold uppercase tracking-widest text-muted">
+        ¿Aún no tienes cuenta? <NuxtLink to="/register" class="text-gold hover:underline">Regístrate ahora</NuxtLink>
+      </p>
+    </form>
+  </AuthShell>
 </template>

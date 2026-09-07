@@ -53,6 +53,51 @@ export function useAuth() {
     return data.user
   }
 
+  /**
+   * Registro (AuthController::register()): igual que login(), el backend ya
+   * devuelve token + user en la misma respuesta (201) -- auto-login, no hace
+   * falta un paso de login aparte después de registrarse.
+   */
+  async function register(name: string, email: string, password: string, passwordConfirmation: string) {
+    const data = await $fetch<LoginResponse>('/auth/register', {
+      baseURL: config.public.apiBase,
+      method: 'POST',
+      body: { name, email, password, password_confirmation: passwordConfirmation, device_name: 'Nuxt Web' },
+    })
+
+    token.value = data.token
+    user.value = data.user
+
+    return data.user
+  }
+
+  /**
+   * AuthController::forgotPassword() -- no autentica, solo dispara el correo
+   * de recuperación (o falla en silencio si el correo no existe, mismo
+   * criterio de no revelar qué correos están registrados que ya sigue login()).
+   */
+  async function forgotPassword(email: string) {
+    return await $fetch<{ message: string }>('/auth/forgot-password', {
+      baseURL: config.public.apiBase,
+      method: 'POST',
+      body: { email },
+    })
+  }
+
+  /**
+   * AuthController::resetPassword() -- token y email vienen del link del
+   * correo (ver ResetPassword::createUrlUsing() en barber, apunta a
+   * /reset-password?token=...&email=...). No autentica: el usuario debe
+   * iniciar sesión de nuevo con la contraseña nueva.
+   */
+  async function resetPassword(resetToken: string, email: string, password: string, passwordConfirmation: string) {
+    return await $fetch<{ message: string }>('/auth/reset-password', {
+      baseURL: config.public.apiBase,
+      method: 'POST',
+      body: { token: resetToken, email, password, password_confirmation: passwordConfirmation },
+    })
+  }
+
   async function fetchMe() {
     if (!token.value) {
       user.value = null
@@ -94,5 +139,5 @@ export function useAuth() {
     user.value = null
   }
 
-  return { token, user, isAuthenticated, hasRole, login, fetchMe, logout }
+  return { token, user, isAuthenticated, hasRole, login, register, forgotPassword, resetPassword, fetchMe, logout }
 }
