@@ -92,26 +92,24 @@ let reducedMotion = false
  * las encontraba con opacity:0 para siempre -- el directive's mounted() se
  * dispara para cada elemento en el momento real en que entra al DOM, sin
  * importar si eso pasa en el mount inicial o después de un fetch async.
+ *
+ * revealObserver se crea aquí, en el scope de setup() -- NO dentro de
+ * onMounted() -- porque para los elementos ya presentes en el render
+ * inicial (SSR hidratado), Vue dispara el mounted() de un directive de
+ * elemento ANTES del onMounted() del propio componente (los directives se
+ * encolan durante el patch del árbol; el onMounted del componente se
+ * encola después de que ese patch termina). Con revealObserver creado
+ * dentro de onMounted, ese primer batch de mounted() de v-reveal corría
+ * con revealObserver todavía undefined -- el `?.observe()` no hacía nada y
+ * la sección completa quedaba en opacity:0 para siempre. Bug real,
+ * invisible en `npm run dev` (donde por timing sí llegaba a tiempo) pero
+ * reproducido de forma consistente en un build de producción real
+ * (`npm run build` + `node .output/server/index.mjs`) -- exactamente el
+ * comportamiento que el dueño del proyecto reportó ver en el deploy real
+ * de Vercel (toda la página bajo el hero aparecía en blanco).
  */
-const vReveal = {
-  mounted(el: HTMLElement) {
-    if (reducedMotion) el.classList.add('is-visible')
-    else revealObserver?.observe(el)
-  },
-}
-
-onMounted(() => {
+if (import.meta.client) {
   reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-
-  scrollHandler = () => { scrolled.value = window.scrollY > 50 }
-  window.addEventListener('scroll', scrollHandler, { passive: true })
-
-  const heroBg = document.querySelector<HTMLElement>('.hero-bg')
-  if (heroBg) {
-    parallaxHandler = () => { heroBg.style.transform = `translateY(${window.scrollY * 0.22}px)` }
-    window.addEventListener('scroll', parallaxHandler, { passive: true })
-  }
-
   if (!reducedMotion) {
     revealObserver = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -121,6 +119,24 @@ onMounted(() => {
         }
       })
     }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' })
+  }
+}
+
+const vReveal = {
+  mounted(el: HTMLElement) {
+    if (reducedMotion) el.classList.add('is-visible')
+    else revealObserver?.observe(el)
+  },
+}
+
+onMounted(() => {
+  scrollHandler = () => { scrolled.value = window.scrollY > 50 }
+  window.addEventListener('scroll', scrollHandler, { passive: true })
+
+  const heroBg = document.querySelector<HTMLElement>('.hero-bg')
+  if (heroBg) {
+    parallaxHandler = () => { heroBg.style.transform = `translateY(${window.scrollY * 0.22}px)` }
+    window.addEventListener('scroll', parallaxHandler, { passive: true })
   }
 })
 
@@ -632,12 +648,12 @@ onBeforeUnmount(() => {
   background-image: url('https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=2070&auto=format&fit=crop');
   background-size: cover;
   background-position: center;
-  opacity: 0.3;
+  opacity: 0.48;
 }
 .hero-scrim {
   background:
-    linear-gradient(to bottom, color-mix(in srgb, var(--bg-main) 65%, transparent) 0%, color-mix(in srgb, var(--bg-main) 20%, transparent) 45%, var(--bg-main) 100%),
-    linear-gradient(to right, color-mix(in srgb, var(--bg-main) 50%, transparent), transparent, color-mix(in srgb, var(--bg-main) 50%, transparent));
+    linear-gradient(to bottom, color-mix(in srgb, var(--bg-main) 55%, transparent) 0%, color-mix(in srgb, var(--bg-main) 12%, transparent) 45%, var(--bg-main) 100%),
+    linear-gradient(to right, color-mix(in srgb, var(--bg-main) 40%, transparent), transparent, color-mix(in srgb, var(--bg-main) 40%, transparent));
 }
 
 .mobile-menu-enter-active, .mobile-menu-leave-active { transition: opacity .2s ease, transform .2s ease; }
