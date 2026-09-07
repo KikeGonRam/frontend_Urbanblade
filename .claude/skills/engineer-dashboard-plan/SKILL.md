@@ -91,7 +91,21 @@ documentarla en `docs/ACCESOS.md` como las otras 4. Confirmado también
 que el dashboard de Admin sigue sin regresiones (mismo `adminPayload()`,
 sin tocar).
 
-**Pendiente, explícitamente fuera de este plan** (fase 5 del análisis
-original): propagar 1-2 gráficas nuevas (anillo de progreso, barras
-cápsula) a los dashboards de Cliente/Recepción — se dejó para cuando el
-usuario confirme cuáles, después de ver cómo quedó esto.
+## Fase 5 — cerrada (2026-09-06, misma sesión, tras feedback del usuario)
+
+- **Sidebar**: el primer pase (barra de acento + tarjeta de usuario en
+  caja) fue señalado como insuficiente ("te falta lo del sidebar") —
+  se hizo un segundo pase más decidido: ítem activo como píldora sólida
+  completa (`bg-gold/15` + texto dorado en negritas, sin borde
+  izquierdo), encabezados de sección más chicos/tenues, más aire en
+  general, tarjeta de usuario simplificada a un simple hover en vez de
+  caja con borde. Commit `324b725`.
+- **Anillo de progreso (Cliente)**: ya existía (`conic-gradient` de
+  nivel de lealtad en `Cliente.vue`, línea ~314) — no se duplicó.
+- **Barras cápsula (Recepción)**: `Recepcion.vue` era el único dashboard
+  sin variedad de gráficas (solo una Line) — "Flujo Operativo" pasó de
+  `<Line>` a `<Bar>` con `borderRadius: 999` y grosor fijo, mismo
+  patrón visual que la tarjeta de pagos del template de referencia.
+  Commit `6794eed`.
+
+Con esto, las 4 fases + la fase 5 del plan original quedan completas.
