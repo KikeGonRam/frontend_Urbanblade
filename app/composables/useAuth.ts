@@ -1,13 +1,13 @@
 export interface AuthUser {
-  id: number;
+  id: string | number;
   name: string;
   email: string;
   avatar_url: string | null;
   roles: string[];
   profile_complete: boolean;
   profile_missing: string[];
-  client_id: number | null;
-  barber_id: number | null;
+  client_id: string | number | null;
+  barber_id: string | number | null;
 }
 
 interface LoginResponse {
