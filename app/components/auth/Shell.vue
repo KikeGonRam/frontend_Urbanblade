@@ -14,6 +14,27 @@ defineProps<{
 }>()
 
 defineOptions({ inheritAttrs: false })
+
+// Parallax sutil de la mascota al mover el cursor -- mismo truco que ya usa
+// error-page.blade.php (barber) sobre su propia mascota, portado a Vue.
+const stage = useTemplateRef<HTMLElement>('stage')
+const mascotEl = useTemplateRef<HTMLElement>('mascotEl')
+
+function onPointerMove(event: PointerEvent) {
+  if (!mascotEl.value || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+  const x = (event.clientX / window.innerWidth - 0.5) * 14
+  const y = (event.clientY / window.innerHeight - 0.5) * 10
+  mascotEl.value.style.setProperty('--mascot-x', `${x}px`)
+  mascotEl.value.style.setProperty('--mascot-y', `${y}px`)
+}
+
+onMounted(() => {
+  stage.value?.addEventListener('pointermove', onPointerMove, { passive: true })
+})
+onBeforeUnmount(() => {
+  stage.value?.removeEventListener('pointermove', onPointerMove)
+})
 </script>
 
 <template>
@@ -22,8 +43,12 @@ defineOptions({ inheritAttrs: false })
     <div class="auth-shell__orbit auth-shell__orbit--b" aria-hidden="true" />
 
     <div class="auth-shell__grid">
-      <section class="auth-shell__brand">
-        <NuxtLink to="/" class="auth-shell__logo">
+      <section ref="stage" class="auth-shell__brand">
+        <div class="auth-shell__photo" aria-hidden="true" />
+        <div class="auth-shell__scrim" aria-hidden="true" />
+        <div class="auth-shell__gridlines" aria-hidden="true" />
+
+        <NuxtLink to="/" class="auth-shell__logo auth-shell__reveal" style="--d: 0s">
           <BrandBrandMark class="h-11 w-11" />
           <div>
             <span class="auth-shell__logo-name">Urban<strong>Blade</strong></span>
@@ -32,25 +57,25 @@ defineOptions({ inheritAttrs: false })
         </NuxtLink>
 
         <div class="auth-shell__tagline">
-          <p class="auth-shell__eyebrow">
+          <p class="auth-shell__eyebrow auth-shell__reveal" style="--d: .08s">
             <span aria-hidden="true" />
             Arte &amp; Precisión
           </p>
-          <h2 class="auth-shell__headline">
+          <h2 class="auth-shell__headline auth-shell__reveal" style="--d: .16s">
             Donde el
             <span>estilo</span>
             toma vida.
           </h2>
-          <p class="auth-shell__subtitle">Más de una década perfeccionando el arte del grooming masculino. Tu próximo gran look comienza aquí.</p>
+          <p class="auth-shell__subtitle auth-shell__reveal" style="--d: .24s">Más de una década perfeccionando el arte del grooming masculino. Tu próximo gran look comienza aquí.</p>
 
-          <div class="auth-shell__stats">
+          <div class="auth-shell__stats auth-shell__reveal" style="--d: .32s">
             <div><p>500<span>+</span></p><span>Clientes felices</span></div>
             <div><p>10<span>+</span></p><span>Años de experiencia</span></div>
             <div><p>4.9</p><span>Calificación</span></div>
           </div>
         </div>
 
-        <figure class="auth-shell__mascot">
+        <figure ref="mascotEl" class="auth-shell__mascot auth-shell__reveal" style="--d: .4s">
           <span class="auth-shell__mascot-halo" aria-hidden="true" />
           <img :src="`/images/mascots/${mascot}`" :alt="`${mascotName}, mascota de UrbanBlade`" draggable="false">
           <figcaption>{{ mascotName }} está aquí para ayudarte</figcaption>
@@ -58,7 +83,7 @@ defineOptions({ inheritAttrs: false })
       </section>
 
       <section class="auth-shell__form-side">
-        <div class="auth-shell__mobile-logo">
+        <div class="auth-shell__mobile-logo auth-shell__reveal" style="--d: 0s">
           <NuxtLink to="/">
             <BrandBrandMark class="mx-auto h-14 w-14" />
           </NuxtLink>
@@ -66,11 +91,11 @@ defineOptions({ inheritAttrs: false })
           <p>Acceso Exclusivo</p>
         </div>
 
-        <div class="auth-shell__card">
+        <div class="auth-shell__card auth-shell__reveal" style="--d: .1s">
           <slot />
         </div>
 
-        <p class="auth-shell__footer">&copy; {{ new Date().getFullYear() }} UrbanBlade · Todos los derechos reservados</p>
+        <p class="auth-shell__footer auth-shell__reveal" style="--d: .2s">&copy; {{ new Date().getFullYear() }} UrbanBlade · Todos los derechos reservados</p>
       </section>
     </div>
   </div>
@@ -108,11 +133,44 @@ defineOptions({ inheritAttrs: false })
   flex-direction: column;
   justify-content: space-between;
   padding: 3rem 3.5rem;
-  background:
-    radial-gradient(circle at 15% 20%, rgb(var(--gold-rgb) / 0.05), transparent 26rem),
-    #050505;
+  overflow: hidden;
+  background: #050505;
 }
 @media (min-width: 1024px) { .auth-shell__brand { display: flex; } }
+
+/* Foto de fondo (misma que guest.blade.php) -- muy tenue, es textura
+   atmosférica, no compite con la mascota como elemento principal. */
+.auth-shell__photo {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: url('https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=2074&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+  opacity: 0.16;
+}
+.auth-shell__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 15% 20%, rgb(var(--gold-rgb) / 0.06), transparent 26rem),
+    linear-gradient(150deg, #050505 12%, rgba(5, 5, 5, 0.72) 55%, #0a0a0a 100%);
+}
+.auth-shell__gridlines {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.035;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.15) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+.auth-shell__brand > *:not(.auth-shell__photo):not(.auth-shell__scrim):not(.auth-shell__gridlines) {
+  position: relative;
+  z-index: 1;
+}
 
 .auth-shell__logo { display: flex; align-items: center; gap: 0.75rem; width: fit-content; }
 .auth-shell__logo-name { display: block; font-weight: 900; text-transform: uppercase; letter-spacing: -0.04em; font-size: 1.25rem; color: #fff; }
@@ -207,9 +265,17 @@ defineOptions({ inheritAttrs: false })
 
 .auth-shell__footer { margin-top: 2rem; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: rgb(255 255 255 / 0.4); }
 
+/* Entrada escalonada: cada elemento define su propio retraso via --d
+   (custom property inline) y comparte la misma animación base. */
+.auth-shell__reveal {
+  animation: auth-reveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: var(--d, 0s);
+}
+
+@keyframes auth-reveal { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes auth-mascot-float { 0%, 100% { transform: translateY(0) rotate(-0.4deg); } 50% { transform: translateY(-10px) rotate(0.5deg); } }
 @keyframes auth-mascot-halo { 0%, 100% { opacity: 0.65; transform: scale(0.96); } 50% { opacity: 1; transform: scale(1.04); } }
 @media (prefers-reduced-motion: reduce) {
-  .auth-shell__mascot img, .auth-shell__mascot-halo { animation: none; }
+  .auth-shell__mascot img, .auth-shell__mascot-halo, .auth-shell__reveal { animation: none; }
 }
 </style>

@@ -44,7 +44,7 @@ async function onSubmit() {
         <label for="email" class="mb-1 block text-sm text-muted">Correo</label>
         <input
           id="email" v-model="email" type="email" required autofocus autocomplete="username" placeholder="tu@email.com"
-          class="w-full rounded-lg border border-line bg-main px-3 py-2 text-ink focus:border-gold focus:outline-none"
+          class="w-full rounded-lg border border-line bg-main px-3 py-2 text-ink transition-all duration-200 focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)] focus:outline-none"
         >
       </div>
 
@@ -53,17 +53,14 @@ async function onSubmit() {
           <label for="password" class="block text-sm text-muted">Contraseña</label>
           <NuxtLink to="/forgot-password" class="text-[10px] font-bold uppercase tracking-widest text-muted hover:text-gold">¿Olvidaste tu contraseña?</NuxtLink>
         </div>
-        <input
-          id="password" v-model="password" type="password" required autocomplete="current-password" placeholder="••••••••"
-          class="w-full rounded-lg border border-line bg-main px-3 py-2 text-ink focus:border-gold focus:outline-none"
-        >
+        <AuthPasswordField id="password" v-model="password" autocomplete="current-password" placeholder="••••••••" />
       </div>
 
       <p v-if="errorMessage" class="text-sm text-red-400">{{ errorMessage }}</p>
 
       <button
         type="submit" :disabled="loading"
-        class="w-full rounded-lg bg-gold px-4 py-2 font-semibold text-black transition hover:bg-gold-dim disabled:opacity-50"
+        class="w-full rounded-lg bg-gold px-4 py-2 font-semibold text-black transition-all duration-200 hover:scale-[1.02] hover:bg-gold-dim hover:shadow-lg hover:shadow-gold/20 active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100"
       >
         {{ loading ? 'Ingresando…' : 'Ingresar' }}
       </button>

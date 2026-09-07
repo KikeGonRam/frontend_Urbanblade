@@ -34,7 +34,12 @@ async function onSubmit() {
     </p>
 
     <template v-if="sent">
-      <p class="rounded-lg border border-gold/30 bg-gold/5 p-3 text-center text-sm text-gold">{{ message }}</p>
+      <div class="animate-[auth-pop_.4s_cubic-bezier(.16,1,.3,1)_both] rounded-lg border border-gold/30 bg-gold/5 p-4 text-center">
+        <svg class="mx-auto mb-2 h-8 w-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+        </svg>
+        <p class="text-sm text-gold">{{ message }}</p>
+      </div>
       <NuxtLink to="/login" class="mt-6 block text-center text-[10px] font-black uppercase tracking-widest text-muted hover:text-gold">
         &larr; Volver al inicio de sesión
       </NuxtLink>
@@ -45,7 +50,7 @@ async function onSubmit() {
         <label for="email" class="mb-1 block text-sm text-muted">Correo</label>
         <input
           id="email" v-model="email" type="email" required autofocus placeholder="tu@email.com"
-          class="w-full rounded-lg border border-line bg-main px-3 py-2 text-ink focus:border-gold focus:outline-none"
+          class="w-full rounded-lg border border-line bg-main px-3 py-2 text-ink transition-all duration-200 focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)] focus:outline-none"
         >
       </div>
 
@@ -53,7 +58,7 @@ async function onSubmit() {
 
       <button
         type="submit" :disabled="loading"
-        class="w-full rounded-lg bg-gold px-4 py-2 font-semibold text-black transition hover:bg-gold-dim disabled:opacity-50"
+        class="w-full rounded-lg bg-gold px-4 py-2 font-semibold text-black transition-all duration-200 hover:scale-[1.02] hover:bg-gold-dim hover:shadow-lg hover:shadow-gold/20 active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100"
       >
         {{ loading ? 'Enviando…' : 'Enviar enlace de recuperación' }}
       </button>
