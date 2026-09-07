@@ -1,6 +1,6 @@
 ---
 name: auth-pages-plan
-description: Plan para llevar login/register/forgot-password/reset-password en Nuxt a paridad visual y funcional con las páginas Blade equivalentes de barber (layout premium de dos columnas, register/forgot/reset que hoy no existen en Nuxt). Leer antes de tocar app/pages/login.vue, cualquier página nueva de auth, useAuth.ts, o AuthController::forgotPassword()/resetPassword() en barber.
+description: CERRADO (2026-09-06) — histórico de cómo se llevó login/register/forgot-password/reset-password en Nuxt a paridad con las páginas Blade de barber, usando las mascotas de UrbanBlade (Nava/Bladebot/Bruno) en vez de una foto de stock. Leer antes de tocar app/pages/login.vue, register.vue, forgot-password.vue, reset-password.vue, app/components/auth/Shell.vue, useAuth.ts, o AuthController::register()/forgotPassword()/resetPassword() en barber.
 ---
 
 # Páginas de autenticación (login/register/forgot/reset) — plan
@@ -95,65 +95,58 @@ propia.
 
 ---
 
-## Fases
+## Fases — todas ✅ DONE (2026-09-06)
 
-0. **Confirmar con el usuario, antes de programar**: ¿el checkbox "Recordarme"
-   tiene sentido para un login basado en Bearer token + cookie de 6 meses (no
-   sesión de servidor)? Probablemente no aporta nada real aquí (a diferencia del
-   guard de sesión web de Blade) — proponer omitirlo salvo que el usuario lo
-   pida explícitamente por consistencia visual únicamente.
-1. ⏳ **Backend — notificación de reset apuntando a Nuxt**: nueva
-   `App\Notifications\Auth\ResetPassword extends Illuminate\Auth\Notifications\ResetPassword`
-   (o implementación propia) que arma la URL como
-   `{config('app.frontend_url')}/reset-password?token={token}&email={email}`.
-   Enganchar sobreescribiendo `ResetPassword::createUrlUsing()` en
-   `AppServiceProvider::boot()` (patrón oficial de Laravel para esto, no requiere
-   tocar el modelo `User`) o publicando una notificación custom — decidir cuál
-   al implementar, revisando cuál ensucia menos el código existente. Test:
-   feature test disparando `Password::sendResetLink()` y aserting sobre el
-   contenido del mail capturado (Mailpit/`Notification::fake()`) que la URL
-   apunta a `frontend_url`, no a la ruta Blade.
-2. ⏳ **Nuxt — `useAuth.ts`**: agregar `register(name, email, password,
-   password_confirmation)` (mismo patrón que `login()`, guarda token+user en
-   éxito), `forgotPassword(email)` y `resetPassword(token, email, password,
-   password_confirmation)` (estas dos no autentican, solo devuelven el mensaje
-   del backend o lanzan en error).
-3. ⏳ **Nuxt — layout compartido de auth**: extraer el layout de dos columnas
-   (imagen + overlay + stats + testimonio a la izquierda, tarjeta de cristal a
-   la derecha) a un layout de Nuxt (`app/layouts/guest.vue`) o un componente
-   `AuthShell.vue` reutilizado por las 4 páginas, en vez de copiar el marcado 4
-   veces — evita que las 4 páginas diverjan visualmente con el tiempo (mismo
-   criterio que evitó la duplicación de `loyalty-charge.js` en el lado Blade).
-   Imagen: mismo Unsplash usado en `guest.blade.php` (o uno nuevo si el usuario
-   prefiere, confirmar). Stats/testimonio: copiar tal cual del Blade (500+
-   clientes, 10+ años, 4.9, testimonio de "Ricardo M.") salvo que el usuario
-   pida cambiarlos.
-4. ⏳ **Nuxt — rediseño de `login.vue`**: usar el nuevo layout, agregar link a
-   "¿Olvidaste tu contraseña?" (`/forgot-password`) y "¿Aún no tienes cuenta?"
-   (`/register`), igualar microcopy del Blade ("Bienvenido de nuevo").
-5. ⏳ **Nuxt — `register.vue`** (nueva): nombre, email, password,
-   password_confirmation, mismo layout, llama a `register()` y redirige a
-   `/dashboard` en éxito (ya viene logueado, no hace falta paso extra) — mismo
-   criterio de "no confiar en nada que no sea la respuesta del servidor" que el
-   resto del proyecto. Validación de confirmación de contraseña client-side
-   (mensaje inmediato si no coincide) antes de pegarle a la API, para no gastar
-   el throttle en errores obvios.
-6. ⏳ **Nuxt — `forgot-password.vue`** (nueva): solo email, llama a
-   `forgotPassword()`, muestra el mensaje de éxito del backend (no confirma ni
-   niega si el correo existe — mismo criterio de no-filtrado que ya sigue
-   `login()` en el backend), link de vuelta a `/login`.
-7. ⏳ **Nuxt — `reset-password.vue`** (nueva): lee `token` y `email` de
-   `route.query` (vienen del link del correo), password + password_confirmation,
-   llama a `resetPassword()`, redirige a `/login` con mensaje de éxito.
-8. ⏳ **Verificación**: `.\test.ps1` x2 + Pint + Larastan en frío (backend);
-   `npm run lint` + `npm run build` (frontend); en vivo en el Browser pane —
-   registrar un cliente de prueba real de punta a punta (login automático
-   después), pedir un reset de contraseña y confirmar en Mailpit
-   (`http://localhost:8025`) que el link generado apunta a
-   `http://localhost:3000/reset-password?...` y no a la ruta Blade, completar el
-   reset y volver a loguear con la contraseña nueva. Limpiar todo dato de
-   prueba al terminar (mismo criterio que el resto de este proyecto).
-9. ⏳ **Cierre**: reporte final, CI verde en ambos repos.
+0. ✅ **Decisión tomada**: el checkbox "Recordarme" se omitió por completo — no
+   corresponde a nada real en el modelo de Bearer token + cookie de 6 meses de
+   Nuxt (a diferencia del guard de sesión `web` de Blade, donde sí controla algo).
+   El usuario pidió "comencemos" delegando esta decisión, y también pidió
+   explícitamente reemplazar la imagen de stock por las mascotas de UrbanBlade
+   para dar más identidad de marca — eso se volvió el criterio central de la
+   Fase 3 (ver abajo), no solo un detalle visual menor.
+1. ✅ **Backend — notificación de reset apuntando a Nuxt** (barber `e878695`):
+   `ResetPassword::createUrlUsing()` en `AppServiceProvider::boot()` (el patrón
+   oficial de Laravel, sin necesidad de una clase de notificación propia) arma la
+   URL como `{frontend_url}/reset-password?token={token}&email={email}`. Nuevo
+   `AuthApiTest` (7 tests) cubre `register()` (crea `cliente` + `Client`,
+   auto-verifica email, rechaza email duplicado/confirmación no coincidente),
+   `forgotPassword()` (asertando sobre `ResetPassword::toMail()->actionUrl` que
+   apunta a `frontend_url`, no a la ruta Blade) y `resetPassword()` (token válido
+   actualiza la contraseña; token inválido se rechaza).
+2. ✅ **Nuxt — `useAuth.ts`**: `register()`, `forgotPassword()`, `resetPassword()`
+   agregados exactamente como se planeó.
+3. ✅ **Nuxt — `<AuthShell>` compartido** (`app/components/auth/Shell.vue`):
+   layout de dos columnas con el mismo copy/stats que `guest.blade.php`, pero
+   **la foto de stock de Unsplash se reemplazó por las mascotas de UrbanBlade**
+   (pedido explícito del usuario, "para darle más identidad") — una mascota
+   distinta por página, reusando la personalidad que cada una ya tiene en
+   `error.vue`: Nava en login ("bienvenido de nuevo"), Bladebot en register
+   ("únete a la élite"), Bruno en forgot/reset-password ("aquí para ayudarte").
+   Estilos en un `<style scoped>` propio del componente (no se tocó el
+   `main.css` global ni las clases `.ub-error-*` ya usadas por `error.vue`).
+4. ✅ **Nuxt — `login.vue`** rediseñado con `<AuthShell>`, más los links a
+   `/forgot-password` y `/register`.
+5. ✅ **Nuxt — `register.vue`** (nueva): nombre, email, password,
+   password_confirmation; valida que las contraseñas coincidan en el cliente
+   antes de pegarle a la API; llama a `register()` y redirige directo a
+   `/dashboard` (ya viene logueado).
+6. ✅ **Nuxt — `forgot-password.vue`** (nueva): solo email, muestra el mensaje
+   del backend, link de vuelta a `/login`.
+7. ✅ **Nuxt — `reset-password.vue`** (nueva): lee `token`/`email` de
+   `route.query`, valida confirmación de contraseña en el cliente, llama a
+   `resetPassword()`, redirige a `/login`.
+8. ✅ **Verificación** — hecha de punta a punta en vivo, no solo con tests
+   automatizados: registro de un cliente real con auto-login confirmado,
+   logout, "olvidé mi contraseña", **correo real inspeccionado en Mailpit**
+   (`http://localhost:8025`, vía su API `/api/v1/message/{id}`) confirmando que
+   el link generado apunta a `http://localhost:3000/reset-password?token=...
+   &email=...` — la ruta Nuxt, no la de Blade — luego completar el reset y
+   volver a loguear con la contraseña nueva, éxito confirmado. `.\test.ps1` x2
+   verde (333 tests, +7 sobre la fase anterior), Pint/Larastan en frío limpios,
+   `npm run lint`/`npm run build` verdes. Todo dato de prueba limpiado al
+   terminar.
+9. ✅ **Cierre**: CI verde en ambos repos — barber `e878695`, frontend-urban
+   `7109586`.
 
 ## Guardrails específicos de este plan
 
