@@ -82,10 +82,10 @@ async function onLogout() {
             <NuxtLink
               v-if="navItem.implemented"
               :to="navItem.to"
-              class="flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm transition"
+              class="flex items-center gap-3 rounded-xl border-l-2 px-2.5 py-2 text-sm font-medium transition-all"
               :class="[
                 railCollapsed ? 'lg:justify-center' : '',
-                isActive(navItem.to) ? 'bg-gold/10 text-gold' : 'text-ink hover:bg-accent',
+                isActive(navItem.to) ? 'border-gold bg-gold/10 text-gold shadow-[0_0_0_1px_rgba(212,175,55,0.08)]' : 'border-transparent text-ink hover:border-line hover:bg-accent',
               ]"
             >
               <ShellNavIcon :paths="navItem.icon" />
@@ -118,7 +118,10 @@ async function onLogout() {
     </nav>
 
     <div class="shrink-0 border-t border-line p-3">
-      <div class="flex items-center gap-2" :class="{ 'lg:justify-center': railCollapsed }">
+      <div
+        class="flex items-center gap-2 rounded-xl border border-line bg-panel p-2"
+        :class="{ 'lg:justify-center': railCollapsed }"
+      >
         <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gold/20 text-xs font-semibold text-gold">
           {{ (user?.name ?? 'U').slice(0, 2).toUpperCase() }}
         </div>

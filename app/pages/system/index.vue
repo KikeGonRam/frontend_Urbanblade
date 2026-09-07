@@ -70,36 +70,45 @@ function fmtDate(iso: string | null) {
 
     <template v-else-if="data">
       <section class="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div class="ui-card p-4"><p class="text-[10px] font-bold uppercase text-muted">Entorno</p><p class="mt-1 text-lg font-black text-ink">{{ data.app.env }}</p></div>
-        <div class="ui-card p-4"><p class="text-[10px] font-bold uppercase text-muted">Laravel</p><p class="mt-1 text-lg font-black text-ink">{{ data.app.laravel_version }}</p></div>
-        <div class="ui-card p-4"><p class="text-[10px] font-bold uppercase text-muted">PHP</p><p class="mt-1 text-lg font-black text-ink">{{ data.app.php_version }}</p></div>
-        <div class="ui-card p-4"><p class="text-[10px] font-bold uppercase text-muted">Cola</p><p class="mt-1 text-lg font-black text-ink">{{ data.queue.connection }}</p></div>
+        <div class="rounded-2xl border border-ink/[0.06] bg-card p-4"><p class="text-[9px] font-black uppercase tracking-widest text-ink/50">Entorno</p><p class="mt-1 text-lg font-black text-ink">{{ data.app.env }}</p></div>
+        <div class="rounded-2xl border border-ink/[0.06] bg-card p-4"><p class="text-[9px] font-black uppercase tracking-widest text-ink/50">Laravel</p><p class="mt-1 text-lg font-black text-ink">{{ data.app.laravel_version }}</p></div>
+        <div class="rounded-2xl border border-ink/[0.06] bg-card p-4"><p class="text-[9px] font-black uppercase tracking-widest text-ink/50">PHP</p><p class="mt-1 text-lg font-black text-ink">{{ data.app.php_version }}</p></div>
+        <div class="rounded-2xl border border-ink/[0.06] bg-card p-4"><p class="text-[9px] font-black uppercase tracking-widest text-ink/50">Cola</p><p class="mt-1 text-lg font-black text-ink">{{ data.queue.connection }}</p></div>
       </section>
 
       <section class="mb-5 grid grid-cols-1 gap-5 lg:grid-cols-3">
-        <div class="ui-card p-5">
-          <p class="text-[10px] font-bold uppercase tracking-widest text-muted">MongoDB</p>
-          <div class="mt-2 flex items-center gap-2">
-            <span class="rounded-full border px-2 py-0.5 text-[10px] font-black" :class="STATUS_CLASS[data.database.status]">{{ STATUS_LABEL[data.database.status] }}</span>
-            <span v-if="data.database.latency_ms !== null" class="text-sm text-muted">{{ data.database.latency_ms }} ms</span>
+        <div class="rounded-2xl border border-ink/[0.06] bg-card p-5">
+          <div class="flex items-center justify-between">
+            <p class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/50">MongoDB</p>
+            <span class="relative flex h-3 w-3">
+              <span v-if="data.database.status === 'up'" class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+              <span class="relative inline-flex h-3 w-3 rounded-full" :class="data.database.status === 'up' ? 'bg-emerald-400' : 'bg-red-500'" />
+            </span>
           </div>
+          <p class="mt-3 text-xl font-black" :class="data.database.status === 'up' ? 'text-emerald-400' : 'text-red-400'">{{ STATUS_LABEL[data.database.status] }}</p>
+          <p v-if="data.database.latency_ms !== null" class="mt-1 text-xs text-ink/45">{{ data.database.latency_ms }} ms de latencia</p>
           <p v-if="data.database.error" class="mt-2 text-xs text-red-400">{{ data.database.error }}</p>
         </div>
 
-        <div class="ui-card p-5">
-          <p class="text-[10px] font-bold uppercase tracking-widest text-muted">Redis</p>
-          <div class="mt-2 flex items-center gap-2">
-            <span class="rounded-full border px-2 py-0.5 text-[10px] font-black" :class="STATUS_CLASS[data.redis.status]">{{ STATUS_LABEL[data.redis.status] }}</span>
-            <span v-if="data.redis.latency_ms !== null" class="text-sm text-muted">{{ data.redis.latency_ms }} ms</span>
+        <div class="rounded-2xl border border-ink/[0.06] bg-card p-5">
+          <div class="flex items-center justify-between">
+            <p class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/50">Redis</p>
+            <span class="relative flex h-3 w-3">
+              <span v-if="data.redis.status === 'up'" class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+              <span class="relative inline-flex h-3 w-3 rounded-full" :class="data.redis.status === 'up' ? 'bg-emerald-400' : 'bg-red-500'" />
+            </span>
           </div>
+          <p class="mt-3 text-xl font-black" :class="data.redis.status === 'up' ? 'text-emerald-400' : 'text-red-400'">{{ STATUS_LABEL[data.redis.status] }}</p>
+          <p v-if="data.redis.latency_ms !== null" class="mt-1 text-xs text-ink/45">{{ data.redis.latency_ms }} ms de latencia</p>
           <p v-if="data.redis.error" class="mt-2 text-xs text-red-400">{{ data.redis.error }}</p>
         </div>
 
-        <div class="ui-card p-5">
-          <p class="text-[10px] font-bold uppercase tracking-widest text-muted">Jobs en cola</p>
-          <div class="mt-2 flex items-center gap-4">
-            <div><p class="text-2xl font-black text-ink">{{ data.queue.pending ?? '—' }}</p><p class="text-[10px] uppercase text-muted">Pendientes</p></div>
-            <div><p class="text-2xl font-black" :class="(data.queue.failed ?? 0) > 0 ? 'text-red-400' : 'text-ink'">{{ data.queue.failed ?? '—' }}</p><p class="text-[10px] uppercase text-muted">Fallidos</p></div>
+        <div class="rounded-2xl border border-ink/[0.06] bg-card p-5">
+          <p class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/50">Jobs en cola</p>
+          <div class="mt-3 flex items-center gap-5">
+            <div><p class="text-2xl font-black leading-none text-ink">{{ data.queue.pending ?? '—' }}</p><p class="mt-1 text-[9px] font-black uppercase text-ink/40">Pendientes</p></div>
+            <div class="h-8 w-px bg-ink/[0.08]" />
+            <div><p class="text-2xl font-black leading-none" :class="(data.queue.failed ?? 0) > 0 ? 'text-red-400' : 'text-ink'">{{ data.queue.failed ?? '—' }}</p><p class="mt-1 text-[9px] font-black uppercase text-ink/40">Fallidos</p></div>
           </div>
         </div>
       </section>

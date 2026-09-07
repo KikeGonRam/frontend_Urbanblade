@@ -51,6 +51,11 @@ const fullName = computed(() => user.value?.name ?? '')
       :data="(dashboard.data as any)"
     />
 
+    <DashboardIngeniero
+      v-else-if="dashboard?.role === 'ingeniero'"
+      :data="(dashboard.data as any)"
+    />
+
     <section v-else-if="dashboard" class="ui-card-premium p-5">
       <header class="mb-4">
         <p class="text-sm uppercase tracking-widest text-muted">UrbanBlade</p>
