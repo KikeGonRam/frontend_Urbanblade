@@ -41,8 +41,14 @@ async function onSubmit() {
 
   loading.value = true
   try {
-    await register(name.value, email.value, password.value, passwordConfirmation.value)
-    await navigateTo('/dashboard')
+    const user = await register(name.value, email.value, password.value, passwordConfirmation.value)
+
+    // El registro por correo solo pide nombre/correo/contraseña, así que un
+    // cliente recién creado SIEMPRE tiene el perfil incompleto (le faltan
+    // teléfono y fecha de nacimiento, ver User::profileCompletion() en
+    // barber). Mandarlo a completarlo en vez de al dashboard, igual que el
+    // callback de Google.
+    await navigateTo(user.profile_complete ? '/dashboard' : '/complete-profile')
   } catch (error: unknown) {
     if (handleRateLimit(error)) return
 

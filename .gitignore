@@ -25,3 +25,9 @@ node_modules
 .env
 .env.*
 !.env.example
+
+# Playwright (Fase 6 E2E)
+/test-results
+/playwright-report
+/blob-report
+/playwright/.cache

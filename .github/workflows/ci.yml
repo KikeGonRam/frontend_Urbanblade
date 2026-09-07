@@ -36,3 +36,37 @@ jobs:
 
       - name: npm audit (high/critical)
         run: npm audit --audit-level=high
+
+  e2e:
+    name: E2E (Playwright sobre build de producción)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install Node dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      # playwright.config.ts levanta el servidor por su cuenta
+      # (`npm run build && npm run preview` en el puerto 3100) y las pruebas
+      # interceptan la API de barber en el navegador, así que este job no
+      # necesita Laravel/Mongo/Redis — ver e2e/support/api-mock.ts.
+      - name: Playwright
+        run: npm run test:e2e
+
+      - name: Upload report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

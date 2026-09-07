@@ -22,7 +22,19 @@ async function onSubmit() {
   loading.value = true
 
   try {
-    await login(email.value, password.value)
+    const user = await login(email.value, password.value)
+
+    // Mismo criterio que el callback de Google (pages/auth/callback.vue): un
+    // cliente sin teléfono/fecha de nacimiento va primero a completar su
+    // perfil. Antes solo el camino de Google lo respetaba, así que quien se
+    // registraba por correo (que nunca pide esos dos datos) entraba al
+    // dashboard con el perfil incompleto y nada volvía a pedírselo.
+    if (!user.profile_complete) {
+      await navigateTo('/complete-profile')
+
+      return
+    }
+
     const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/dashboard'
     await navigateTo(redirect)
   } catch (error: unknown) {
