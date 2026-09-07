@@ -46,17 +46,82 @@ interface IngenieroData {
     avg_latency_ms?: number
     estimated_cost_usd?: number
   }
+  moduleTelemetry?: {
+    window_days?: number
+    payments?: { verified_month?: number, pending_review?: number, rejected_month?: number, amount_month?: number }
+    orders?: { pending?: number, delivered_month?: number, cancelled_month?: number }
+    campaigns?: { scheduled?: number, sent_month?: number, recipients_month?: number, opens_month?: number, clicks_month?: number }
+    raffles?: { redeemable?: number, claimed_month?: number, expired_unclaimed?: number }
+    social?: { works_month?: number, reactions_month?: number, comments_month?: number, saves_month?: number }
+  }
   insights: Array<{ titulo: string, dato: string, detalle: string }>
   sparkHighlights: DashboardInsight[]
 }
 
+interface SystemStatusSummary {
+  database: { status: 'up' | 'down', latency_ms: number | null }
+  redis: { status: 'up' | 'down', latency_ms: number | null }
+  queue: { pending: number | null, failed: number | null }
+  scheduled_tasks: Array<{ status: 'success' | 'failed' | 'unknown' }>
+}
+
 const props = defineProps<{ data: IngenieroData }>()
+const { apiFetch } = useApi()
+const { data: systemStatus, pending: systemPending } = await useAsyncData(
+  'engineer-system-status',
+  () => apiFetch<SystemStatusSummary>('/admin/system/status'),
+)
+
+const systemHealth = computed(() => {
+  if (!systemStatus.value) return { label: systemPending.value ? 'Comprobando' : 'Sin respuesta', detail: 'El monitor técnico no respondió todavía.', dot: 'bg-muted', tone: 'text-muted' }
+
+  const failedJobs = systemStatus.value.queue.failed ?? 0
+  const failedTasks = systemStatus.value.scheduled_tasks.filter(task => task.status === 'failed').length
+  const unavailable = systemStatus.value.database.status === 'down' || systemStatus.value.redis.status === 'down'
+
+  if (unavailable) return { label: 'Crítico', detail: 'Una dependencia de infraestructura no responde.', dot: 'bg-red-400', tone: 'text-red-400' }
+  if (failedJobs > 0 || failedTasks > 0) return { label: 'Atención', detail: `${failedJobs} jobs y ${failedTasks} tareas requieren revisión.`, dot: 'bg-amber-300', tone: 'text-amber-300' }
+
+  return { label: 'Estable', detail: 'Infraestructura y tareas programadas saludables.', dot: 'bg-emerald-300', tone: 'text-emerald-300' }
+})
 
 const ratioActiveClients = computed(() =>
   props.data.kpis.total_clients > 0 ? Math.round((props.data.kpis.active_clients / props.data.kpis.total_clients) * 100) : 0,
 )
 const busyCount = computed(() => (props.data.kpis.barbers_status ?? []).filter((s) => s.is_busy).length)
 const freeCount = computed(() => (props.data.kpis.barbers_status ?? []).filter((s) => !s.is_busy).length)
+const moduleTelemetry = computed(() => ({
+  windowDays: props.data.moduleTelemetry?.window_days ?? 0,
+  payments: {
+    verified: props.data.moduleTelemetry?.payments?.verified_month ?? 0,
+    pending: props.data.moduleTelemetry?.payments?.pending_review ?? 0,
+    rejected: props.data.moduleTelemetry?.payments?.rejected_month ?? 0,
+    amount: props.data.moduleTelemetry?.payments?.amount_month ?? 0,
+  },
+  orders: {
+    pending: props.data.moduleTelemetry?.orders?.pending ?? 0,
+    delivered: props.data.moduleTelemetry?.orders?.delivered_month ?? 0,
+    cancelled: props.data.moduleTelemetry?.orders?.cancelled_month ?? 0,
+  },
+  campaigns: {
+    scheduled: props.data.moduleTelemetry?.campaigns?.scheduled ?? 0,
+    sent: props.data.moduleTelemetry?.campaigns?.sent_month ?? 0,
+    recipients: props.data.moduleTelemetry?.campaigns?.recipients_month ?? 0,
+    opens: props.data.moduleTelemetry?.campaigns?.opens_month ?? 0,
+    clicks: props.data.moduleTelemetry?.campaigns?.clicks_month ?? 0,
+  },
+  raffles: {
+    redeemable: props.data.moduleTelemetry?.raffles?.redeemable ?? 0,
+    claimed: props.data.moduleTelemetry?.raffles?.claimed_month ?? 0,
+    expired: props.data.moduleTelemetry?.raffles?.expired_unclaimed ?? 0,
+  },
+  social: {
+    works: props.data.moduleTelemetry?.social?.works_month ?? 0,
+    reactions: props.data.moduleTelemetry?.social?.reactions_month ?? 0,
+    comments: props.data.moduleTelemetry?.social?.comments_month ?? 0,
+    saves: props.data.moduleTelemetry?.social?.saves_month ?? 0,
+  },
+}))
 
 const hasAppointmentTrend = computed(() => (props.data.clientTrends.values ?? []).some((v) => v))
 const appointmentTrendData = computed(() => ({
@@ -144,11 +209,26 @@ const barberOptions = {
 <template>
   <div class="space-y-5">
     <DashboardHeader label="Ingeniería" color="text-gold" :today-label="data.todayLabel">
-      <span class="flex items-center gap-1.5 rounded-xl border border-ink/[0.08] bg-ink/[0.03] px-3 py-2 text-[9px] font-black uppercase tracking-widest text-ink/40">
+      <span class="flex min-h-10 items-center gap-1.5 rounded-xl border border-ink/[0.08] bg-ink/[0.03] px-3 py-2 text-[9px] font-black uppercase tracking-widest text-ink/40">
         <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
         Solo lectura
       </span>
     </DashboardHeader>
+
+    <section class="overflow-hidden rounded-2xl border border-ink/[0.08] bg-card p-5 sm:p-6" aria-label="Resumen técnico">
+      <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+        <div class="flex items-start gap-3">
+          <span class="mt-1 h-3 w-3 shrink-0 rounded-full" :class="systemHealth.dot" />
+          <div><p class="text-[10px] font-black uppercase tracking-[0.2em] text-ink/45">Centro de observabilidad</p><h2 class="mt-1 text-xl font-black text-ink">Infraestructura <span :class="systemHealth.tone">{{ systemHealth.label }}</span></h2><p class="mt-1 text-sm text-muted">{{ systemHealth.detail }}</p></div>
+        </div>
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div class="rounded-xl border border-ink/[0.06] bg-ink/[0.03] px-3 py-2"><p class="text-[8px] font-black uppercase tracking-widest text-ink/40">MongoDB</p><p class="mt-1 text-sm font-black" :class="systemStatus?.database.status === 'down' ? 'text-red-400' : 'text-emerald-300'">{{ systemStatus?.database.latency_ms ?? '—' }}<small v-if="systemStatus?.database.latency_ms !== null" class="ml-0.5 text-[9px]">ms</small></p></div>
+          <div class="rounded-xl border border-ink/[0.06] bg-ink/[0.03] px-3 py-2"><p class="text-[8px] font-black uppercase tracking-widest text-ink/40">Redis</p><p class="mt-1 text-sm font-black" :class="systemStatus?.redis.status === 'down' ? 'text-red-400' : 'text-emerald-300'">{{ systemStatus?.redis.latency_ms ?? '—' }}<small v-if="systemStatus?.redis.latency_ms !== null" class="ml-0.5 text-[9px]">ms</small></p></div>
+          <div class="rounded-xl border border-ink/[0.06] bg-ink/[0.03] px-3 py-2"><p class="text-[8px] font-black uppercase tracking-widest text-ink/40">En cola</p><p class="mt-1 text-sm font-black text-ink">{{ systemStatus?.queue.pending ?? '—' }}</p></div>
+          <NuxtLink to="/system" class="rounded-xl border border-gold/20 bg-gold/[0.06] px-3 py-2 transition hover:border-gold/50 hover:bg-gold/[0.1] focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-2"><p class="text-[8px] font-black uppercase tracking-widest text-gold/70">Detalle</p><p class="mt-1 text-sm font-black text-gold">Monitor →</p></NuxtLink>
+        </div>
+      </div>
+    </section>
 
     <p class="px-1 text-xs leading-relaxed text-muted">
       Comportamiento agregado de cada módulo del negocio, sin datos operativos de clientes individuales.
@@ -270,6 +350,79 @@ const barberOptions = {
             <p class="text-[8px] font-black uppercase text-ink/45">Retención</p>
           </div>
         </div>
+      </div>
+
+      <!-- Módulo Inventario: el dashboard ya entrega este indicador agregado. -->
+      <div class="rounded-2xl border border-ink/[0.06] bg-card p-5">
+        <div class="mb-4 flex items-center justify-between">
+          <div>
+            <p class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/50">Módulo</p>
+            <h3 class="mt-0.5 text-sm font-black uppercase text-ink">Inventario</h3>
+          </div>
+          <span class="rounded-full border px-2 py-1 text-[9px] font-black uppercase" :class="data.kpis.low_stock_count > 0 ? 'border-amber-500/25 bg-amber-500/[0.06] text-amber-300' : 'border-emerald-500/25 bg-emerald-500/[0.06] text-emerald-300'">{{ data.kpis.low_stock_count > 0 ? 'Atención' : 'Estable' }}</span>
+        </div>
+        <div class="flex items-end justify-between gap-4 rounded-xl border border-ink/[0.05] bg-ink/[0.02] p-4">
+          <div><p class="text-3xl font-black" :class="data.kpis.low_stock_count > 0 ? 'text-amber-300' : 'text-emerald-300'">{{ data.kpis.low_stock_count }}</p><p class="mt-1 text-[9px] font-black uppercase tracking-widest text-ink/45">productos con stock bajo</p></div>
+          <svg class="h-9 w-9 shrink-0" :class="data.kpis.low_stock_count > 0 ? 'text-amber-300' : 'text-emerald-300'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4M4 6v12a2 2 0 0 0 2 2h14v-4M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4h-4z" /></svg>
+        </div>
+        <p class="mt-3 text-[10px] leading-relaxed text-ink/50">Indicador agregado; el detalle de productos permanece fuera de este rol.</p>
+      </div>
+
+      <!-- Cobertura agregada de módulos operativos, sin abrir sus pantallas ni datos individuales. -->
+      <div class="rounded-2xl border border-ink/[0.06] bg-card p-5">
+        <div class="mb-4 flex items-start justify-between gap-3">
+          <div><p class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/50">Módulo</p><h3 class="mt-0.5 text-sm font-black uppercase text-ink">Pagos</h3></div>
+          <span class="rounded-full border px-2 py-1 text-[9px] font-black uppercase" :class="moduleTelemetry.payments.pending > 0 ? 'border-amber-500/25 bg-amber-500/[0.06] text-amber-300' : 'border-emerald-500/25 bg-emerald-500/[0.06] text-emerald-300'">{{ moduleTelemetry.payments.pending > 0 ? 'Revisión' : 'Al día' }}</span>
+        </div>
+        <p class="text-2xl font-black text-emerald-400">{{ fmtMoney(moduleTelemetry.payments.amount) }}</p>
+        <p class="text-[9px] font-black uppercase tracking-widest text-ink/45">recaudado en la ventana</p>
+        <div class="mt-4 grid grid-cols-3 gap-2 text-center">
+          <div class="rounded-lg bg-ink/[0.03] p-2"><p class="text-sm font-black text-emerald-300">{{ moduleTelemetry.payments.verified }}</p><p class="text-[8px] font-black uppercase text-ink/45">Verificados</p></div>
+          <div class="rounded-lg bg-ink/[0.03] p-2"><p class="text-sm font-black text-amber-300">{{ moduleTelemetry.payments.pending }}</p><p class="text-[8px] font-black uppercase text-ink/45">Pendientes</p></div>
+          <div class="rounded-lg bg-ink/[0.03] p-2"><p class="text-sm font-black text-red-400">{{ moduleTelemetry.payments.rejected }}</p><p class="text-[8px] font-black uppercase text-ink/45">Rechazados</p></div>
+        </div>
+      </div>
+
+      <div class="rounded-2xl border border-ink/[0.06] bg-card p-5">
+        <div class="mb-4 flex items-start justify-between gap-3">
+          <div><p class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/50">Módulo</p><h3 class="mt-0.5 text-sm font-black uppercase text-ink">Pedidos</h3></div>
+          <span class="rounded-full border px-2 py-1 text-[9px] font-black uppercase" :class="moduleTelemetry.orders.pending > 0 ? 'border-amber-500/25 bg-amber-500/[0.06] text-amber-300' : 'border-emerald-500/25 bg-emerald-500/[0.06] text-emerald-300'">{{ moduleTelemetry.orders.pending }} en espera</span>
+        </div>
+        <div class="grid grid-cols-3 gap-3 text-center">
+          <div class="rounded-xl border border-ink/[0.05] bg-ink/[0.02] p-3"><p class="text-lg font-black text-amber-300">{{ moduleTelemetry.orders.pending }}</p><p class="text-[8px] font-black uppercase text-ink/45">Pendientes</p></div>
+          <div class="rounded-xl border border-ink/[0.05] bg-ink/[0.02] p-3"><p class="text-lg font-black text-emerald-300">{{ moduleTelemetry.orders.delivered }}</p><p class="text-[8px] font-black uppercase text-ink/45">Entregados</p></div>
+          <div class="rounded-xl border border-ink/[0.05] bg-ink/[0.02] p-3"><p class="text-lg font-black text-red-400">{{ moduleTelemetry.orders.cancelled }}</p><p class="text-[8px] font-black uppercase text-ink/45">Cancelados</p></div>
+        </div>
+      </div>
+
+      <div class="rounded-2xl border border-ink/[0.06] bg-card p-5">
+        <div class="mb-4 flex items-start justify-between gap-3"><div><p class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/50">Módulo</p><h3 class="mt-0.5 text-sm font-black uppercase text-ink">Campañas</h3></div><span class="text-[9px] font-black uppercase text-ink/40">{{ moduleTelemetry.campaigns.scheduled }} programadas</span></div>
+        <div class="grid grid-cols-3 gap-2 text-center">
+          <div class="rounded-lg bg-ink/[0.03] p-2"><p class="text-base font-black text-blue-400">{{ moduleTelemetry.campaigns.sent }}</p><p class="text-[8px] font-black uppercase text-ink/45">Enviadas</p></div>
+          <div class="rounded-lg bg-ink/[0.03] p-2"><p class="text-base font-black text-cyan-400">{{ moduleTelemetry.campaigns.opens }}</p><p class="text-[8px] font-black uppercase text-ink/45">Aperturas</p></div>
+          <div class="rounded-lg bg-ink/[0.03] p-2"><p class="text-base font-black text-purple-400">{{ moduleTelemetry.campaigns.clicks }}</p><p class="text-[8px] font-black uppercase text-ink/45">Clics</p></div>
+        </div>
+        <p class="mt-3 text-[10px] text-ink/50">{{ fmtInt(moduleTelemetry.campaigns.recipients) }} destinatarios acumulados en la ventana.</p>
+      </div>
+
+      <div class="rounded-2xl border border-ink/[0.06] bg-card p-5">
+        <div class="mb-4"><p class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/50">Módulo</p><h3 class="mt-0.5 text-sm font-black uppercase text-ink">Sorteos</h3></div>
+        <div class="grid grid-cols-3 gap-2 text-center">
+          <div class="rounded-lg bg-ink/[0.03] p-2"><p class="text-base font-black text-gold">{{ moduleTelemetry.raffles.redeemable }}</p><p class="text-[8px] font-black uppercase text-ink/45">Vigentes</p></div>
+          <div class="rounded-lg bg-ink/[0.03] p-2"><p class="text-base font-black text-emerald-300">{{ moduleTelemetry.raffles.claimed }}</p><p class="text-[8px] font-black uppercase text-ink/45">Canjeados</p></div>
+          <div class="rounded-lg bg-ink/[0.03] p-2"><p class="text-base font-black text-red-400">{{ moduleTelemetry.raffles.expired }}</p><p class="text-[8px] font-black uppercase text-ink/45">Vencidos</p></div>
+        </div>
+      </div>
+
+      <div class="rounded-2xl border border-ink/[0.06] bg-card p-5">
+        <div class="mb-4"><p class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/50">Telemetría social</p><h3 class="mt-0.5 text-sm font-black uppercase text-ink">Muro</h3></div>
+        <div class="grid grid-cols-2 gap-2">
+          <div class="rounded-lg bg-ink/[0.03] p-2.5"><p class="text-base font-black text-gold">{{ moduleTelemetry.social.works }}</p><p class="text-[8px] font-black uppercase text-ink/45">Publicaciones</p></div>
+          <div class="rounded-lg bg-ink/[0.03] p-2.5"><p class="text-base font-black text-pink-400">{{ moduleTelemetry.social.reactions }}</p><p class="text-[8px] font-black uppercase text-ink/45">Reacciones</p></div>
+          <div class="rounded-lg bg-ink/[0.03] p-2.5"><p class="text-base font-black text-cyan-400">{{ moduleTelemetry.social.comments }}</p><p class="text-[8px] font-black uppercase text-ink/45">Comentarios</p></div>
+          <div class="rounded-lg bg-ink/[0.03] p-2.5"><p class="text-base font-black text-purple-400">{{ moduleTelemetry.social.saves }}</p><p class="text-[8px] font-black uppercase text-ink/45">Guardados</p></div>
+        </div>
+        <p class="mt-3 text-[10px] leading-relaxed text-ink/50">Sólo comportamiento agregado; el feed y sus acciones siguen fuera de este rol.</p>
       </div>
 
       <!-- Módulo Chatbot -->

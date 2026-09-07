@@ -91,7 +91,7 @@ function tone(color: string) {
               </span>
             </div>
 
-            <div class="rounded-xl border border-ink/[0.06] bg-black/15 p-4">
+            <div class="rounded-xl border border-ink/[0.06] bg-ink/[0.04] p-4">
               <div v-if="insight.progress_value !== null" class="mb-4 h-2 overflow-hidden rounded-full bg-ink/[0.07]">
                 <span class="block h-full rounded-full" :class="tone(insight.color).dot" :style="{ width: insight.progress_value + '%' }" />
               </div>
@@ -105,7 +105,7 @@ function tone(color: string) {
           </div>
 
           <details v-if="insight.is_truncated" class="group/details rounded-xl border border-ink/[0.07] bg-ink/[0.025] px-3 py-2">
-            <summary class="flex cursor-pointer list-none items-center justify-between gap-3 text-[10px] font-black uppercase tracking-[0.16em] text-ink/45 transition-colors hover:text-gold">
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-3 rounded-md text-[10px] font-black uppercase tracking-[0.16em] text-ink/45 transition-colors hover:text-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-4">
               <span>Ver hallazgo</span>
               <svg class="h-3.5 w-3.5 transition-transform group-open/details:rotate-180" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                 <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.17l3.71-3.94a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd" />

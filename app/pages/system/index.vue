@@ -42,6 +42,19 @@ const STATUS_LABEL: Record<string, string> = {
   up: 'Activo', down: 'Caído', success: 'Exitosa', failed: 'Falló', unknown: 'Sin datos',
 }
 
+const health = computed(() => {
+  if (!data.value) return { label: 'Comprobando', detail: 'Leyendo el estado actual del entorno.', dot: 'bg-muted', surface: 'border-line bg-ink/[0.03]' }
+
+  const unavailable = data.value.database.status === 'down' || data.value.redis.status === 'down'
+  const failedJobs = data.value.queue.failed ?? 0
+  const failedTasks = data.value.scheduled_tasks.filter(task => task.status === 'failed').length
+
+  if (unavailable) return { label: 'Servicio crítico', detail: 'Hay una dependencia de infraestructura sin respuesta.', dot: 'bg-red-400', surface: 'border-red-500/25 bg-red-500/[0.05]' }
+  if (failedJobs > 0 || failedTasks > 0) return { label: 'Requiere atención', detail: `${failedJobs} jobs y ${failedTasks} tareas requieren revisión.`, dot: 'bg-amber-300', surface: 'border-amber-500/25 bg-amber-500/[0.05]' }
+
+  return { label: 'Entorno estable', detail: 'Las dependencias y las últimas tareas reportan estado saludable.', dot: 'bg-emerald-300', surface: 'border-emerald-500/25 bg-emerald-500/[0.05]' }
+})
+
 function fmtDate(iso: string | null) {
   if (!iso) return '—'
 
@@ -50,15 +63,15 @@ function fmtDate(iso: string | null) {
 </script>
 
 <template>
-  <div class="p-4 sm:p-6 lg:p-8">
-    <header class="mb-6 flex flex-wrap items-center justify-between gap-3">
+  <div class="space-y-5 p-4 sm:p-6 lg:p-8">
+    <header class="flex flex-wrap items-center justify-between gap-3">
       <div>
         <p class="text-sm uppercase tracking-widest text-muted">UrbanBlade</p>
         <h1 class="mt-1 text-2xl font-semibold text-ink">Estado del <span class="text-gold">Servidor</span></h1>
         <p class="mt-1 text-sm text-muted">Conectividad, cola y tareas programadas — solo lectura.</p>
       </div>
       <button
-        type="button" class="rounded-lg border border-line px-3 py-2 text-xs font-bold uppercase tracking-widest text-muted hover:text-ink"
+        type="button" class="min-h-10 rounded-lg border border-line px-3 py-2 text-xs font-bold uppercase tracking-widest text-muted transition hover:border-gold/40 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-2"
         :disabled="pending" @click="refresh()"
       >
         {{ pending ? 'Actualizando…' : 'Actualizar' }}
@@ -69,7 +82,17 @@ function fmtDate(iso: string | null) {
     <p v-else-if="error" class="text-sm text-red-400">No se pudo cargar el estado del servidor.</p>
 
     <template v-else-if="data">
-      <section class="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <section class="overflow-hidden rounded-2xl border p-5 sm:p-6" :class="health.surface" aria-live="polite">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div class="flex items-start gap-3">
+            <span class="mt-1 flex h-3 w-3 shrink-0 rounded-full" :class="health.dot" />
+            <div><p class="text-[10px] font-black uppercase tracking-[0.2em] text-ink/45">Resumen de monitor</p><h2 class="mt-1 text-xl font-black text-ink">{{ health.label }}</h2><p class="mt-1 text-sm text-muted">{{ health.detail }}</p></div>
+          </div>
+          <div class="flex flex-wrap gap-2"><NuxtLink to="/dashboard" class="rounded-xl border border-line bg-card px-3 py-2 text-[10px] font-black uppercase tracking-widest text-muted transition hover:border-gold/40 hover:text-gold">Módulos</NuxtLink><NuxtLink to="/reports" class="rounded-xl border border-line bg-card px-3 py-2 text-[10px] font-black uppercase tracking-widest text-muted transition hover:border-gold/40 hover:text-gold">Reportes</NuxtLink><NuxtLink to="/logs" class="rounded-xl border border-line bg-card px-3 py-2 text-[10px] font-black uppercase tracking-widest text-muted transition hover:border-gold/40 hover:text-gold">Logs</NuxtLink></div>
+        </div>
+      </section>
+
+      <section class="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div class="rounded-2xl border border-ink/[0.06] bg-card p-4"><p class="text-[9px] font-black uppercase tracking-widest text-ink/50">Entorno</p><p class="mt-1 text-lg font-black text-ink">{{ data.app.env }}</p></div>
         <div class="rounded-2xl border border-ink/[0.06] bg-card p-4"><p class="text-[9px] font-black uppercase tracking-widest text-ink/50">Laravel</p><p class="mt-1 text-lg font-black text-ink">{{ data.app.laravel_version }}</p></div>
         <div class="rounded-2xl border border-ink/[0.06] bg-card p-4"><p class="text-[9px] font-black uppercase tracking-widest text-ink/50">PHP</p><p class="mt-1 text-lg font-black text-ink">{{ data.app.php_version }}</p></div>

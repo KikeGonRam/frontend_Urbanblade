@@ -90,9 +90,10 @@ function handleKeydown(e: KeyboardEvent) {
     toggle()
   }
 }
+function openFromCompanion() { if (!open.value) toggle() }
 
-onMounted(() => document.addEventListener('keydown', handleKeydown))
-onUnmounted(() => document.removeEventListener('keydown', handleKeydown))
+onMounted(() => { document.addEventListener('keydown', handleKeydown); window.addEventListener('urbanblade:open-concierge', openFromCompanion) })
+onUnmounted(() => { document.removeEventListener('keydown', handleKeydown); window.removeEventListener('urbanblade:open-concierge', openFromCompanion) })
 </script>
 
 <template>

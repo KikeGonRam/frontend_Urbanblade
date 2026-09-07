@@ -93,7 +93,9 @@ export function useNavigation() {
       collapsible: false,
       items: [
         item('Dashboard', '/dashboard', 'dashboard', true),
-        item('Muro Inspiración', '/social/feed', 'wall'),
+        // El muro es editorial/operativo. Ingeniero ve telemetría agregada
+        // cuando exista, nunca publicaciones ni acciones del feed.
+        ...(isEngineer.value ? [] : [item('Muro Inspiración', '/social/feed', 'wall')]),
       ],
     })
 

@@ -176,7 +176,7 @@ const servicesOptions = {
         </span>
       </div>
       <div class="space-y-2">
-        <div v-for="appt in data.barberPending" :key="appt.id" class="flex flex-wrap items-center gap-3 rounded-xl border border-amber-500/10 bg-black/20 p-3">
+        <div v-for="appt in data.barberPending" :key="appt.id" class="flex flex-wrap items-center gap-3 rounded-xl border border-amber-500/10 bg-ink/[0.04] p-3">
           <div class="w-14 shrink-0 text-center">
             <p class="text-[11px] font-black text-ink">{{ appt.hora_inicio?.slice(0, 5) ?? '--:--' }}</p>
             <p class="text-[8px] font-bold text-ink/45">{{ appt.fecha }}</p>
@@ -189,7 +189,7 @@ const servicesOptions = {
             <button
               type="button"
               :disabled="actingOn === appt.id"
-              class="rounded-lg bg-gold px-4 py-2 text-[9px] font-black uppercase tracking-widest text-black transition hover:bg-gold-dim disabled:opacity-50"
+              class="rounded-lg bg-gold px-4 py-2 text-[9px] font-black uppercase tracking-widest text-black transition hover:bg-gold-dim focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-2 disabled:opacity-50"
               @click="setStatus(appt, 'confirmada')"
             >
               Aprobar
@@ -197,7 +197,7 @@ const servicesOptions = {
             <button
               type="button"
               :disabled="actingOn === appt.id"
-              class="px-2 text-[9px] font-black uppercase tracking-widest text-ink/40 transition hover:text-red-400 disabled:opacity-50"
+              class="px-2 text-[9px] font-black uppercase tracking-widest text-ink/40 transition hover:text-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-2 disabled:opacity-50"
               @click="setStatus(appt, 'cancelada')"
             >
               Rechazar
