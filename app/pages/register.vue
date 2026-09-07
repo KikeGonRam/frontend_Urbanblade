@@ -5,6 +5,7 @@ const name = ref('')
 const email = ref('')
 const password = ref('')
 const passwordConfirmation = ref('')
+const acceptedTerms = ref(false)
 const errorMessage = ref('')
 const loading = ref(false)
 
@@ -25,6 +26,12 @@ const passwordsMatch = computed(() => {
 
 async function onSubmit() {
   errorMessage.value = ''
+
+  if (!acceptedTerms.value) {
+    errorMessage.value = 'Debes aceptar los Términos y el Aviso de Privacidad para continuar.'
+
+    return
+  }
 
   if (password.value !== passwordConfirmation.value) {
     errorMessage.value = 'Las contraseñas no coinciden.'
@@ -99,11 +106,19 @@ async function onSubmit() {
         <p v-else-if="passwordsMatch === false" class="mt-1.5 text-xs text-red-400">Las contraseñas no coinciden todavía</p>
       </div>
 
+      <label class="flex items-start gap-2 text-xs leading-relaxed text-muted">
+        <input v-model="acceptedTerms" type="checkbox" class="mt-0.5 h-4 w-4 shrink-0 rounded border-line bg-main text-gold focus:ring-gold/40">
+        <span>
+          Acepto los <NuxtLink to="/terminos" target="_blank" class="text-gold hover:underline">Términos y Condiciones</NuxtLink>
+          y el <NuxtLink to="/privacidad" target="_blank" class="text-gold hover:underline">Aviso de Privacidad</NuxtLink> de UrbanBlade.
+        </span>
+      </label>
+
       <p v-if="secondsLeft > 0" class="text-sm text-amber-400">Demasiados intentos. Espera {{ secondsLeft }}s para volver a intentar.</p>
       <p v-else-if="errorMessage" class="text-sm text-red-400">{{ errorMessage }}</p>
 
       <button
-        type="submit" :disabled="loading || secondsLeft > 0"
+        type="submit" :disabled="loading || secondsLeft > 0 || !acceptedTerms"
         class="w-full rounded-lg bg-gold px-4 py-2 font-semibold text-black transition-all duration-200 hover:scale-[1.02] hover:bg-gold-dim hover:shadow-lg hover:shadow-gold/20 active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100"
       >
         {{ secondsLeft > 0 ? `Espera ${secondsLeft}s…` : loading ? 'Creando cuenta…' : 'Crear mi cuenta' }}

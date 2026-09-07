@@ -631,8 +631,8 @@ onBeforeUnmount(() => {
             &copy; {{ new Date().getFullYear() }} UrbanBlade. Todos los derechos reservados.
           </p>
           <div class="flex gap-6 text-[9px] font-black uppercase tracking-[0.2em] text-muted">
-            <a href="#" class="transition hover:text-ink">Privacidad</a>
-            <a href="#" class="transition hover:text-ink">Términos</a>
+            <NuxtLink to="/privacidad" class="transition hover:text-ink">Privacidad</NuxtLink>
+            <NuxtLink to="/terminos" class="transition hover:text-ink">Términos</NuxtLink>
           </div>
         </div>
       </div>
