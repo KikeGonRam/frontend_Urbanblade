@@ -194,6 +194,16 @@ html[data-theme="libreta"] {
     @keyframes ub-mascot-float { 0%,100% { transform:translateY(0) rotate(-.4deg); } 50% { transform:translateY(-9px) rotate(.5deg); } } @media (prefers-reduced-motion:reduce) { .ub-error-mascot img,.mascot-companion__toggle img { animation:none; } }
     /* auth-pop: micro-animación de "éxito" para tarjetas de confirmación (p.ej. forgot-password.vue tras enviar el enlace). */
     @keyframes auth-pop { from { opacity:0; transform:scale(.92) translateY(6px); } to { opacity:1; transform:scale(1) translateY(0); } }
+    /* Transición entre login/register/forgot-password/reset-password
+       (definePageMeta({ pageTransition: { name: 'auth' } })) -- vive en CSS
+       global a propósito, Vue Router aplica estas clases directo sobre el
+       <NuxtPage>, no dentro del scope de ningún componente. */
+    .auth-enter-active, .auth-leave-active { transition: opacity .25s ease, transform .25s ease; }
+    .auth-enter-from { opacity: 0; transform: translateY(10px) scale(.99); }
+    .auth-leave-to { opacity: 0; transform: translateY(-10px) scale(.99); }
+    @media (prefers-reduced-motion: reduce) {
+        .auth-enter-active, .auth-leave-active { transition: none; }
+    }
     .ui-card {
         @apply rounded-[0.875rem] border border-line bg-card;
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);

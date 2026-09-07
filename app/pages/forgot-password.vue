@@ -1,5 +1,5 @@
 <script setup lang="ts">
-definePageMeta({ middleware: 'guest' })
+definePageMeta({ middleware: 'guest', pageTransition: { name: 'auth', mode: 'out-in' } })
 
 const email = ref('')
 const message = ref('')
@@ -8,6 +8,7 @@ const loading = ref(false)
 const sent = ref(false)
 
 const { forgotPassword } = useAuth()
+const { secondsLeft, handle: handleRateLimit } = useRetryCountdown()
 
 async function onSubmit() {
   errorMessage.value = ''
@@ -17,6 +18,8 @@ async function onSubmit() {
     message.value = res.message
     sent.value = true
   } catch (error: unknown) {
+    if (handleRateLimit(error)) return
+
     errorMessage.value = (error as { data?: { message?: string } })?.data?.message ?? 'No se pudo enviar el enlace de recuperación.'
   } finally {
     loading.value = false
@@ -54,13 +57,14 @@ async function onSubmit() {
         >
       </div>
 
-      <p v-if="errorMessage" class="text-sm text-red-400">{{ errorMessage }}</p>
+      <p v-if="secondsLeft > 0" class="text-sm text-amber-400">Demasiados intentos. Espera {{ secondsLeft }}s para volver a intentar.</p>
+      <p v-else-if="errorMessage" class="text-sm text-red-400">{{ errorMessage }}</p>
 
       <button
-        type="submit" :disabled="loading"
+        type="submit" :disabled="loading || secondsLeft > 0"
         class="w-full rounded-lg bg-gold px-4 py-2 font-semibold text-black transition-all duration-200 hover:scale-[1.02] hover:bg-gold-dim hover:shadow-lg hover:shadow-gold/20 active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100"
       >
-        {{ loading ? 'Enviando…' : 'Enviar enlace de recuperación' }}
+        {{ secondsLeft > 0 ? `Espera ${secondsLeft}s…` : loading ? 'Enviando…' : 'Enviar enlace de recuperación' }}
       </button>
 
       <NuxtLink to="/login" class="block pt-2 text-center text-[10px] font-black uppercase tracking-widest text-muted hover:text-gold">

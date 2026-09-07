@@ -1,5 +1,5 @@
 <script setup lang="ts">
-definePageMeta({ middleware: 'guest' })
+definePageMeta({ middleware: 'guest', pageTransition: { name: 'auth', mode: 'out-in' } })
 
 const route = useRoute()
 const token = computed(() => (typeof route.query.token === 'string' ? route.query.token : ''))
@@ -10,6 +10,7 @@ const errorMessage = ref('')
 const loading = ref(false)
 
 const { resetPassword } = useAuth()
+const { secondsLeft, handle: handleRateLimit } = useRetryCountdown()
 
 const passwordsMatch = computed(() => {
   if (!password.value || !passwordConfirmation.value) return null
@@ -31,6 +32,8 @@ async function onSubmit() {
     await resetPassword(token.value, email.value, password.value, passwordConfirmation.value)
     await navigateTo('/login')
   } catch (error: unknown) {
+    if (handleRateLimit(error)) return
+
     errorMessage.value = (error as { data?: { message?: string } })?.data?.message ?? 'No se pudo restablecer la contraseña. El enlace puede haber expirado.'
   } finally {
     loading.value = false
@@ -57,6 +60,7 @@ async function onSubmit() {
       <div>
         <label for="password" class="mb-1 block text-sm text-muted">Nueva contraseña</label>
         <AuthPasswordField id="password" v-model="password" autocomplete="new-password" placeholder="••••••••" :minlength="8" />
+        <AuthPasswordStrength :password="password" />
       </div>
 
       <div>
@@ -69,13 +73,14 @@ async function onSubmit() {
         <p v-else-if="passwordsMatch === false" class="mt-1.5 text-xs text-red-400">Las contraseñas no coinciden todavía</p>
       </div>
 
-      <p v-if="errorMessage" class="text-sm text-red-400">{{ errorMessage }}</p>
+      <p v-if="secondsLeft > 0" class="text-sm text-amber-400">Demasiados intentos. Espera {{ secondsLeft }}s para volver a intentar.</p>
+      <p v-else-if="errorMessage" class="text-sm text-red-400">{{ errorMessage }}</p>
 
       <button
-        type="submit" :disabled="loading || !token"
+        type="submit" :disabled="loading || !token || secondsLeft > 0"
         class="w-full rounded-lg bg-gold px-4 py-2 font-semibold text-black transition-all duration-200 hover:scale-[1.02] hover:bg-gold-dim hover:shadow-lg hover:shadow-gold/20 active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100"
       >
-        {{ loading ? 'Restableciendo…' : 'Restablecer contraseña' }}
+        {{ secondsLeft > 0 ? `Espera ${secondsLeft}s…` : loading ? 'Restableciendo…' : 'Restablecer contraseña' }}
       </button>
     </form>
   </AuthShell>
