@@ -138,8 +138,9 @@ onBeforeUnmount(() => {
 }
 @media (min-width: 1024px) { .auth-shell__brand { display: flex; } }
 
-/* Foto de fondo (misma que guest.blade.php) -- muy tenue, es textura
-   atmosférica, no compite con la mascota como elemento principal. */
+/* Foto de fondo (misma que guest.blade.php) -- visible como fondo real de
+   barbería, no solo una textura casi imperceptible; el scrim de abajo sigue
+   oscureciendo lo suficiente para que el texto/mascota mantengan contraste. */
 .auth-shell__photo {
   position: absolute;
   inset: 0;
@@ -147,15 +148,15 @@ onBeforeUnmount(() => {
   background-image: url('https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=2074&auto=format&fit=crop');
   background-size: cover;
   background-position: center;
-  opacity: 0.16;
+  opacity: 0.42;
 }
 .auth-shell__scrim {
   position: absolute;
   inset: 0;
   z-index: 0;
   background:
-    radial-gradient(circle at 15% 20%, rgb(var(--gold-rgb) / 0.06), transparent 26rem),
-    linear-gradient(150deg, #050505 12%, rgba(5, 5, 5, 0.72) 55%, #0a0a0a 100%);
+    radial-gradient(circle at 15% 20%, rgb(var(--gold-rgb) / 0.08), transparent 26rem),
+    linear-gradient(150deg, #050505 4%, rgba(5, 5, 5, 0.55) 55%, #0a0a0a 100%);
 }
 .auth-shell__gridlines {
   position: absolute;
