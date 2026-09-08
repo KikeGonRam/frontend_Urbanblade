@@ -94,6 +94,51 @@ const form = reactive({ client_id: '', client_label: '', barber_id: '', service_
 const formError = ref('')
 const saving = ref(false)
 
+// ── Disponibilidad (guía, no restricción) ─────────────────────────────────
+// A diferencia del modal del cliente (pages/my/appointments), aquí la hora
+// sigue siendo un campo libre a propósito: recepción necesita poder capturar
+// una cita que se acordó por teléfono o encajar un hueco fuera del horario
+// calculado. Los horarios libres se ofrecen como sugerencia (datalist) y se
+// avisa cuando la hora escrita no está entre ellos, pero nunca se bloquea el
+// envío -- la última palabra la sigue teniendo el backend (índice único de
+// Fase 3 + el 422 de AppointmentController::store()).
+interface Slot { time: string, label: string }
+
+const slots = ref<Slot[]>([])
+const slotsLoaded = ref(false)
+
+async function loadSlots() {
+  if (!form.barber_id || !form.service_id || !form.fecha) {
+    slots.value = []
+    slotsLoaded.value = false
+
+    return
+  }
+
+  try {
+    const res = await apiFetch<{ slots: Slot[] }>('/availability/slots', {
+      query: { barber_id: form.barber_id, service_id: form.service_id, date: form.fecha },
+    })
+    slots.value = res.slots ?? []
+    slotsLoaded.value = true
+  } catch {
+    // Sin sugerencias, pero el campo sigue siendo usable.
+    slots.value = []
+    slotsLoaded.value = false
+  }
+}
+
+watch(() => [form.barber_id, form.service_id, form.fecha], loadSlots)
+
+// Al editar, la cita ocupa su propio horario, así que el backend lo reporta
+// tomado; no debe salir como advertencia.
+const horaOcupada = computed(() => {
+  if (!slotsLoaded.value || !form.hora_inicio) return false
+  if (editing.value?.hora_inicio?.slice(0, 5) === form.hora_inicio) return false
+
+  return !slots.value.some((s) => s.time === form.hora_inicio)
+})
+
 function openCreate() {
   editing.value = null
   form.client_id = ''
@@ -315,7 +360,19 @@ onMounted(() => {
             </div>
             <div>
               <label class="mb-1 block text-xs text-muted">Hora</label>
-              <input v-model="form.hora_inicio" type="time" required class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
+              <input
+                v-model="form.hora_inicio" type="time" required list="horarios-libres"
+                class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
+              >
+              <datalist id="horarios-libres">
+                <option v-for="slot in slots" :key="slot.time" :value="slot.time">{{ slot.label }}</option>
+              </datalist>
+              <p v-if="horaOcupada" class="mt-1 text-xs text-amber-400">
+                Ese horario no aparece libre para este barbero. Puedes continuar; el sistema lo rechazará si ya está tomado.
+              </p>
+              <p v-else-if="slotsLoaded" class="mt-1 text-xs text-muted">
+                {{ slots.length }} horario(s) libre(s) ese día.
+              </p>
             </div>
           </div>
           <div>
