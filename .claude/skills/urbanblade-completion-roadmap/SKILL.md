@@ -42,11 +42,16 @@ Pendientes conocidos de este repo (no son bugs; son pantallas que faltan):
 - **El pago con tarjeta no tiene cobertura E2E.** Stripe Elements vive en un
   iframe de otro origen; probarlo de verdad necesita infraestructura de
   pruebas de Stripe, no mocks.
-- **No se consume `AvailabilityController::slots()`.** Los formularios de
-  citas usan `<input type="date">` / `<input type="time">` planos, sin
-  selector de horarios disponibles (hallazgo de Fase 3). Si se construye,
-  debe asumir que el slot puede ocuparse entre que se listó y que se envió
-  el submit — el backend ya responde con un 422 claro (índice único).
+- ~~No se consume `AvailabilityController::slots()`.~~ **Cerrado**
+  (`8dd5afa`): el modal de `pages/my/appointments/` pide los huecos reales
+  en cuanto barbero + servicio + fecha están completos y solo ofrece esos.
+  Como se anticipó, el slot puede ocuparse entre que se listó y que se
+  envió el submit: por eso el 422 del backend (respaldado por el índice
+  único de Fase 3) se sigue mostrando tal cual, y si la consulta de
+  disponibilidad falla se cae al input de hora libre en vez de bloquear la
+  reserva. Cubierto por `e2e/booking.spec.ts`.
+  **Pendiente relacionado**: el formulario de staff
+  (`pages/appointments/index.vue`) sigue usando el input de hora a ciegas.
 
 ## Reglas frontend
 
