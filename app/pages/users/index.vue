@@ -24,6 +24,7 @@ interface UsersResponse {
 const ROLE_LABEL: Record<string, string> = { administrador: 'Administrador', recepcionista: 'Recepción', barbero: 'Barbero', cliente: 'Cliente' }
 
 const { apiFetch } = useApi()
+const { confirm } = useConfirm()
 const { user: currentUser } = useAuth()
 
 const search = ref('')
@@ -47,6 +48,8 @@ const showForm = ref(false)
 const editing = ref<UserRow | null>(null)
 const form = reactive({ name: '', email: '', password: '', password_confirmation: '', role: 'cliente' })
 const formError = ref('')
+const fieldErrors = ref<Record<string, string[]>>({})
+const actionError = ref('')
 const saving = ref(false)
 
 function openCreate() {
@@ -57,6 +60,7 @@ function openCreate() {
   form.password_confirmation = ''
   form.role = 'cliente'
   formError.value = ''
+  fieldErrors.value = {}
   showForm.value = true
 }
 
@@ -68,12 +72,14 @@ function openEdit(user: UserRow) {
   form.password_confirmation = ''
   form.role = user.roles[0] ?? 'cliente'
   formError.value = ''
+  fieldErrors.value = {}
   showForm.value = true
 }
 
 async function submitForm() {
   saving.value = true
   formError.value = ''
+  fieldErrors.value = {}
   try {
     const body: Record<string, string> = { name: form.name, email: form.email, role: form.role }
     if (form.password) {
@@ -88,20 +94,29 @@ async function submitForm() {
     showForm.value = false
     await refresh()
   } catch (err: unknown) {
-    formError.value = (err as { data?: { message?: string } })?.data?.message ?? 'No se pudo guardar. Verifica los datos.'
+    const dataErr = (err as { data?: { message?: string, errors?: Record<string, string[]> } })?.data
+    fieldErrors.value = dataErr?.errors ?? {}
+    formError.value = dataErr?.message ?? 'No se pudo guardar. Verifica los datos.'
   } finally {
     saving.value = false
   }
 }
 
 async function removeUser(user: UserRow) {
-  if (!confirm(`¿Eliminar a ${user.name}?`)) return
+  const accepted = await confirm({
+    title: 'Eliminar usuario',
+    message: `¿Eliminar a ${user.name}? Esta acción no se puede deshacer.`,
+    confirmText: 'Sí, eliminar',
+    isDanger: true,
+  })
+  if (!accepted) return
 
+  actionError.value = ''
   try {
     await apiFetch(`/users/${user.id}`, { method: 'DELETE' })
     await refresh()
   } catch (err: unknown) {
-    alert((err as { data?: { message?: string } })?.data?.message ?? 'No se pudo eliminar el usuario.')
+    actionError.value = (err as { data?: { message?: string } })?.data?.message ?? 'No se pudo eliminar el usuario.'
   }
 }
 </script>
@@ -132,6 +147,7 @@ async function removeUser(user: UserRow) {
 
     <p v-if="pending" class="text-sm text-muted">Cargando usuarios…</p>
     <p v-else-if="error" class="text-sm text-red-400">No se pudo cargar la lista de usuarios.</p>
+    <p v-if="actionError" role="alert" class="mb-4 text-sm text-red-400">{{ actionError }}</p>
 
     <section v-else class="ui-card overflow-x-auto">
       <table class="w-full text-left text-sm">
@@ -178,38 +194,43 @@ async function removeUser(user: UserRow) {
       </table>
     </section>
 
-    <div v-if="showForm" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" @click.self="showForm = false">
+    <div v-if="showForm" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" role="dialog" aria-modal="true" aria-labelledby="user-form-title" @click.self="!saving && (showForm = false)">
       <div class="w-full max-w-md rounded-2xl border border-line bg-card p-6">
-        <h2 class="mb-4 text-lg font-semibold text-ink">{{ editing ? 'Editar usuario' : 'Nuevo usuario' }}</h2>
+        <h2 id="user-form-title" class="mb-4 text-lg font-semibold text-ink">{{ editing ? 'Editar usuario' : 'Nuevo usuario' }}</h2>
         <form class="space-y-3" @submit.prevent="submitForm">
           <div>
-            <label class="mb-1 block text-xs text-muted">Nombre</label>
-            <input v-model="form.name" type="text" required class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
+            <label for="user-name" class="mb-1 block text-xs text-muted">Nombre</label>
+            <input id="user-name" v-model="form.name" type="text" required :aria-invalid="!!fieldErrors.name" :aria-describedby="fieldErrors.name ? 'user-name-error' : undefined" :class="['w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink', fieldErrors.name ? 'border-red-500/60' : 'border-line']">
+            <p v-if="fieldErrors.name" id="user-name-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.name[0] }}</p>
           </div>
           <div>
-            <label class="mb-1 block text-xs text-muted">Email</label>
-            <input v-model="form.email" type="email" required class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
+            <label for="user-email" class="mb-1 block text-xs text-muted">Email</label>
+            <input id="user-email" v-model="form.email" type="email" required :aria-invalid="!!fieldErrors.email" :aria-describedby="fieldErrors.email ? 'user-email-error' : undefined" :class="['w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink', fieldErrors.email ? 'border-red-500/60' : 'border-line']">
+            <p v-if="fieldErrors.email" id="user-email-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.email[0] }}</p>
           </div>
           <div>
-            <label class="mb-1 block text-xs text-muted">Rol</label>
-            <select v-model="form.role" required class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
+            <label for="user-role" class="mb-1 block text-xs text-muted">Rol</label>
+            <select id="user-role" v-model="form.role" required :aria-invalid="!!fieldErrors.role" :aria-describedby="fieldErrors.role ? 'user-role-error' : undefined" :class="['w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink', fieldErrors.role ? 'border-red-500/60' : 'border-line']">
               <option v-for="r in roles" :key="r" :value="r">{{ ROLE_LABEL[r] ?? r }}</option>
             </select>
+            <p v-if="fieldErrors.role" id="user-role-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.role[0] }}</p>
           </div>
           <div>
-            <label class="mb-1 block text-xs text-muted">{{ editing ? 'Nueva contraseña (opcional)' : 'Contraseña' }}</label>
-            <input v-model="form.password" type="password" :required="!editing" minlength="8" class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
+            <label for="user-password" class="mb-1 block text-xs text-muted">{{ editing ? 'Nueva contraseña (opcional)' : 'Contraseña' }}</label>
+            <input id="user-password" v-model="form.password" type="password" :required="!editing" minlength="8" autocomplete="new-password" :aria-invalid="!!fieldErrors.password" :aria-describedby="fieldErrors.password ? 'user-password-error' : undefined" :class="['w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink', fieldErrors.password ? 'border-red-500/60' : 'border-line']">
+            <p v-if="fieldErrors.password" id="user-password-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.password[0] }}</p>
           </div>
           <div v-if="form.password">
-            <label class="mb-1 block text-xs text-muted">Confirmar contraseña</label>
-            <input v-model="form.password_confirmation" type="password" :required="!!form.password" minlength="8" class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
+            <label for="user-password-confirmation" class="mb-1 block text-xs text-muted">Confirmar contraseña</label>
+            <input id="user-password-confirmation" v-model="form.password_confirmation" type="password" :required="!!form.password" minlength="8" autocomplete="new-password" :aria-invalid="!!fieldErrors.password_confirmation" :aria-describedby="fieldErrors.password_confirmation ? 'user-password-confirmation-error' : undefined" :class="['w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink', fieldErrors.password_confirmation ? 'border-red-500/60' : 'border-line']">
+            <p v-if="fieldErrors.password_confirmation" id="user-password-confirmation-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.password_confirmation[0] }}</p>
           </div>
           <p v-if="formError" class="text-sm text-red-400">{{ formError }}</p>
           <div class="mt-5 flex gap-3">
             <button type="submit" :disabled="saving" class="flex-1 rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-black hover:bg-gold-dim disabled:opacity-50">
               {{ saving ? 'Guardando…' : 'Guardar' }}
             </button>
-            <button type="button" class="rounded-lg border border-line px-4 py-2 text-sm text-muted hover:text-ink" @click="showForm = false">Cancelar</button>
+            <button type="button" :disabled="saving" class="rounded-lg border border-line px-4 py-2 text-sm text-muted hover:text-ink disabled:opacity-50" @click="showForm = false">Cancelar</button>
           </div>
         </form>
       </div>

@@ -43,6 +43,7 @@ const SEGMENT_CLASS: Record<string, string> = {
 }
 
 const { apiFetch } = useApi()
+const { confirm } = useConfirm()
 
 const search = ref('')
 const segment = ref('')
@@ -82,6 +83,8 @@ const showForm = ref(false)
 const editing = ref<ClientRow | null>(null)
 const form = reactive({ name: '', email: '', telefono: '', password: '' })
 const formError = ref('')
+const fieldErrors = ref<Record<string, string[]>>({})
+const actionError = ref('')
 const saving = ref(false)
 
 function openCreate() {
@@ -91,6 +94,7 @@ function openCreate() {
   form.telefono = ''
   form.password = ''
   formError.value = ''
+  fieldErrors.value = {}
   showForm.value = true
 }
 
@@ -101,12 +105,14 @@ function openEdit(client: ClientRow) {
   form.telefono = client.telefono ?? ''
   form.password = ''
   formError.value = ''
+  fieldErrors.value = {}
   showForm.value = true
 }
 
 async function submitForm() {
   saving.value = true
   formError.value = ''
+  fieldErrors.value = {}
   try {
     if (editing.value) {
       // La ruta liga por slug, no por id (Client usa HasSlug::getRouteKeyName()
@@ -124,20 +130,29 @@ async function submitForm() {
     showForm.value = false
     await refresh()
   } catch (err: unknown) {
-    formError.value = (err as { data?: { message?: string } })?.data?.message ?? 'No se pudo guardar. Verifica los datos.'
+    const dataErr = (err as { data?: { message?: string, errors?: Record<string, string[]> } })?.data
+    fieldErrors.value = dataErr?.errors ?? {}
+    formError.value = dataErr?.message ?? 'No se pudo guardar. Verifica los datos.'
   } finally {
     saving.value = false
   }
 }
 
 async function removeClient(client: ClientRow) {
-  if (!confirm(`¿Eliminar cliente ${client.name ?? ''}?`)) return
+  const accepted = await confirm({
+    title: 'Eliminar cliente',
+    message: `¿Eliminar a ${client.name ?? 'este cliente'}? Esta acción no se puede deshacer.`,
+    confirmText: 'Sí, eliminar',
+    isDanger: true,
+  })
+  if (!accepted) return
 
+  actionError.value = ''
   try {
     await apiFetch(`/admin/clients/${client.slug}`, { method: 'DELETE' })
     await refresh()
   } catch (err: unknown) {
-    alert((err as { data?: { message?: string } })?.data?.message ?? 'No se pudo eliminar el cliente.')
+    actionError.value = (err as { data?: { message?: string } })?.data?.message ?? 'No se pudo eliminar el cliente.'
   }
 }
 
@@ -190,6 +205,7 @@ function fmtDate(iso: string | null) {
 
     <p v-if="pending" class="text-sm text-muted">Cargando clientes…</p>
     <p v-else-if="error" class="text-sm text-red-400">No se pudo cargar la lista de clientes.</p>
+    <p v-if="actionError" role="alert" class="mb-4 text-sm text-red-400">{{ actionError }}</p>
 
     <section v-else class="ui-card overflow-x-auto">
       <table class="w-full text-left text-sm">
@@ -241,32 +257,36 @@ function fmtDate(iso: string | null) {
       <button type="button" class="rounded-lg border border-line px-3 py-1.5 text-sm text-ink disabled:opacity-40" :disabled="page >= lastPage" @click="page++">→</button>
     </div>
 
-    <div v-if="showForm" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" @click.self="showForm = false">
+    <div v-if="showForm" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" role="dialog" aria-modal="true" aria-labelledby="client-form-title" @click.self="!saving && (showForm = false)">
       <div class="w-full max-w-md rounded-2xl border border-line bg-card p-6">
-        <h2 class="mb-4 text-lg font-semibold text-ink">{{ editing ? 'Editar cliente' : 'Nuevo cliente' }}</h2>
+        <h2 id="client-form-title" class="mb-4 text-lg font-semibold text-ink">{{ editing ? 'Editar cliente' : 'Nuevo cliente' }}</h2>
         <form class="space-y-3" @submit.prevent="submitForm">
           <div>
-            <label class="mb-1 block text-xs text-muted">Nombre</label>
-            <input v-model="form.name" type="text" required class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
+            <label for="client-name" class="mb-1 block text-xs text-muted">Nombre</label>
+            <input id="client-name" v-model="form.name" type="text" required :aria-invalid="!!fieldErrors.name" :aria-describedby="fieldErrors.name ? 'client-name-error' : undefined" :class="['w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink', fieldErrors.name ? 'border-red-500/60' : 'border-line']">
+            <p v-if="fieldErrors.name" id="client-name-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.name[0] }}</p>
           </div>
           <div>
-            <label class="mb-1 block text-xs text-muted">Email</label>
-            <input v-model="form.email" type="email" required class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
+            <label for="client-email" class="mb-1 block text-xs text-muted">Email</label>
+            <input id="client-email" v-model="form.email" type="email" required :aria-invalid="!!fieldErrors.email" :aria-describedby="fieldErrors.email ? 'client-email-error' : undefined" :class="['w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink', fieldErrors.email ? 'border-red-500/60' : 'border-line']">
+            <p v-if="fieldErrors.email" id="client-email-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.email[0] }}</p>
           </div>
           <div>
-            <label class="mb-1 block text-xs text-muted">Teléfono</label>
-            <input v-model="form.telefono" type="text" class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
+            <label for="client-phone" class="mb-1 block text-xs text-muted">Teléfono</label>
+            <input id="client-phone" v-model="form.telefono" type="tel" :aria-invalid="!!fieldErrors.telefono" :aria-describedby="fieldErrors.telefono ? 'client-phone-error' : undefined" :class="['w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink', fieldErrors.telefono ? 'border-red-500/60' : 'border-line']">
+            <p v-if="fieldErrors.telefono" id="client-phone-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.telefono[0] }}</p>
           </div>
           <div v-if="!editing">
-            <label class="mb-1 block text-xs text-muted">Contraseña</label>
-            <input v-model="form.password" type="password" required minlength="8" class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
+            <label for="client-password" class="mb-1 block text-xs text-muted">Contraseña</label>
+            <input id="client-password" v-model="form.password" type="password" required minlength="8" autocomplete="new-password" :aria-invalid="!!fieldErrors.password" :aria-describedby="fieldErrors.password ? 'client-password-error' : undefined" :class="['w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink', fieldErrors.password ? 'border-red-500/60' : 'border-line']">
+            <p v-if="fieldErrors.password" id="client-password-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.password[0] }}</p>
           </div>
           <p v-if="formError" class="text-sm text-red-400">{{ formError }}</p>
           <div class="mt-5 flex gap-3">
             <button type="submit" :disabled="saving" class="flex-1 rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-black hover:bg-gold-dim disabled:opacity-50">
               {{ saving ? 'Guardando…' : 'Guardar' }}
             </button>
-            <button type="button" class="rounded-lg border border-line px-4 py-2 text-sm text-muted hover:text-ink" @click="showForm = false">Cancelar</button>
+            <button type="button" :disabled="saving" class="rounded-lg border border-line px-4 py-2 text-sm text-muted hover:text-ink disabled:opacity-50" @click="showForm = false">Cancelar</button>
           </div>
         </form>
       </div>
