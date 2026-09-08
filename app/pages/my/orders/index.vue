@@ -24,6 +24,7 @@ const ESTADO_CLASS: Record<string, string> = {
 }
 
 const { apiFetch } = useApi()
+const { confirm } = useConfirm()
 const route = useRoute()
 
 const { data: response, pending, error, refresh } = await useAsyncData(
@@ -43,16 +44,24 @@ function fmtDate(iso: string | null) {
 }
 
 const cancelling = ref<string | null>(null)
+const actionError = ref('')
 
 async function cancelOrder(order: OrderRow) {
-  if (!confirm(`¿Cancelar el pedido ${order.folio}?`)) return
+  const accepted = await confirm({
+    title: 'Cancelar pedido',
+    message: `¿Cancelar el pedido ${order.folio}?`,
+    confirmText: 'Sí, cancelar',
+    isDanger: true,
+  })
+  if (!accepted) return
 
   cancelling.value = order.id
+  actionError.value = ''
   try {
     await apiFetch(`/orders/${order.id}/cancel`, { method: 'PATCH' })
     await refresh()
   } catch (err: unknown) {
-    alert((err as { data?: { message?: string } })?.data?.message ?? 'No se pudo cancelar el pedido.')
+    actionError.value = (err as { data?: { message?: string } })?.data?.message ?? 'No se pudo cancelar el pedido.'
   } finally {
     cancelling.value = null
   }
@@ -78,6 +87,7 @@ async function cancelOrder(order: OrderRow) {
 
     <p v-if="pending" class="text-sm text-muted">Cargando pedidos…</p>
     <p v-else-if="error" class="text-sm text-red-400">No se pudieron cargar tus pedidos.</p>
+    <p v-if="actionError" role="alert" class="mb-4 text-sm text-red-400">{{ actionError }}</p>
     <p v-else-if="!orders.length" class="rounded-2xl border border-dashed border-line p-12 text-center text-sm text-muted">
       Todavía no tienes pedidos.
     </p>

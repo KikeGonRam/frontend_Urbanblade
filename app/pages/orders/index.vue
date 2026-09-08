@@ -33,6 +33,7 @@ interface OrdersResponse {
 }
 
 const { apiFetch } = useApi()
+const { confirm } = useConfirm()
 
 const estadoFilter = ref('')
 const search = ref('')
@@ -84,14 +85,21 @@ async function confirmDeliver() {
 }
 
 async function cancelOrder(order: OrderRow) {
-  if (!confirm(`¿Cancelar el pedido ${order.folio}? Se devolverá el stock.`)) return
+  const accepted = await confirm({
+    title: 'Cancelar pedido',
+    message: `¿Cancelar el pedido ${order.folio}? El stock se devolverá automáticamente.`,
+    confirmText: 'Sí, cancelar',
+    isDanger: true,
+  })
+  if (!accepted) return
 
   busy.value = order.id
+  actionError.value = ''
   try {
     await apiFetch(`/orders/${order.id}/cancel`, { method: 'PATCH' })
     await refresh()
   } catch (err: unknown) {
-    alert((err as { data?: { message?: string } })?.data?.message ?? 'No se pudo cancelar el pedido.')
+    actionError.value = (err as { data?: { message?: string } })?.data?.message ?? 'No se pudo cancelar el pedido.'
   } finally {
     busy.value = null
   }
@@ -107,7 +115,7 @@ async function downloadReceipt(order: OrderRow) {
     a.click()
     URL.revokeObjectURL(url)
   } catch {
-    alert('No se pudo generar el recibo.')
+    actionError.value = 'No se pudo generar el recibo.'
   }
 }
 </script>

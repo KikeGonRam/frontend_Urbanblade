@@ -43,6 +43,7 @@ const ESTADO_CLASS: Record<string, string> = {
 const ESTADOS = Object.keys(ESTADO_LABEL)
 
 const { apiFetch } = useApi()
+const { confirm } = useConfirm()
 const route = useRoute()
 const router = useRouter()
 
@@ -92,6 +93,7 @@ const showForm = ref(false)
 const editing = ref<AppointmentRow | null>(null)
 const form = reactive({ client_id: '', client_label: '', barber_id: '', service_id: '', fecha: '', hora_inicio: '', estado: 'pendiente', notas: '' })
 const formError = ref('')
+const actionError = ref('')
 const saving = ref(false)
 
 // ── Disponibilidad (guía, no restricción) ─────────────────────────────────
@@ -212,8 +214,15 @@ async function submitForm() {
 }
 
 async function cancelAppointment(appt: AppointmentRow) {
-  if (!confirm(`¿Cancelar la cita de ${appt.client.user.name ?? 'este cliente'}?`)) return
+  const accepted = await confirm({
+    title: 'Cancelar cita',
+    message: `¿Cancelar la cita de ${appt.client.user.name ?? 'este cliente'}?`,
+    confirmText: 'Sí, cancelar',
+    isDanger: true,
+  })
+  if (!accepted) return
 
+  actionError.value = ''
   try {
     await apiFetch(`/appointments/${appt.code}`, {
       method: 'PUT',
@@ -224,7 +233,7 @@ async function cancelAppointment(appt: AppointmentRow) {
     })
     await refresh()
   } catch (err: unknown) {
-    alert((err as { data?: { message?: string } })?.data?.message ?? 'No se pudo cancelar la cita.')
+    actionError.value = (err as { data?: { message?: string } })?.data?.message ?? 'No se pudo cancelar la cita.'
   }
 }
 
@@ -271,6 +280,7 @@ onMounted(() => {
 
     <p v-if="pending" class="text-sm text-muted">Cargando citas…</p>
     <p v-else-if="error" class="text-sm text-red-400">No se pudo cargar la lista de citas.</p>
+    <p v-if="actionError" role="alert" class="mb-4 text-sm text-red-400">{{ actionError }}</p>
 
     <section v-else class="ui-card overflow-x-auto">
       <table class="w-full text-left text-sm">
