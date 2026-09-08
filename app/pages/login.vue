@@ -35,7 +35,7 @@ async function onSubmit() {
       return
     }
 
-    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/dashboard'
+    const redirect = getSafeRedirectUrl(route.query.redirect, '/dashboard')
     await navigateTo(redirect)
   } catch (error: unknown) {
     if (handleRateLimit(error)) return

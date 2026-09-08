@@ -31,7 +31,10 @@ onMounted(async () => {
     return;
   }
 
-  await navigateTo(user.profile_complete ? "/dashboard" : "/complete-profile", {
+  const fallback = user.profile_complete ? '/dashboard' : '/complete-profile'
+  const redirectTarget = user.profile_complete ? getSafeRedirectUrl(route.query.redirect, fallback) : fallback
+
+  await navigateTo(redirectTarget, {
     replace: true,
   });
 });

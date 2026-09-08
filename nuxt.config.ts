@@ -62,6 +62,14 @@ export default defineNuxtConfig({
    * esas rutas.
    */
   routeRules: {
+    '/**': {
+      headers: {
+        'X-Content-Type-Options': 'nosniff',
+        'X-Frame-Options': 'SAMEORIGIN',
+        'Referrer-Policy': 'strict-origin-when-cross-origin',
+        'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+      },
+    },
     '/dashboard/**': { ssr: false },
     '/appointments': { ssr: false },
     '/appointments/**': { ssr: false },

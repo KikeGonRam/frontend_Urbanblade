@@ -121,3 +121,17 @@ test("un usuario ya autenticado no se queda en el login", async ({
 
   await expect(page).toHaveURL(/\/dashboard$/);
 });
+
+test("un intento de redirección abierta en redirect se sanitiza al dashboard", async ({
+  page,
+}) => {
+  await mockApi(page, { user: makeUser({ profile_complete: true }) });
+
+  await page.goto("/login?redirect=https://evil.com");
+  await page.getByLabel("Correo").fill("cliente@test.local");
+  await page.locator("#password").fill("password");
+  await page.getByRole("button", { name: "Ingresar" }).click();
+
+  await expect(page).toHaveURL(/\/dashboard$/);
+});
+
