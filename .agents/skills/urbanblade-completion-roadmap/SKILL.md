@@ -37,7 +37,7 @@ Completar el backend Laravel y el frontend Nuxt como un producto coordinado, sin
 - Cobertura completa de autenticación en `tests/Feature/AuthApiTest.php` con 14 pruebas que validan registro, inicio de sesión, bloqueo de credenciales inválidas sin revelar existencia de correos, bloqueo de correos no verificados, `GET /auth/me`, `POST /auth/logout` con revocación en base de datos, `POST /auth/refresh-token` con rotación atómica de tokens, rechazo de 401 en endpoints protegidos sin autenticación, y recuperación/reseteo de contraseña.
 - Actualización de documentación OpenAPI/Scribe sin advertencias de esquema.
 
-Aceptación: todos los endpoints consumidos tienen respuesta documentada, errores previsibles y prueba; `.\test.ps1` (377/377 tests verdes), Pint limpio (365 files), Larastan limpio (0 errores en 286 files), ESLint limpio y Playwright E2E verde (16/16 tests).
+Aceptación: todos los endpoints consumidos tienen respuesta documentada, errores previsibles y prueba; `.\test.ps1` (378/378 tests verdes), Pint limpio, Larastan limpio, ESLint limpio y Playwright E2E verde (17/17 tests).
 
 ### Fase 2: perfiles, permisos y seguridad de cuenta — ✅ DONE (2026-09-08)
 
@@ -154,13 +154,11 @@ Aceptación: importes y stock se calculan en servidor y webhooks son idempotente
    vez de abrir una nueva, pero sigue abriendo la suya propia cuando se
    invoca standalone (p.ej. desde `InventoryController`).
 
-**Decisión de negocio pendiente, NO implementada a propósito**: el webhook
-`charge.refunded` de Stripe (`StripeWebhookController`) registra el reembolso
-pero no revierte automáticamente puntos de lealtad otorgados ni restaura
-stock — es una decisión de política de negocio (¿se revierten siempre? ¿solo
-si el producto/servicio no se usó?) que cambiaría economía real de puntos y
-stock sin un spec claro, no un bug puro. Señalado para que el dueño del
-proyecto decida antes de implementarlo.
+**Decisión cerrada (backend `8c37d64`)**: un reembolso total revierte de forma
+idempotente los puntos ganados por la cita y restaura los puntos canjeados.
+Un reembolso parcial no modifica puntos automáticamente y deja aviso para
+revisión humana. El webhook no restaura stock ni reabre citas porque el
+reembolso monetario no demuestra devolución física ni servicio no prestado.
 
 Verificación: `.\test.ps1` x2 en verde (351/351 ambas veces), Larastan en
 frío limpio, Pint limpio (360 archivos).
@@ -220,7 +218,7 @@ Twilio.
 Verificación: `.\test.ps1` x2 en verde (355/355 ambas veces), Larastan en
 frío limpio, Pint limpio (361 archivos).
 
-### Fase 6: pruebas E2E y producción — ✅ DONE con un hallazgo abierto (2026-09-07, commit `2472a3b` en frontend-urban)
+### Fase 6: pruebas E2E y producción — ✅ DONE (actualizada 2026-09-08)
 
 - Añadir recorridos E2E críticos para login, Google, completar perfil, reserva y pago.
 - Verificar variables de Vercel/backend, CORS, storage, health checks y CI.
@@ -269,31 +267,27 @@ puede reservar: el modal de `/my/appointments` ahora también crea citas
 tiene un CTA "Reservar con X" que lo abre con el barbero preseleccionado.
 Se agregaron 3 pruebas E2E (reserva feliz verificando el cuerpo del POST,
 preselección desde la ficha, y choque de horario mostrando el 422 real del
-backend), así que **"reserva" ya tiene cobertura E2E**; "pago" sigue sin
-ella por depender de Stripe Elements dentro de un iframe. De paso se corrigió
+backend), así que **"reserva" ya tiene cobertura E2E**. El pago con tarjeta
+también quedó cubierto con un adaptador determinista del SDK de Stripe: usa
+una clave publicable ficticia únicamente en Playwright, intercepta la API y
+verifica el contrato `stripe-intent -> confirmCardPayment -> POST /payments`
+sin secretos, red externa ni dinero real. De paso se corrigió
 un bug latente en `/barbers/[slug]`: el middleware `auth` solo mira la
 cookie, así que en una entrada directa `user` seguía en null y
 `hasRole('cliente')` escondía el formulario de reseña que ya existía.
 
-Descripción original del hallazgo, que sigue explicando el porqué:
+Descripción histórica del hallazgo de reserva (ya cerrado):
 
 **El cliente NO podía reservar desde el frontend Nuxt**:
-`POST /api/v1/appointments` sí permite el rol `cliente` (el controlador
-tiene una rama explícita: "El cliente reserva para sí mismo, creando su
-perfil Client si aún no existe"), pero en `frontend-urban` la creación de
-citas existe únicamente en `app/pages/appointments/index.vue`, protegida por
-`middleware: ['auth', 'staff']`. `app/pages/my/appointments/index.vue` (la
-página del cliente) solo permite **reagendar y cancelar** citas que ya
-existen. El CTA "Reservar" de la landing lleva a `/register`, y desde ahí el
-cliente no tiene ninguna ruta para agendar. Por eso **"reserva" y "pago" no
-tienen cobertura E2E**: la primera no existe todavía en el frontend, y la
-segunda depende de Stripe Elements dentro de un iframe (no probable de forma
-significativa con mocks). Construir esa pantalla es trabajo de producto, no
-de esta fase de verificación — queda señalado para que el dueño del proyecto
-decida, igual que la reversión de reembolsos de Fase 4.
+`POST /api/v1/appointments` ya permitía el rol `cliente`, pero entonces la
+creación solo existía en la página de staff y la vista del cliente únicamente
+reagendaba o cancelaba citas. Esa brecha motivó el flujo que hoy vive en
+`app/pages/my/appointments/index.vue`. La limitación del iframe de Stripe se
+resolvió en automatización probando nuestro contrato y sustituyendo solo el
+SDK externo; el iframe real sigue verificándose manualmente en el sandbox.
 
-Verificación: 9/9 pruebas E2E en verde, también con `CI=1` (1 worker +
-reintentos); `eslint . --max-warnings=0` limpio; `npm audit
+Verificación actual: 17/17 pruebas E2E en verde con 1 worker contra el build
+de producción; `eslint .` limpio; `npm audit
 --audit-level=high` limpio; `/up` 200 y CORS verificados contra el backend
 corriendo.
 

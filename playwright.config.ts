@@ -72,6 +72,9 @@ export default defineConfig({
       timeout: 180_000,
       env: {
         NUXT_PUBLIC_API_BASE: "http://127.0.0.1:8099/api/v1",
+        // Clave deliberadamente ficticia: permite renderizar el flujo de
+        // tarjeta mientras payments.spec.ts sustituye el SDK en el navegador.
+        NUXT_PUBLIC_STRIPE_KEY: "pk_test_e2e_fake",
         PORT: "3100",
         NITRO_PORT: "3100",
         HOST: "127.0.0.1",

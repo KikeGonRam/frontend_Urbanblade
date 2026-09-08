@@ -18,7 +18,7 @@ Este repositorio Nuxt consume el contrato Laravel de `../barber`. Las fases debe
 5. Notificaciones y operación: preferencias, push, estados de cola y observabilidad.
 6. E2E y producción: flujos críticos en build productivo, variables de Vercel y regresiones visuales.
 
-## Estado (2026-09-07)
+## Estado (2026-09-08)
 
 El detalle completo de cada fase (hallazgos, commits, verificación) vive en
 la skill homónima del backend: `../barber/.agents/skills/urbanblade-completion-roadmap/SKILL.md`.
@@ -26,22 +26,25 @@ Resumen desde el lado del frontend:
 
 - **Fases 1–5**: auditadas y cerradas del lado del backend. En este repo solo
   la 1 y la 2 tuvieron trabajo propio (contrato API/auth, perfil y avatar).
-- **Fase 6**: Playwright agregado (`e2e/`, `playwright.config.ts`), 9 pruebas
+- **Fase 6**: Playwright agregado (`e2e/`, `playwright.config.ts`), 17 pruebas
   contra el **build de producción** (`nuxt build` + `nuxt preview` en el
   puerto 3100), con la API de barber interceptada en el navegador. Job `e2e`
   propio en CI. Se corrigió el gate de perfil incompleto en `login()` y
   `register()`, que antes solo respetaba el callback de Google.
 
-Pendientes conocidos de este repo (no son bugs; son pantallas que faltan):
+Cierres antes registrados como pendientes:
 
 - ~~El cliente no puede reservar una cita desde aquí.~~ **Cerrado**
   (`cecb460`): el modal de `pages/my/appointments/` ahora también crea citas
   y `pages/barbers/[slug].vue` tiene el CTA "Reservar con X" que lo abre con
   el barbero preseleccionado (`?barber=<id>`). Cubierto por
   `e2e/booking.spec.ts`.
-- **El pago con tarjeta no tiene cobertura E2E.** Stripe Elements vive en un
-  iframe de otro origen; probarlo de verdad necesita infraestructura de
-  pruebas de Stripe, no mocks.
+- ~~El pago con tarjeta no tiene cobertura E2E.~~ **Cerrado**:
+  `e2e/payments.spec.ts` sustituye de forma determinista el SDK de Stripe,
+  usa una clave publicable ficticia solo durante Playwright y verifica el
+  contrato completo `stripe-intent -> confirmCardPayment -> POST /payments`
+  sin secretos, red externa ni dinero real. El iframe real de Stripe queda
+  reservado para pruebas integradas manuales del sandbox.
 - ~~No se consume `AvailabilityController::slots()`.~~ **Cerrado**
   (`8dd5afa` cliente, `app/pages/appointments/index.vue` staff):
   el modal de cliente (`pages/my/appointments/`) pide los huecos reales
