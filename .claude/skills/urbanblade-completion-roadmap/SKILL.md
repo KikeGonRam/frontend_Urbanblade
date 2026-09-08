@@ -34,10 +34,14 @@ Resumen desde el lado del frontend:
 
 Pendientes conocidos de este repo (no son bugs; son pantallas que faltan):
 
-- **El cliente no puede reservar una cita desde aquí.** `POST /appointments`
-  sí acepta el rol `cliente` en el backend, pero la creación de citas solo
-  existe en `pages/appointments/index.vue` (staff). `pages/my/appointments/`
-  solo reagenda y cancela. Por eso "reserva" no tiene cobertura E2E.
+- ~~El cliente no puede reservar una cita desde aquí.~~ **Cerrado**
+  (`cecb460`): el modal de `pages/my/appointments/` ahora también crea citas
+  y `pages/barbers/[slug].vue` tiene el CTA "Reservar con X" que lo abre con
+  el barbero preseleccionado (`?barber=<id>`). Cubierto por
+  `e2e/booking.spec.ts`.
+- **El pago con tarjeta no tiene cobertura E2E.** Stripe Elements vive en un
+  iframe de otro origen; probarlo de verdad necesita infraestructura de
+  pruebas de Stripe, no mocks.
 - **No se consume `AvailabilityController::slots()`.** Los formularios de
   citas usan `<input type="date">` / `<input type="time">` planos, sin
   selector de horarios disponibles (hallazgo de Fase 3). Si se construye,
