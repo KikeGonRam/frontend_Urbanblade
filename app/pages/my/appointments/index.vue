@@ -81,12 +81,37 @@ function fmtDate(fecha: string) {
   return new Date(`${fecha}T00:00:00`).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
-// ── Reagendar ─────────────────────────────────────────────────────────────
+// ── Reservar / Reagendar ──────────────────────────────────────────────────
+// El mismo modal sirve para ambos: editing === null significa "cita nueva".
+// AppointmentController::store() ya acepta el rol cliente y reserva a nombre
+// del usuario autenticado (crea su perfil Client si aún no existe), así que
+// aquí NO se manda client_id — mandarlo sería además ignorado.
 const showForm = ref(false)
 const editing = ref<AppointmentRow | null>(null)
 const form = reactive({ barber_id: '', service_id: '', fecha: '', hora_inicio: '', notas: '' })
 const formError = ref('')
 const saving = ref(false)
+
+const isEditing = computed(() => editing.value !== null)
+
+function todayIso() {
+  const now = new Date()
+
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+}
+
+function openCreate(barberId = '') {
+  editing.value = null
+  form.barber_id = barberId
+  form.service_id = ''
+  // El backend valida fecha con after_or_equal:today, así que arrancar en hoy
+  // evita el 422 más común por dejar el campo en una fecha pasada.
+  form.fecha = todayIso()
+  form.hora_inicio = ''
+  form.notas = ''
+  formError.value = ''
+  showForm.value = true
+}
 
 function openReschedule(appt: AppointmentRow) {
   editing.value = appt
@@ -99,25 +124,45 @@ function openReschedule(appt: AppointmentRow) {
   showForm.value = true
 }
 
-async function submitReschedule() {
-  if (!editing.value) return
-
+async function submitForm() {
   saving.value = true
   formError.value = ''
+
+  const body = {
+    barber_id: form.barber_id,
+    service_id: form.service_id,
+    fecha: form.fecha,
+    hora_inicio: form.hora_inicio,
+    notas: form.notas || undefined,
+  }
+
   try {
-    // Appointment usa HasPublicCode -> getRouteKeyName() = 'code', no 'id'.
-    await apiFetch(`/appointments/${editing.value.code}`, {
-      method: 'PUT',
-      body: { barber_id: form.barber_id, service_id: form.service_id, fecha: form.fecha, hora_inicio: form.hora_inicio, notas: form.notas || undefined },
-    })
+    if (editing.value) {
+      // Appointment usa HasPublicCode -> getRouteKeyName() = 'code', no 'id'.
+      await apiFetch(`/appointments/${editing.value.code}`, { method: 'PUT', body })
+    } else {
+      await apiFetch('/appointments', { method: 'POST', body })
+    }
     showForm.value = false
     await refresh()
   } catch (err: unknown) {
-    formError.value = (err as { data?: { message?: string } })?.data?.message ?? 'No se pudo reprogramar la cita.'
+    // El 422 del backend trae el motivo real y accionable ("El barbero ya
+    // tiene una cita en ese horario.", que respalda el índice único de
+    // Fase 3), así que se muestra tal cual en vez de un mensaje genérico.
+    formError.value = (err as { data?: { message?: string } })?.data?.message
+      ?? (editing.value ? 'No se pudo reprogramar la cita.' : 'No se pudo reservar la cita.')
   } finally {
     saving.value = false
   }
 }
+
+// Entrada desde la ficha del barbero (/barbers/[slug] → "Reservar con X"):
+// abre el modal con ese barbero ya seleccionado.
+const route = useRoute()
+onMounted(() => {
+  const barberId = typeof route.query.barber === 'string' ? route.query.barber : ''
+  if (barberId) openCreate(barberId)
+})
 
 // ── Cancelar ──────────────────────────────────────────────────────────────
 const cancelling = ref<string | null>(null)
@@ -261,9 +306,14 @@ onUnmounted(() => teardownStripe())
         <h1 class="mt-1 text-2xl font-semibold text-ink">Mis <span class="text-gold">Citas</span></h1>
         <p class="mt-1 text-sm text-muted">Puedes reagendar o cancelar hasta {{ policyHours }} horas antes.</p>
       </div>
-      <NuxtLink to="/barbers" class="rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-black hover:bg-gold-dim">
-        Reservar nueva cita
-      </NuxtLink>
+      <div class="flex items-center gap-2">
+        <NuxtLink to="/barbers" class="rounded-lg border border-line px-4 py-2 text-sm font-semibold text-muted hover:text-ink">
+          Ver barberos
+        </NuxtLink>
+        <button type="button" class="rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-black hover:bg-gold-dim" @click="openCreate()">
+          Reservar nueva cita
+        </button>
+      </div>
     </header>
 
     <section v-if="!pending && !error" class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -323,8 +373,8 @@ onUnmounted(() => teardownStripe())
 
     <div v-if="showForm" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" @click.self="showForm = false">
       <div class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-line bg-card p-6">
-        <h2 class="mb-4 text-lg font-semibold text-ink">Reagendar cita</h2>
-        <form class="space-y-3" @submit.prevent="submitReschedule">
+        <h2 class="mb-4 text-lg font-semibold text-ink">{{ isEditing ? 'Reagendar cita' : 'Reservar cita' }}</h2>
+        <form class="space-y-3" @submit.prevent="submitForm">
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="mb-1 block text-xs text-muted">Barbero</label>
@@ -358,7 +408,7 @@ onUnmounted(() => teardownStripe())
           <p v-if="formError" class="text-sm text-red-400">{{ formError }}</p>
           <div class="mt-5 flex gap-3">
             <button type="submit" :disabled="saving" class="flex-1 rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-black hover:bg-gold-dim disabled:opacity-50">
-              {{ saving ? 'Guardando…' : 'Reprogramar' }}
+              {{ saving ? 'Guardando…' : isEditing ? 'Reprogramar' : 'Reservar' }}
             </button>
             <button type="button" class="rounded-lg border border-line px-4 py-2 text-sm text-muted hover:text-ink" @click="showForm = false">Cancelar</button>
           </div>

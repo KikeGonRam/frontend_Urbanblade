@@ -46,26 +46,37 @@ export default defineConfig({
     },
   ],
 
-  webServer: {
-    // 127.0.0.1 y no "localhost": el server de Nuxt puede quedarse escuchando
-    // solo en IPv6 (::1) según el entorno, y entonces "localhost" resuelve a
-    // una dirección donde no hay nadie — ya diagnosticado en este proyecto.
-    // El puerto/host van por variable de entorno (Nitro las lee), no por
-    // flags de CLI: `nuxt preview` no acepta --port/--host y sale con
-    // código 1 sin decir por qué.
-    command: "npm run build && npm run preview",
-    url: "http://127.0.0.1:3100",
-    // Nunca reutilizar: la fase exige probar el build de producción, y un
-    // servidor previo no ofrece ninguna garantía de estar compilado con el
-    // código actual.
-    reuseExistingServer: false,
-    timeout: 180_000,
-    env: {
-      NUXT_PUBLIC_API_BASE: "http://127.0.0.1:8000/api/v1",
-      PORT: "3100",
-      NITRO_PORT: "3100",
-      HOST: "127.0.0.1",
-      NITRO_HOST: "127.0.0.1",
+  webServer: [
+    // Finge la API de barber para las peticiones que Nuxt hace en SSR, que
+    // page.route() no puede interceptar — ver e2e/support/mock-api.mjs.
+    {
+      command: "node e2e/support/mock-api.mjs",
+      url: "http://127.0.0.1:8099/api/v1/services",
+      reuseExistingServer: false,
+      timeout: 30_000,
     },
-  },
+    {
+      // 127.0.0.1 y no "localhost": el server de Nuxt puede quedarse
+      // escuchando solo en IPv6 (::1) según el entorno, y entonces
+      // "localhost" resuelve a una dirección donde no hay nadie — ya
+      // diagnosticado en este proyecto.
+      // El puerto/host van por variable de entorno (Nitro las lee), no por
+      // flags de CLI: `nuxt preview` no acepta --port/--host y sale con
+      // código 1 sin decir por qué.
+      command: "npm run build && npm run preview",
+      url: "http://127.0.0.1:3100",
+      // Nunca reutilizar: la fase exige probar el build de producción, y un
+      // servidor previo no ofrece ninguna garantía de estar compilado con el
+      // código actual.
+      reuseExistingServer: false,
+      timeout: 180_000,
+      env: {
+        NUXT_PUBLIC_API_BASE: "http://127.0.0.1:8099/api/v1",
+        PORT: "3100",
+        NITRO_PORT: "3100",
+        HOST: "127.0.0.1",
+        NITRO_HOST: "127.0.0.1",
+      },
+    },
+  ],
 });

@@ -23,7 +23,16 @@ interface BarberDetail {
 
 const route = useRoute()
 const { apiFetch } = useApi()
-const { hasRole } = useAuth()
+const { user, hasRole, fetchMe } = useAuth()
+
+// El middleware 'auth' de esta página solo mira la cookie del token, no
+// carga el usuario. En una entrada directa (recarga o enlace compartido)
+// user sigue en null, así que hasRole('cliente') daría false y esconderían
+// tanto el CTA de reservar como el formulario de reseña, aunque el usuario
+// sí sea cliente.
+if (!user.value) {
+  await fetchMe()
+}
 
 const { data: response, pending, error, refresh } = await useAsyncData(
   `barber-detail-${route.params.slug}`,
@@ -33,7 +42,8 @@ const { data: response, pending, error, refresh } = await useAsyncData(
 const barber = computed(() => response.value?.barber ?? null)
 const works = computed(() => response.value?.works ?? [])
 const reviews = computed(() => response.value?.reviews ?? [])
-const canReview = computed(() => hasRole('cliente') && (response.value?.can_review ?? false))
+const isClient = computed(() => hasRole('cliente'))
+const canReview = computed(() => isClient.value && (response.value?.can_review ?? false))
 
 function fmtDate(iso: string | null) {
   if (!iso) return '—'
@@ -96,6 +106,20 @@ async function submitReview() {
             · {{ response?.citas_completadas ?? 0 }} citas completadas
           </p>
         </div>
+
+        <!--
+          Cierra el recorrido de reserva del cliente: hasta ahora esta ficha
+          era un callejón sin salida (solo el enlace de regreso), aunque
+          "Reservar nueva cita" en /my/appointments mandara justamente aquí.
+          Lleva al modal de reserva con este barbero ya seleccionado.
+        -->
+        <NuxtLink
+          v-if="isClient"
+          :to="`/my/appointments?barber=${barber.id}`"
+          class="rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-black hover:bg-gold-dim sm:ml-auto"
+        >
+          Reservar con {{ (barber.user?.name ?? 'este barbero').split(' ')[0] }}
+        </NuxtLink>
       </header>
 
       <p v-if="barber.descripcion" class="mb-8 max-w-2xl text-sm text-muted">{{ barber.descripcion }}</p>
