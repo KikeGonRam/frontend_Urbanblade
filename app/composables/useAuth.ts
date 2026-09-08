@@ -33,6 +33,7 @@ export function useAuth() {
     default: () => null,
     maxAge: 60 * 60 * 24 * 180, // 6 meses — igual al refresh-token del backend
     sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
   });
   const user = useState<AuthUser | null>("auth_user", () => null);
   const config = useRuntimeConfig();
