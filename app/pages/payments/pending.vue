@@ -32,6 +32,7 @@ const payments = computed(() => response.value?.data ?? [])
 const rejecting = ref<string | null>(null)
 const motivo = ref('')
 const busy = ref<string | null>(null)
+const actionError = ref('')
 
 function fmtMoney(n: number | string | null) {
   return `$${Number(n ?? 0).toFixed(2)}`
@@ -53,11 +54,12 @@ function isPdf(url: string | null) {
 
 async function approve(payment: PendingPayment) {
   busy.value = payment.id
+  actionError.value = ''
   try {
     await apiFetch(`/payments/${payment.id}/approve`, { method: 'POST' })
     await refresh()
   } catch (err: unknown) {
-    alert((err as { data?: { message?: string } })?.data?.message ?? 'No se pudo aprobar el comprobante.')
+    actionError.value = (err as { data?: { message?: string } })?.data?.message ?? 'No se pudo aprobar el comprobante.'
   } finally {
     busy.value = null
   }
@@ -72,12 +74,13 @@ async function confirmReject(payment: PendingPayment) {
   if (!motivo.value.trim()) return
 
   busy.value = payment.id
+  actionError.value = ''
   try {
     await apiFetch(`/payments/${payment.id}/reject`, { method: 'POST', body: { motivo_rechazo: motivo.value } })
     rejecting.value = null
     await refresh()
   } catch (err: unknown) {
-    alert((err as { data?: { message?: string } })?.data?.message ?? 'No se pudo rechazar el comprobante.')
+    actionError.value = (err as { data?: { message?: string } })?.data?.message ?? 'No se pudo rechazar el comprobante.'
   } finally {
     busy.value = null
   }
@@ -96,6 +99,7 @@ async function confirmReject(payment: PendingPayment) {
         Ver todos los pagos
       </NuxtLink>
     </header>
+    <p v-if="actionError" role="alert" class="mb-4 text-sm text-red-400">{{ actionError }}</p>
 
     <p v-if="pending" class="text-sm text-muted">Cargando comprobantes…</p>
     <p v-else-if="error" class="text-sm text-red-400">No se pudieron cargar los comprobantes pendientes.</p>

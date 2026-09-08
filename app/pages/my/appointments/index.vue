@@ -44,6 +44,7 @@ const ESTADO_CLASS: Record<string, string> = {
 }
 
 const { apiFetch } = useApi()
+const { confirm } = useConfirm()
 const config = useRuntimeConfig()
 
 const { data: response, pending, error, refresh } = await useAsyncData(
@@ -220,7 +221,13 @@ const cancelling = ref<string | null>(null)
 const cancelError = ref('')
 
 async function cancelAppointment(appt: AppointmentRow) {
-  if (!confirm('¿Cancelar esta cita?')) return
+  const accepted = await confirm({
+    title: 'Cancelar cita',
+    message: '¿Cancelar esta cita?',
+    confirmText: 'Sí, cancelar',
+    isDanger: true,
+  })
+  if (!accepted) return
 
   cancelling.value = appt.id
   cancelError.value = ''

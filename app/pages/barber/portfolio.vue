@@ -40,6 +40,7 @@ const files = ref<File[]>([])
 const filePreviews = ref<Array<{ url: string, isVideo: boolean }>>([])
 const saving = ref(false)
 const formError = ref('')
+const actionError = ref('')
 
 function selectFiles(event: Event) {
   const selected = Array.from((event.target as HTMLInputElement).files ?? [])
@@ -83,6 +84,7 @@ async function publish() {
   formError.value = ''
 
   try {
+    actionError.value = ''
     const body = new FormData()
     body.append('title', title.value)
     if (description.value) {
@@ -115,7 +117,7 @@ async function remove(work: Work) {
     await refresh()
   } catch (err: unknown) {
     const dataErr = (err as { data?: { message?: string } })?.data
-    alert(dataErr?.message ?? 'No se pudo eliminar el trabajo.')
+    actionError.value = dataErr?.message ?? 'No se pudo eliminar el trabajo.'
   }
 }
 </script>
@@ -138,6 +140,7 @@ async function remove(work: Work) {
         + Publicar trabajo
       </button>
     </header>
+    <p v-if="actionError" role="alert" class="mb-4 text-sm text-red-400">{{ actionError }}</p>
 
     <!-- Métricas del portafolio -->
     <section class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">

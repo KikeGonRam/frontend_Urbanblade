@@ -66,10 +66,12 @@ interface ChargeableAppointment {
 interface Barber { id: string, name: string }
 
 const { apiFetch } = useApi()
+const { confirm } = useConfirm()
 const config = useRuntimeConfig()
 
 // ── Historial + filtros ──────────────────────────────────────────────────
 const search = ref('')
+const actionError = ref('')
 const metodoFilter = ref('')
 const barberoFilter = ref('')
 const fechaDesde = ref('')
@@ -125,19 +127,26 @@ async function viewReceipt(payment: PaymentRow) {
   try {
     const res = await apiFetch<{ data: { receipt_url: string } }>(`/payments/${payment.id}/receipt`)
     window.open(res.data.receipt_url, '_blank')
-  } catch {
-    alert('No se pudo generar el comprobante.')
+  } catch (err: unknown) {
+    actionError.value = (err as { data?: { message?: string } })?.data?.message ?? 'No se pudo generar el comprobante.'
   }
 }
 
 async function removePayment(payment: PaymentRow) {
-  if (!confirm(`¿Anular comprobante #${payment.id}?`)) return
+  const accepted = await confirm({
+    title: 'Anular comprobante',
+    message: `¿Anular el comprobante #${payment.id}?`,
+    confirmText: 'Sí, anular',
+    isDanger: true,
+  })
+  if (!accepted) return
 
+  actionError.value = ''
   try {
     await apiFetch(`/payments/${payment.id}`, { method: 'DELETE' })
     await refresh()
   } catch (err: unknown) {
-    alert((err as { data?: { message?: string } })?.data?.message ?? 'No se pudo anular el comprobante.')
+    actionError.value = (err as { data?: { message?: string } })?.data?.message ?? 'No se pudo anular el comprobante.'
   }
 }
 
@@ -322,6 +331,7 @@ onUnmounted(() => teardownStripe())
         </button>
       </div>
     </header>
+    <p v-if="actionError" role="alert" class="mb-4 text-sm text-red-400">{{ actionError }}</p>
 
     <section v-if="stats" class="mb-5 grid grid-cols-2 gap-4 sm:grid-cols-4">
       <div class="rounded-2xl border border-line bg-card p-4">

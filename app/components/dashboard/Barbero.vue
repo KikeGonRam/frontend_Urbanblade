@@ -37,6 +37,7 @@ const props = defineProps<{ data: BarberoData, firstName: string }>()
 const emit = defineEmits<{ refresh: [] }>()
 
 const { apiFetch } = useApi()
+const { confirm } = useConfirm()
 
 const kpiCards = computed(() => [
   { label: 'Citas Hoy', val: props.data.kpis.appointments_today, text: 'text-gold' },
@@ -60,16 +61,28 @@ function statusStyle(estado: string) {
 }
 
 const actingOn = ref<string | null>(null)
+const actionError = ref('')
 
 async function setStatus(appt: BarberPending, estado: 'confirmada' | 'cancelada') {
-  if (estado === 'cancelada' && !confirm('¿Rechazar esta solicitud de cita?')) return
+  if (estado === 'cancelada') {
+    const accepted = await confirm({
+      title: 'Rechazar solicitud',
+      message: '¿Rechazar esta solicitud de cita?',
+      confirmText: 'Sí, rechazar',
+      isDanger: true,
+    })
+    if (!accepted) return
+  }
 
   actingOn.value = appt.id
+  actionError.value = ''
   try {
     // Appointment usa HasPublicCode -> getRouteKeyName() = 'code', no 'id'
     // (ver .claude/skills/urbanblade-guardrails/SKILL.md en barber).
     await apiFetch(`/appointments/${appt.code}/status`, { method: 'PATCH', body: { estado } })
     emit('refresh')
+  } catch (err: unknown) {
+    actionError.value = (err as { data?: { message?: string } })?.data?.message ?? 'No se pudo actualizar la cita.'
   } finally {
     actingOn.value = null
   }
@@ -126,6 +139,7 @@ const servicesOptions = {
 </script>
 
 <template>
+  <p v-if="actionError" role="alert" class="mb-4 text-sm text-red-400">{{ actionError }}</p>
   <div class="space-y-5">
     <DashboardHeader label="Profesional" color="text-amber-400" :today-label="data.todayLabel" />
 

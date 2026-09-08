@@ -65,13 +65,15 @@ function fmtDateTime(iso: string | null) {
 }
 
 const marking = ref<string | null>(null)
+const actionError = ref('')
 async function markOrdered(item: LowStockItem) {
   marking.value = item.id
+  actionError.value = ''
   try {
     await apiFetch(`/inventory/products/${item.id}/mark-ordered`, { method: 'POST' })
     await refreshLowStock()
-  } catch {
-    alert('No se pudo marcar el producto como pedido.')
+  } catch (err: unknown) {
+    actionError.value = (err as { data?: { message?: string } })?.data?.message ?? 'No se pudo marcar el producto como pedido.'
   } finally {
     marking.value = null
   }
@@ -123,6 +125,7 @@ async function submitForm() {
         <button type="button" class="rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-black hover:bg-gold-dim" @click="openCreate">+ Nuevo Movimiento</button>
       </div>
     </header>
+    <p v-if="actionError" role="alert" class="mb-4 text-sm text-red-400">{{ actionError }}</p>
 
     <section v-if="lowStockItems.length" class="mb-5 overflow-hidden rounded-2xl border border-amber-500/25 bg-amber-500/5">
       <div class="flex items-center gap-3 border-b border-amber-500/15 px-5 py-3">
