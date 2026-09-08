@@ -156,6 +156,57 @@ async function submitForm() {
   }
 }
 
+// ── Horarios disponibles ──────────────────────────────────────────────────
+// AvailabilityController::slots() existía en el backend desde hace tiempo
+// pero no lo consumía nadie: el formulario pedía la hora con un <input
+// type="time"> a ciegas, así que el cliente solo descubría que el horario
+// estaba ocupado al recibir el 422. Ahora se piden los huecos reales en
+// cuanto barbero + servicio + fecha están completos.
+interface Slot { time: string, label: string }
+
+const slots = ref<Slot[]>([])
+const slotsPending = ref(false)
+// Si el endpoint falla no se bloquea la reserva: se cae al input manual de
+// siempre y que el backend valide (el 422 sigue siendo la última palabra).
+const slotsFailed = ref(false)
+
+async function loadSlots() {
+  if (!form.barber_id || !form.service_id || !form.fecha) {
+    slots.value = []
+
+    return
+  }
+
+  slotsPending.value = true
+  slotsFailed.value = false
+  try {
+    const res = await apiFetch<{ slots: Slot[] }>('/availability/slots', {
+      query: { barber_id: form.barber_id, service_id: form.service_id, date: form.fecha },
+    })
+    const available = res.slots ?? []
+
+    // Al reagendar, la propia cita ocupa su horario actual, así que el
+    // backend lo reporta como no disponible. Sin esto, reabrir el modal y
+    // guardar sin mover la hora sería imposible.
+    const current = editing.value?.hora_inicio?.slice(0, 5)
+    if (current && !available.some((s) => s.time === current)) {
+      available.unshift({ time: current, label: `${current} (actual)` })
+    }
+
+    slots.value = available
+    if (form.hora_inicio && !available.some((s) => s.time === form.hora_inicio)) {
+      form.hora_inicio = ''
+    }
+  } catch {
+    slotsFailed.value = true
+    slots.value = []
+  } finally {
+    slotsPending.value = false
+  }
+}
+
+watch(() => [form.barber_id, form.service_id, form.fecha], loadSlots)
+
 // Entrada desde la ficha del barbero (/barbers/[slug] → "Reservar con X"):
 // abre el modal con ese barbero ya seleccionado.
 const route = useRoute()
@@ -398,7 +449,24 @@ onUnmounted(() => teardownStripe())
             </div>
             <div>
               <label class="mb-1 block text-xs text-muted">Hora</label>
-              <input v-model="form.hora_inicio" type="time" required class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
+              <!--
+                Select de horarios reales cuando el backend los pudo calcular;
+                si la consulta falló, se cae al input libre de siempre para no
+                dejar al cliente sin poder reservar.
+              -->
+              <input
+                v-if="slotsFailed" v-model="form.hora_inicio" type="time" required
+                class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
+              >
+              <select
+                v-else v-model="form.hora_inicio" required :disabled="slotsPending || !slots.length"
+                class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink disabled:opacity-50"
+              >
+                <option value="" disabled>
+                  {{ slotsPending ? 'Buscando horarios…' : !form.barber_id || !form.service_id ? 'Elige barbero y servicio' : !slots.length ? 'Sin horarios libres' : 'Selecciona…' }}
+                </option>
+                <option v-for="slot in slots" :key="slot.time" :value="slot.time">{{ slot.label }}</option>
+              </select>
             </div>
           </div>
           <div>

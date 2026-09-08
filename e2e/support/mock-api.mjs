@@ -51,6 +51,13 @@ const routes = {
     next: null,
     cancellation_policy_hours: 24,
   },
+  // AvailabilityController::slots() ya devuelve solo los huecos libres.
+  "/availability/slots": {
+    slots: [
+      { time: "10:00", label: "10:00 AM", end_time: "10:30", end_label: "10:30 AM" },
+      { time: "11:00", label: "11:00 AM", end_time: "11:30", end_label: "11:30 AM" },
+    ],
+  },
   "/profile": {
     user: {
       name: user.name,
