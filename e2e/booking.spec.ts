@@ -164,3 +164,65 @@ test("un día sin huecos lo dice en vez de dejar elegir cualquier hora", async (
   await expect(horas).toBeDisabled();
   await expect(horas).toContainText("Sin horarios libres");
 });
+
+async function asLoggedInStaff(page: Page) {
+  await page.context().addCookies([
+    { name: "ub_token", value: "test-staff-token", url: "http://127.0.0.1:3100" },
+  ]);
+  await page.route("**/api/v1/auth/me", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        user: {
+          id: "u-staff",
+          name: "Staff Recepción",
+          email: "staff@test.local",
+          avatar_url: null,
+          roles: ["recepcionista"],
+          profile_complete: true,
+          profile_missing: [],
+          client_id: null,
+          barber_id: null,
+        },
+      }),
+    }),
+  );
+}
+
+test("formulario de citas de staff ofrece sugerencias de disponibilidad sin bloquear captura", async ({
+  page,
+}) => {
+  await asLoggedInStaff(page);
+  await page.route("**/api/v1/availability/slots*", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        slots: [
+          { time: "10:00", label: "10:00 AM" },
+          { time: "11:00", label: "11:00 AM" },
+        ],
+      }),
+    }),
+  );
+
+  await page.goto("/appointments");
+  await page.getByRole("button", { name: "+ Nueva Cita" }).click();
+
+  const modal = page.locator("div.fixed");
+  await modal.locator("select").first().selectOption("b-1");
+  await modal.locator("select").nth(1).selectOption("s-1");
+  await modal.locator('input[type="date"]').fill("2026-09-10");
+
+  await expect(page.locator("#horarios-libres option")).toHaveCount(2);
+  await expect(page.getByText("2 horario(s) libre(s) ese día.")).toBeVisible();
+
+  const horaInput = modal.locator('input[type="time"]');
+  await horaInput.fill("12:00");
+  await expect(
+    page.getByText(/Ese horario no aparece libre para este barbero/),
+  ).toBeVisible();
+  await expect(horaInput).toBeEnabled();
+});
+
