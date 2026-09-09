@@ -246,7 +246,7 @@ async function remove(work: Work) {
               required
               maxlength="255"
               placeholder="Ej. Low Fade + Diseño personalizado"
-              class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-hidden"
+              class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]"
             >
           </div>
 
@@ -260,7 +260,7 @@ async function remove(work: Work) {
               maxlength="2000"
               rows="3"
               placeholder="Detalles sobre el estilo, productos utilizados o corte realizado…"
-              class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-hidden"
+              class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]"
             />
           </div>
 

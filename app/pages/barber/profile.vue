@@ -149,7 +149,7 @@ async function save() {
             id="barber-especialidades"
             v-model="especialidades"
             maxlength="1000"
-            class="w-full rounded-lg border border-line bg-main px-3 py-2 text-ink focus:border-gold focus:outline-hidden"
+            class="w-full rounded-lg border border-line bg-main px-3 py-2 text-ink focus:border-gold focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]"
             placeholder="Fade, Barba clásica, Colorimetría, Diseños…"
           >
           <p class="mt-1 text-xs text-muted">Separa tus técnicas y cortes con comas.</p>
@@ -164,7 +164,7 @@ async function save() {
             v-model="descripcion"
             maxlength="1000"
             rows="5"
-            class="w-full rounded-lg border border-line bg-main px-3 py-2 text-ink focus:border-gold focus:outline-hidden"
+            class="w-full rounded-lg border border-line bg-main px-3 py-2 text-ink focus:border-gold focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]"
             placeholder="Cuéntale a tus clientes sobre tu experiencia y pasión por la barbería…"
           />
         </div>

@@ -351,18 +351,18 @@ async function removeProduct(product: ProductRow) {
         v-model="search"
         type="text"
         placeholder="Buscar producto…"
-        class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-hidden sm:max-w-xs"
+        class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)] sm:max-w-xs"
       >
       <select
         v-model="categoria"
-        class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-hidden"
+        class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]"
       >
         <option value="">Todas las categorías</option>
         <option v-for="c in categorias" :key="c" :value="c">{{ c }}</option>
       </select>
       <select
         v-model="tipo"
-        class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-hidden"
+        class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]"
       >
         <option value="">Todos los tipos</option>
         <option v-for="t in tipos" :key="t" :value="t">
@@ -530,10 +530,10 @@ async function removeProduct(product: ProductRow) {
               required
               placeholder="Ej. Cera Mate Fijación Fuerte"
               :class="[
-                'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-hidden',
+                'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-none',
                 fieldErrors.nombre
-                  ? 'border-red-500/60 focus:border-red-500'
-                  : 'border-line focus:border-gold',
+                  ? 'border-red-500/60 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
+                  : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]',
               ]"
             >
             <p v-if="fieldErrors.nombre" class="mt-1 text-xs text-red-400">
@@ -556,10 +556,10 @@ async function removeProduct(product: ProductRow) {
                 list="prod-categories-list"
                 placeholder="Ej. Ceras, Shampoos…"
                 :class="[
-                  'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-hidden',
+                  'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-none',
                   fieldErrors.categoria
-                    ? 'border-red-500/60 focus:border-red-500'
-                    : 'border-line focus:border-gold',
+                    ? 'border-red-500/60 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
+                    : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]',
                 ]"
               >
               <datalist id="prod-categories-list">
@@ -578,7 +578,7 @@ async function removeProduct(product: ProductRow) {
               <select
                 id="prod-tipo"
                 v-model="form.tipo"
-                class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-hidden"
+                class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]"
               >
                 <option value="venta_cliente">Venta al cliente</option>
                 <option value="insumo_barberia">
@@ -599,7 +599,7 @@ async function removeProduct(product: ProductRow) {
               v-model="form.imagen"
               type="text"
               placeholder="https://... o ruta de imagen"
-              class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-hidden"
+              class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]"
             >
           </div>
 
@@ -614,7 +614,7 @@ async function removeProduct(product: ProductRow) {
               v-model="form.descripcion"
               rows="2"
               placeholder="Detalles sobre presentación, aroma o ingredientes…"
-              class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-hidden"
+              class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]"
             />
           </div>
 
@@ -633,10 +633,10 @@ async function removeProduct(product: ProductRow) {
                 min="0"
                 required
                 :class="[
-                  'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-hidden',
+                  'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-none',
                   fieldErrors.precio_compra
-                    ? 'border-red-500/60 focus:border-red-500'
-                    : 'border-line focus:border-gold',
+                    ? 'border-red-500/60 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
+                    : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]',
                 ]"
               >
               <p
@@ -660,10 +660,10 @@ async function removeProduct(product: ProductRow) {
                 min="0"
                 required
                 :class="[
-                  'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-hidden',
+                  'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-none',
                   fieldErrors.precio_venta
-                    ? 'border-red-500/60 focus:border-red-500'
-                    : 'border-line focus:border-gold',
+                    ? 'border-red-500/60 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
+                    : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]',
                 ]"
               >
               <p
@@ -689,10 +689,10 @@ async function removeProduct(product: ProductRow) {
                 min="0"
                 required
                 :class="[
-                  'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-hidden',
+                  'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-none',
                   fieldErrors.stock_actual
-                    ? 'border-red-500/60 focus:border-red-500'
-                    : 'border-line focus:border-gold',
+                    ? 'border-red-500/60 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
+                    : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]',
                 ]"
               >
               <p
@@ -715,10 +715,10 @@ async function removeProduct(product: ProductRow) {
                 min="0"
                 required
                 :class="[
-                  'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-hidden',
+                  'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-none',
                   fieldErrors.stock_minimo
-                    ? 'border-red-500/60 focus:border-red-500'
-                    : 'border-line focus:border-gold',
+                    ? 'border-red-500/60 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
+                    : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]',
                 ]"
               >
               <p

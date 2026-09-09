@@ -193,18 +193,18 @@ async function removeService(service: ServiceRow) {
         v-model="search"
         type="text"
         placeholder="Nombre del servicio…"
-        class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-hidden sm:max-w-xs"
+        class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)] sm:max-w-xs"
       >
       <select
         v-model="categoria"
-        class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-hidden"
+        class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]"
       >
         <option value="">Todas las categorías</option>
         <option v-for="c in categories" :key="c" :value="c">{{ c }}</option>
       </select>
       <select
         v-model="activo"
-        class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-hidden"
+        class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]"
       >
         <option value="">Todos los estados</option>
         <option value="1">Activo</option>
@@ -361,10 +361,10 @@ async function removeService(service: ServiceRow) {
               maxlength="120"
               placeholder="Ej. Corte Clásico + Barba"
               :class="[
-                'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-hidden',
+                'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-none',
                 fieldErrors.nombre
-                  ? 'border-red-500/60 focus:border-red-500'
-                  : 'border-line focus:border-gold',
+                  ? 'border-red-500/60 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
+                  : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]',
               ]"
             >
             <p v-if="fieldErrors.nombre" class="mt-1 text-xs text-red-400">
@@ -387,10 +387,10 @@ async function removeService(service: ServiceRow) {
               list="service-categories-list"
               placeholder="Ej. Cortes, Barba, Tratamientos…"
               :class="[
-                'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-hidden',
+                'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-none',
                 fieldErrors.categoria
-                  ? 'border-red-500/60 focus:border-red-500'
-                  : 'border-line focus:border-gold',
+                  ? 'border-red-500/60 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
+                  : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]',
               ]"
             >
             <datalist id="service-categories-list">
@@ -428,10 +428,10 @@ async function removeService(service: ServiceRow) {
                 max="600"
                 required
                 :class="[
-                  'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-hidden',
+                  'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-none',
                   fieldErrors.duracion_min
-                    ? 'border-red-500/60 focus:border-red-500'
-                    : 'border-line focus:border-gold',
+                    ? 'border-red-500/60 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
+                    : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]',
                 ]"
               >
               <p
@@ -455,10 +455,10 @@ async function removeService(service: ServiceRow) {
                 min="0"
                 required
                 :class="[
-                  'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-hidden',
+                  'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-none',
                   fieldErrors.precio
-                    ? 'border-red-500/60 focus:border-red-500'
-                    : 'border-line focus:border-gold',
+                    ? 'border-red-500/60 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
+                    : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]',
                 ]"
               >
               <p v-if="fieldErrors.precio" class="mt-1 text-xs text-red-400">
@@ -479,7 +479,7 @@ async function removeService(service: ServiceRow) {
               type="text"
               maxlength="255"
               placeholder="https://... o ruta relativa de imagen"
-              class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-hidden"
+              class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]"
             >
           </div>
 
@@ -495,7 +495,7 @@ async function removeService(service: ServiceRow) {
               rows="3"
               maxlength="2000"
               placeholder="Detalla qué incluye el corte o servicio…"
-              class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-hidden"
+              class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]"
             />
           </div>
 

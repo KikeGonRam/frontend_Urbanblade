@@ -72,7 +72,7 @@ onUnmounted(() => {
           <div class="mt-6 flex justify-end gap-3">
             <button
               type="button"
-              class="rounded-lg border border-line bg-transparent px-4 py-2 text-sm font-semibold text-muted hover:border-ink/30 hover:text-ink focus:outline-hidden"
+              class="rounded-lg border border-line bg-transparent px-4 py-2 text-sm font-semibold text-muted transition-colors hover:border-ink/30 hover:text-ink focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]"
               @click="handleCancel"
             >
               {{ state.cancelText }}
@@ -80,10 +80,10 @@ onUnmounted(() => {
             <button
               type="button"
               :class="[
-                'rounded-lg px-4 py-2 text-sm font-semibold transition-colors focus:outline-hidden',
+                'rounded-lg px-4 py-2 text-sm font-semibold transition-colors focus:outline-none',
                 state.isDanger
-                  ? 'bg-red-500 text-white hover:bg-red-600 shadow-xs'
-                  : 'bg-gold text-black hover:bg-gold-dim'
+                  ? 'bg-red-500 text-white hover:bg-red-600 shadow-xs focus:shadow-[0_0_0_3px_rgba(239,68,68,0.35)]'
+                  : 'bg-gold text-black hover:bg-gold-dim focus:shadow-[0_0_0_3px_rgba(212,175,55,0.35)]'
               ]"
               @click="handleConfirm"
             >

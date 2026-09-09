@@ -250,7 +250,7 @@ async function submitDeleteAccount() {
             maxlength="255"
             :aria-invalid="!!fieldErrors.name"
             :aria-describedby="fieldErrors.name ? 'profile-name-error' : undefined"
-            :class="['w-full rounded-lg border bg-main px-3 py-2 text-ink focus:outline-hidden', fieldErrors.name ? 'border-red-500/60 focus:border-red-500' : 'border-line focus:border-gold']"
+            :class="['w-full rounded-lg border bg-main px-3 py-2 text-ink focus:outline-none', fieldErrors.name ? 'border-red-500/60 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]' : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]']"
           >
           <p v-if="fieldErrors.name" id="profile-name-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.name[0] }}</p>
         </div>
@@ -265,7 +265,7 @@ async function submitDeleteAccount() {
             maxlength="255"
             :aria-invalid="!!fieldErrors.email"
             :aria-describedby="fieldErrors.email ? 'profile-email-error' : undefined"
-            :class="['w-full rounded-lg border bg-main px-3 py-2 text-ink focus:outline-hidden', fieldErrors.email ? 'border-red-500/60 focus:border-red-500' : 'border-line focus:border-gold']"
+            :class="['w-full rounded-lg border bg-main px-3 py-2 text-ink focus:outline-none', fieldErrors.email ? 'border-red-500/60 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]' : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]']"
           >
           <p v-if="fieldErrors.email" id="profile-email-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.email[0] }}</p>
         </div>
@@ -282,7 +282,7 @@ async function submitDeleteAccount() {
               autocomplete="tel"
               :aria-invalid="!!fieldErrors.telefono"
               :aria-describedby="fieldErrors.telefono ? 'profile-phone-error' : undefined"
-              :class="['w-full rounded-lg border bg-main px-3 py-2 text-ink focus:outline-hidden', fieldErrors.telefono ? 'border-red-500/60 focus:border-red-500' : 'border-line focus:border-gold']"
+              :class="['w-full rounded-lg border bg-main px-3 py-2 text-ink focus:outline-none', fieldErrors.telefono ? 'border-red-500/60 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]' : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]']"
             >
             <p v-if="fieldErrors.telefono" id="profile-phone-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.telefono[0] }}</p>
           </div>
@@ -295,7 +295,7 @@ async function submitDeleteAccount() {
               autocomplete="bday"
               :aria-invalid="!!fieldErrors.fecha_nacimiento"
               :aria-describedby="fieldErrors.fecha_nacimiento ? 'profile-birthday-error' : undefined"
-              :class="['w-full rounded-lg border bg-main px-3 py-2 text-ink focus:outline-hidden', fieldErrors.fecha_nacimiento ? 'border-red-500/60 focus:border-red-500' : 'border-line focus:border-gold']"
+              :class="['w-full rounded-lg border bg-main px-3 py-2 text-ink focus:outline-none', fieldErrors.fecha_nacimiento ? 'border-red-500/60 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]' : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]']"
             >
             <p v-if="fieldErrors.fecha_nacimiento" id="profile-birthday-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.fecha_nacimiento[0] }}</p>
           </div>
@@ -306,7 +306,7 @@ async function submitDeleteAccount() {
               v-model="sexo"
               :aria-invalid="!!fieldErrors.sexo"
               :aria-describedby="fieldErrors.sexo ? 'profile-sex-error' : undefined"
-              :class="['w-full rounded-lg border bg-main px-3 py-2 text-ink focus:outline-hidden', fieldErrors.sexo ? 'border-red-500/60 focus:border-red-500' : 'border-line focus:border-gold']"
+              :class="['w-full rounded-lg border bg-main px-3 py-2 text-ink focus:outline-none', fieldErrors.sexo ? 'border-red-500/60 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]' : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]']"
             >
               <option value="">Sin especificar</option>
               <option value="masculino">Masculino</option>
@@ -348,7 +348,7 @@ async function submitDeleteAccount() {
             type="password"
             required
             autocomplete="current-password"
-            :class="['w-full rounded-lg border bg-main px-3 py-2 text-ink focus:outline-hidden', passwordFieldErrors.current_password ? 'border-red-500/60 focus:border-red-500' : 'border-line focus:border-gold']"
+            :class="['w-full rounded-lg border bg-main px-3 py-2 text-ink focus:outline-none', passwordFieldErrors.current_password ? 'border-red-500/60 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]' : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]']"
           >
           <p v-if="passwordFieldErrors.current_password" class="mt-1 text-xs text-red-400">{{ passwordFieldErrors.current_password[0] }}</p>
         </div>
@@ -363,7 +363,7 @@ async function submitDeleteAccount() {
               required
               minlength="8"
               autocomplete="new-password"
-              :class="['w-full rounded-lg border bg-main px-3 py-2 text-ink focus:outline-hidden', passwordFieldErrors.password ? 'border-red-500/60 focus:border-red-500' : 'border-line focus:border-gold']"
+              :class="['w-full rounded-lg border bg-main px-3 py-2 text-ink focus:outline-none', passwordFieldErrors.password ? 'border-red-500/60 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]' : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]']"
             >
             <p v-if="passwordFieldErrors.password" class="mt-1 text-xs text-red-400">{{ passwordFieldErrors.password[0] }}</p>
           </div>
@@ -376,7 +376,7 @@ async function submitDeleteAccount() {
               required
               minlength="8"
               autocomplete="new-password"
-              :class="['w-full rounded-lg border bg-main px-3 py-2 text-ink focus:outline-hidden', passwordFieldErrors.password_confirmation ? 'border-red-500/60 focus:border-red-500' : 'border-line focus:border-gold']"
+              :class="['w-full rounded-lg border bg-main px-3 py-2 text-ink focus:outline-none', passwordFieldErrors.password_confirmation ? 'border-red-500/60 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]' : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]']"
             >
             <p v-if="passwordFieldErrors.password_confirmation" class="mt-1 text-xs text-red-400">{{ passwordFieldErrors.password_confirmation[0] }}</p>
           </div>
@@ -439,7 +439,7 @@ async function submitDeleteAccount() {
                 type="password"
                 required
                 placeholder="Ingresa tu contraseña"
-                class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-red-500 focus:outline-hidden"
+                class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-red-500 focus:outline-none focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]"
               >
             </div>
 
