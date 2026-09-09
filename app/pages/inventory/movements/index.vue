@@ -83,6 +83,7 @@ async function markOrdered(item: LowStockItem) {
 const showForm = ref(false)
 const form = reactive({ product_id: '', tipo: 'salida', cantidad: 1, motivo: '' })
 const formError = ref('')
+const fieldErrors = ref<Record<string, string[]>>({})
 const saving = ref(false)
 
 function openCreate() {
@@ -91,12 +92,30 @@ function openCreate() {
   form.cantidad = 1
   form.motivo = ''
   formError.value = ''
+  fieldErrors.value = {}
   showForm.value = true
 }
+
+function closeForm() {
+  if (saving.value) return
+  showForm.value = false
+}
+
+function onFormKeydown(event: KeyboardEvent) {
+  if (event.key === 'Escape') closeForm()
+}
+
+onMounted(() => {
+  if (import.meta.client) window.addEventListener('keydown', onFormKeydown)
+})
+onUnmounted(() => {
+  if (import.meta.client) window.removeEventListener('keydown', onFormKeydown)
+})
 
 async function submitForm() {
   saving.value = true
   formError.value = ''
+  fieldErrors.value = {}
   try {
     await apiFetch('/inventory/movements', {
       method: 'POST',
@@ -105,7 +124,9 @@ async function submitForm() {
     showForm.value = false
     await Promise.all([refresh(), refreshLowStock()])
   } catch (err: unknown) {
-    formError.value = (err as { data?: { message?: string } })?.data?.message ?? 'No se pudo registrar el movimiento.'
+    const data = (err as { data?: { message?: string, errors?: Record<string, string[]> } })?.data
+    fieldErrors.value = data?.errors ?? {}
+    formError.value = data?.message ?? 'No se pudo registrar el movimiento.'
   } finally {
     saving.value = false
   }
@@ -167,13 +188,16 @@ async function submitForm() {
     </section>
 
     <section class="mb-5 flex flex-wrap items-center gap-3">
-      <input v-model="search" type="text" placeholder="Producto o motivo…" class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink sm:max-w-xs">
-      <select v-model="tipoFilter" class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
+      <label for="movement-search" class="sr-only">Buscar producto o motivo</label>
+      <input id="movement-search" v-model="search" type="text" placeholder="Producto o motivo…" class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink sm:max-w-xs">
+      <label for="movement-filter-type" class="sr-only">Filtrar por tipo</label>
+      <select id="movement-filter-type" v-model="tipoFilter" class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
         <option value="">Todos los tipos</option>
         <option value="entrada">Entrada</option>
         <option value="salida">Salida</option>
       </select>
-      <select v-model="productFilter" class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
+      <label for="movement-filter-product" class="sr-only">Filtrar por producto</label>
+      <select id="movement-filter-product" v-model="productFilter" class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
         <option value="">Todos los productos</option>
         <option v-for="p in products" :key="p.id" :value="p.id">{{ p.nombre }}</option>
       </select>
@@ -217,39 +241,43 @@ async function submitForm() {
       </table>
     </section>
 
-    <div v-if="showForm" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" @click.self="showForm = false">
+    <div v-if="showForm" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" role="dialog" aria-modal="true" aria-labelledby="movement-form-title" @click.self="closeForm">
       <div class="w-full max-w-md rounded-2xl border border-line bg-card p-6">
-        <h2 class="mb-4 text-lg font-semibold text-ink">Nuevo movimiento</h2>
+        <h2 id="movement-form-title" class="mb-4 text-lg font-semibold text-ink">Nuevo movimiento</h2>
         <form class="space-y-3" @submit.prevent="submitForm">
           <div>
-            <label class="mb-1 block text-xs text-muted">Producto</label>
-            <select v-model="form.product_id" required class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
+            <label for="movement-product" class="mb-1 block text-xs text-muted">Producto</label>
+            <select id="movement-product" v-model="form.product_id" required :aria-invalid="!!fieldErrors.product_id" :aria-describedby="fieldErrors.product_id ? 'movement-product-error' : undefined" :class="['w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink', fieldErrors.product_id ? 'border-red-500/60' : 'border-line']">
               <option value="" disabled>Selecciona…</option>
               <option v-for="p in products" :key="p.id" :value="p.id">{{ p.nombre }}</option>
             </select>
+            <p v-if="fieldErrors.product_id" id="movement-product-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.product_id[0] }}</p>
           </div>
           <div>
-            <label class="mb-1 block text-xs text-muted">Tipo</label>
-            <select v-model="form.tipo" class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
+            <label for="movement-type" class="mb-1 block text-xs text-muted">Tipo</label>
+            <select id="movement-type" v-model="form.tipo" :aria-invalid="!!fieldErrors.tipo" :aria-describedby="fieldErrors.tipo ? 'movement-type-error' : undefined" :class="['w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink', fieldErrors.tipo ? 'border-red-500/60' : 'border-line']">
               <option value="salida">Salida (consumo)</option>
               <option v-if="isAdmin" value="entrada">Entrada (reposición)</option>
             </select>
+            <p v-if="fieldErrors.tipo" id="movement-type-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.tipo[0] }}</p>
             <p v-if="!isAdmin" class="mt-1 text-[10px] italic text-muted">Recepción solo puede registrar salidas.</p>
           </div>
           <div>
-            <label class="mb-1 block text-xs text-muted">Cantidad</label>
-            <input v-model.number="form.cantidad" type="number" min="1" required class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
+            <label for="movement-quantity" class="mb-1 block text-xs text-muted">Cantidad</label>
+            <input id="movement-quantity" v-model.number="form.cantidad" type="number" min="1" required :aria-invalid="!!fieldErrors.cantidad" :aria-describedby="fieldErrors.cantidad ? 'movement-quantity-error' : undefined" :class="['w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink', fieldErrors.cantidad ? 'border-red-500/60' : 'border-line']">
+            <p v-if="fieldErrors.cantidad" id="movement-quantity-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.cantidad[0] }}</p>
           </div>
           <div>
-            <label class="mb-1 block text-xs text-muted">Motivo (opcional)</label>
-            <input v-model="form.motivo" type="text" maxlength="255" class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
+            <label for="movement-reason" class="mb-1 block text-xs text-muted">Motivo (opcional)</label>
+            <input id="movement-reason" v-model="form.motivo" type="text" maxlength="255" :aria-invalid="!!fieldErrors.motivo" :aria-describedby="fieldErrors.motivo ? 'movement-reason-error' : undefined" :class="['w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink', fieldErrors.motivo ? 'border-red-500/60' : 'border-line']">
+            <p v-if="fieldErrors.motivo" id="movement-reason-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.motivo[0] }}</p>
           </div>
-          <p v-if="formError" class="text-sm text-red-400">{{ formError }}</p>
+          <p v-if="formError" role="alert" class="text-sm text-red-400">{{ formError }}</p>
           <div class="mt-5 flex gap-3">
             <button type="submit" :disabled="saving || !form.product_id" class="flex-1 rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-black hover:bg-gold-dim disabled:opacity-50">
               {{ saving ? 'Guardando…' : 'Registrar' }}
             </button>
-            <button type="button" class="rounded-lg border border-line px-4 py-2 text-sm text-muted hover:text-ink" @click="showForm = false">Cancelar</button>
+            <button type="button" :disabled="saving" class="rounded-lg border border-line px-4 py-2 text-sm text-muted hover:text-ink disabled:opacity-50" @click="closeForm">Cancelar</button>
           </div>
         </form>
       </div>

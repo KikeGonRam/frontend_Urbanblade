@@ -64,11 +64,18 @@ const form = reactive({ titulo: '', cuerpo: '', cta_label: '', cta_url: '', segm
 const sending = ref(false)
 const formError = ref('')
 const formSuccess = ref('')
+const fieldErrors = ref<Record<string, string[]>>({})
+
+const inputClass = (field: string) => [
+  'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink',
+  fieldErrors.value[field] ? 'border-red-500/60' : 'border-line',
+]
 
 async function submitCampaign() {
   sending.value = true
   formError.value = ''
   formSuccess.value = ''
+  fieldErrors.value = {}
   try {
     const res = await apiFetch<{ message: string }>('/campaigns', {
       method: 'POST',
@@ -90,7 +97,9 @@ async function submitCampaign() {
     form.programada_para = ''
     await refresh()
   } catch (err: unknown) {
-    formError.value = (err as { data?: { message?: string } })?.data?.message ?? 'No se pudo enviar la campaña.'
+    const data = (err as { data?: { message?: string, errors?: Record<string, string[]> } })?.data
+    fieldErrors.value = data?.errors ?? {}
+    formError.value = data?.message ?? 'No se pudo enviar la campaña.'
   } finally {
     sending.value = false
   }
@@ -110,42 +119,49 @@ async function submitCampaign() {
         <h2 class="mb-4 text-sm font-black uppercase tracking-wide text-ink">Nueva campaña</h2>
         <form class="space-y-3" @submit.prevent="submitCampaign">
           <div>
-            <label class="mb-1 block text-xs text-muted">Título</label>
-            <input v-model="form.titulo" type="text" required maxlength="150" class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
+            <label for="campaign-title" class="mb-1 block text-xs text-muted">Título</label>
+            <input id="campaign-title" v-model="form.titulo" type="text" required maxlength="150" :aria-invalid="!!fieldErrors.titulo" :aria-describedby="fieldErrors.titulo ? 'campaign-title-error' : undefined" :class="inputClass('titulo')">
+            <p v-if="fieldErrors.titulo" id="campaign-title-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.titulo[0] }}</p>
           </div>
           <div>
-            <label class="mb-1 block text-xs text-muted">Mensaje</label>
-            <textarea v-model="form.cuerpo" rows="3" required maxlength="2000" class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink" />
+            <label for="campaign-body" class="mb-1 block text-xs text-muted">Mensaje</label>
+            <textarea id="campaign-body" v-model="form.cuerpo" rows="3" required maxlength="2000" :aria-invalid="!!fieldErrors.cuerpo" :aria-describedby="fieldErrors.cuerpo ? 'campaign-body-error' : undefined" :class="inputClass('cuerpo')" />
+            <p v-if="fieldErrors.cuerpo" id="campaign-body-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.cuerpo[0] }}</p>
           </div>
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="mb-1 block text-xs text-muted">Texto del botón (opcional)</label>
-              <input v-model="form.cta_label" type="text" maxlength="40" class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
+              <label for="campaign-cta-label" class="mb-1 block text-xs text-muted">Texto del botón (opcional)</label>
+              <input id="campaign-cta-label" v-model="form.cta_label" type="text" maxlength="40" :aria-invalid="!!fieldErrors.cta_label" :aria-describedby="fieldErrors.cta_label ? 'campaign-cta-label-error' : undefined" :class="inputClass('cta_label')">
+              <p v-if="fieldErrors.cta_label" id="campaign-cta-label-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.cta_label[0] }}</p>
             </div>
             <div>
-              <label class="mb-1 block text-xs text-muted">URL del botón (opcional)</label>
-              <input v-model="form.cta_url" type="url" maxlength="300" class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
+              <label for="campaign-cta-url" class="mb-1 block text-xs text-muted">URL del botón (opcional)</label>
+              <input id="campaign-cta-url" v-model="form.cta_url" type="url" maxlength="300" :aria-invalid="!!fieldErrors.cta_url" :aria-describedby="fieldErrors.cta_url ? 'campaign-cta-url-error' : undefined" :class="inputClass('cta_url')">
+              <p v-if="fieldErrors.cta_url" id="campaign-cta-url-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.cta_url[0] }}</p>
             </div>
           </div>
           <div>
-            <label class="mb-1 block text-xs text-muted">Segmento</label>
-            <select v-model="form.segmento" class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
+            <label for="campaign-segment" class="mb-1 block text-xs text-muted">Segmento</label>
+            <select id="campaign-segment" v-model="form.segmento" :aria-invalid="!!fieldErrors.segmento" :aria-describedby="fieldErrors.segmento ? 'campaign-segment-error' : undefined" :class="inputClass('segmento')">
               <option v-for="opt in segmentOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
             </select>
+            <p v-if="fieldErrors.segmento" id="campaign-segment-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.segmento[0] }}</p>
           </div>
           <div>
-            <label class="mb-1 block text-xs text-muted">Envío</label>
-            <div class="flex gap-3 text-sm text-ink">
-              <label class="flex items-center gap-1.5"><input v-model="form.modo" type="radio" value="ahora"> Ahora</label>
-              <label class="flex items-center gap-1.5"><input v-model="form.modo" type="radio" value="programar"> Programar</label>
+            <span id="campaign-mode-label" class="mb-1 block text-xs text-muted">Envío</span>
+            <div class="flex gap-3 text-sm text-ink" role="radiogroup" aria-labelledby="campaign-mode-label" :aria-invalid="!!fieldErrors.modo" :aria-describedby="fieldErrors.modo ? 'campaign-mode-error' : undefined">
+              <label for="campaign-mode-now" class="flex items-center gap-1.5"><input id="campaign-mode-now" v-model="form.modo" type="radio" value="ahora"> Ahora</label>
+              <label for="campaign-mode-schedule" class="flex items-center gap-1.5"><input id="campaign-mode-schedule" v-model="form.modo" type="radio" value="programar"> Programar</label>
             </div>
+            <p v-if="fieldErrors.modo" id="campaign-mode-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.modo[0] }}</p>
           </div>
           <div v-if="form.modo === 'programar'">
-            <label class="mb-1 block text-xs text-muted">Fecha y hora</label>
-            <input v-model="form.programada_para" type="datetime-local" required class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
+            <label for="campaign-scheduled-at" class="mb-1 block text-xs text-muted">Fecha y hora</label>
+            <input id="campaign-scheduled-at" v-model="form.programada_para" type="datetime-local" required :aria-invalid="!!fieldErrors.programada_para" :aria-describedby="fieldErrors.programada_para ? 'campaign-scheduled-at-error' : undefined" :class="inputClass('programada_para')">
+            <p v-if="fieldErrors.programada_para" id="campaign-scheduled-at-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.programada_para[0] }}</p>
           </div>
-          <p v-if="formError" class="text-sm text-red-400">{{ formError }}</p>
-          <p v-if="formSuccess" class="text-sm text-emerald-400">{{ formSuccess }}</p>
+          <p v-if="formError" role="alert" class="text-sm text-red-400">{{ formError }}</p>
+          <p v-if="formSuccess" role="status" class="text-sm text-emerald-400">{{ formSuccess }}</p>
           <button type="submit" :disabled="sending" class="w-full rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-black hover:bg-gold-dim disabled:opacity-50">
             {{ sending ? 'Enviando…' : form.modo === 'ahora' ? 'Enviar ahora' : 'Programar' }}
           </button>
