@@ -23,6 +23,7 @@ const { apiFetch } = useApi()
 const cart = useCart()
 
 const search = ref('')
+const debouncedSearch = useDebounce(search, 350)
 const categoria = ref('')
 
 const { data: response, pending, error } = await useAsyncData(
@@ -30,7 +31,7 @@ const { data: response, pending, error } = await useAsyncData(
   () => apiFetch<{ data: StoreProduct[] }>('/products', {
     query: { q: search.value || undefined, categoria: categoria.value || undefined },
   }),
-  { watch: [search, categoria] },
+  { watch: [debouncedSearch, categoria] },
 )
 const products = computed(() => response.value?.data ?? [])
 

@@ -7,7 +7,7 @@ interface ProfileResponse {
     email: string
     avatar_url: string | null
     roles: string[]
-    client: { telefono: string | null, fecha_nacimiento: string | null } | null
+    client: { telefono: string | null, fecha_nacimiento: string | null, sexo: string | null } | null
   }
 }
 
@@ -24,6 +24,7 @@ const name = ref('')
 const email = ref('')
 const telefono = ref('')
 const fechaNacimiento = ref('')
+const sexo = ref('')
 const selectedAvatar = ref<File | null>(null)
 const avatarPreview = ref<string | null>(null)
 const loading = ref(true)
@@ -49,6 +50,7 @@ const deleting = ref(false)
 const deleteError = ref('')
 
 const isAdministrator = computed(() => user.value?.roles?.includes('administrador') ?? false)
+const isClient = computed(() => user.value?.roles?.includes('cliente') ?? false)
 
 onMounted(async () => {
   try {
@@ -57,6 +59,7 @@ onMounted(async () => {
     email.value = response.user.email
     telefono.value = response.user.client?.telefono ?? ''
     fechaNacimiento.value = response.user.client?.fecha_nacimiento ?? ''
+    sexo.value = response.user.client?.sexo ?? ''
   } catch {
     errorMessage.value = 'No se pudo cargar tu perfil.'
   } finally {
@@ -100,6 +103,7 @@ async function uploadAvatar() {
 }
 
 async function submitProfile() {
+  if (saving.value) return
   saving.value = true
   message.value = ''
   errorMessage.value = ''
@@ -113,9 +117,13 @@ async function submitProfile() {
         email: email.value,
         telefono: telefono.value || null,
         fecha_nacimiento: fechaNacimiento.value || null,
+        sexo: sexo.value || null,
       },
     })
     user.value = response.user
+    telefono.value = response.user?.client?.telefono ?? telefono.value
+    fechaNacimiento.value = response.user?.client?.fecha_nacimiento ?? fechaNacimiento.value
+    sexo.value = response.user?.client?.sexo ?? sexo.value
     message.value = response.message
   } catch (error: unknown) {
     const data = (error as { data?: { message?: string, errors?: Record<string, string[]> } })?.data
@@ -240,9 +248,11 @@ async function submitDeleteAccount() {
             v-model="name"
             required
             maxlength="255"
+            :aria-invalid="!!fieldErrors.name"
+            :aria-describedby="fieldErrors.name ? 'profile-name-error' : undefined"
             :class="['w-full rounded-lg border bg-main px-3 py-2 text-ink focus:outline-hidden', fieldErrors.name ? 'border-red-500/60 focus:border-red-500' : 'border-line focus:border-gold']"
           >
-          <p v-if="fieldErrors.name" class="mt-1 text-xs text-red-400">{{ fieldErrors.name[0] }}</p>
+          <p v-if="fieldErrors.name" id="profile-name-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.name[0] }}</p>
         </div>
 
         <div>
@@ -253,12 +263,14 @@ async function submitDeleteAccount() {
             type="email"
             required
             maxlength="255"
+            :aria-invalid="!!fieldErrors.email"
+            :aria-describedby="fieldErrors.email ? 'profile-email-error' : undefined"
             :class="['w-full rounded-lg border bg-main px-3 py-2 text-ink focus:outline-hidden', fieldErrors.email ? 'border-red-500/60 focus:border-red-500' : 'border-line focus:border-gold']"
           >
-          <p v-if="fieldErrors.email" class="mt-1 text-xs text-red-400">{{ fieldErrors.email[0] }}</p>
+          <p v-if="fieldErrors.email" id="profile-email-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.email[0] }}</p>
         </div>
 
-        <div class="grid gap-4 sm:grid-cols-2">
+        <div v-if="isClient" class="grid gap-4 sm:grid-cols-3">
           <div>
             <label for="profile-phone" class="mb-1 block text-sm font-medium text-muted">Teléfono</label>
             <input
@@ -267,9 +279,12 @@ async function submitDeleteAccount() {
               type="tel"
               maxlength="30"
               placeholder="Ej. +52 55 1234 5678"
+              autocomplete="tel"
+              :aria-invalid="!!fieldErrors.telefono"
+              :aria-describedby="fieldErrors.telefono ? 'profile-phone-error' : undefined"
               :class="['w-full rounded-lg border bg-main px-3 py-2 text-ink focus:outline-hidden', fieldErrors.telefono ? 'border-red-500/60 focus:border-red-500' : 'border-line focus:border-gold']"
             >
-            <p v-if="fieldErrors.telefono" class="mt-1 text-xs text-red-400">{{ fieldErrors.telefono[0] }}</p>
+            <p v-if="fieldErrors.telefono" id="profile-phone-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.telefono[0] }}</p>
           </div>
           <div>
             <label for="profile-birthday" class="mb-1 block text-sm font-medium text-muted">Fecha de nacimiento</label>
@@ -277,14 +292,37 @@ async function submitDeleteAccount() {
               id="profile-birthday"
               v-model="fechaNacimiento"
               type="date"
+              autocomplete="bday"
+              :aria-invalid="!!fieldErrors.fecha_nacimiento"
+              :aria-describedby="fieldErrors.fecha_nacimiento ? 'profile-birthday-error' : undefined"
               :class="['w-full rounded-lg border bg-main px-3 py-2 text-ink focus:outline-hidden', fieldErrors.fecha_nacimiento ? 'border-red-500/60 focus:border-red-500' : 'border-line focus:border-gold']"
             >
-            <p v-if="fieldErrors.fecha_nacimiento" class="mt-1 text-xs text-red-400">{{ fieldErrors.fecha_nacimiento[0] }}</p>
+            <p v-if="fieldErrors.fecha_nacimiento" id="profile-birthday-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.fecha_nacimiento[0] }}</p>
+          </div>
+          <div>
+            <label for="profile-sex" class="mb-1 block text-sm font-medium text-muted">Sexo (opcional)</label>
+            <select
+              id="profile-sex"
+              v-model="sexo"
+              :aria-invalid="!!fieldErrors.sexo"
+              :aria-describedby="fieldErrors.sexo ? 'profile-sex-error' : undefined"
+              :class="['w-full rounded-lg border bg-main px-3 py-2 text-ink focus:outline-hidden', fieldErrors.sexo ? 'border-red-500/60 focus:border-red-500' : 'border-line focus:border-gold']"
+            >
+              <option value="">Sin especificar</option>
+              <option value="masculino">Masculino</option>
+              <option value="femenino">Femenino</option>
+              <option value="prefiero_no_decir">Prefiero no decirlo</option>
+            </select>
+            <p v-if="fieldErrors.sexo" id="profile-sex-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.sexo[0] }}</p>
           </div>
         </div>
 
-        <p v-if="message" class="text-sm font-medium text-emerald-400">{{ message }}</p>
-        <p v-if="errorMessage" class="text-sm font-medium text-red-400">{{ errorMessage }}</p>
+        <p v-else class="rounded-lg border border-line bg-main/40 p-3 text-xs text-muted">
+          Teléfono, fecha de nacimiento y sexo pertenecen al perfil de cliente. Tu rol actual conserva aquí únicamente nombre y correo.
+        </p>
+
+        <p v-if="message" role="status" class="text-sm font-medium text-emerald-400">{{ message }}</p>
+        <p v-if="errorMessage" role="alert" class="text-sm font-medium text-red-400">{{ errorMessage }}</p>
 
         <button
           type="submit"

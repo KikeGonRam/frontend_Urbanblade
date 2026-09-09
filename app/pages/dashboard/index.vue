@@ -26,32 +26,32 @@ const fullName = computed(() => user.value?.name ?? '')
     <p v-if="pending" class="text-sm text-muted">Cargando dashboard…</p>
     <p v-else-if="error" class="text-sm text-red-400">No se pudo cargar el dashboard. Intenta recargar.</p>
 
-    <DashboardRecepcion
+    <LazyDashboardRecepcion
       v-else-if="dashboard?.role === 'recepcionista'"
       :data="(dashboard.data as any)"
       :first-name="firstName"
     />
 
-    <DashboardBarbero
+    <LazyDashboardBarbero
       v-else-if="dashboard?.role === 'barbero'"
       :data="(dashboard.data as any)"
       :first-name="firstName"
       @refresh="refresh"
     />
 
-    <DashboardCliente
+    <LazyDashboardCliente
       v-else-if="dashboard?.role === 'cliente'"
       :data="(dashboard.data as any)"
       :first-name="firstName"
       :full-name="fullName"
     />
 
-    <DashboardAdministrador
+    <LazyDashboardAdministrador
       v-else-if="dashboard?.role === 'administrador'"
       :data="(dashboard.data as any)"
     />
 
-    <DashboardIngeniero
+    <LazyDashboardIngeniero
       v-else-if="dashboard?.role === 'ingeniero'"
       :data="(dashboard.data as any)"
     />

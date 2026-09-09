@@ -8,6 +8,11 @@ export interface AuthUser {
   profile_missing: string[];
   client_id: string | number | null;
   barber_id: string | number | null;
+  client: {
+    telefono: string | null;
+    fecha_nacimiento: string | null;
+    sexo: "masculino" | "femenino" | "prefiero_no_decir" | null;
+  } | null;
 }
 
 interface LoginResponse {

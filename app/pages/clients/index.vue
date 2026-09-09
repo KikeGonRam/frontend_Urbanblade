@@ -46,6 +46,7 @@ const { apiFetch } = useApi()
 const { confirm } = useConfirm()
 
 const search = ref('')
+const debouncedSearch = useDebounce(search, 350)
 const segment = ref('')
 const page = ref(1)
 
@@ -54,7 +55,7 @@ const { data: response, pending, error, refresh } = await useAsyncData<ClientsRe
   () => apiFetch<ClientsResponse>('/admin/clients', {
     query: { search: search.value || undefined, segment: segment.value || undefined, page: page.value, per_page: 15 },
   }),
-  { watch: [search, segment, page] },
+  { watch: [debouncedSearch, segment, page] },
 )
 
 const clients = computed(() => response.value?.data ?? [])

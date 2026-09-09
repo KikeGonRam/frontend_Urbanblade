@@ -32,6 +32,7 @@ const { hasRole } = useAuth()
 const isAdmin = computed(() => hasRole('administrador'))
 
 const search = ref('')
+const debouncedSearch = useDebounce(search, 350)
 const tipoFilter = ref('')
 const productFilter = ref('')
 
@@ -40,7 +41,7 @@ const { data: response, pending, error, refresh } = await useAsyncData<Movements
   () => apiFetch<MovementsResponse>('/inventory/movements', {
     query: { q: search.value || undefined, tipo: tipoFilter.value || undefined, product_id: productFilter.value || undefined },
   }),
-  { watch: [search, tipoFilter, productFilter] },
+  { watch: [debouncedSearch, tipoFilter, productFilter] },
 )
 const movements = computed(() => response.value?.data ?? [])
 const stats = computed(() => response.value?.meta.stats)

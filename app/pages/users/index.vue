@@ -28,12 +28,13 @@ const { confirm } = useConfirm()
 const { user: currentUser } = useAuth()
 
 const search = ref('')
+const debouncedSearch = useDebounce(search, 350)
 const roleFilter = ref('')
 
 const { data: response, pending, error, refresh } = await useAsyncData<UsersResponse>(
   'users-list',
   () => apiFetch<UsersResponse>('/users', { query: { q: search.value || undefined, role: roleFilter.value || undefined } }),
-  { watch: [search, roleFilter] },
+  { watch: [debouncedSearch, roleFilter] },
 )
 const users = computed(() => response.value?.data ?? [])
 const roles = computed(() => response.value?.roles ?? [])

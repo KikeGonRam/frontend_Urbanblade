@@ -37,11 +37,12 @@ const { confirm } = useConfirm()
 
 const estadoFilter = ref('')
 const search = ref('')
+const debouncedSearch = useDebounce(search, 350)
 
 const { data: response, pending, error, refresh } = await useAsyncData<OrdersResponse>(
   'orders-list',
   () => apiFetch<OrdersResponse>('/orders', { query: { estado: estadoFilter.value || undefined, q: search.value || undefined } }),
-  { watch: [estadoFilter, search] },
+  { watch: [estadoFilter, debouncedSearch] },
 )
 const orders = computed(() => response.value?.data ?? [])
 const stats = computed(() => response.value?.meta.stats)

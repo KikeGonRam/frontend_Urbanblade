@@ -38,6 +38,7 @@ const EVENT_CLASS: Record<string, string> = {
 const { apiFetch } = useApi()
 
 const search = ref('')
+const debouncedSearch = useDebounce(search, 350)
 const logNameFilter = ref('')
 const eventFilter = ref('')
 const causerFilter = ref('')
@@ -56,7 +57,7 @@ const { data: response, pending, error } = await useAsyncData(
       fecha_hasta: fechaHasta.value || undefined,
     },
   }),
-  { watch: [search, logNameFilter, eventFilter, causerFilter, fechaDesde, fechaHasta] },
+  { watch: [debouncedSearch, logNameFilter, eventFilter, causerFilter, fechaDesde, fechaHasta] },
 )
 
 const logs = computed(() => response.value?.data ?? [])

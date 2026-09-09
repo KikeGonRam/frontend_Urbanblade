@@ -71,6 +71,7 @@ const config = useRuntimeConfig()
 
 // ── Historial + filtros ──────────────────────────────────────────────────
 const search = ref('')
+const debouncedSearch = useDebounce(search, 350)
 const actionError = ref('')
 const metodoFilter = ref('')
 const barberoFilter = ref('')
@@ -88,7 +89,7 @@ const { data: response, pending, error, refresh } = await useAsyncData<PaymentsR
       fecha_hasta: fechaHasta.value || undefined,
     },
   }),
-  { watch: [search, metodoFilter, barberoFilter, fechaDesde, fechaHasta] },
+  { watch: [debouncedSearch, metodoFilter, barberoFilter, fechaDesde, fechaHasta] },
 )
 
 const payments = computed(() => response.value?.data ?? [])

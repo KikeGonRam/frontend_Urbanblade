@@ -5,7 +5,11 @@ interface ProfileResponse {
   user: {
     name: string;
     email: string;
-    client: { telefono: string | null; fecha_nacimiento: string | null } | null;
+    client: {
+      telefono: string | null;
+      fecha_nacimiento: string | null;
+      sexo: string | null;
+    } | null;
   };
 }
 
@@ -13,15 +17,18 @@ const { apiFetch } = useApi();
 const { user, fetchMe } = useAuth();
 const telefono = ref("");
 const fechaNacimiento = ref("");
+const sexo = ref("");
 const loading = ref(true);
 const saving = ref(false);
 const errorMessage = ref("");
+const fieldErrors = ref<Record<string, string[]>>({});
 
 onMounted(async () => {
   try {
     const profile = await apiFetch<ProfileResponse>("/profile");
     telefono.value = profile.user.client?.telefono ?? "";
     fechaNacimiento.value = profile.user.client?.fecha_nacimiento ?? "";
+    sexo.value = profile.user.client?.sexo ?? "";
   } catch {
     errorMessage.value = "No se pudo cargar tu perfil.";
   } finally {
@@ -32,6 +39,7 @@ onMounted(async () => {
 async function submit() {
   saving.value = true;
   errorMessage.value = "";
+  fieldErrors.value = {};
 
   try {
     await apiFetch("/profile", {
@@ -39,6 +47,7 @@ async function submit() {
       body: {
         telefono: telefono.value,
         fecha_nacimiento: fechaNacimiento.value,
+        sexo: sexo.value || null,
       },
     });
     await fetchMe();
@@ -49,6 +58,7 @@ async function submit() {
         data?: { message?: string; errors?: Record<string, string[]> };
       }
     )?.data;
+    fieldErrors.value = data?.errors ?? {};
     errorMessage.value = data?.errors
       ? (Object.values(data.errors).flat()[0] ?? data.message ?? "")
       : (data?.message ?? "No se pudo guardar tu perfil.");
@@ -100,8 +110,11 @@ async function submit() {
             required
             autocomplete="tel"
             placeholder="Tu número de teléfono"
-            class="w-full rounded-lg border border-line bg-main px-3 py-2 text-ink focus:border-gold focus:outline-none"
+            :aria-invalid="!!fieldErrors.telefono"
+            :aria-describedby="fieldErrors.telefono ? 'telefono-error' : undefined"
+            :class="['w-full rounded-lg border bg-main px-3 py-2 text-ink focus:outline-none', fieldErrors.telefono ? 'border-red-500/60 focus:border-red-500' : 'border-line focus:border-gold']"
           >
+          <p v-if="fieldErrors.telefono" id="telefono-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.telefono[0] }}</p>
         </div>
         <div>
           <label for="fecha-nacimiento" class="mb-1 block text-sm text-muted"
@@ -113,10 +126,30 @@ async function submit() {
             type="date"
             required
             autocomplete="bday"
-            class="w-full rounded-lg border border-line bg-main px-3 py-2 text-ink focus:border-gold focus:outline-none"
+            :aria-invalid="!!fieldErrors.fecha_nacimiento"
+            :aria-describedby="fieldErrors.fecha_nacimiento ? 'fecha-nacimiento-error' : undefined"
+            :class="['w-full rounded-lg border bg-main px-3 py-2 text-ink focus:outline-none', fieldErrors.fecha_nacimiento ? 'border-red-500/60 focus:border-red-500' : 'border-line focus:border-gold']"
           >
+          <p v-if="fieldErrors.fecha_nacimiento" id="fecha-nacimiento-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.fecha_nacimiento[0] }}</p>
         </div>
-        <p v-if="errorMessage" class="text-sm text-red-400">
+        <div>
+          <label for="sexo" class="mb-1 block text-sm text-muted">Sexo (opcional)</label>
+          <select
+            id="sexo"
+            v-model="sexo"
+            :aria-invalid="!!fieldErrors.sexo"
+            :aria-describedby="fieldErrors.sexo ? 'sexo-error' : 'sexo-help'"
+            :class="['w-full rounded-lg border bg-main px-3 py-2 text-ink focus:outline-none', fieldErrors.sexo ? 'border-red-500/60 focus:border-red-500' : 'border-line focus:border-gold']"
+          >
+            <option value="">Sin especificar</option>
+            <option value="masculino">Masculino</option>
+            <option value="femenino">Femenino</option>
+            <option value="prefiero_no_decir">Prefiero no decirlo</option>
+          </select>
+          <p v-if="fieldErrors.sexo" id="sexo-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.sexo[0] }}</p>
+          <p v-else id="sexo-help" class="mt-1 text-xs text-muted">Google no comparte este dato con el acceso estándar; puedes elegirlo manualmente.</p>
+        </div>
+        <p v-if="errorMessage" role="alert" class="text-sm text-red-400">
           {{ errorMessage }}
         </p>
         <button

@@ -27,6 +27,7 @@ const { apiFetch } = useApi()
 const { confirm } = useConfirm()
 
 const search = ref('')
+const debouncedSearch = useDebounce(search, 350)
 const categoria = ref('')
 const activo = ref('')
 
@@ -35,7 +36,7 @@ const { data: response, pending, error, refresh } = await useAsyncData<ServicesR
   () => apiFetch<ServicesResponse>('/services/manage', {
     query: { q: search.value || undefined, categoria: categoria.value || undefined, activo: activo.value || undefined },
   }),
-  { watch: [search, categoria, activo] },
+  { watch: [debouncedSearch, categoria, activo] },
 )
 const services = computed(() => response.value?.data ?? [])
 const categories = computed(() => response.value?.categories ?? [])

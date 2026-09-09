@@ -53,6 +53,7 @@ const { apiFetch } = useApi()
 const { confirm } = useConfirm()
 
 const search = ref('')
+const debouncedSearch = useDebounce(search, 350)
 const categoria = ref('')
 const tipo = ref('')
 const soloBajoStock = ref(false)
@@ -62,7 +63,7 @@ const { data: response, pending, error, refresh } = await useAsyncData<ProductsR
   () => apiFetch<ProductsResponse>('/inventory/products', {
     query: { q: search.value || undefined, categoria: categoria.value || undefined, tipo: tipo.value || undefined, bajo_stock: soloBajoStock.value ? 1 : undefined },
   }),
-  { watch: [search, categoria, tipo, soloBajoStock] },
+  { watch: [debouncedSearch, categoria, tipo, soloBajoStock] },
 )
 const products = computed(() => response.value?.data ?? [])
 const stats = computed(() => response.value?.meta.stats)

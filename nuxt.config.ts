@@ -101,6 +101,8 @@ export default defineNuxtConfig({
     '/reviews': { ssr: false },
     '/system': { ssr: false },
     '/brand': { ssr: false },
+    '/profile': { ssr: false },
+    '/complete-profile': { ssr: false },
     // Lee el token de Google del query string y toca cookies -- sin sentido
     // renderizarla en servidor.
     '/auth/callback': { ssr: false },

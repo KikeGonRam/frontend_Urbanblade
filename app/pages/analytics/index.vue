@@ -13,8 +13,11 @@
  * hay panel de diagnóstico ni accesos rápidos — el contenido y las
  * gráficas reales (bar/line/doughnut vía Chart.js) sí están completos.
  */
+import { ensureChartjsRegistered } from '~/utils/registerChartjs'
 import { Bar, Doughnut, Line } from 'vue-chartjs'
 import { UB_CATEGORICAL, chartScale, goldHex, inkRgba } from '~/utils/chartTheme'
+
+ensureChartjsRegistered()
 
 definePageMeta({ middleware: ['auth'], layout: 'dashboard' })
 
