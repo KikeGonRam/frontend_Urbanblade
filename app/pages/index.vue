@@ -548,7 +548,7 @@ onBeforeUnmount(() => {
               />
               <a
                 :href="`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapAddress)}`"
-                target="_blank" rel="noopener"
+                target="_blank" rel="noopener noreferrer"
                 class="absolute bottom-4 right-4 flex items-center gap-2 rounded-xl border border-gold/20 bg-main/90 px-4 py-2.5 text-[9px] font-black uppercase tracking-widest text-gold backdrop-blur transition-all hover:bg-gold hover:text-black"
               >
                 <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>

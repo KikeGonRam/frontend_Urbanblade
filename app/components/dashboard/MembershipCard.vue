@@ -175,7 +175,7 @@ onBeforeUnmount(() => {
               <span class="mc-badge">{{ label }}</span>
             </div>
             <div class="mc-qr">
-              <img v-if="qr" :src="qr" alt="Codigo de socio" />
+              <img v-if="qr" :src="qr" alt="Codigo de socio" >
               <div v-else class="mc-qr-ph">QR</div>
             </div>
             <div class="mc-back-foot">
@@ -195,7 +195,7 @@ onBeforeUnmount(() => {
         v-if="downloadUrl"
         :href="downloadUrl"
         target="_blank"
-        rel="noopener"
+        rel="noopener noreferrer"
         class="mc-btn"
         >Descargar tarjeta</a
       >

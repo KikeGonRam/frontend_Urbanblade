@@ -60,7 +60,14 @@ const {
   pending,
   error,
 } = await useAsyncData(
-  "logs-list",
+  buildDataKey("logs-list", {
+    q: search.value || undefined,
+    log_name: logNameFilter.value || undefined,
+    event: eventFilter.value || undefined,
+    causer: causerFilter.value || undefined,
+    fecha_desde: fechaDesde.value || undefined,
+    fecha_hasta: fechaHasta.value || undefined,
+  }),
   () =>
     apiFetch<LogsResponse>("/logs", {
       query: {
@@ -167,7 +174,7 @@ function fmtDate(iso: string | null) {
         type="text"
         placeholder="Buscar…"
         class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
-      />
+      >
       <select
         v-model="logNameFilter"
         class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
@@ -189,17 +196,17 @@ function fmtDate(iso: string | null) {
         type="text"
         placeholder="Usuario…"
         class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
-      />
+      >
       <input
         v-model="fechaDesde"
         type="date"
         class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
-      />
+      >
       <input
         v-model="fechaHasta"
         type="date"
         class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
-      />
+      >
       <button
         v-if="
           search ||

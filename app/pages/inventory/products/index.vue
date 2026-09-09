@@ -64,7 +64,12 @@ const {
   error,
   refresh,
 } = await useAsyncData<ProductsResponse>(
-  "inventory-products",
+  buildDataKey("inventory-products", {
+    q: search.value || undefined,
+    categoria: categoria.value || undefined,
+    tipo: tipo.value || undefined,
+    bajo_stock: soloBajoStock.value ? 1 : undefined,
+  }),
   () =>
     apiFetch<ProductsResponse>("/inventory/products", {
       query: {

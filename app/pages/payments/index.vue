@@ -109,7 +109,13 @@ const {
   error,
   refresh,
 } = await useAsyncData<PaymentsResponse>(
-  "payments-list",
+  buildDataKey("payments-list", {
+    q: search.value || undefined,
+    metodo_pago: metodoFilter.value || undefined,
+    barbero_id: barberoFilter.value || undefined,
+    fecha_desde: fechaDesde.value || undefined,
+    fecha_hasta: fechaHasta.value || undefined,
+  }),
   () =>
     apiFetch<PaymentsResponse>("/payments", {
       query: {
@@ -501,10 +507,10 @@ onUnmounted(() => teardownStripe());
     <section class="mb-5 flex flex-wrap items-center gap-3">
       <input
         v-model="search"
-       type="text"
+        type="text"
         placeholder="Cliente o servicio…"
         class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink sm:max-w-xs"
-      />
+      >
       <select
         v-model="metodoFilter"
         class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
@@ -524,15 +530,15 @@ onUnmounted(() => teardownStripe());
         </option>
       </select>
       <input
-       v-model="fechaDesde"
+        v-model="fechaDesde"
         type="date"
         class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
-      />
+      >
       <input
-       v-model="fechaHasta"
+        v-model="fechaHasta"
         type="date"
         class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
-      />
+      >
       <button
         v-if="
           search || metodoFilter || barberoFilter || fechaDesde || fechaHasta
@@ -696,20 +702,20 @@ onUnmounted(() => teardownStripe());
                 >
                 <input
                   :value="fmtMoney(selected.precio)"
-                 type="text"
+                  type="text"
                   readonly
                   class="w-full rounded-lg border border-line bg-ink/5 px-3 py-2 text-sm text-ink/70"
-                />
+                >
               </div>
               <div>
                 <label class="mb-1 block text-xs text-muted">Propina</label>
                 <input
                   v-model.number="form.propina"
                   type="number"
-                 step="0.01"
+                  step="0.01"
                   min="0"
                   class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
-                />
+                >
               </div>
             </div>
 
@@ -719,10 +725,10 @@ onUnmounted(() => teardownStripe());
             >
               <label class="flex cursor-pointer items-start gap-3">
                 <input
-                 v-model="form.usarPremioRifa"
+                  v-model="form.usarPremioRifa"
                   type="checkbox"
                   class="mt-0.5 h-4 w-4 rounded border-line"
-                />
+                >
                 <span>
                   <span
                     class="block text-[10px] font-black uppercase tracking-widest text-fuchsia-300"
@@ -762,10 +768,10 @@ onUnmounted(() => teardownStripe());
                   v-model.number="form.puntosCanjear"
                   type="number"
                   step="1"
-                 min="0"
+                  min="0"
                   :max="preview.maxPuntosCanjeables"
                   class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
-                />
+                >
                 <p class="mt-1 text-[9px] italic text-muted">
                   1 punto = $1 MXN. Tope: 50% del total con descuento de nivel,
                   o el saldo del cliente.

@@ -69,7 +69,10 @@ const {
   error,
   refresh,
 } = await useAsyncData(
-  "appointments-list",
+  buildDataKey("appointments-list", {
+    estado: estadoFilter.value || undefined,
+    barber_id: barberFilter.value || undefined,
+  }),
   () =>
     apiFetch<{ data: AppointmentRow[] }>("/appointments", {
       query: {
@@ -524,10 +527,10 @@ onBeforeUnmount(() => {
             <template v-else>
               <input
                 v-model="clientQuery"
-               type="text"
+                type="text"
                 placeholder="Buscar por nombre o email…"
                 class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
-              />
+              >
               <ul
                 v-if="clientOptions.length"
                 class="mt-1 max-h-40 overflow-y-auto rounded-lg border border-line bg-main"
@@ -577,20 +580,20 @@ onBeforeUnmount(() => {
               <label class="mb-1 block text-xs text-muted">Fecha</label>
               <input
                 v-model="form.fecha"
-               type="date"
+                type="date"
                 required
                 class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
-              />
+              >
             </div>
             <div>
               <label class="mb-1 block text-xs text-muted">Hora</label>
               <input
                 v-model="form.hora_inicio"
                 type="time"
-               required
+                required
                 list="horarios-libres"
                 class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
-              />
+              >
               <datalist id="horarios-libres">
                 <option
                   v-for="slot in slots"

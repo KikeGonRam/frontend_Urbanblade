@@ -60,7 +60,11 @@ const {
   error,
   refresh,
 } = await useAsyncData<MovementsResponse>(
-  "inventory-movements",
+  buildDataKey("inventory-movements", {
+    q: search.value || undefined,
+    tipo: tipoFilter.value || undefined,
+    product_id: productFilter.value || undefined,
+  }),
   () =>
     apiFetch<MovementsResponse>("/inventory/movements", {
       query: {
