@@ -62,6 +62,7 @@ function inCart(productId: string) {
 }
 
 const justAdded = ref<string | null>(null);
+let justAddedTimer: ReturnType<typeof setTimeout> | undefined;
 
 function addToCart(product: StoreProduct) {
   cart.add({
@@ -71,11 +72,16 @@ function addToCart(product: StoreProduct) {
     imagen: product.imagen,
     stock_actual: product.stock_actual,
   });
+  clearTimeout(justAddedTimer);
   justAdded.value = product.id;
-  setTimeout(() => {
+  justAddedTimer = setTimeout(() => {
     if (justAdded.value === product.id) justAdded.value = null;
   }, 1200);
 }
+
+onBeforeUnmount(() => {
+  if (justAddedTimer) clearTimeout(justAddedTimer);
+});
 </script>
 
 <template>
@@ -111,7 +117,7 @@ function addToCart(product: StoreProduct) {
         type="text"
         placeholder="Buscar producto…"
         class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink sm:max-w-xs"
-      />
+      >
       <select
         v-model="categoria"
         class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
@@ -158,7 +164,7 @@ function addToCart(product: StoreProduct) {
             :src="product.imagen"
             :alt="product.nombre"
             class="h-full w-full object-cover"
-          />
+          >
           <span v-else class="text-3xl text-ink/15">✂</span>
         </div>
         <div class="flex flex-1 flex-col gap-2 p-4">

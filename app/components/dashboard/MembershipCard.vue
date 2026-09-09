@@ -50,6 +50,7 @@ const tiltStyle = ref<Record<string, string>>({});
 const glareStyle = ref<Record<string, string>>({});
 const pointsDisplay = ref(0);
 let countUpTimer: ReturnType<typeof setInterval> | undefined;
+let celebrateTimer: ReturnType<typeof setTimeout> | undefined;
 
 const prefersReducedMotion =
   import.meta.client &&
@@ -92,7 +93,10 @@ onMounted(() => {
     const key = "ub_lvl_rank";
     const seen = localStorage.getItem(key);
     if (seen !== null && rank.value > parseInt(seen, 10)) {
-      setTimeout(() => window.dispatchEvent(new CustomEvent("celebrate")), 700);
+      celebrateTimer = setTimeout(
+        () => window.dispatchEvent(new CustomEvent("celebrate")),
+        700,
+      );
     }
     localStorage.setItem(key, String(rank.value));
   } catch {
@@ -103,6 +107,10 @@ onBeforeUnmount(() => {
   if (countUpTimer) {
     clearInterval(countUpTimer);
     countUpTimer = undefined;
+  }
+  if (celebrateTimer) {
+    clearTimeout(celebrateTimer);
+    celebrateTimer = undefined;
   }
 });
 </script>

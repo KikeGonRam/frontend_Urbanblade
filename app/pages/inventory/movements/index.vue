@@ -77,6 +77,7 @@ const stats = computed(() => response.value?.meta.stats);
 const { data: productsRes } = await useAsyncData(
   "inventory-movements-products",
   () => apiFetch<{ data: ProductOption[] }>("/inventory/products"),
+  { lazy: true },
 );
 const products = computed<ProductOption[]>(
   () =>
@@ -86,6 +87,7 @@ const products = computed<ProductOption[]>(
 const { data: lowStockRes, refresh: refreshLowStock } = await useAsyncData(
   "inventory-movements-low-stock",
   () => apiFetch<{ data: LowStockItem[] }>("/inventory/low-stock"),
+  { lazy: true },
 );
 const lowStockItems = computed(() => lowStockRes.value?.data ?? []);
 
@@ -313,7 +315,7 @@ async function submitForm() {
         type="text"
         placeholder="Producto o motivo…"
         class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink sm:max-w-xs"
-      />
+      >
       <label for="movement-filter-type" class="sr-only">Filtrar por tipo</label>
       <select
         id="movement-filter-type"
@@ -504,7 +506,7 @@ async function submitForm() {
                 'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink',
                 fieldErrors.cantidad ? 'border-red-500/60' : 'border-line',
               ]"
-            />
+            >
             <p
               v-if="fieldErrors.cantidad"
               id="movement-quantity-error"
@@ -530,7 +532,7 @@ async function submitForm() {
                 'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink',
                 fieldErrors.motivo ? 'border-red-500/60' : 'border-line',
               ]"
-            />
+            >
             <p
               v-if="fieldErrors.motivo"
               id="movement-reason-error"

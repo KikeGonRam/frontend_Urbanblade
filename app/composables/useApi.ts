@@ -1,11 +1,26 @@
 import type { UseFetchOptions } from 'nuxt/app'
 
-/**
- * $fetch/useFetch preconfigurados con la base de la API y el Bearer token de
- * useAuth(). Si el backend responde 401 (token inválido/expirado), limpia la
- * sesión local y manda a /login — mismo criterio en toda llamada autenticada,
- * en vez de repetir el manejo de 401 en cada página.
- */
+function hashKey(s: string): string {
+  let h = 2166136261
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i)
+    h = Math.imul(h, 16777619)
+  }
+  return (h >>> 0).toString(36)
+}
+
+function buildAutoKey(
+  path: string,
+  options: Record<string, unknown> | undefined,
+  method?: string,
+): string {
+  const m = (method ?? (options?.method as string | undefined) ?? 'GET').toUpperCase()
+  const q = options?.query
+    ? hashKey(JSON.stringify(options.query))
+    : ''
+  return q ? `api:${m}:${path}?${q}` : `api:${m}:${path}`
+}
+
 export function useApi() {
   const config = useRuntimeConfig()
   const { token, logout } = useAuth()
@@ -36,9 +51,11 @@ export function useApi() {
   }
 
   function useApiFetch<T>(path: string, options: UseFetchOptions<T> = {}) {
+    const key = (options.key as string | undefined) ?? buildAutoKey(path, options as Record<string, unknown>)
     return useFetch<T>(path, {
       baseURL: config.public.apiBase,
       ...options,
+      key,
       headers: {
         ...(token.value ? { Authorization: `Bearer ${token.value}` } : {}),
         ...(options.headers as Record<string, string> | undefined),

@@ -81,11 +81,14 @@ function resetAndSearch() {
   page.value = 1;
 }
 
-const { data: segmentation } = await useAsyncData("clients-segmentation", () =>
-  apiFetch<{
-    success: boolean;
-    data: Record<string, { count: number; percentage: number }>;
-  }>("/admin/clients/segmentation/data"),
+const { data: segmentation } = await useAsyncData(
+  "clients-segmentation",
+  () =>
+    apiFetch<{
+      success: boolean;
+      data: Record<string, { count: number; percentage: number }>;
+    }>("/admin/clients/segmentation/data"),
+  { lazy: true },
 );
 
 const segmentCards = computed(() => {
@@ -249,7 +252,7 @@ function fmtDate(iso: string | null) {
       <input
         v-model="search"
         type="text"
-        placeholder="Nombre o email..."
+       placeholder="Nombre o email..."
         class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink sm:max-w-xs"
         @input="resetAndSearch"
       />
@@ -401,7 +404,7 @@ function fmtDate(iso: string | null) {
                 fieldErrors.name ? 'client-name-error' : undefined
               "
               :class="[
-                'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink',
+               'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink',
                 fieldErrors.name ? 'border-red-500/60' : 'border-line',
               ]"
             />
@@ -427,7 +430,7 @@ function fmtDate(iso: string | null) {
                 fieldErrors.email ? 'client-email-error' : undefined
               "
               :class="[
-                'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink',
+               'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink',
                 fieldErrors.email ? 'border-red-500/60' : 'border-line',
               ]"
             />
@@ -452,7 +455,7 @@ function fmtDate(iso: string | null) {
                 fieldErrors.telefono ? 'client-phone-error' : undefined
               "
               :class="[
-                'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink',
+               'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink',
                 fieldErrors.telefono ? 'border-red-500/60' : 'border-line',
               ]"
             />
@@ -480,7 +483,7 @@ function fmtDate(iso: string | null) {
                 fieldErrors.password ? 'client-password-error' : undefined
               "
               :class="[
-                'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink',
+               'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink',
                 fieldErrors.password ? 'border-red-500/60' : 'border-line',
               ]"
             />

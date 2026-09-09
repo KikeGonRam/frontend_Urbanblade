@@ -28,6 +28,7 @@ const { confirm } = useConfirm()
 const { data, pending, error, refresh } = await useAsyncData<PortfolioResponse>(
   'barber-portfolio',
   () => apiFetch('/barber/portfolio'),
+  { lazy: true },
 )
 
 const works = computed(() => data.value?.works ?? [])

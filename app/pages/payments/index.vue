@@ -144,10 +144,13 @@ function clearFilters() {
   fechaHasta.value = "";
 }
 
-const { data: barbersRes } = await useAsyncData("payments-barbers", () =>
-  apiFetch<{ data: Array<{ id: string; user: { name: string } | null }> }>(
-    "/barbers",
-  ),
+const { data: barbersRes } = await useAsyncData(
+  "payments-barbers",
+  () =>
+    apiFetch<{ data: Array<{ id: string; user: { name: string } | null }> }>(
+      "/barbers",
+    ),
+  { lazy: true },
 );
 const barbers = computed<Barber[]>(() =>
   (barbersRes.value?.data ?? []).map((b) => ({
@@ -498,7 +501,7 @@ onUnmounted(() => teardownStripe());
     <section class="mb-5 flex flex-wrap items-center gap-3">
       <input
         v-model="search"
-        type="text"
+       type="text"
         placeholder="Cliente o servicio…"
         class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink sm:max-w-xs"
       />
@@ -521,12 +524,12 @@ onUnmounted(() => teardownStripe());
         </option>
       </select>
       <input
-        v-model="fechaDesde"
+       v-model="fechaDesde"
         type="date"
         class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
       />
       <input
-        v-model="fechaHasta"
+       v-model="fechaHasta"
         type="date"
         class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
       />
@@ -693,7 +696,7 @@ onUnmounted(() => teardownStripe());
                 >
                 <input
                   :value="fmtMoney(selected.precio)"
-                  type="text"
+                 type="text"
                   readonly
                   class="w-full rounded-lg border border-line bg-ink/5 px-3 py-2 text-sm text-ink/70"
                 />
@@ -703,7 +706,7 @@ onUnmounted(() => teardownStripe());
                 <input
                   v-model.number="form.propina"
                   type="number"
-                  step="0.01"
+                 step="0.01"
                   min="0"
                   class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
                 />
@@ -716,7 +719,7 @@ onUnmounted(() => teardownStripe());
             >
               <label class="flex cursor-pointer items-start gap-3">
                 <input
-                  v-model="form.usarPremioRifa"
+                 v-model="form.usarPremioRifa"
                   type="checkbox"
                   class="mt-0.5 h-4 w-4 rounded border-line"
                 />
@@ -759,7 +762,7 @@ onUnmounted(() => teardownStripe());
                   v-model.number="form.puntosCanjear"
                   type="number"
                   step="1"
-                  min="0"
+                 min="0"
                   :max="preview.maxPuntosCanjeables"
                   class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
                 />

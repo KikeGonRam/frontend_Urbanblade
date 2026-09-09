@@ -23,6 +23,7 @@ const { apiFetch } = useApi()
 const { data, pending, error } = await useAsyncData<{ schedules: Day[] }>(
   'barber-schedule',
   () => apiFetch('/barber/schedule'),
+  { lazy: true },
 )
 
 const days = ref<Day[]>([])

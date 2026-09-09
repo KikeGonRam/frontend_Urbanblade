@@ -84,6 +84,7 @@ const tipos = computed(() => response.value?.meta.tipos ?? []);
 const { data: lowStockRes, refresh: refreshLowStock } = await useAsyncData(
   "inventory-low-stock",
   () => apiFetch<{ data: LowStockItem[] }>("/inventory/low-stock"),
+  { lazy: true },
 );
 const lowStockItems = computed(() => lowStockRes.value?.data ?? []);
 
@@ -346,7 +347,7 @@ async function removeProduct(product: ProductRow) {
         type="text"
         placeholder="Buscar producto…"
         class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-hidden sm:max-w-xs"
-      />
+      >
       <select
         v-model="categoria"
         class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-hidden"
@@ -370,7 +371,7 @@ async function removeProduct(product: ProductRow) {
           v-model="soloBajoStock"
           type="checkbox"
           class="h-4 w-4 rounded border-line text-gold focus:ring-gold"
-        />
+        >
         Solo bajo stock
       </label>
       <button
@@ -425,7 +426,7 @@ async function removeProduct(product: ProductRow) {
                   :src="product.imagen"
                   :alt="product.nombre"
                   class="h-9 w-9 rounded-lg border border-line object-cover"
-                />
+                >
                 <div
                   v-else
                   class="flex h-9 w-9 items-center justify-center rounded-lg border border-line bg-ink/5 text-xs text-muted"
@@ -529,7 +530,7 @@ async function removeProduct(product: ProductRow) {
                   ? 'border-red-500/60 focus:border-red-500'
                   : 'border-line focus:border-gold',
               ]"
-            />
+            >
             <p v-if="fieldErrors.nombre" class="mt-1 text-xs text-red-400">
               {{ fieldErrors.nombre[0] }}
             </p>
@@ -555,7 +556,7 @@ async function removeProduct(product: ProductRow) {
                     ? 'border-red-500/60 focus:border-red-500'
                     : 'border-line focus:border-gold',
                 ]"
-              />
+              >
               <datalist id="prod-categories-list">
                 <option v-for="c in categorias" :key="c" :value="c" />
               </datalist>
@@ -594,7 +595,7 @@ async function removeProduct(product: ProductRow) {
               type="text"
               placeholder="https://... o ruta de imagen"
               class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-hidden"
-            />
+            >
           </div>
 
           <div>
@@ -632,7 +633,7 @@ async function removeProduct(product: ProductRow) {
                     ? 'border-red-500/60 focus:border-red-500'
                     : 'border-line focus:border-gold',
                 ]"
-              />
+              >
               <p
                 v-if="fieldErrors.precio_compra"
                 class="mt-1 text-xs text-red-400"
@@ -659,7 +660,7 @@ async function removeProduct(product: ProductRow) {
                     ? 'border-red-500/60 focus:border-red-500'
                     : 'border-line focus:border-gold',
                 ]"
-              />
+              >
               <p
                 v-if="fieldErrors.precio_venta"
                 class="mt-1 text-xs text-red-400"
@@ -688,7 +689,7 @@ async function removeProduct(product: ProductRow) {
                     ? 'border-red-500/60 focus:border-red-500'
                     : 'border-line focus:border-gold',
                 ]"
-              />
+              >
               <p
                 v-if="fieldErrors.stock_actual"
                 class="mt-1 text-xs text-red-400"
@@ -714,7 +715,7 @@ async function removeProduct(product: ProductRow) {
                     ? 'border-red-500/60 focus:border-red-500'
                     : 'border-line focus:border-gold',
                 ]"
-              />
+              >
               <p
                 v-if="fieldErrors.stock_minimo"
                 class="mt-1 text-xs text-red-400"
@@ -731,7 +732,7 @@ async function removeProduct(product: ProductRow) {
               v-model="form.activo"
               type="checkbox"
               class="h-4 w-4 rounded border-line text-gold focus:ring-gold"
-            />
+            >
             <span>Activo en catálogo y tienda</span>
           </label>
 

@@ -20,7 +20,7 @@ interface Profile {
 }
 
 const { apiFetch } = useApi()
-const { data, pending, error, refresh } = await useAsyncData<Profile>('barber-profile', () => apiFetch('/barber/me'))
+const { data, pending, error, refresh } = await useAsyncData<Profile>('barber-profile', () => apiFetch('/barber/me'), { lazy: true })
 
 const especialidades = ref('')
 const descripcion = ref('')

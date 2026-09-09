@@ -4,7 +4,7 @@ interface Appointment { id: string, code: string, hora_inicio: string, hora_fin:
 interface AgendaResponse { data: Appointment[], range: { label: string }, stats: Record<string, number> }
 const { apiFetch } = useApi()
 const period = ref<'day' | 'week'>('day'); const estado = ref(''); const offset = ref(0); const busyCode = ref(''); const message = ref('')
-const { data: response, pending, error, refresh } = await useAsyncData<AgendaResponse>('barber-agenda', () => apiFetch('/barber/agenda', { query: { period: period.value, estado: estado.value || undefined, offset: offset.value } }), { watch: [period, estado, offset] })
+const { data: response, pending, error, refresh } = await useAsyncData<AgendaResponse>('barber-agenda', () => apiFetch('/barber/agenda', { query: { period: period.value, estado: estado.value || undefined, offset: offset.value } }), { watch: [period, estado, offset], lazy: true })
 const appointments = computed(() => response.value?.data ?? []); const stats = computed(() => response.value?.stats ?? {})
 const labels: Record<string, string> = { pendiente: 'Pendiente', confirmada: 'Confirmada', en_proceso: 'En proceso', completada: 'Completada', cancelada: 'Cancelada', no_asistio: 'No asistio' }
 const classes: Record<string, string> = { pendiente: 'text-amber-300 bg-amber-500/10', confirmada: 'text-blue-300 bg-blue-500/10', en_proceso: 'text-sky-300 bg-sky-500/10', completada: 'text-emerald-300 bg-emerald-500/10', cancelada: 'text-red-400 bg-red-500/10', no_asistio: 'text-orange-300 bg-orange-500/10' }

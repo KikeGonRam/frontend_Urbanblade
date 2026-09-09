@@ -2,11 +2,11 @@
 import { Bar, Doughnut, Line } from "vue-chartjs";
 import type { DashboardInsight } from "~/components/dashboard/AnalyticsInsights.vue";
 import {
-    chartScale,
-    fmtInt,
-    fmtMoney,
-    inkRgba,
-    UB_CATEGORICAL,
+  chartScale,
+  fmtInt,
+  fmtMoney,
+  inkRgba,
+  UB_CATEGORICAL,
 } from "~/utils/chartTheme";
 import { ensureChartjsRegistered } from "~/utils/registerChartjs";
 
@@ -1389,8 +1389,8 @@ onMounted(async () => {
                   Sin insights disponibles.
                 </p>
                 <div
-                  v-for="(insight, index) in aiInsights ?? []"
-                  :key="index"
+                  v-for="insight in aiInsights ?? []"
+                  :key="`${insight.status}-${insight.message}`"
                   class="flex items-start gap-2 rounded-xl border p-3"
                   :class="
                     (AI_STATUS_STYLE[insight.status] ?? AI_STATUS_STYLE.neutral)
