@@ -12,7 +12,8 @@ const { user } = useAuth()
       <ShellPushToggle />
       <NuxtLink
         to="/profile"
-        class="flex h-8 w-8 items-center justify-center rounded-full bg-gold/20 text-xs font-semibold text-gold"
+        class="flex h-11 w-11 items-center justify-center rounded-full bg-gold/20 text-xs font-semibold text-gold transition hover:bg-gold/30"
+        :aria-label="`Perfil de ${user?.name ?? 'usuario'}`"
         :title="user?.name"
       >
         {{ (user?.name ?? 'U').slice(0, 2).toUpperCase() }}

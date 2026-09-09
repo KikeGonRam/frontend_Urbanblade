@@ -60,7 +60,7 @@ async function onLogout() {
             <p class="truncate text-xs text-muted">{{ user?.roles.join(', ') }}</p>
           </div>
         </NuxtLink>
-        <button type="button" class="ml-auto shrink-0 text-sm text-gold" @click="onLogout">
+        <button type="button" class="ml-auto shrink-0 rounded-lg px-3 py-3 text-sm text-gold transition hover:bg-accent" @click="onLogout">
           Cerrar sesión
         </button>
       </div>

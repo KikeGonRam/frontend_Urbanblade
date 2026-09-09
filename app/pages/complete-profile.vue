@@ -112,7 +112,7 @@ async function submit() {
             placeholder="Tu número de teléfono"
             :aria-invalid="!!fieldErrors.telefono"
             :aria-describedby="fieldErrors.telefono ? 'telefono-error' : undefined"
-            :class="['w-full rounded-lg border bg-main px-3 py-2 text-ink focus:outline-none', fieldErrors.telefono ? 'border-red-500/60 focus:border-red-500' : 'border-line focus:border-gold']"
+            :class="['w-full rounded-lg border bg-main px-3 py-2 text-ink transition-all duration-200 focus:outline-none', fieldErrors.telefono ? 'border-red-500/60 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]' : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]']"
           >
           <p v-if="fieldErrors.telefono" id="telefono-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.telefono[0] }}</p>
         </div>
@@ -128,7 +128,7 @@ async function submit() {
             autocomplete="bday"
             :aria-invalid="!!fieldErrors.fecha_nacimiento"
             :aria-describedby="fieldErrors.fecha_nacimiento ? 'fecha-nacimiento-error' : undefined"
-            :class="['w-full rounded-lg border bg-main px-3 py-2 text-ink focus:outline-none', fieldErrors.fecha_nacimiento ? 'border-red-500/60 focus:border-red-500' : 'border-line focus:border-gold']"
+            :class="['w-full rounded-lg border bg-main px-3 py-2 text-ink transition-all duration-200 focus:outline-none', fieldErrors.fecha_nacimiento ? 'border-red-500/60 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]' : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]']"
           >
           <p v-if="fieldErrors.fecha_nacimiento" id="fecha-nacimiento-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.fecha_nacimiento[0] }}</p>
         </div>
@@ -139,7 +139,7 @@ async function submit() {
             v-model="sexo"
             :aria-invalid="!!fieldErrors.sexo"
             :aria-describedby="fieldErrors.sexo ? 'sexo-error' : 'sexo-help'"
-            :class="['w-full rounded-lg border bg-main px-3 py-2 text-ink focus:outline-none', fieldErrors.sexo ? 'border-red-500/60 focus:border-red-500' : 'border-line focus:border-gold']"
+            :class="['w-full rounded-lg border bg-main px-3 py-2 text-ink transition-all duration-200 focus:outline-none', fieldErrors.sexo ? 'border-red-500/60 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]' : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]']"
           >
             <option value="">Sin especificar</option>
             <option value="masculino">Masculino</option>

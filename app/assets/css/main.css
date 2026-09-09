@@ -294,6 +294,13 @@ html[data-theme="libreta"] {
     }
     .ui-btn:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 8px 25px var(--gold-glow); filter: brightness(1.15); }
     .ui-btn:active { transform: translateY(0px) scale(0.98); box-shadow: 0 2px 10px var(--gold-glow); }
+    .ui-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+    /* Ningún .ui-btn se usa hoy con :disabled, pero hover/active ya tienen
+       su estado -- completar disabled evita que el primer botón deshabilitado
+       que se agregue se vea idéntico a uno activo (sin opacidad reducida ni
+       cursor not-allowed, el brillo dorado sigue leyendo "haz clic aquí"). */
+    .ui-btn:disabled, .ui-btn-secondary:disabled { cursor: not-allowed; opacity: .5; filter: none; transform: none; box-shadow: none; }
+    .ui-btn:disabled:hover, .ui-btn-secondary:disabled:hover { transform: none; filter: none; box-shadow: none; }
 
     .ui-btn-secondary {
         @apply ui-btn;
