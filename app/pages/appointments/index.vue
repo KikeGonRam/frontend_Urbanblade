@@ -55,7 +55,7 @@ const { data: response, pending, error, refresh } = await useAsyncData(
   () => apiFetch<{ data: AppointmentRow[] }>('/appointments', {
     query: { estado: estadoFilter.value || undefined, barber_id: barberFilter.value || undefined },
   }),
-  { watch: [estadoFilter, barberFilter] },
+  { watch: [estadoFilter, barberFilter], lazy: true },
 )
 const appointments = computed(() => response.value?.data ?? [])
 

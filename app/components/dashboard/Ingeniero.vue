@@ -13,11 +13,11 @@
 import { Bar, Doughnut, Line } from "vue-chartjs";
 import type { DashboardInsight } from "~/components/dashboard/AnalyticsInsights.vue";
 import {
-    chartScale,
-    fmtInt,
-    fmtMoney,
-    inkRgba,
-    UB_CATEGORICAL,
+  chartScale,
+  fmtInt,
+  fmtMoney,
+  inkRgba,
+  UB_CATEGORICAL,
 } from "~/utils/chartTheme";
 import { ensureChartjsRegistered } from "~/utils/registerChartjs";
 
@@ -107,6 +107,7 @@ const { apiFetch } = useApi();
 const { data: systemStatus, pending: systemPending } = await useAsyncData(
   "engineer-system-status",
   () => apiFetch<SystemStatusSummary>("/admin/system/status"),
+  { lazy: true },
 );
 
 const systemHealth = computed(() => {

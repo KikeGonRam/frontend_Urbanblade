@@ -23,6 +23,7 @@ const { apiFetch } = useApi()
 const { data: response, pending, error } = await useAsyncData(
   'barbers-catalog',
   () => apiFetch<{ data: BarberRow[] }>('/barbers'),
+  { lazy: true },
 )
 const barbers = computed(() => response.value?.data ?? [])
 </script>

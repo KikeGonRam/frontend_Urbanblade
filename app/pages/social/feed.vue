@@ -27,7 +27,7 @@ interface FeedResponse { data: WorkRow[], meta: { current_page: number, last_pag
 
 const { apiFetch } = useApi()
 
-const { data, pending, error } = await useAsyncData('social-feed', () => apiFetch<FeedResponse>('/social/feed'))
+const { data, pending, error } = await useAsyncData('social-feed', () => apiFetch<FeedResponse>('/social/feed'), { lazy: true })
 const works = ref<WorkRow[]>([])
 watchEffect(() => { works.value = data.value?.data ?? [] })
 

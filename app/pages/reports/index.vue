@@ -45,16 +45,17 @@ const { apiFetch } = useApi()
 const period = ref<Period>('mes')
 
 const { data: revenueRes, pending: revenuePending } = await useAsyncData(
-  'reports-revenue', () => apiFetch<{ data: RevenueData }>('/admin/reports/revenue', { query: { period: period.value } }), { watch: [period] },
+  'reports-revenue', () => apiFetch<{ data: RevenueData }>('/admin/reports/revenue', { query: { period: period.value } }), { watch: [period], lazy: true },
 )
 const { data: apptRes, pending: apptPending } = await useAsyncData(
-  'reports-appointments', () => apiFetch<{ data: AppointmentsData }>('/admin/reports/appointments', { query: { period: period.value } }), { watch: [period] },
+  'reports-appointments', () => apiFetch<{ data: AppointmentsData }>('/admin/reports/appointments', { query: { period: period.value } }), { watch: [period], lazy: true },
 )
 const { data: inventoryRes, pending: inventoryPending } = await useAsyncData(
   'reports-inventory', () => apiFetch<{ data: InventoryData }>('/admin/reports/inventory'),
+  { lazy: true },
 )
 const { data: clientsRes, pending: clientsPending } = await useAsyncData(
-  'reports-clients', () => apiFetch<{ data: ClientsData }>('/admin/reports/clients', { query: { period: period.value } }), { watch: [period] },
+  'reports-clients', () => apiFetch<{ data: ClientsData }>('/admin/reports/clients', { query: { period: period.value } }), { watch: [period], lazy: true },
 )
 
 const revenue = computed(() => revenueRes.value?.data)

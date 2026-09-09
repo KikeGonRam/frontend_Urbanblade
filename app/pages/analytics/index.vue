@@ -93,6 +93,7 @@ const { apiFetch } = useApi()
 
 const { data: response, pending, error } = await useAsyncData(
   'analytics', () => apiFetch<AnalyticsResponse>('/analytics'),
+  { lazy: true },
 )
 
 const rolLabel = computed(() => response.value?.rol_label ?? 'invitado')

@@ -29,6 +29,7 @@ const { apiFetch } = useApi()
 const { data, pending, error, refresh } = await useAsyncData(
   'system-status',
   () => apiFetch<SystemStatus>('/admin/system/status'),
+  { lazy: true },
 )
 
 const STATUS_CLASS: Record<string, string> = {

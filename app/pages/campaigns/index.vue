@@ -42,6 +42,7 @@ const { apiFetch } = useApi()
 const { data: response, pending, error, refresh } = await useAsyncData(
   'campaigns-list',
   () => apiFetch<IndexResponse>('/campaigns'),
+  { lazy: true },
 )
 const campaigns = computed(() => response.value?.data ?? [])
 const levels = computed(() => response.value?.levels ?? {})

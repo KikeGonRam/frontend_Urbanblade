@@ -37,6 +37,7 @@ if (!user.value) {
 const { data: response, pending, error, refresh } = await useAsyncData(
   `barber-detail-${route.params.slug}`,
   () => apiFetch<BarberDetail>(`/barbers/${route.params.slug}`),
+  { lazy: true },
 )
 
 const barber = computed(() => response.value?.barber ?? null)

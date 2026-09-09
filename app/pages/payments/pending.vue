@@ -26,6 +26,7 @@ const { apiFetch } = useApi()
 const { data: response, pending, error, refresh } = await useAsyncData(
   'payments-pending',
   () => apiFetch<{ data: PendingPayment[] }>('/payments/pending'),
+  { lazy: true },
 )
 const payments = computed(() => response.value?.data ?? [])
 

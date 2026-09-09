@@ -125,6 +125,7 @@ async function onLogout() {
               }"
               :aria-current="isActive(item.to) ? 'page' : undefined"
               :title="railCollapsed ? item.label : undefined"
+              :prefetch="['/dashboard', '/appointments', '/store', '/cart', '/payments', '/clients', '/inventory/products', '/analytics', '/barbers'].includes(item.to)"
               ><ShellNavIcon :paths="item.icon" /><span
                 v-show="!railCollapsed"
                 >{{ item.label }}</span

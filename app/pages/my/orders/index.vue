@@ -30,6 +30,7 @@ const route = useRoute()
 const { data: response, pending, error, refresh } = await useAsyncData(
   'my-orders',
   () => apiFetch<{ data: OrderRow[] }>('/orders'),
+  { lazy: true },
 )
 const orders = computed(() => response.value?.data ?? [])
 

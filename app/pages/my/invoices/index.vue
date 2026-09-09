@@ -23,6 +23,7 @@ const { apiFetch } = useApi()
 const { data: response, pending, error } = await useAsyncData(
   'my-invoices',
   () => apiFetch<{ data: PaymentRow[], meta: { total_pagado: number, total_citas: number } }>('/payments'),
+  { lazy: true },
 )
 const payments = computed(() => response.value?.data ?? [])
 const meta = computed(() => response.value?.meta ?? { total_pagado: 0, total_citas: 0 })

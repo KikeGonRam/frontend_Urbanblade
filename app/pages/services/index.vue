@@ -3,102 +3,112 @@
  * Fase 9.5 — catálogo de servicios, gestión admin. Api/Service/
  * ServiceManagementController maneja el CRUD completo bajo /services/manage.
  */
-definePageMeta({ middleware: ['auth', 'admin'], layout: 'dashboard' })
+definePageMeta({ middleware: ["auth", "admin"], layout: "dashboard" });
 
 interface ServiceRow {
-  id: string
-  slug: string
-  nombre: string
-  categoria: string
-  precio: number
-  duracion_min: number
-  descripcion: string | null
-  imagen: string | null
-  activo: boolean
+  id: string;
+  slug: string;
+  nombre: string;
+  categoria: string;
+  precio: number;
+  duracion_min: number;
+  descripcion: string | null;
+  imagen: string | null;
+  activo: boolean;
 }
 
 interface ServicesResponse {
-  data: ServiceRow[]
-  meta: { current_page: number, last_page: number, total: number }
-  categories: string[]
+  data: ServiceRow[];
+  meta: { current_page: number; last_page: number; total: number };
+  categories: string[];
 }
 
-const { apiFetch } = useApi()
-const { confirm } = useConfirm()
+const { apiFetch } = useApi();
+const { confirm } = useConfirm();
 
-const search = ref('')
-const debouncedSearch = useDebounce(search, 350)
-const categoria = ref('')
-const activo = ref('')
+const search = ref("");
+const debouncedSearch = useDebounce(search, 350);
+const categoria = ref("");
+const activo = ref("");
 
-const { data: response, pending, error, refresh } = await useAsyncData<ServicesResponse>(
-  'services-list',
-  () => apiFetch<ServicesResponse>('/services/manage', {
-    query: { q: search.value || undefined, categoria: categoria.value || undefined, activo: activo.value || undefined },
-  }),
-  { watch: [debouncedSearch, categoria, activo] },
-)
-const services = computed(() => response.value?.data ?? [])
-const categories = computed(() => response.value?.categories ?? [])
+const {
+  data: response,
+  pending,
+  error,
+  refresh,
+} = await useAsyncData<ServicesResponse>(
+  "services-list",
+  () =>
+    apiFetch<ServicesResponse>("/services/manage", {
+      query: {
+        q: search.value || undefined,
+        categoria: categoria.value || undefined,
+        activo: activo.value || undefined,
+      },
+    }),
+  { watch: [debouncedSearch, categoria, activo], lazy: true },
+);
+const services = computed(() => response.value?.data ?? []);
+const categories = computed(() => response.value?.categories ?? []);
 
 function clearFilters() {
-  search.value = ''
-  categoria.value = ''
-  activo.value = ''
+  search.value = "";
+  categoria.value = "";
+  activo.value = "";
 }
 
 function fmtMoney(n: number) {
-  return `$${Number(n ?? 0).toFixed(0)}`
+  return `$${Number(n ?? 0).toFixed(0)}`;
 }
 
 // ── Crear / editar ───────────────────────────────────────────────────────
-const showForm = ref(false)
-const editing = ref<ServiceRow | null>(null)
+const showForm = ref(false);
+const editing = ref<ServiceRow | null>(null);
 const form = reactive({
-  nombre: '',
-  categoria: '',
+  nombre: "",
+  categoria: "",
   precio: 0,
   duracion_min: 30,
-  descripcion: '',
-  imagen: '',
+  descripcion: "",
+  imagen: "",
   activo: true,
-})
-const formError = ref('')
-const fieldErrors = ref<Record<string, string[]>>({})
-const saving = ref(false)
+});
+const formError = ref("");
+const fieldErrors = ref<Record<string, string[]>>({});
+const saving = ref(false);
 
 function openCreate() {
-  editing.value = null
-  form.nombre = ''
-  form.categoria = categories.value[0] ?? 'Cortes'
-  form.precio = 150
-  form.duracion_min = 30
-  form.descripcion = ''
-  form.imagen = ''
-  form.activo = true
-  formError.value = ''
-  fieldErrors.value = {}
-  showForm.value = true
+  editing.value = null;
+  form.nombre = "";
+  form.categoria = categories.value[0] ?? "Cortes";
+  form.precio = 150;
+  form.duracion_min = 30;
+  form.descripcion = "";
+  form.imagen = "";
+  form.activo = true;
+  formError.value = "";
+  fieldErrors.value = {};
+  showForm.value = true;
 }
 
 function openEdit(service: ServiceRow) {
-  editing.value = service
-  form.nombre = service.nombre
-  form.categoria = service.categoria ?? ''
-  form.precio = service.precio
-  form.duracion_min = service.duracion_min
-  form.descripcion = service.descripcion ?? ''
-  form.imagen = service.imagen ?? ''
-  form.activo = service.activo
-  formError.value = ''
-  fieldErrors.value = {}
-  showForm.value = true
+  editing.value = service;
+  form.nombre = service.nombre;
+  form.categoria = service.categoria ?? "";
+  form.precio = service.precio;
+  form.duracion_min = service.duracion_min;
+  form.descripcion = service.descripcion ?? "";
+  form.imagen = service.imagen ?? "";
+  form.activo = service.activo;
+  formError.value = "";
+  fieldErrors.value = {};
+  showForm.value = true;
 }
 
 async function submitForm() {
-  saving.value = true
-  formError.value = ''
-  fieldErrors.value = {}
+  saving.value = true;
+  formError.value = "";
+  fieldErrors.value = {};
 
   try {
     const payload = {
@@ -109,52 +119,65 @@ async function submitForm() {
       descripcion: form.descripcion || null,
       imagen: form.imagen || null,
       activo: form.activo,
-    }
+    };
 
     if (editing.value) {
-      await apiFetch(`/services/manage/${editing.value.slug}`, { method: 'PUT', body: payload })
+      await apiFetch(`/services/manage/${editing.value.slug}`, {
+        method: "PUT",
+        body: payload,
+      });
     } else {
-      await apiFetch('/services/manage', { method: 'POST', body: payload })
+      await apiFetch("/services/manage", { method: "POST", body: payload });
     }
-    showForm.value = false
-    await refresh()
+    showForm.value = false;
+    await refresh();
   } catch (err: unknown) {
-    const dataErr = (err as { data?: { message?: string, errors?: Record<string, string[]> } })?.data
+    const dataErr = (
+      err as { data?: { message?: string; errors?: Record<string, string[]> } }
+    )?.data;
     if (dataErr?.errors) {
-      fieldErrors.value = dataErr.errors
+      fieldErrors.value = dataErr.errors;
     }
-    formError.value = dataErr?.message ?? 'No se pudo guardar el servicio. Revisa los campos marcados.'
+    formError.value =
+      dataErr?.message ??
+      "No se pudo guardar el servicio. Revisa los campos marcados.";
   } finally {
-    saving.value = false
+    saving.value = false;
   }
 }
 
 async function removeService(service: ServiceRow) {
   const ok = await confirm({
-    title: 'Eliminar servicio',
+    title: "Eliminar servicio",
     message: `¿Estás seguro de que deseas eliminar el servicio "${service.nombre}" del catálogo? Esta acción no se puede deshacer.`,
-    confirmText: 'Sí, eliminar',
+    confirmText: "Sí, eliminar",
     isDanger: true,
-  })
-  if (!ok) return
+  });
+  if (!ok) return;
 
   try {
-    await apiFetch(`/services/manage/${service.slug}`, { method: 'DELETE' })
-    await refresh()
+    await apiFetch(`/services/manage/${service.slug}`, { method: "DELETE" });
+    await refresh();
   } catch (err: unknown) {
-    const dataErr = (err as { data?: { message?: string } })?.data
-    formError.value = dataErr?.message ?? 'No se pudo eliminar el servicio.'
+    const dataErr = (err as { data?: { message?: string } })?.data;
+    formError.value = dataErr?.message ?? "No se pudo eliminar el servicio.";
   }
 }
 </script>
 
 <template>
   <div class="p-4 sm:p-6 lg:p-8">
-    <header class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <header
+      class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+    >
       <div>
         <p class="text-sm uppercase tracking-widest text-muted">UrbanBlade</p>
-        <h1 class="mt-1 text-2xl font-semibold text-ink">Catálogo de <span class="text-gold">Servicios</span></h1>
-        <p class="mt-1 text-sm text-muted">Administra los servicios, tiempos y precios ofrecidos en la barbería.</p>
+        <h1 class="mt-1 text-2xl font-semibold text-ink">
+          Catálogo de <span class="text-gold">Servicios</span>
+        </h1>
+        <p class="mt-1 text-sm text-muted">
+          Administra los servicios, tiempos y precios ofrecidos en la barbería.
+        </p>
       </div>
       <button
         type="button"
@@ -171,12 +194,18 @@ async function removeService(service: ServiceRow) {
         type="text"
         placeholder="Nombre del servicio…"
         class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-hidden sm:max-w-xs"
+      />
+      <select
+        v-model="categoria"
+        class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-hidden"
       >
-      <select v-model="categoria" class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-hidden">
         <option value="">Todas las categorías</option>
         <option v-for="c in categories" :key="c" :value="c">{{ c }}</option>
       </select>
-      <select v-model="activo" class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-hidden">
+      <select
+        v-model="activo"
+        class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-hidden"
+      >
         <option value="">Todos los estados</option>
         <option value="1">Activo</option>
         <option value="0">Inactivo</option>
@@ -191,17 +220,26 @@ async function removeService(service: ServiceRow) {
       </button>
     </section>
 
-    <div v-if="pending" class="flex items-center gap-3 py-12 text-sm text-muted">
-      <div class="h-5 w-5 animate-spin rounded-full border-2 border-gold border-t-transparent" />
+    <div
+      v-if="pending"
+      class="flex items-center gap-3 py-12 text-sm text-muted"
+    >
+      <div
+        class="h-5 w-5 animate-spin rounded-full border-2 border-gold border-t-transparent"
+      />
       <span>Cargando servicios…</span>
     </div>
 
-    <p v-else-if="error" class="text-sm text-red-400">No se pudo cargar el catálogo.</p>
+    <p v-else-if="error" class="text-sm text-red-400">
+      No se pudo cargar el catálogo.
+    </p>
 
     <section v-else class="ui-card overflow-x-auto">
       <table class="w-full text-left text-sm">
         <thead>
-          <tr class="border-b border-line text-[10px] uppercase tracking-wider text-muted">
+          <tr
+            class="border-b border-line text-[10px] uppercase tracking-wider text-muted"
+          >
             <th class="px-4 py-3">Servicio</th>
             <th class="px-4 py-3">Categoría</th>
             <th class="px-4 py-3">Duración</th>
@@ -211,7 +249,11 @@ async function removeService(service: ServiceRow) {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="service in services" :key="service.id" class="border-b border-line/60 last:border-0">
+          <tr
+            v-for="service in services"
+            :key="service.id"
+            class="border-b border-line/60 last:border-0"
+          >
             <td class="px-4 py-3">
               <div class="flex items-center gap-3">
                 <img
@@ -219,29 +261,45 @@ async function removeService(service: ServiceRow) {
                   :src="service.imagen"
                   :alt="service.nombre"
                   class="h-9 w-9 rounded-lg border border-line object-cover"
+                />
+                <div
+                  v-else
+                  class="flex h-9 w-9 items-center justify-center rounded-lg border border-line bg-ink/5 text-xs text-gold"
                 >
-                <div v-else class="flex h-9 w-9 items-center justify-center rounded-lg border border-line bg-ink/5 text-xs text-gold">
                   ✂
                 </div>
                 <div>
                   <p class="font-bold text-ink">{{ service.nombre }}</p>
-                  <p v-if="service.descripcion" class="line-clamp-1 text-xs text-muted">{{ service.descripcion }}</p>
+                  <p
+                    v-if="service.descripcion"
+                    class="line-clamp-1 text-xs text-muted"
+                  >
+                    {{ service.descripcion }}
+                  </p>
                 </div>
               </div>
             </td>
             <td class="px-4 py-3">
-              <span class="rounded-full border border-line bg-ink/5 px-2 py-0.5 text-[9px] font-black uppercase text-muted">
+              <span
+                class="rounded-full border border-line bg-ink/5 px-2 py-0.5 text-[9px] font-black uppercase text-muted"
+              >
                 {{ service.categoria }}
               </span>
             </td>
             <td class="px-4 py-3 text-muted">{{ service.duracion_min }} min</td>
-            <td class="px-4 py-3 text-right font-black text-emerald-400">{{ fmtMoney(service.precio) }}</td>
+            <td class="px-4 py-3 text-right font-black text-emerald-400">
+              {{ fmtMoney(service.precio) }}
+            </td>
             <td class="px-4 py-3 text-center">
               <span
                 class="rounded-full border px-2 py-0.5 text-[9px] font-black uppercase"
-                :class="service.activo ? 'border-emerald-500/25 bg-emerald-500/10 text-emerald-300' : 'border-line bg-ink/5 text-muted'"
+                :class="
+                  service.activo
+                    ? 'border-emerald-500/25 bg-emerald-500/10 text-emerald-300'
+                    : 'border-line bg-ink/5 text-muted'
+                "
               >
-                {{ service.activo ? 'Activo' : 'Inactivo' }}
+                {{ service.activo ? "Activo" : "Inactivo" }}
               </span>
             </td>
             <td class="px-4 py-3">
@@ -264,7 +322,9 @@ async function removeService(service: ServiceRow) {
             </td>
           </tr>
           <tr v-if="!services.length">
-            <td colspan="6" class="px-4 py-12 text-center text-sm text-muted">Sin servicios registrados.</td>
+            <td colspan="6" class="px-4 py-12 text-center text-sm text-muted">
+              Sin servicios registrados.
+            </td>
           </tr>
         </tbody>
       </table>
@@ -279,14 +339,20 @@ async function removeService(service: ServiceRow) {
       aria-label="Formulario de servicio"
       @click.self="showForm = false"
     >
-      <div class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-line bg-card p-6 shadow-2xl">
+      <div
+        class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-line bg-card p-6 shadow-2xl"
+      >
         <h2 class="mb-4 text-lg font-semibold text-ink">
-          {{ editing ? 'Editar servicio' : 'Nuevo servicio' }}
+          {{ editing ? "Editar servicio" : "Nuevo servicio" }}
         </h2>
 
         <form class="space-y-4" @submit.prevent="submitForm">
           <div>
-            <label for="service-nombre" class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted">Nombre del servicio</label>
+            <label
+              for="service-nombre"
+              class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted"
+              >Nombre del servicio</label
+            >
             <input
               id="service-nombre"
               v-model="form.nombre"
@@ -294,13 +360,24 @@ async function removeService(service: ServiceRow) {
               required
               maxlength="120"
               placeholder="Ej. Corte Clásico + Barba"
-              :class="['w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-hidden', fieldErrors.nombre ? 'border-red-500/60 focus:border-red-500' : 'border-line focus:border-gold']"
-            >
-            <p v-if="fieldErrors.nombre" class="mt-1 text-xs text-red-400">{{ fieldErrors.nombre[0] }}</p>
+              :class="[
+                'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-hidden',
+                fieldErrors.nombre
+                  ? 'border-red-500/60 focus:border-red-500'
+                  : 'border-line focus:border-gold',
+              ]"
+            />
+            <p v-if="fieldErrors.nombre" class="mt-1 text-xs text-red-400">
+              {{ fieldErrors.nombre[0] }}
+            </p>
           </div>
 
           <div>
-            <label for="service-categoria" class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted">Categoría</label>
+            <label
+              for="service-categoria"
+              class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted"
+              >Categoría</label
+            >
             <input
               id="service-categoria"
               v-model="form.categoria"
@@ -309,8 +386,13 @@ async function removeService(service: ServiceRow) {
               maxlength="100"
               list="service-categories-list"
               placeholder="Ej. Cortes, Barba, Tratamientos…"
-              :class="['w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-hidden', fieldErrors.categoria ? 'border-red-500/60 focus:border-red-500' : 'border-line focus:border-gold']"
-            >
+              :class="[
+                'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-hidden',
+                fieldErrors.categoria
+                  ? 'border-red-500/60 focus:border-red-500'
+                  : 'border-line focus:border-gold',
+              ]"
+            />
             <datalist id="service-categories-list">
               <option v-for="c in categories" :key="c" :value="c" />
             </datalist>
@@ -326,12 +408,18 @@ async function removeService(service: ServiceRow) {
                 {{ cat }}
               </button>
             </div>
-            <p v-if="fieldErrors.categoria" class="mt-1 text-xs text-red-400">{{ fieldErrors.categoria[0] }}</p>
+            <p v-if="fieldErrors.categoria" class="mt-1 text-xs text-red-400">
+              {{ fieldErrors.categoria[0] }}
+            </p>
           </div>
 
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label for="service-duracion" class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted">Duración (min)</label>
+              <label
+                for="service-duracion"
+                class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted"
+                >Duración (min)</label
+              >
               <input
                 id="service-duracion"
                 v-model.number="form.duracion_min"
@@ -339,12 +427,26 @@ async function removeService(service: ServiceRow) {
                 min="5"
                 max="600"
                 required
-                :class="['w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-hidden', fieldErrors.duracion_min ? 'border-red-500/60 focus:border-red-500' : 'border-line focus:border-gold']"
+                :class="[
+                  'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-hidden',
+                  fieldErrors.duracion_min
+                    ? 'border-red-500/60 focus:border-red-500'
+                    : 'border-line focus:border-gold',
+                ]"
+              />
+              <p
+                v-if="fieldErrors.duracion_min"
+                class="mt-1 text-xs text-red-400"
               >
-              <p v-if="fieldErrors.duracion_min" class="mt-1 text-xs text-red-400">{{ fieldErrors.duracion_min[0] }}</p>
+                {{ fieldErrors.duracion_min[0] }}
+              </p>
             </div>
             <div>
-              <label for="service-precio" class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted">Precio ($ MXN)</label>
+              <label
+                for="service-precio"
+                class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted"
+                >Precio ($ MXN)</label
+              >
               <input
                 id="service-precio"
                 v-model.number="form.precio"
@@ -352,14 +454,25 @@ async function removeService(service: ServiceRow) {
                 step="0.01"
                 min="0"
                 required
-                :class="['w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-hidden', fieldErrors.precio ? 'border-red-500/60 focus:border-red-500' : 'border-line focus:border-gold']"
-              >
-              <p v-if="fieldErrors.precio" class="mt-1 text-xs text-red-400">{{ fieldErrors.precio[0] }}</p>
+                :class="[
+                  'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-hidden',
+                  fieldErrors.precio
+                    ? 'border-red-500/60 focus:border-red-500'
+                    : 'border-line focus:border-gold',
+                ]"
+              />
+              <p v-if="fieldErrors.precio" class="mt-1 text-xs text-red-400">
+                {{ fieldErrors.precio[0] }}
+              </p>
             </div>
           </div>
 
           <div>
-            <label for="service-imagen" class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted">URL de Imagen representativa (opcional)</label>
+            <label
+              for="service-imagen"
+              class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted"
+              >URL de Imagen representativa (opcional)</label
+            >
             <input
               id="service-imagen"
               v-model="form.imagen"
@@ -367,11 +480,15 @@ async function removeService(service: ServiceRow) {
               maxlength="255"
               placeholder="https://... o ruta relativa de imagen"
               class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-hidden"
-            >
+            />
           </div>
 
           <div>
-            <label for="service-descripcion" class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted">Descripción del servicio (opcional)</label>
+            <label
+              for="service-descripcion"
+              class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted"
+              >Descripción del servicio (opcional)</label
+            >
             <textarea
               id="service-descripcion"
               v-model="form.descripcion"
@@ -382,8 +499,14 @@ async function removeService(service: ServiceRow) {
             />
           </div>
 
-          <label class="flex cursor-pointer items-center gap-2 text-sm text-ink">
-            <input v-model="form.activo" type="checkbox" class="h-4 w-4 rounded border-line text-gold focus:ring-gold">
+          <label
+            class="flex cursor-pointer items-center gap-2 text-sm text-ink"
+          >
+            <input
+              v-model="form.activo"
+              type="checkbox"
+              class="h-4 w-4 rounded border-line text-gold focus:ring-gold"
+            />
             <span>Activo (disponible para reserva por clientes)</span>
           </label>
 
@@ -402,7 +525,7 @@ async function removeService(service: ServiceRow) {
               :disabled="saving"
               class="rounded-lg bg-gold px-5 py-2 text-sm font-bold text-black hover:bg-gold-dim disabled:opacity-50"
             >
-              {{ saving ? 'Guardando…' : 'Guardar servicio' }}
+              {{ saving ? "Guardando…" : "Guardar servicio" }}
             </button>
           </div>
         </form>

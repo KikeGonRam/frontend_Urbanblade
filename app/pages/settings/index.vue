@@ -25,6 +25,7 @@ const { apiFetch } = useApi()
 const { data: response, pending, error, refresh } = await useAsyncData(
   'barbershop-settings',
   () => apiFetch<{ data: SettingData }>('/settings'),
+  { lazy: true },
 )
 
 const form = reactive({

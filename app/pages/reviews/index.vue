@@ -41,7 +41,7 @@ const { data: response, pending, error } = await useAsyncData(
       dir: dir.value,
     },
   }),
-  { watch: [barberFilter, ratingFilter, sort, dir] },
+  { watch: [barberFilter, ratingFilter, sort, dir], lazy: true },
 )
 
 const reviews = computed(() => response.value?.data ?? [])

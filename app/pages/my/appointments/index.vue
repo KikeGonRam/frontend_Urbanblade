@@ -50,6 +50,7 @@ const config = useRuntimeConfig()
 const { data: response, pending, error, refresh } = await useAsyncData(
   'my-appointments',
   () => apiFetch<{ data: AppointmentRow[], stats: Stats, next: AppointmentRow | null, cancellation_policy_hours: number }>('/appointments'),
+  { lazy: true },
 )
 const appointments = computed(() => response.value?.data ?? [])
 const stats = computed<Stats>(() => response.value?.stats ?? { total: 0, proximas: 0, completadas: 0, canceladas: 0 })

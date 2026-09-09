@@ -24,6 +24,7 @@ const { apiFetch } = useApi()
 const { data: response, pending, error } = await useAsyncData(
   'raffles-list',
   () => apiFetch<{ data: RaffleRow[], stats: Stats }>('/raffles'),
+  { lazy: true },
 )
 const raffles = computed(() => response.value?.data ?? [])
 const stats = computed<Stats>(() => response.value?.stats ?? { total: 0, reclamados: 0, vigentes: 0 })
