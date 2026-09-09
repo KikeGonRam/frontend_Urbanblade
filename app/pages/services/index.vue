@@ -194,7 +194,7 @@ async function removeService(service: ServiceRow) {
         type="text"
         placeholder="Nombre del servicio…"
         class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-hidden sm:max-w-xs"
-      />
+      >
       <select
         v-model="categoria"
         class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-hidden"
@@ -261,7 +261,7 @@ async function removeService(service: ServiceRow) {
                   :src="service.imagen"
                   :alt="service.nombre"
                   class="h-9 w-9 rounded-lg border border-line object-cover"
-                />
+                >
                 <div
                   v-else
                   class="flex h-9 w-9 items-center justify-center rounded-lg border border-line bg-ink/5 text-xs text-gold"
@@ -366,7 +366,7 @@ async function removeService(service: ServiceRow) {
                   ? 'border-red-500/60 focus:border-red-500'
                   : 'border-line focus:border-gold',
               ]"
-            />
+            >
             <p v-if="fieldErrors.nombre" class="mt-1 text-xs text-red-400">
               {{ fieldErrors.nombre[0] }}
             </p>
@@ -392,7 +392,7 @@ async function removeService(service: ServiceRow) {
                   ? 'border-red-500/60 focus:border-red-500'
                   : 'border-line focus:border-gold',
               ]"
-            />
+            >
             <datalist id="service-categories-list">
               <option v-for="c in categories" :key="c" :value="c" />
             </datalist>
@@ -433,7 +433,7 @@ async function removeService(service: ServiceRow) {
                     ? 'border-red-500/60 focus:border-red-500'
                     : 'border-line focus:border-gold',
                 ]"
-              />
+              >
               <p
                 v-if="fieldErrors.duracion_min"
                 class="mt-1 text-xs text-red-400"
@@ -460,7 +460,7 @@ async function removeService(service: ServiceRow) {
                     ? 'border-red-500/60 focus:border-red-500'
                     : 'border-line focus:border-gold',
                 ]"
-              />
+              >
               <p v-if="fieldErrors.precio" class="mt-1 text-xs text-red-400">
                 {{ fieldErrors.precio[0] }}
               </p>
@@ -480,7 +480,7 @@ async function removeService(service: ServiceRow) {
               maxlength="255"
               placeholder="https://... o ruta relativa de imagen"
               class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-hidden"
-            />
+            >
           </div>
 
           <div>
@@ -506,7 +506,7 @@ async function removeService(service: ServiceRow) {
               v-model="form.activo"
               type="checkbox"
               class="h-4 w-4 rounded border-line text-gold focus:ring-gold"
-            />
+            >
             <span>Activo (disponible para reserva por clientes)</span>
           </label>
 

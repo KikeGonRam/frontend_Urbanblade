@@ -656,7 +656,7 @@ onUnmounted(() => teardownStripe());
                 type="date"
                 required
                 class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
-              />
+              >
             </div>
             <div>
               <label class="mb-1 block text-xs text-muted">Hora</label>
@@ -671,7 +671,7 @@ onUnmounted(() => teardownStripe());
                 type="time"
                 required
                 class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
-              />
+              >
               <select
                 v-else
                 v-model="form.hora_inicio"

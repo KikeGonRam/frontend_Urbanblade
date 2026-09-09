@@ -182,7 +182,7 @@ async function removeUser(user: UserRow) {
         type="text"
         placeholder="Nombre o email…"
         class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink sm:max-w-xs"
-      />
+      >
       <select
         v-model="roleFilter"
         class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
@@ -309,7 +309,7 @@ async function removeUser(user: UserRow) {
                 'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink',
                 fieldErrors.name ? 'border-red-500/60' : 'border-line',
               ]"
-            />
+            >
             <p
               v-if="fieldErrors.name"
               id="user-name-error"
@@ -335,7 +335,7 @@ async function removeUser(user: UserRow) {
                 'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink',
                 fieldErrors.email ? 'border-red-500/60' : 'border-line',
               ]"
-            />
+            >
             <p
               v-if="fieldErrors.email"
               id="user-email-error"
@@ -392,7 +392,7 @@ async function removeUser(user: UserRow) {
                 'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink',
                 fieldErrors.password ? 'border-red-500/60' : 'border-line',
               ]"
-            />
+            >
             <p
               v-if="fieldErrors.password"
               id="user-password-error"
@@ -426,7 +426,7 @@ async function removeUser(user: UserRow) {
                   ? 'border-red-500/60'
                   : 'border-line',
               ]"
-            />
+            >
             <p
               v-if="fieldErrors.password_confirmation"
               id="user-password-confirmation-error"

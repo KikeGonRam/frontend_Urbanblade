@@ -209,7 +209,7 @@ async function downloadReceipt(order: OrderRow) {
         type="text"
         placeholder="Buscar folio…"
         class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink sm:max-w-xs"
-      />
+      >
       <select
         v-model="estadoFilter"
         class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
