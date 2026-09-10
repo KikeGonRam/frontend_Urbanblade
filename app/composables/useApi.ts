@@ -50,6 +50,32 @@ export function useApi() {
     }
   }
 
+  /**
+   * Descarga un archivo binario (zip, PDF) protegido por Bearer token: un
+   * <a href> plano no puede mandar el header Authorization, así que se pide
+   * como blob autenticado y se dispara la descarga via un <a download>
+   * temporal con un object URL. Usado por el respaldo de BD (admin) y la
+   * tarjeta de membresia en PDF (cliente) -- ver
+   * Api\Admin\System\BackupController / Api\Dashboard\MembershipController
+   * en barber.
+   */
+  async function downloadFile(path: string, filename: string): Promise<void> {
+    const blob = await $fetch<Blob>(path, {
+      baseURL: config.public.apiBase,
+      responseType: 'blob',
+      headers: token.value ? { Authorization: `Bearer ${token.value}` } : {},
+    })
+
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    URL.revokeObjectURL(url)
+  }
+
   function useApiFetch<T>(path: string, options: UseFetchOptions<T> = {}) {
     const key = (options.key as string | undefined) ?? buildAutoKey(path, options as Record<string, unknown>)
     return useFetch<T>(path, {
@@ -68,5 +94,5 @@ export function useApi() {
     })
   }
 
-  return { apiFetch, useApiFetch }
+  return { apiFetch, useApiFetch, downloadFile }
 }

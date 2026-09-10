@@ -45,6 +45,31 @@ const RANK: Record<string, number> = {
 const tierClass = computed(() => TIER_CLASS[props.nivel] ?? "mc-vip");
 const rank = computed(() => RANK[props.nivel] ?? 0);
 
+/*
+ * downloadUrl es una ruta de la API protegida por Bearer token (
+ * Api\Dashboard\MembershipController::downloadCard() en barber) -- un
+ * <a href> plano no manda el header Authorization, así que se pide como
+ * blob autenticado (ver useApi().downloadFile) y se dispara la descarga
+ * desde un <a> temporal en vez de navegar directo.
+ */
+const { downloadFile } = useApi();
+const downloading = ref(false);
+const downloadError = ref("");
+
+async function handleDownload() {
+  if (!props.downloadUrl) return;
+
+  downloading.value = true;
+  downloadError.value = "";
+  try {
+    await downloadFile(props.downloadUrl, "tarjeta-urbanblade.pdf");
+  } catch {
+    downloadError.value = "No se pudo descargar la tarjeta.";
+  } finally {
+    downloading.value = false;
+  }
+}
+
 const isFlipped = ref(false);
 const tiltStyle = ref<Record<string, string>>({});
 const glareStyle = ref<Record<string, string>>({});
@@ -191,15 +216,17 @@ onBeforeUnmount(() => {
       <button type="button" class="mc-btn" @click="isFlipped = !isFlipped">
         {{ isFlipped ? "Ver tarjeta" : "Ver QR de socio" }}
       </button>
-      <a
+      <button
         v-if="downloadUrl"
-        :href="downloadUrl"
-        target="_blank"
-        rel="noopener noreferrer"
+        type="button"
         class="mc-btn"
-        >Descargar tarjeta</a
+        :disabled="downloading"
+        @click="handleDownload"
       >
+        {{ downloading ? "Descargando…" : "Descargar tarjeta" }}
+      </button>
     </div>
+    <p v-if="downloadError" role="alert" class="mc-error">{{ downloadError }}</p>
   </div>
 </template>
 
@@ -530,6 +557,17 @@ onBeforeUnmount(() => {
 .mc-btn:hover {
   border-color: rgba(212, 175, 55, 0.6);
   background: rgba(212, 175, 55, 0.1);
+}
+.mc-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.mc-error {
+  margin-top: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #f87171;
+  text-align: center;
 }
 @media (prefers-reduced-motion: reduce) {
   .mc-sweep.mc-front::before,

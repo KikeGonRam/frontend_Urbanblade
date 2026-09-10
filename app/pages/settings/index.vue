@@ -20,13 +20,30 @@ interface SettingData {
   datos_bancarios: { clabe?: string | null, banco?: string | null, beneficiario?: string | null, concepto?: string | null }
 }
 
-const { apiFetch } = useApi()
+const { apiFetch, downloadFile } = useApi()
 
 const { data: response, pending, error, refresh } = await useAsyncData(
   'barbershop-settings',
   () => apiFetch<{ data: SettingData }>('/settings'),
   { lazy: true },
 )
+
+// Respaldo de BD -- puerto de backups.database.download (Blade, sesión web).
+// Ver Api\Admin\System\BackupController::download() en barber.
+const downloadingBackup = ref(false)
+const backupError = ref('')
+
+async function downloadBackup() {
+  downloadingBackup.value = true
+  backupError.value = ''
+  try {
+    await downloadFile('/system/backup', `backup-urbanblade-${new Date().toISOString().slice(0, 10)}.zip`)
+  } catch {
+    backupError.value = 'No se pudo generar el respaldo. Intenta de nuevo.'
+  } finally {
+    downloadingBackup.value = false
+  }
+}
 
 const form = reactive({
   nombre: '', direccion: '', telefono: '', horario_apertura: '', horario_cierre: '', politica_cancelacion: 24,
@@ -228,5 +245,18 @@ async function toggleMaintenance() {
         {{ saving ? 'Guardando…' : 'Guardar cambios' }}
       </button>
     </form>
+
+    <section class="ui-card mt-6 max-w-3xl p-5">
+      <h2 class="mb-1 text-sm font-black uppercase tracking-wide text-ink">Respaldo de la base de datos</h2>
+      <p class="mb-4 text-sm text-muted">Descarga un zip con cada colección exportada en JSON, restaurable con <code>mongoimport</code>.</p>
+      <button
+        type="button" :disabled="downloadingBackup"
+        class="rounded-lg border border-line px-4 py-2 text-sm font-semibold text-muted transition hover:border-gold/40 hover:text-ink disabled:opacity-50"
+        @click="downloadBackup"
+      >
+        {{ downloadingBackup ? 'Generando respaldo…' : 'Descargar respaldo' }}
+      </button>
+      <p v-if="backupError" role="alert" class="mt-2 text-sm text-red-400">{{ backupError }}</p>
+    </section>
   </div>
 </template>
