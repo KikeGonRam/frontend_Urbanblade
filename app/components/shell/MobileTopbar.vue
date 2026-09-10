@@ -3,7 +3,7 @@ const { user } = useAuth()
 </script>
 
 <template>
-  <header class="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-line bg-main/95 px-4 backdrop-blur md:hidden">
+  <header class="ub-mobile-topbar sticky top-0 z-30 flex h-14 items-center justify-between border-b border-line px-4 backdrop-blur md:hidden">
     <NuxtLink to="/dashboard" class="font-analytics text-lg font-semibold text-ink">
       <span class="flex items-center gap-2"><BrandBrandMark class="h-8 w-8" />Urban<span class="text-gold">Blade</span></span>
     </NuxtLink>

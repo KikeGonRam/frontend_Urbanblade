@@ -389,19 +389,9 @@ async function removeProduct(product: ProductRow) {
       </button>
     </section>
 
-    <div
-      v-if="pending"
-      class="flex items-center gap-3 py-12 text-sm text-muted"
-    >
-      <div
-        class="h-5 w-5 animate-spin rounded-full border-2 border-gold border-t-transparent"
-      />
-      <span>Cargando productos…</span>
-    </div>
+    <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando productos…" />
 
-    <p v-else-if="error" class="text-sm text-red-400">
-      No se pudo cargar el inventario.
-    </p>
+    <BrandStatePanel v-else-if="error" mascot="bruno" state="error" tone="danger" title="No se pudo cargar el inventario" description="Inténtalo nuevamente en unos minutos." />
 
     <!-- Tabla de productos -->
     <section v-else class="ui-card overflow-x-auto">
@@ -492,8 +482,8 @@ async function removeProduct(product: ProductRow) {
             </td>
           </tr>
           <tr v-if="!products.length">
-            <td colspan="6" class="px-4 py-12 text-center text-sm text-muted">
-              Sin productos registrados.
+            <td colspan="6" class="px-4 py-6">
+              <BrandStatePanel mascot="nava" state="empty" title="Sin productos registrados" description="Los productos del inventario aparecerán aquí." />
             </td>
           </tr>
         </tbody>

@@ -138,16 +138,9 @@ onBeforeUnmount(() => {
       </button>
     </section>
 
-    <p v-if="pending" class="text-sm text-muted">Cargando productos…</p>
-    <p v-else-if="error" class="text-sm text-red-400">
-      No se pudo cargar el catálogo.
-    </p>
-    <p
-      v-else-if="!products.length"
-      class="rounded-2xl border border-dashed border-line p-12 text-center text-sm text-muted"
-    >
-      Sin productos disponibles por ahora.
-    </p>
+    <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando productos…" />
+    <BrandStatePanel v-else-if="error" mascot="bruno" state="error" tone="danger" title="No se pudo cargar el catálogo" description="Inténtalo nuevamente en unos minutos." />
+    <BrandStatePanel v-else-if="!products.length" mascot="nava" state="empty" title="Sin productos disponibles" description="Vuelve pronto para descubrir nuevos productos de cuidado." />
 
     <section
       v-else

@@ -24,7 +24,7 @@ async function onLogout() {
   >
     <div
       v-if="drawerOpen"
-      class="fixed inset-x-0 bottom-0 z-50 max-h-[80vh] overflow-y-auto rounded-t-2xl border-t border-line bg-panel p-4 md:hidden"
+      class="ub-mobile-drawer fixed inset-x-0 bottom-0 z-50 max-h-[80vh] overflow-y-auto rounded-t-2xl border-t border-line p-4 md:hidden"
     >
       <div class="mx-auto mb-3 h-1 w-10 rounded-full bg-line" />
 

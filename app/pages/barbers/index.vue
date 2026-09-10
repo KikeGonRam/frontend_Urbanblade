@@ -36,11 +36,9 @@ const barbers = computed(() => response.value?.data ?? [])
       <p class="mt-1 text-sm text-muted">Conoce al equipo y revisa su trabajo antes de reservar.</p>
     </header>
 
-    <p v-if="pending" class="text-sm text-muted">Cargando barberos…</p>
-    <p v-else-if="error" class="text-sm text-red-400">No se pudo cargar el catálogo de barberos.</p>
-    <p v-else-if="!barbers.length" class="rounded-2xl border border-dashed border-line p-12 text-center text-sm text-muted">
-      Aún no hay barberos activos.
-    </p>
+    <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando barberos…" />
+    <BrandStatePanel v-else-if="error" mascot="bruno" state="error" tone="danger" title="No se pudo cargar el catálogo" description="Inténtalo nuevamente en unos minutos." />
+    <BrandStatePanel v-else-if="!barbers.length" mascot="nava" state="empty" title="Aún no hay barberos activos" description="El equipo aparecerá aquí cuando esté disponible." />
 
     <div v-else class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
       <NuxtLink

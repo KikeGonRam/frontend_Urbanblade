@@ -10,15 +10,16 @@ function isActive(to: string) {
 
 <template>
   <nav
-    class="fixed inset-x-0 bottom-0 z-30 flex h-16 items-stretch border-t border-line bg-main/95 backdrop-blur md:hidden"
+    class="ub-mobile-bottomnav fixed inset-x-0 bottom-0 z-30 flex h-16 items-stretch border-t border-line backdrop-blur md:hidden"
     aria-label="Navegación principal"
   >
     <NuxtLink
       v-for="navItem in primaryItems"
       :key="navItem.to"
       :to="navItem.implemented ? navItem.to : '#'"
-      class="flex flex-1 flex-col items-center justify-center gap-0.5 text-[11px]"
-      :class="isActive(navItem.to) && navItem.implemented ? 'text-gold' : 'text-muted'"
+      class="ub-mobile-nav-item flex flex-1 flex-col items-center justify-center gap-0.5 text-[11px]"
+      :class="isActive(navItem.to) && navItem.implemented ? 'is-active text-gold' : 'text-muted'"
+      :aria-current="isActive(navItem.to) && navItem.implemented ? 'page' : undefined"
     >
       <ShellNavIcon :paths="navItem.icon" />
       <span class="truncate px-1">{{ navItem.label }}</span>
@@ -26,9 +27,10 @@ function isActive(to: string) {
 
     <button
       type="button"
-      class="flex flex-1 flex-col items-center justify-center gap-0.5 text-[11px]"
-      :class="drawerOpen ? 'text-gold' : 'text-muted'"
+      class="ub-mobile-nav-item flex flex-1 flex-col items-center justify-center gap-0.5 text-[11px]"
+      :class="drawerOpen ? 'is-active text-gold' : 'text-muted'"
       aria-label="Más opciones"
+      :aria-expanded="drawerOpen"
       @click="drawerOpen = !drawerOpen"
     >
       <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">

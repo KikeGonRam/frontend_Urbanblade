@@ -3,12 +3,12 @@ import type { NuxtError } from '#app'
 const props = defineProps<{ error: NuxtError }>()
 const status = computed(() => Number(props.error?.statusCode || 500))
 const profile = computed(() => {
-  if (status.value === 404) return { eyebrow: 'Ruta perdida', title: 'Este corte quedó', accent: 'fuera del mapa', name: 'Nava', image: 'nava-panther.png', message: 'La página que buscas cambió de lugar o ya no está disponible.' }
-  if (status.value === 403) return { eyebrow: 'Área exclusiva', title: 'Acceso', accent: 'reservado', name: 'Bladebot', image: 'bladebot.png', message: 'Tu cuenta no tiene permiso para abrir esta sección.' }
+  if (status.value === 404) return { eyebrow: 'Ruta perdida', title: 'Este corte quedó', accent: 'fuera del mapa', name: 'Nava', image: 'states/nava-lost.webp', message: 'La página que buscas cambió de lugar o ya no está disponible.' }
+  if (status.value === 403) return { eyebrow: 'Área exclusiva', title: 'Acceso', accent: 'reservado', name: 'Bruno', image: 'states/bruno-forbidden.webp', message: 'Tu cuenta no tiene permiso para abrir esta sección.' }
   // Mismo copy que barber's resources/views/errors/maintenance.blade.php
   // (<x-error-page>) -- ver App\Http\Middleware\Api\CheckApiMaintenanceMode.
-  if (status.value === 503) return { eyebrow: 'Mantenimiento programado', title: 'Estamos afinando', accent: 'cada detalle', name: 'Bladebot', image: 'bladebot.png', message: 'UrbanBlade está recibiendo mejoras. Bladebot terminará pronto y podrás continuar con normalidad.' }
-  return { eyebrow: 'Error del sistema', title: 'Estamos arreglando', accent: 'el detalle', name: 'Bruno', image: 'bruno-raven.png', message: 'Ocurrió un fallo inesperado. Inténtalo nuevamente en unos minutos.' }
+  if (status.value === 503) return { eyebrow: 'Mantenimiento programado', title: 'Estamos afinando', accent: 'cada detalle', name: 'Bladebot', image: 'states/bladebot-waiting.webp', message: 'UrbanBlade está recibiendo mejoras. Bladebot terminará pronto y podrás continuar con normalidad.' }
+  return { eyebrow: 'Error del sistema', title: 'Estamos arreglando', accent: 'el detalle', name: 'Bruno', image: 'states/bruno-error.webp', message: 'Ocurrió un fallo inesperado. Inténtalo nuevamente en unos minutos.' }
 })
 function goHome() { clearError({ redirect: '/' }) }
 </script>

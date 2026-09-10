@@ -95,11 +95,9 @@ async function submitComment(work: WorkRow) {
       <p class="mt-1 text-sm text-muted">Los últimos trabajos publicados por nuestros barberos.</p>
     </header>
 
-    <p v-if="pending" class="text-sm text-muted">Cargando…</p>
-    <p v-else-if="error" class="text-sm text-red-400">No se pudo cargar el muro.</p>
-    <p v-else-if="!works.length" class="rounded-2xl border border-dashed border-line p-12 text-center text-sm text-muted">
-      Todavía no hay trabajos publicados.
-    </p>
+    <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando inspiración…" />
+    <BrandStatePanel v-else-if="error" mascot="bruno" state="error" tone="danger" title="No se pudo cargar el muro" description="Inténtalo nuevamente en unos minutos." />
+    <BrandStatePanel v-else-if="!works.length" mascot="nava" state="empty" title="Todavía no hay trabajos publicados" description="Los nuevos estilos del equipo aparecerán aquí." />
 
     <div v-else class="space-y-6">
       <article v-for="work in works" :key="work.id" class="ui-card overflow-hidden">

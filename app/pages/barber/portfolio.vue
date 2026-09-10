@@ -160,12 +160,9 @@ async function remove(work: Work) {
       </div>
     </section>
 
-    <div v-if="pending" class="flex items-center gap-3 py-12 text-sm text-muted">
-      <div class="h-5 w-5 animate-spin rounded-full border-2 border-gold border-t-transparent" />
-      <span>Cargando portafolio…</span>
-    </div>
+    <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando portafolio…" />
 
-    <p v-else-if="error" class="text-sm text-red-400">No se pudo cargar el portafolio.</p>
+    <BrandStatePanel v-else-if="error" mascot="bruno" state="error" tone="danger" title="No se pudo cargar el portafolio" description="Inténtalo nuevamente en unos minutos." />
 
     <section v-else class="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
       <article
@@ -212,12 +209,14 @@ async function remove(work: Work) {
         </div>
       </article>
 
-      <div
+      <BrandStatePanel
         v-if="!works.length"
-        class="ui-card col-span-full py-16 text-center text-sm text-muted"
-      >
-        Aún no has publicado trabajos. Haz clic en "+ Publicar trabajo" para comenzar a mostrar tus cortes.
-      </div>
+        class="col-span-full"
+        mascot="nava"
+        state="empty"
+        title="Aún no has publicado trabajos"
+        description="Usa “Publicar trabajo” para comenzar a mostrar tus cortes."
+      />
     </section>
 
     <!-- Modal para publicar nuevo trabajo -->

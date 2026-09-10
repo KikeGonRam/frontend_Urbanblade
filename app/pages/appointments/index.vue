@@ -414,10 +414,8 @@ onBeforeUnmount(() => {
       >
     </section>
 
-    <p v-if="pending" class="text-sm text-muted">Cargando citas…</p>
-    <p v-else-if="error" class="text-sm text-red-400">
-      No se pudo cargar la lista de citas.
-    </p>
+    <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando citas…" />
+    <BrandStatePanel v-else-if="error" mascot="bruno" state="error" tone="danger" title="No se pudo cargar la lista de citas" description="Inténtalo nuevamente en unos minutos." />
     <p v-if="actionError" role="alert" class="mb-4 text-sm text-red-400">
       {{ actionError }}
     </p>
@@ -486,8 +484,8 @@ onBeforeUnmount(() => {
             </td>
           </tr>
           <tr v-if="!appointments.length">
-            <td colspan="7" class="px-4 py-12 text-center text-sm text-muted">
-              Sin citas que mostrar.
+            <td colspan="7" class="px-4 py-6">
+              <BrandStatePanel mascot="nava" state="empty" title="Sin citas que mostrar" description="Las citas que coincidan con tus filtros aparecerán aquí." />
             </td>
           </tr>
         </tbody>

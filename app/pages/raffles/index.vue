@@ -57,11 +57,9 @@ function statusOf(r: RaffleRow) {
       <div class="ui-card p-4"><p class="text-[10px] font-bold uppercase text-muted">Vigentes</p><p class="mt-1 text-xl font-black text-gold">{{ stats.vigentes }}</p></div>
     </section>
 
-    <p v-if="pending" class="text-sm text-muted">Cargando…</p>
-    <p v-else-if="error" class="text-sm text-red-400">No se pudo cargar el historial de sorteos.</p>
-    <p v-else-if="!raffles.length" class="rounded-2xl border border-dashed border-line p-12 text-center text-sm text-muted">
-      Todavía no hay resultados de sorteos.
-    </p>
+    <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando sorteos…" />
+    <BrandStatePanel v-else-if="error" mascot="bruno" state="error" tone="danger" title="No se pudo cargar el historial de sorteos" description="Inténtalo nuevamente en unos minutos." />
+    <BrandStatePanel v-else-if="!raffles.length" mascot="nava" state="empty" title="Todavía no hay resultados de sorteos" description="Los próximos resultados aparecerán aquí." />
 
     <section v-else class="ui-card overflow-x-auto">
       <table class="w-full text-left text-sm">

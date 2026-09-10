@@ -72,9 +72,9 @@ function currency(n: number) {
       </button>
     </div>
 
-    <p v-if="pending" class="py-20 text-center italic text-muted">Cargando catálogo…</p>
-    <p v-else-if="error" class="py-20 text-center text-sm text-red-400">No se pudo cargar el catálogo de servicios.</p>
-    <p v-else-if="!filtered.length" class="py-20 text-center italic text-muted">No hay servicios disponibles por ahora.</p>
+    <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando catálogo…" />
+    <BrandStatePanel v-else-if="error" mascot="bruno" state="error" tone="danger" title="No se pudo cargar el catálogo" description="Inténtalo nuevamente en unos minutos." />
+    <BrandStatePanel v-else-if="!filtered.length" mascot="nava" state="empty" title="No hay servicios disponibles" description="Vuelve pronto para conocer nuestros próximos servicios." />
 
     <div v-else class="grid grid-cols-1 gap-6 md:grid-cols-3">
       <article v-for="service in filtered" :key="service.id" class="ui-card-premium group p-8 hover:border-gold/40">
