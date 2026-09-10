@@ -30,6 +30,20 @@ export function useApi() {
     await navigateTo('/login')
   }
 
+  /**
+   * App\Http\Middleware\Api\CheckApiMaintenanceMode responde 503 con
+   * {maintenance: true} cuando el modo mantenimiento está activo y quien
+   * llama no es administrador. Reusa la página de error global (mismo
+   * mascota/copy que barber's errors.maintenance.blade.php) en vez de
+   * dejar que cada página maneje su propio estado de error para este caso.
+   */
+  function isMaintenanceResponse(error: unknown): boolean {
+    const err = error as { statusCode?: number, data?: { maintenance?: boolean }, response?: { status?: number, _data?: { maintenance?: boolean } } }
+
+    return (err?.statusCode === 503 || err?.response?.status === 503)
+      && (err?.data?.maintenance === true || err?.response?._data?.maintenance === true)
+  }
+
   async function apiFetch<T>(path: string, options: Record<string, unknown> = {}): Promise<T> {
     try {
       return await $fetch<T>(path, {
@@ -41,6 +55,16 @@ export function useApi() {
         },
       })
     } catch (error: unknown) {
+      if (isMaintenanceResponse(error)) {
+        // showError(), no un throw plano: la mayoría de las llamadas viven
+        // dentro de useAsyncData(), que atraparía un throw normal en su
+        // propio `error` ref en vez de dejarlo llegar a app/error.vue.
+        // showError() fuerza la página de error global desde cualquier
+        // composable, sin importar quién la haya llamado.
+        showError(createError({ statusCode: 503, statusMessage: 'Mantenimiento', fatal: true }))
+        throw error
+      }
+
       if ((error as { statusCode?: number; response?: { status?: number } })?.statusCode === 401
         || (error as { response?: { status?: number } })?.response?.status === 401) {
         await handleUnauthorized()
@@ -87,6 +111,11 @@ export function useApi() {
         ...(options.headers as Record<string, string> | undefined),
       },
       onResponseError({ response }) {
+        if (response.status === 503 && (response._data as { maintenance?: boolean } | undefined)?.maintenance === true) {
+          showError(createError({ statusCode: 503, statusMessage: 'Mantenimiento', fatal: true }))
+
+          return
+        }
         if (response.status === 401) {
           void handleUnauthorized()
         }

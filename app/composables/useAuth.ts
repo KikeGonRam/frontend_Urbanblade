@@ -143,8 +143,17 @@ export function useAuth() {
       user.value = data.user;
 
       return data.user;
-    } catch {
-      // Token inválido/expirado — limpiar sesión local.
+    } catch (error: unknown) {
+      // 503 = modo mantenimiento (App\Http\Middleware\Api\
+      // CheckApiMaintenanceMode) -- el token sigue siendo válido, no hay
+      // que cerrar la sesión local por esto. showError() ya se encargó de
+      // mostrar la página de mantenimiento global.
+      const err = error as { statusCode?: number };
+      if (err?.statusCode === 503) {
+        return user.value;
+      }
+
+      // Cualquier otro error (token inválido/expirado) — limpiar sesión local.
       token.value = null;
       user.value = null;
 
