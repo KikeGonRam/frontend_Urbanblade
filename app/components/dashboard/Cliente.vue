@@ -292,29 +292,37 @@ const visitChartOptions = {
           </div>
         </div>
 
-        <div
-          class="grid grid-cols-2 gap-2 opacity-50 sm:flex sm:flex-wrap xl:justify-end"
-        >
-          <span
-            class="cursor-not-allowed rounded-xl border border-ink/10 bg-ink/[0.04] px-4 py-3 text-center text-[10px] font-black uppercase tracking-widest text-ink/40"
-            title="Próximamente"
-            >Reservar</span
+        <!--
+          Antes 4 <span> deshabilitados con title="Próximamente" -- se
+          escribieron antes de que /my/appointments, /barbers y /store
+          existieran y nadie los actualizó al terminarse esas páginas.
+          Corregido 2026-09-09.
+        -->
+        <div class="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap xl:justify-end">
+          <NuxtLink
+            to="/my/appointments"
+            class="rounded-xl border border-ink/10 bg-ink/[0.04] px-4 py-3 text-center text-[10px] font-black uppercase tracking-widest text-ink/70 transition hover:border-gold/30 hover:text-ink"
           >
-          <span
-            class="cursor-not-allowed rounded-xl border border-ink/10 bg-ink/[0.04] px-4 py-3 text-center text-[10px] font-black uppercase tracking-widest text-ink/40"
-            title="Próximamente"
-            >Mis citas</span
+            Reservar
+          </NuxtLink>
+          <NuxtLink
+            to="/my/appointments"
+            class="rounded-xl border border-ink/10 bg-ink/[0.04] px-4 py-3 text-center text-[10px] font-black uppercase tracking-widest text-ink/70 transition hover:border-gold/30 hover:text-ink"
           >
-          <span
-            class="cursor-not-allowed rounded-xl border border-ink/10 bg-ink/[0.04] px-4 py-3 text-center text-[10px] font-black uppercase tracking-widest text-ink/40"
-            title="Próximamente"
-            >Barberos</span
+            Mis citas
+          </NuxtLink>
+          <NuxtLink
+            to="/barbers"
+            class="rounded-xl border border-ink/10 bg-ink/[0.04] px-4 py-3 text-center text-[10px] font-black uppercase tracking-widest text-ink/70 transition hover:border-gold/30 hover:text-ink"
           >
-          <span
-            class="cursor-not-allowed rounded-xl border border-ink/10 bg-ink/[0.04] px-4 py-3 text-center text-[10px] font-black uppercase tracking-widest text-ink/40"
-            title="Próximamente"
-            >Tienda</span
+            Barberos
+          </NuxtLink>
+          <NuxtLink
+            to="/store"
+            class="rounded-xl border border-ink/10 bg-ink/[0.04] px-4 py-3 text-center text-[10px] font-black uppercase tracking-widest text-ink/70 transition hover:border-gold/30 hover:text-ink"
           >
+            Tienda
+          </NuxtLink>
         </div>
       </div>
     </section>
