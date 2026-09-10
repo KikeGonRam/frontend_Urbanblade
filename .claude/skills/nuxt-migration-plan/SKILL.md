@@ -206,7 +206,10 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
    barbero). `components/dashboard/{Cliente,MembershipCard}.vue` —
    `MembershipCard` portado casi verbatim (tilt 3D, flip a QR, contador de
    puntos, confetti al subir de nivel), `member.downloadUrl` siempre
-   `null` (la tarjeta PDF vive en una ruta Blade que no existe aquí).
+   `null` (la tarjeta PDF vivía en una ruta Blade que no existía aquí --
+   **actualizado 2026-09-09**: ya no es así, `downloadUrl` apunta a
+   `GET /api/v1/dashboard/membership/card` y el botón "Descargar tarjeta"
+   dispara una descarga real via `useApi().downloadFile()`).
    Verificado en vivo con la cuenta cliente real, ambos temas — QR real
    generado por `MemberCardService`, flip de tarjeta, anillo de progreso.
    Dos bugs reales encontrados y corregidos:
@@ -225,7 +228,10 @@ cambia cómo reciben sus props/datos): `AppLayout.vue`, `DashboardHeader.vue`,
      actividad reciente, `analysisInsights()` portado tal cual — mismo
      cache key `dashboard_insights` que la versión Inertia, comparten el
      cómputo). Se omiten a propósito `maintenanceMode` y los botones de
-     mantenimiento/backup del header (rutas Blade que no existen aquí).
+     mantenimiento/backup del header (rutas Blade que no existían aquí en
+     ese momento -- **actualizado 2026-09-09**: ambos ya viven en
+     `/settings`, no en el header del dashboard -- toggle de mantenimiento
+     y "Descargar respaldo" contra `GET /api/v1/system/backup`).
      Las predicciones IA NO pasan por este endpoint: se llaman directo
      desde el frontend a `/api/v1/admin/predictions/*` con el Bearer
      token real que ya trae la sesión — más simple que el puente
@@ -1144,3 +1150,49 @@ conocidas del lado Nuxt — ni un solo ítem de la nav queda marcado "Próx.".
 Lo que queda en `barber` como Blade es una decisión consciente (páginas sin
 equivalente en Nuxt y sin planes de tenerlo), no deuda técnica de la
 migración.
+
+## Continuación (2026-09-09) — el resto sí se migró
+
+El dueño del proyecto pidió, en una sesión posterior, que `barber` quedara
+"ya puro servidor" — sin ninguna página propia, ni siquiera las que este
+reporte había cerrado como "decisión consciente". Se migró lo que faltaba,
+en este orden:
+
+1. **Notificaciones** (`pages/notifications/index.vue`, nueva): lista
+   paginada, marcar una/todas como leídas, eliminar con confirmación
+   (`useConfirm()`), preferencias por canal (app/correo/SMS/WhatsApp/push/
+   promociones). Consume `Api\Notification\NotificationController`, que ya
+   existía completo — sin cambios de backend. Agregada a la sección
+   "principal" de `useNavigation.ts`, visible para todos los roles.
+2. **Catálogo público** (`pages/servicios/index.vue`,
+   `pages/equipo/{index,[slug]}.vue`, nuevas, layout `public` nuevo —
+   nav+footer ligeros, sin sidebar de dashboard): consumen
+   `CatalogController::services()`/`barbers()`/`showBarber()`, los mismos
+   que ya usaba la landing. `GET barbers/{barber}` salió del grupo
+   `mobile.auth` en `barber` (era el único de los tres catálogos que
+   todavía exigía token) — `POST barbers/{barber}/review` se quedó
+   protegido. Las tarjetas de "Los Maestros" en la landing ahora enlazan al
+   perfil público real en vez de mandar directo a `/register`.
+3. **Perfil, respaldo de BD, tarjeta de membresía**: `pages/profile.vue` YA
+   tenía paridad completa desde antes (ver Fase 3/4 arriba) — solo hacía
+   falta que `barber` dejara de exigir su propia sesión web para llegar
+   ahí. Respaldo y tarjeta sí necesitaron construirse: dos endpoints nuevos
+   en `barber` (`GET /api/v1/system/backup`, admin; `GET
+   /api/v1/dashboard/membership/card`, cliente), un botón "Descargar
+   respaldo" nuevo en `pages/settings/index.vue`, y el botón "Descargar
+   tarjeta" de `MembershipCard.vue` (antes un `<a href>` muerto con
+   `downloadUrl` siempre `null`) ahora funcional. Ninguno de los dos puede
+   ser un `<a href>` plano -- el token va en el header `Authorization`, no
+   en la URL -- así que se agregó `useApi().downloadFile(path, filename)`:
+   pide el archivo como blob autenticado y dispara la descarga desde un
+   `<a>` temporal con `URL.createObjectURL()`.
+
+Con esto, `barber` quedó reducido a: la landing pública (`/`),
+`routes/auth.php` (login/registro/recuperación/verificación), y el widget
+del chatbot (`chatbot.query` público, `chatbot.clear-history` con sesión —
+ver guardrail #19 en el skill de `barber` para el detalle completo,
+incluyendo el hallazgo de que `chatbot.history`/`chatbot.profile`/
+`chatbot.learning-stats` están huérfanas — nada las llama, Nuxt usa sus
+propios endpoints de `chatbot.query`/`chatbot.history`/`chatbot.clear-history`
+via API en su lugar). Ninguna de esas tres cosas restantes tiene un plan de
+migración activo todavía.
