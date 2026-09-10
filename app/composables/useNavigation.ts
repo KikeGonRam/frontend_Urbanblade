@@ -48,6 +48,7 @@ const ICONS: Record<string, string> = {
   reviews: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
   raffles: '<circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/>',
   system: '<rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>',
+  notifications: '<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>',
 }
 
 /** Único path real hoy — todo lo demás se muestra pero deshabilitado ("Próximamente") hasta su fase. */
@@ -58,7 +59,7 @@ const IMPLEMENTED_PATHS = new Set([
   '/barber/agenda', '/barber/portfolio', '/barber/schedule', '/barber/profile',
   '/my/appointments', '/barbers', '/my/invoices',
   '/campaigns', '/raffles', '/logs', '/settings', '/reports', '/analytics',
-  '/social/feed', '/reviews', '/system',
+  '/social/feed', '/reviews', '/system', '/notifications',
 ])
 
 function item(label: string, to: string, icon: string, primary = false, badge: number | null = null): NavItem {
@@ -96,6 +97,7 @@ export function useNavigation() {
         // El muro es editorial/operativo. Ingeniero ve telemetría agregada
         // cuando exista, nunca publicaciones ni acciones del feed.
         ...(isEngineer.value ? [] : [item('Muro Inspiración', '/social/feed', 'wall')]),
+        item('Notificaciones', '/notifications', 'notifications'),
       ],
     })
 
