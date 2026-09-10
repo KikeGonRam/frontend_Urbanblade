@@ -7,12 +7,12 @@
  * 4 temas del selector en vez de quedar siempre en negro.
  *
  * /services y /barbers (CatalogController) son públicas sin token -- se
- * llaman igual que en cualquier otra página, sin auth. No hay todavía una
- * página pública de detalle de servicio/barbero en Nuxt (el catálogo público
- * de Blade -- /servicios, /equipo/{barber} -- sigue vivo ahí para eso), así
- * que todo CTA de "ver más" de esta landing manda a /register en vez de a
- * una ruta que no existe o que exige rol admin (/services aquí es solo
- * admin, /barbers/[slug] exige sesión).
+ * llaman igual que en cualquier otra página, sin auth. El catálogo público
+ * completo vive en /servicios y /equipo(/[slug]) (paridad con Blade's
+ * /servicios y /equipo/{barber}, cerrada 2026-09-09) -- las tarjetas de
+ * barbero de "Los Maestros" enlazan ahí. El catálogo de servicios de esta
+ * landing sigue siendo solo la vista previa inline (6 primeros); "ver más"
+ * manda a /register porque reservar sí exige cuenta.
  */
 useSeoMeta({
   title: 'UrbanBlade — Elite Grooming Studio',
@@ -396,8 +396,8 @@ onBeforeUnmount(() => {
             <h2 class="text-4xl font-black uppercase tracking-tight text-ink">Los <span class="text-gold">Maestros</span></h2>
             <p class="mt-2 text-sm text-muted">Arquitectos de la imagen masculina</p>
           </div>
-          <NuxtLink to="/register" class="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-gold transition-colors hover:text-ink">
-            Únete y conócelos <span>&rarr;</span>
+          <NuxtLink to="/equipo" class="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-gold transition-colors hover:text-ink">
+            Ver equipo completo <span>&rarr;</span>
           </NuxtLink>
         </div>
 
@@ -408,7 +408,7 @@ onBeforeUnmount(() => {
           <NuxtLink
             v-for="(barber, k) in barbers" :key="barber.id"
             v-reveal
-            to="/register"
+            :to="`/equipo/${barber.slug}`"
             class="barber-card reveal group relative block"
             :style="{ transitionDelay: `${k * 120}ms` }"
           >
