@@ -1194,5 +1194,27 @@ ver guardrail #19 en el skill de `barber` para el detalle completo,
 incluyendo el hallazgo de que `chatbot.history`/`chatbot.profile`/
 `chatbot.learning-stats` están huérfanas — nada las llama, Nuxt usa sus
 propios endpoints de `chatbot.query`/`chatbot.history`/`chatbot.clear-history`
-via API en su lugar). Ninguna de esas tres cosas restantes tiene un plan de
-migración activo todavía.
+via API en su lugar).
+
+**Cierre real, mismo día más tarde**: el dueño del proyecto pidió retirar
+también la landing y `routes/auth.php` -- confirmando primero que Nuxt
+tenía paridad real, no solo "se parece". Resultó que `frontend-urban`
+nunca dependió de la sesión web de `barber` para nada: login/registro/
+logout (`Api\Auth\AuthController`), login social con Google
+(`Api\Auth\SocialAuthController`, ya redirigía a
+`frontend_url/auth/callback`) y recuperación de contraseña (el correo ya
+apuntaba directo a `frontend_url/reset-password`) fueron siempre Bearer
+token puro. `barber` quedó como API pura, sin ninguna página Blade real —
+ver guardrail #19 en el skill de `barber` para el detalle completo.
+
+**De paso, un bug real encontrado al revisar "¿el modo mantenimiento
+protege sin bloquear al admin?"**: `CheckMaintenanceMode` (Blade) nunca
+corrió sobre `api/*` -- activar el toggle en `/settings` no tenía ningún
+efecto real sobre Nuxt. Se agregó `App\Http\Middleware\Api\
+CheckApiMaintenanceMode` en `barber` (503 a cualquier no-administrador) y,
+del lado de aquí, `useApi()` ahora detecta ese 503 y llama `showError()`
+para mostrar `app/error.vue` (mismo copy/mascota Bladebot que
+`errors/maintenance.blade.php`) -- y se corrigió un bug real en
+`useAuth().fetchMe()`, que usaba su propio `$fetch` fuera de `useApi()` y
+trataba ese 503 como "token inválido", cerrando la sesión del cliente en
+vez de solo mostrarle la pantalla de mantenimiento.
