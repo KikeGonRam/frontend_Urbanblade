@@ -55,7 +55,7 @@ const ICONS: Record<string, string> = {
 const IMPLEMENTED_PATHS = new Set([
   '/dashboard', '/appointments', '/appointments/calendar', '/clients', '/payments',
   '/orders', '/store', '/cart', '/my/orders', '/inventory/products', '/inventory/movements',
-  '/services', '/users',
+  '/services', '/users', '/barbers/manage',
   '/barber/agenda', '/barber/portfolio', '/barber/schedule', '/barber/profile',
   '/my/appointments', '/barbers', '/my/invoices',
   '/campaigns', '/raffles', '/logs', '/settings', '/reports', '/analytics',
@@ -124,7 +124,7 @@ export function useNavigation() {
         title: 'Gestión',
         collapsible: true,
         items: [
-          item('Barberos', '/barbers', 'barbers'),
+          item('Barberos', '/barbers/manage', 'barbers'),
           item('Reseñas', '/reviews', 'reviews'),
           item('Usuarios', '/users', 'users'),
           item('Servicios', '/services', 'services'),

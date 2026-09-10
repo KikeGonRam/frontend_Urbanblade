@@ -4,6 +4,10 @@
   <img src="docs/assets/landing.png" alt="Landing de UrbanBlade" width="1000" />
 </p>
 
+<p align="center">
+  <a href="public/video/UrbanBlade.mp4"><strong>▶ Ver presentación de UrbanBlade (8 segundos)</strong></a>
+</p>
+
 Frontend real de UrbanBlade (barbería): Nuxt 4, consume la API JSON del repositorio
 hermano [`barber`](https://github.com/KikeGonRam/barber) (Laravel 13 + MongoDB) por
 Bearer token propio (`mobile_api_tokens`, **no** Sanctum). Aquí viven los 4 dashboards
