@@ -19,6 +19,20 @@ export default <Config>{
     './pages/**/*.vue',
   ],
 
+  /*
+   * BrandMascot arma sus modificadores por interpolación
+   * (`brand-mascot--${size}` / `brand-mascot--${state}`) y el escáner de
+   * Tailwind solo ve clases literales: sin esto poda esas reglas de
+   * @layer components y la mascota queda SIN TAMAÑO, estirándose al ancho
+   * de su contenedor. Detectado el 2026-09-11 en la pantalla de cita
+   * confirmada, donde la imagen medía 1151 px de alto y empujaba el código
+   * de la cita fuera de pantalla; afectaba igual a todos los estados
+   * vacíos/de error que usan BrandStatePanel.
+   */
+  safelist: [
+    { pattern: /^brand-mascot--(sm|md|lg|idle|welcome|waiting|success|empty|forbidden|lost|error)$/ },
+  ],
+
   theme: {
     extend: {
       fontFamily: {
