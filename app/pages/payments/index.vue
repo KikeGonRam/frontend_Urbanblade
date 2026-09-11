@@ -253,7 +253,7 @@ const preview = computed(() =>
   }),
 );
 
-async function openCharge() {
+async function openCharge(preselectId = "") {
   form.appointmentId = "";
   form.propina = 0;
   form.puntosCanjear = 0;
@@ -270,12 +270,31 @@ async function openCharge() {
       "/appointments/chargeable",
     );
     chargeableAppointments.value = res.data;
+
+    // Deep link "Cobrar" desde la agenda (/payments?cita=<id>): solo
+    // preselecciona si la cita sigue siendo cobrable según el backend; si no
+    // aparece en la lista, el selector queda vacío en vez de fingir un dato.
+    if (preselectId && res.data.some((a) => a.id === preselectId)) {
+      form.appointmentId = preselectId;
+      selectAppointment();
+    }
   } catch {
     chargeableAppointments.value = [];
   } finally {
     loadingChargeable.value = false;
   }
 }
+
+/*
+ * Entrada desde la agenda: /payments?cita=<id> abre el modal de cobro con esa
+ * cita ya elegida. Antes había que abrir "Cobrar" y buscarla a mano en el
+ * selector, aunque se viniera de su propia fila.
+ */
+const route = useRoute();
+onMounted(() => {
+  const cita = typeof route.query.cita === "string" ? route.query.cita : "";
+  if (cita) openCharge(cita);
+});
 
 function selectAppointment() {
   form.puntosCanjear = 0;
@@ -447,7 +466,7 @@ onUnmounted(() => teardownStripe());
         <button
           type="button"
           class="rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-black hover:bg-gold-dim"
-          @click="openCharge"
+          @click="openCharge()"
         >
           + Nuevo Cobro
         </button>

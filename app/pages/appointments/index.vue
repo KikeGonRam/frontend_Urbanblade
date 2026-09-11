@@ -55,6 +55,37 @@ const ESTADO_CLASS: Record<string, string> = {
 };
 const ESTADOS = Object.keys(ESTADO_LABEL);
 
+/*
+ * Espejo de AppointmentStatusService::TRANSITIONS del backend, que sigue
+ * siendo la autoridad: esto solo decide qué botones ofrecer para no mostrar
+ * acciones que el servidor va a rechazar. Si el 422 llega igual, se muestra
+ * su mensaje tal cual.
+ */
+const TRANSICIONES: Record<string, string[]> = {
+  pendiente: ["confirmada", "cancelada"],
+  confirmada: ["en_proceso", "completada", "no_asistio", "cancelada"],
+  en_proceso: ["completada", "cancelada"],
+  completada: [],
+  cancelada: [],
+  no_asistio: [],
+};
+// Verbo de la acción, distinto de la etiqueta del estado: se lee mejor en un
+// botón ("Iniciar" en vez de "En Proceso").
+const ACCION_LABEL: Record<string, string> = {
+  confirmada: "Confirmar",
+  en_proceso: "Iniciar",
+  completada: "Completar",
+  no_asistio: "No asistió",
+  cancelada: "Cancelar",
+};
+// Estados desde los que el backend permite cobrar
+// (AppointmentStatusService::CHARGEABLE).
+const COBRABLES = ["confirmada", "en_proceso", "completada"];
+
+function accionesDe(estado: string) {
+  return (TRANSICIONES[estado] ?? []).filter((e) => e !== "cancelada");
+}
+
 const { apiFetch } = useApi();
 const { confirm } = useConfirm();
 const route = useRoute();
@@ -305,6 +336,36 @@ async function submitForm() {
   }
 }
 
+/*
+ * Cambio de estado por PATCH /appointments/{code}/status, el endpoint de la
+ * máquina de estados. Antes esta pantalla mandaba un PUT con el payload
+ * completo de la cita para cualquier cambio, y como ese endpoint valida
+ * 'fecha' => after_or_equal:today, era imposible marcar "no asistió",
+ * "completada" o incluso cancelar una cita del día anterior: siempre
+ * respondía 422 por la fecha. El PATCH solo toca el estado.
+ */
+const statusPending = ref<string | null>(null);
+
+async function changeStatus(appt: AppointmentRow, estado: string) {
+  actionError.value = "";
+  statusPending.value = `${appt.id}:${estado}`;
+  try {
+    await apiFetch(`/appointments/${appt.code}/status`, {
+      method: "PATCH",
+      body: { estado },
+    });
+    await refresh();
+  } catch (err: unknown) {
+    // El backend es la autoridad de la máquina de estados: su 422 explica
+    // exactamente por qué no se pudo, así que se muestra literal.
+    actionError.value =
+      (err as { data?: { message?: string } })?.data?.message ??
+      "No se pudo actualizar el estado de la cita.";
+  } finally {
+    statusPending.value = null;
+  }
+}
+
 async function cancelAppointment(appt: AppointmentRow) {
   const accepted = await confirm({
     title: "Cancelar cita",
@@ -314,26 +375,7 @@ async function cancelAppointment(appt: AppointmentRow) {
   });
   if (!accepted) return;
 
-  actionError.value = "";
-  try {
-    await apiFetch(`/appointments/${appt.code}`, {
-      method: "PUT",
-      body: {
-        client_id: appt.client.id,
-        barber_id: appt.barber.id,
-        service_id: appt.service.id,
-        fecha: appt.fecha,
-        hora_inicio: appt.hora_inicio?.slice(0, 5),
-        estado: "cancelada",
-        notas: appt.notas ?? undefined,
-      },
-    });
-    await refresh();
-  } catch (err: unknown) {
-    actionError.value =
-      (err as { data?: { message?: string } })?.data?.message ??
-      "No se pudo cancelar la cita.";
-  }
+  await changeStatus(appt, "cancelada");
 }
 
 // Deep-link desde el modal de Calendar.vue: /appointments?edit={id} abre el
@@ -462,20 +504,41 @@ onBeforeUnmount(() => {
               >
             </td>
             <td class="px-4 py-3">
-              <div class="flex justify-end gap-2">
+              <div class="flex flex-wrap justify-end gap-2">
+                <!-- Acciones del día: una sola pulsación por transición, en
+                     vez de abrir el formulario completo para mover el estado. -->
+                <button
+                  v-for="destino in accionesDe(appt.estado)"
+                  :key="destino"
+                  type="button"
+                  class="min-h-9 rounded-lg border border-gold/30 px-3 py-1 text-xs font-bold text-gold transition-colors hover:bg-gold/10 disabled:opacity-50"
+                  :disabled="statusPending === `${appt.id}:${destino}`"
+                  @click="changeStatus(appt, destino)"
+                >
+                  {{
+                    statusPending === `${appt.id}:${destino}`
+                      ? "…"
+                      : ACCION_LABEL[destino]
+                  }}
+                </button>
+                <NuxtLink
+                  v-if="COBRABLES.includes(appt.estado)"
+                  :to="`/payments?cita=${appt.id}`"
+                  class="flex min-h-9 items-center rounded-lg border border-emerald-500/30 px-3 py-1 text-xs font-bold text-emerald-300 transition-colors hover:bg-emerald-500/10"
+                >
+                  Cobrar
+                </NuxtLink>
                 <button
                   type="button"
-                  class="rounded-lg border border-line px-3 py-1 text-xs text-muted hover:text-ink"
+                  class="min-h-9 rounded-lg border border-line px-3 py-1 text-xs text-muted hover:text-ink"
                   @click="openEdit(appt)"
                 >
                   Editar
                 </button>
                 <button
-                  v-if="
-                    appt.estado !== 'cancelada' && appt.estado !== 'completada'
-                  "
+                  v-if="TRANSICIONES[appt.estado]?.includes('cancelada')"
                   type="button"
-                  class="rounded-lg border border-red-500/20 px-3 py-1 text-xs text-red-400 hover:bg-red-500/10"
+                  class="min-h-9 rounded-lg border border-red-500/20 px-3 py-1 text-xs text-red-400 hover:bg-red-500/10"
                   @click="cancelAppointment(appt)"
                 >
                   Cancelar
