@@ -463,6 +463,12 @@ onUnmounted(() => teardownStripe());
             >{{ pendingCount }}</span
           >
         </NuxtLink>
+        <NuxtLink
+          to="/payments/corte"
+          class="flex items-center rounded-lg border border-line px-4 py-2 text-sm font-semibold text-muted transition-colors hover:border-gold/40 hover:text-gold"
+        >
+          Corte de caja
+        </NuxtLink>
         <button
           type="button"
           class="rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-black hover:bg-gold-dim"

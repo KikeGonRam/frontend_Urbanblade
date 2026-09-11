@@ -53,7 +53,7 @@ const ICONS: Record<string, string> = {
 
 /** Único path real hoy — todo lo demás se muestra pero deshabilitado ("Próximamente") hasta su fase. */
 const IMPLEMENTED_PATHS = new Set([
-  '/dashboard', '/appointments', '/appointments/calendar', '/clients', '/payments',
+  '/dashboard', '/appointments', '/appointments/calendar', '/clients', '/payments', '/payments/corte',
   '/orders', '/store', '/cart', '/my/orders', '/inventory/products', '/inventory/movements',
   '/services', '/users', '/barbers/manage',
   '/barber/agenda', '/barber/portfolio', '/barber/schedule', '/barber/profile',
