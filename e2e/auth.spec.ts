@@ -71,7 +71,10 @@ test("un cliente con el perfil incompleto va a completarlo, no al dashboard", as
   await page.locator("#password").fill("password");
   await page.getByRole("button", { name: "Ingresar" }).click();
 
-  await expect(page).toHaveURL(/\/complete-profile$/);
+  // useAuthReturn().afterLogin() ahora agrega ?redirect=<destino original>
+  // a /complete-profile, para poder mandar de vuelta ahí (p. ej. terminar de
+  // reservar) en vez de siempre caer a /dashboard al completar el perfil.
+  await expect(page).toHaveURL(/\/complete-profile(\?|$)/);
 });
 
 test("el registro por correo lleva directo a completar el perfil", async ({
@@ -92,7 +95,10 @@ test("el registro por correo lleva directo a completar el perfil", async ({
   await page.getByRole("checkbox").check();
   await page.getByRole("button", { name: "Crear mi cuenta" }).click();
 
-  await expect(page).toHaveURL(/\/complete-profile$/);
+  // useAuthReturn().afterLogin() ahora agrega ?redirect=<destino original>
+  // a /complete-profile, para poder mandar de vuelta ahí (p. ej. terminar de
+  // reservar) en vez de siempre caer a /dashboard al completar el perfil.
+  await expect(page).toHaveURL(/\/complete-profile(\?|$)/);
 });
 
 test("el acceso con Google apunta al redirect del backend", async ({

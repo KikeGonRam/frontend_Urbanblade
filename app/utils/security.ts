@@ -12,6 +12,12 @@ export function getSafeRedirectUrl(target: unknown, fallback = '/dashboard'): st
   // Prohibir protocolos explícitos, pseudo-protocolos javascript: y URLs relativas de protocolo (//ejemplo.com)
   if (
     clean.startsWith('//') ||
+    // Los caracteres de control aqui son DELIBERADOS, no un descuido: bloquea
+    // colar un tab dentro de javascript: o meter saltos de linea/NUL en la redireccion
+    // para evadir los startsWith() de abajo. no-control-regex existe para
+    // cazar control chars accidentales, no este caso.
+    // eslint-disable-next-line no-control-regex
+    /[\\\u0000-\u0020\u007f]/.test(clean) ||
     clean.includes('://') ||
     clean.toLowerCase().startsWith('javascript:') ||
     clean.toLowerCase().startsWith('data:')

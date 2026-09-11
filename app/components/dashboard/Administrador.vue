@@ -65,6 +65,7 @@ interface AdminData {
     fecha: string;
     cliente: string;
     barberoInicial: string;
+    cliente_avatar_url?: string | null;
   }>;
   insights: Array<{ titulo: string; dato: string; detalle: string }>;
   sparkHighlights: DashboardInsight[];
@@ -442,7 +443,8 @@ onMounted(async () => {
       ? fmtMoney(incomeRes.data.predicted_income)
       : "N/A";
     appointmentForecast.value = apptRes.data?.predicted_appointments ?? "N/A";
-    aiConfidence.value = "72%";
+    // La API no expone una confianza estadística validada; no inventar un porcentaje.
+    aiConfidence.value = "No validada";
     aiInsights.value = Object.values(insightsRes.data ?? {});
   } catch {
     incomeForecast.value = "—";
@@ -914,11 +916,7 @@ onMounted(async () => {
                 :key="appt.id"
                 class="flex items-center gap-3"
               >
-                <div
-                  class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-ink/[0.06] bg-ink/[0.04] text-[10px] font-black text-gold"
-                >
-                  {{ appt.barberoInicial }}
-                </div>
+                <UiAvatar :src="appt.cliente_avatar_url" :name="appt.cliente" />
                 <div class="min-w-0 flex-1">
                   <p class="truncate text-[11px] font-bold text-ink">
                     {{ appt.cliente }}

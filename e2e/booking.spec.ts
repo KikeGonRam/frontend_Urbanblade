@@ -1,31 +1,23 @@
 import { expect, test, type Page } from "@playwright/test";
 
 /**
- * "Reserva" es uno de los recorridos críticos que pide la Fase 6, y hasta
- * ahora no se podía probar porque no existía: el backend sí acepta que un
- * cliente cree su propia cita (AppointmentController::store() tiene una rama
- * explícita para el rol cliente), pero el frontend solo exponía la creación
- * en la página de staff. /my/appointments únicamente reagendaba y cancelaba,
- * y la ficha del barbero era un callejón sin salida.
+ * "Reserva" es uno de los recorridos críticos que pide la Fase 6. El
+ * formulario original (<select> de barbero/servicio/hora dentro de un
+ * <form>) se reemplazó por BookingWizard (app/components/booking/Wizard.vue),
+ * el mismo componente por pasos que usa /reservar: aquí se abre embebido en
+ * un modal desde /my/appointments. Estas pruebas se reescribieron para
+ * interactuar con esa UI de botones en vez de <select>, conservando la misma
+ * intención de cada una.
  *
  * Los catálogos (barberos/servicios) los sirve el mock de SSR
- * (e2e/support/mock-api.mjs); aquí solo se intercepta el POST, que es lo que
- * cambia entre una prueba y otra.
+ * (e2e/support/mock-api.mjs); aquí solo se intercepta el POST o
+ * /availability/slots, que es lo que cambia entre una prueba y otra.
  */
 
 async function asLoggedInClient(page: Page) {
   await page.context().addCookies([
     { name: "ub_token", value: "test-token", url: "http://127.0.0.1:3100" },
   ]);
-}
-
-/**
- * El shell del dashboard tiene sus propios <select> (el selector de tema
- * entre ellos), así que hay que acotar al formulario del modal: un
- * page.locator("select").first() global apunta al tema, no al barbero.
- */
-function bookingForm(page: Page) {
-  return page.locator("form").filter({ hasText: "Barbero" });
 }
 
 async function mockCreate(page: Page, status: number, body: unknown) {
@@ -42,27 +34,29 @@ async function mockCreate(page: Page, status: number, body: unknown) {
 
 test("un cliente puede reservar su propia cita", async ({ page }) => {
   await asLoggedInClient(page);
-  await mockCreate(page, 201, { message: "Cita creada correctamente." });
+  await mockCreate(page, 201, {
+    message: "Cita creada correctamente.",
+    data: { code: "UB-1001" },
+  });
 
   await page.goto("/my/appointments");
   await page.getByRole("button", { name: "Reservar nueva cita" }).click();
   await expect(
-    page.getByRole("heading", { name: "Reservar cita" }),
+    page.getByRole("heading", { name: "Reserva tu cita" }),
   ).toBeVisible();
+
+  // Paso 1-3: servicio, barbero (fixture de mock-api.mjs), día y hora reales.
+  await page.getByRole("button", { name: /Corte clásico/ }).click();
+  await page.getByRole("button", { name: /Nava Panther/ }).click();
+  await page.getByRole("button", { name: "Hoy" }).click();
+  await page.getByRole("button", { name: "10:00" }).click();
 
   const created = page.waitForRequest(
     (request) =>
       request.url().includes("/api/v1/appointments") &&
       request.method() === "POST",
   );
-
-  const form = bookingForm(page);
-  await form.locator("select").first().selectOption("b-1");
-  await form.locator("select").nth(1).selectOption("s-1");
-  // La hora ahora sale de los horarios disponibles que calcula el backend
-  // (AvailabilityController::slots()), no de un input libre.
-  await form.locator("select").nth(2).selectOption("10:00");
-  await form.getByRole("button", { name: "Reservar", exact: true }).click();
+  await page.getByRole("button", { name: "Confirmar cita" }).click();
 
   const body = (await created).postDataJSON();
   expect(body.barber_id).toBe("b-1");
@@ -70,9 +64,12 @@ test("un cliente puede reservar su propia cita", async ({ page }) => {
   expect(body.hora_inicio).toBe("10:00");
   // El backend deriva el cliente del token; mandar client_id sería ignorado.
   expect(body.client_id).toBeUndefined();
+  await expect(
+    page.getByRole("heading", { name: "Solicitud de cita registrada" }),
+  ).toBeVisible();
 });
 
-test("reservar desde la ficha del barbero lo llega preseleccionado", async ({
+test("reservar desde la ficha del barbero salta directo al horario", async ({
   page,
 }) => {
   await asLoggedInClient(page);
@@ -82,9 +79,18 @@ test("reservar desde la ficha del barbero lo llega preseleccionado", async ({
 
   await expect(page).toHaveURL(/\/my\/appointments\?barber=b-1$/);
   await expect(
-    page.getByRole("heading", { name: "Reservar cita" }),
+    page.getByRole("heading", { name: "Reserva tu cita" }),
   ).toBeVisible();
-  await expect(bookingForm(page).locator("select").first()).toHaveValue("b-1");
+
+  // Con el barbero ya preseleccionado (initial-barber), elegir el servicio
+  // debe saltar el paso "2. Elige tu barbero" directo a "3. Elige día y hora".
+  await page.getByRole("button", { name: /Corte clásico/ }).click();
+  await expect(
+    page.getByRole("heading", { name: "3. Elige día y hora" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "2. Elige tu barbero" }),
+  ).toHaveCount(0);
 });
 
 test("un choque de horario muestra el motivo real del backend", async ({
@@ -99,18 +105,18 @@ test("un choque de horario muestra el motivo real del backend", async ({
 
   await page.goto("/my/appointments?barber=b-1");
   await expect(
-    page.getByRole("heading", { name: "Reservar cita" }),
+    page.getByRole("heading", { name: "Reserva tu cita" }),
   ).toBeVisible();
 
-  const form = bookingForm(page);
-  await form.locator("select").nth(1).selectOption("s-1");
-  // La hora ahora sale de los horarios disponibles que calcula el backend
-  // (AvailabilityController::slots()), no de un input libre.
-  await form.locator("select").nth(2).selectOption("10:00");
-  await form.getByRole("button", { name: "Reservar", exact: true }).click();
+  await page.getByRole("button", { name: /Corte clásico/ }).click();
+  await page.getByRole("button", { name: "Hoy" }).click();
+  await page.getByRole("button", { name: "10:00" }).click();
+  await page.getByRole("button", { name: "Confirmar cita" }).click();
 
   await expect(
-    page.getByText("El barbero ya tiene una cita en ese horario."),
+    page.getByRole("alert").filter({
+      hasText: "El barbero ya tiene una cita en ese horario.",
+    }),
   ).toBeVisible();
 });
 
@@ -135,13 +141,14 @@ test("las horas ofrecidas salen de la disponibilidad del backend", async ({
   );
 
   await page.goto("/my/appointments?barber=b-1");
-  const form = bookingForm(page);
-  await form.locator("select").nth(1).selectOption("s-1");
+  await page.getByRole("button", { name: /Corte clásico/ }).click();
+  await page.getByRole("button", { name: "Hoy" }).click();
 
-  const horas = form.locator("select").nth(2);
-  await expect(horas.locator("option[value='16:30']")).toHaveText("4:30 PM");
-  // Solo el hueco libre y el placeholder: nada de horas inventadas.
-  await expect(horas.locator("option")).toHaveCount(2);
+  // Solo el hueco libre que devolvió el backend: nada de horas inventadas.
+  await expect(page.getByRole("button", { name: "16:30" })).toBeVisible();
+  await expect(
+    page.locator("section").filter({ hasText: "Elige día y hora" }).getByRole("button", { name: /^\d{2}:\d{2}$/ }),
+  ).toHaveCount(1);
 });
 
 test("un día sin huecos lo dice en vez de dejar elegir cualquier hora", async ({
@@ -157,12 +164,10 @@ test("un día sin huecos lo dice en vez de dejar elegir cualquier hora", async (
   );
 
   await page.goto("/my/appointments?barber=b-1");
-  const form = bookingForm(page);
-  await form.locator("select").nth(1).selectOption("s-1");
+  await page.getByRole("button", { name: /Corte clásico/ }).click();
+  await page.getByRole("button", { name: "Hoy" }).click();
 
-  const horas = form.locator("select").nth(2);
-  await expect(horas).toBeDisabled();
-  await expect(horas).toContainText("Sin horarios libres");
+  await expect(page.getByText("Sin horarios libres ese día")).toBeVisible();
 });
 
 async function asLoggedInStaff(page: Page) {

@@ -21,6 +21,7 @@ interface ClientRow {
   id: string;
   slug: string | null;
   name: string | null;
+  avatar_url?: string | null;
   email: string | null;
   telefono: string | null;
   segment: "vip" | "new" | "active" | "inactive";
@@ -321,11 +322,7 @@ function fmtDate(iso: string | null) {
           >
             <td class="px-4 py-3">
               <div class="flex items-center gap-3">
-                <div
-                  class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-line bg-ink/5 text-[10px] font-black text-ink"
-                >
-                  {{ (client.name ?? "CL").slice(0, 2).toUpperCase() }}
-                </div>
+                <UiAvatar :src="client.avatar_url" :name="client.name" />
                 <span class="font-bold text-ink">{{
                   client.name ?? "Sin usuario"
                 }}</span>

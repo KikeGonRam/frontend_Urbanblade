@@ -159,6 +159,7 @@ function fmtDate(fecha: string) {
 // del usuario autenticado (crea su perfil Client si aún no existe), así que
 // aquí NO se manda client_id — mandarlo sería además ignorado.
 const showForm = ref(false);
+const bookingBusy = ref(false);
 const editing = ref<AppointmentRow | null>(null);
 const form = reactive({
   barber_id: "",
@@ -280,7 +281,7 @@ async function loadSlots() {
     // backend lo reporta como no disponible. Sin esto, reabrir el modal y
     // guardar sin mover la hora sería imposible.
     const current = editing.value?.hora_inicio?.slice(0, 5);
-    if (current && !available.some((s) => s.time === current)) {
+    if (current && form.fecha === editing.value?.fecha && form.barber_id === editing.value?.barber.id && form.service_id === editing.value?.service.id && !available.some((s) => s.time === current)) {
       available.unshift({ time: current, label: `${current} (actual)` });
     }
 
@@ -608,8 +609,12 @@ onUnmounted(() => teardownStripe());
       </div>
     </div>
 
+    <UiModal v-if="showForm && !isEditing" title="Nueva cita" :busy="bookingBusy" @close="showForm = false">
+      <BookingWizard embedded :initial-barber="form.barber_id" @busy="bookingBusy = $event" @confirmed="refresh()" />
+    </UiModal>
+
     <div
-      v-if="showForm"
+      v-if="showForm && isEditing"
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
       @click.self="showForm = false"
     >

@@ -15,7 +15,7 @@ withDefaults(defineProps<{
 
 <template>
   <section
-    class="rounded-2xl border border-dashed border-line px-6 py-8 text-center"
+    class="brand-state-panel rounded-2xl border border-dashed border-line px-4 py-4 text-center"
     aria-live="polite"
   >
     <BrandMascot :mascot="mascot" :state="state" size="sm" class="mx-auto" />

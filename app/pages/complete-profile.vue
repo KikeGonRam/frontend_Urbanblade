@@ -14,6 +14,8 @@ interface ProfileResponse {
 }
 
 const { apiFetch } = useApi();
+const route = useRoute();
+const authReturn = useAuthReturn();
 const { user, fetchMe } = useAuth();
 const telefono = ref("");
 const fechaNacimiento = ref("");
@@ -50,8 +52,12 @@ async function submit() {
         sexo: sexo.value || null,
       },
     });
-    await fetchMe();
-    await navigateTo("/dashboard", { replace: true });
+    const updated = await fetchMe();
+    if (!updated?.profile_complete) {
+      errorMessage.value = "Tu perfil aún no está completo. Revisa los campos antes de continuar.";
+      return;
+    }
+    await navigateTo(authReturn.afterLogin(true, route.query.redirect), { replace: true });
   } catch (error: unknown) {
     const data = (
       error as {

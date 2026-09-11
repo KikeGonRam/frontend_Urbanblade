@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import DesktopTopbar from '~/components/shell/DesktopTopbar.vue'
 
+const route = useRoute()
+const content = ref<HTMLElement | null>(null)
+watch(() => route.path, async () => {
+  await nextTick()
+  content.value?.scrollTo({ top: 0, left: 0 })
+})
+
 /*
  * Shell para el área autenticada — equivalente Nuxt de barber/resources/
  * views/app.blade.php (sidebar + topbar móvil + bottom-nav + drawer), pero
@@ -18,7 +25,7 @@ import DesktopTopbar from '~/components/shell/DesktopTopbar.vue'
 
     <div class="ub-dashboard-main min-w-0 pb-20 md:pb-0">
       <DesktopTopbar />
-      <main id="dashboard-content" tabindex="-1" class="ub-dashboard-content">
+      <main id="dashboard-content" ref="content" tabindex="-1" class="ub-dashboard-content">
         <slot />
       </main>
     </div>

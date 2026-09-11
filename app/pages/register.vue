@@ -10,6 +10,9 @@ const errorMessage = ref('')
 const loading = ref(false)
 
 const config = useRuntimeConfig()
+const route = useRoute()
+const authReturn = useAuthReturn()
+onMounted(() => authReturn.remember(route.query.redirect))
 const { register } = useAuth()
 const { secondsLeft, handle: handleRateLimit } = useRetryCountdown()
 
@@ -48,7 +51,7 @@ async function onSubmit() {
     // teléfono y fecha de nacimiento, ver User::profileCompletion() en
     // barber). Mandarlo a completarlo en vez de al dashboard, igual que el
     // callback de Google.
-    await navigateTo(user.profile_complete ? '/dashboard' : '/complete-profile')
+    await navigateTo(authReturn.afterLogin(user.profile_complete, route.query.redirect))
   } catch (error: unknown) {
     if (handleRateLimit(error)) return
 
@@ -131,7 +134,7 @@ async function onSubmit() {
       </button>
 
       <p class="pt-2 text-center text-[10px] font-bold uppercase tracking-widest text-muted">
-        ¿Ya tienes cuenta? <NuxtLink to="/login" class="text-gold hover:underline">Inicia sesión aquí</NuxtLink>
+        ¿Ya tienes cuenta? <NuxtLink :to="{ path: '/login', query: { redirect: route.query.redirect } }" class="text-gold hover:underline">Inicia sesión aquí</NuxtLink>
       </p>
     </form>
   </AuthShell>

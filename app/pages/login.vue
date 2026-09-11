@@ -7,6 +7,8 @@ const errorMessage = ref('')
 const loading = ref(false)
 
 const route = useRoute()
+const authReturn = useAuthReturn()
+onMounted(() => authReturn.remember(route.query.redirect))
 const config = useRuntimeConfig()
 const { login } = useAuth()
 const { secondsLeft, handle: handleRateLimit } = useRetryCountdown()
@@ -30,12 +32,12 @@ async function onSubmit() {
     // registraba por correo (que nunca pide esos dos datos) entraba al
     // dashboard con el perfil incompleto y nada volvía a pedírselo.
     if (!user.profile_complete) {
-      await navigateTo('/complete-profile')
+      await navigateTo(authReturn.afterLogin(false, route.query.redirect))
 
       return
     }
 
-    const redirect = getSafeRedirectUrl(route.query.redirect, '/dashboard')
+    const redirect = authReturn.afterLogin(true, route.query.redirect)
     await navigateTo(redirect)
   } catch (error: unknown) {
     if (handleRateLimit(error)) return
@@ -101,7 +103,7 @@ async function onSubmit() {
       </button>
 
       <p class="pt-2 text-center text-[10px] font-bold uppercase tracking-widest text-muted">
-        ¿Aún no tienes cuenta? <NuxtLink to="/register" class="text-gold hover:underline">Regístrate ahora</NuxtLink>
+        ¿Aún no tienes cuenta? <NuxtLink :to="{ path: '/register', query: { redirect: route.query.redirect } }" class="text-gold hover:underline">Regístrate ahora</NuxtLink>
       </p>
     </form>
   </AuthShell>

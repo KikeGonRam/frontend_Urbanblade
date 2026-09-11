@@ -69,6 +69,12 @@ interface VisualCoverageDto {
 }
 
 interface AnalyticsResponse {
+  operational?: {
+    calculated_at: string
+    period: { start: string, end: string, timezone: string }
+    kpis: { label: string, value: number, detail: string }[]
+    actions: { label: string, detail: string, to: string }[]
+  } | null
   rol_label: 'administrador' | 'recepcionista' | 'barbero' | 'cliente' | 'invitado'
   kpis: KpiDto[]
   ultima_actualizacion: string | null
@@ -161,10 +167,31 @@ const doughnutOptions = { responsive: true, maintainAspectRatio: false, plugins:
       <p v-if="response?.ultima_actualizacion" class="text-xs text-muted">Actualizado: {{ fmtDate(response.ultima_actualizacion) }}</p>
     </header>
 
+    <section v-if="!pending && !error && response?.operational" class="mb-8 space-y-4" aria-label="Análisis operativo actual">
+      <div>
+        <h2 class="text-lg font-bold text-ink">Operación actual</h2>
+        <p class="mt-1 text-xs text-muted">Calculado desde citas y pagos registrados. Periodo: {{ response.operational.period.start }} — {{ response.operational.period.end }} · {{ response.operational.period.timezone }}</p>
+      </div>
+      <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <article v-for="kpi in response.operational.kpis" :key="kpi.label" class="ui-card p-4">
+          <h3 class="text-xs font-bold text-muted">{{ kpi.label }}</h3>
+          <p class="my-2 text-2xl font-black text-ink">{{ kpi.value }}</p>
+          <p class="text-xs text-muted">{{ kpi.detail }}</p>
+        </article>
+      </div>
+      <div v-if="response.operational.actions.length" class="grid gap-3 sm:grid-cols-2">
+        <NuxtLink v-for="action in response.operational.actions" :key="action.to + action.label" :to="action.to" class="ui-card p-4 hover:border-gold">
+          <strong class="text-sm text-gold">{{ action.label }} →</strong>
+          <p class="mt-1 text-xs text-muted">{{ action.detail }}</p>
+        </NuxtLink>
+      </div>
+      <p v-else class="text-sm text-muted">Sin acciones pendientes detectadas en estos indicadores.</p>
+    </section>
+
     <p v-if="pending" class="text-sm text-muted">Calculando análisis…</p>
     <p v-else-if="error" class="text-sm text-red-400">No se pudo cargar el centro de análisis.</p>
-    <p v-else-if="!allInsightsFlat.length" class="rounded-2xl border border-dashed border-line p-12 text-center text-sm text-muted">
-      Aún no hay resultados disponibles. El sistema actualizará este espacio cuando termine su siguiente revisión.
+    <p v-else-if="!allInsightsFlat.length" class="rounded-2xl border border-dashed border-line p-4 text-sm text-muted">
+      No hay análisis históricos publicados para tu rol. No se muestran predicciones sin resultados disponibles; los indicadores operativos, cuando corresponden, se calculan por separado.
     </p>
 
     <template v-else>

@@ -10,6 +10,7 @@ definePageMeta({ layout: false });
 const route = useRoute();
 const { token, fetchMe } = useAuth();
 const failed = ref(false);
+const authReturn = useAuthReturn();
 
 onMounted(async () => {
   const incomingToken =
@@ -31,8 +32,7 @@ onMounted(async () => {
     return;
   }
 
-  const fallback = user.profile_complete ? '/dashboard' : '/complete-profile'
-  const redirectTarget = user.profile_complete ? getSafeRedirectUrl(route.query.redirect, fallback) : fallback
+  const redirectTarget = authReturn.afterLogin(user.profile_complete, route.query.redirect)
 
   await navigateTo(redirectTarget, {
     replace: true,

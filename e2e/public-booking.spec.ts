@@ -129,8 +129,10 @@ test("un cliente con sesión confirma y recibe el código de su cita", async ({
   });
   expect(body.client_id).toBeUndefined();
 
+  // "Solicitud registrada", no "confirmada": la cita nace en estado
+  // 'pendiente' y la barbería todavía tiene que confirmarla.
   await expect(
-    page.getByRole("heading", { name: "Cita confirmada" }),
+    page.getByRole("heading", { name: "Solicitud de cita registrada" }),
   ).toBeVisible();
   await expect(page.getByText("UB-4821")).toBeVisible();
 });

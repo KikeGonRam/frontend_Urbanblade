@@ -396,4 +396,30 @@ html[data-theme="libreta"] {
     .brand-empty-state { background: linear-gradient(135deg, rgb(var(--gold-rgb) / .06), transparent 55%), rgb(var(--gold-rgb) / .035); }
     .brand-empty-state__action:hover { text-decoration: underline; text-underline-offset: .25rem; }
     @media (max-width: 640px) { .brand-empty-state { flex-direction: column; text-align: center; } .brand-empty-state p { margin-inline: auto; } }
+
+    /* El contenido tiene su propio scroll: nunca pasa detrás del encabezado. */
+    @media (min-width: 768px) {
+        .ub-dashboard-shell { height: 100dvh; min-height: 0; overflow: hidden; }
+        .ub-dashboard-main { display: flex; flex-direction: column; min-height: 0; }
+        .ub-dashboard-content { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; scrollbar-gutter: stable; border-radius: 1rem; }
+        .ub-desktop-topbar { position: relative; top: 0; flex-shrink: 0; background: var(--bg-card); backdrop-filter: none; }
+        .ub-sidebar { top: 0; height: 100%; min-height: 0; }
+    }
+    .ub-sidebar__brand, .ub-sidebar__quick, .ub-sidebar__profile { flex-shrink: 0; }
+    .ub-sidebar__nav { min-height: 0; overscroll-behavior: contain; scroll-padding-block: 1rem; }
+    .ub-sidebar__helper { flex-shrink: 0; min-height: 5.5rem; align-items: center; padding: .4rem; }
+    .ub-sidebar__helper .brand-mascot { align-self: center; margin: 0; width: 4rem; height: 4.5rem; }
+    @media (max-height: 700px) and (min-width: 768px) { .ub-sidebar__helper { display: none; } }
+    .brand-mascot { max-width: 100%; min-width: 0; grid-template-rows: minmax(0, 1fr) auto; }
+    .brand-mascot img { min-height: 0; max-height: 100%; object-fit: contain; mask-image: none; -webkit-mask-image: none; }
+    .brand-mascot--sm img { animation: none; }
+    .brand-state-panel .brand-mascot, .brand-empty-state .brand-mascot { width: 4.5rem; height: 5rem; flex: none; margin-block: 0; }
+    .brand-empty-state { min-height: 0; padding: 1rem; }
+    .brand-state-panel .brand-mascot img, .brand-empty-state .brand-mascot img { animation: none; }
+    .mascot-companion__toggle { padding: .35rem; }
+    .mascot-companion__toggle img { width: 100%; height: 100%; min-height: 0; object-fit: contain; animation: none; }
+    .mascot-companion__panel img { object-fit: contain; padding: .25rem; }
+    .ui-avatar { display: inline-grid; place-items: center; width: 2.5rem; height: 2.5rem; flex-shrink: 0; overflow: hidden; border: 1px solid var(--line); border-radius: .8rem; background: var(--bg-card); color: var(--gold); font-size: .7rem; font-weight: 800; }
+    .ui-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .ub-dashboard-content, [class*='overflow-x-auto'] { scrollbar-width: thin; scrollbar-color: var(--muted) var(--bg-card); }
 }

@@ -12,6 +12,7 @@ interface UserRow {
   id: string;
   name: string;
   email: string;
+  avatar_url?: string | null;
   roles: string[];
 }
 
@@ -230,11 +231,7 @@ async function removeUser(user: UserRow) {
           >
             <td class="px-4 py-3">
               <div class="flex items-center gap-3">
-                <div
-                  class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-line bg-ink/5 text-[10px] font-black text-ink"
-                >
-                  {{ user.name.slice(0, 2).toUpperCase() }}
-                </div>
+                <UiAvatar :src="user.avatar_url" :name="user.name" />
                 <span class="font-bold text-ink">{{ user.name }}</span>
                 <span
                   v-if="currentUser && user.id === currentUser.id"
