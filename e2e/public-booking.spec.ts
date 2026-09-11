@@ -151,7 +151,15 @@ test("un conflicto de horario muestra el motivo real del backend", async ({
   await page.getByRole("button", { name: "10:00" }).click();
   await page.getByRole("button", { name: "Confirmar cita" }).click();
 
+  // El motivo tiene que sobrevivir al regreso al paso 3: al liberarse la hora
+  // el asistente vuelve al selector, y un mensaje pintado dentro del paso 4
+  // se desmontaba con él (el visitante volvía sin saber por qué).
   await expect(
-    page.getByText("El barbero ya tiene una cita en ese horario."),
+    page.getByRole("heading", { name: "3. Elige día y hora" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("alert").filter({
+      hasText: "El barbero ya tiene una cita en ese horario.",
+    }),
   ).toBeVisible();
 });

@@ -331,6 +331,12 @@ function fmtDate(iso: string | null) {
             <td class="px-4 py-3 text-muted">{{ fmtDate(client.joinedAt) }}</td>
             <td class="px-4 py-3">
               <div v-if="client.slug" class="flex justify-end gap-2">
+                <NuxtLink
+                  :to="`/clients/${client.slug}`"
+                  class="flex min-h-9 items-center rounded-lg border border-gold/30 px-3 py-1 text-xs font-bold text-gold transition-colors hover:bg-gold/10"
+                >
+                  Ver ficha
+                </NuxtLink>
                 <button
                   type="button"
                   class="rounded-lg border border-line px-3 py-1 text-xs text-muted hover:text-ink"

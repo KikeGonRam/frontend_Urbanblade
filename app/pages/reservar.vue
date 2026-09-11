@@ -287,6 +287,18 @@ function prettyDate(iso: string) {
         </p>
       </header>
 
+      <!-- El error del backend vive FUERA de los pasos a propósito: cuando el
+           422 es por horario ocupado se limpia la hora y el asistente vuelve
+           al paso 3, así que un mensaje dentro del paso 4 se desmontaba junto
+           con él y el visitante volvía al selector sin saber por qué. -->
+      <p
+        v-if="submitError"
+        role="alert"
+        class="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm font-bold text-red-300"
+      >
+        {{ submitError }}
+      </p>
+
       <!-- Progreso -->
       <ol class="mb-8 flex items-center gap-1 text-[10px] font-black uppercase tracking-widest sm:gap-2">
         <li v-for="(label, i) in STEPS" :key="label" class="flex flex-1 items-center gap-1 sm:gap-2">
@@ -448,10 +460,6 @@ function prettyDate(iso: string) {
           <p v-if="shop?.politica_cancelacion" class="mt-4 border-t border-line pt-4 text-xs leading-5 text-muted">
             Puedes cancelar o reprogramar sin costo hasta
             {{ shop.politica_cancelacion }} horas antes de tu cita.
-          </p>
-
-          <p v-if="submitError" role="alert" class="mt-4 text-sm font-bold text-red-400">
-            {{ submitError }}
           </p>
 
           <!-- Staff y barberos no pueden reservar para sí mismos en el backend -->
