@@ -10,7 +10,12 @@
  * de los 4 contadores del Blade original (que requieren un cálculo distinto
  * no expuesto por esta API).
  */
-definePageMeta({ middleware: ["auth", "admin"], layout: "dashboard" });
+// 'staff' (administrador + recepcionista): quien está en el mostrador es
+// quien necesita el contexto del cliente que tiene enfrente. Lo sensible
+// sigue siendo admin y se oculta abajo: segmentación comercial y baja de
+// clientes. El backend es la autoridad real (authorizeCounterStaff()
+// vs authorizeAdmin() por acción en ClientAdminController).
+definePageMeta({ middleware: ["auth", "staff"], layout: "dashboard" });
 
 interface ClientRow {
   id: string;
@@ -86,14 +91,22 @@ function resetAndSearch() {
   page.value = 1;
 }
 
+// La segmentación es solo de administración: pedirla como recepcionista
+// devolvería 403 y ensuciaría la pantalla con un error por algo que ese rol
+// no debe ver. Las tarjetas se ocultan más abajo con el mismo booleano.
+const { hasRole } = useAuth();
+const isAdmin = computed(() => hasRole("administrador"));
+
 const { data: segmentation } = await useAsyncData(
   "clients-segmentation",
   () =>
-    apiFetch<{
-      success: boolean;
-      data: Record<string, { count: number; percentage: number }>;
-    }>("/admin/clients/segmentation/data"),
-  { lazy: true },
+    isAdmin.value
+      ? apiFetch<{
+          success: boolean;
+          data: Record<string, { count: number; percentage: number }>;
+        }>("/admin/clients/segmentation/data")
+      : Promise.resolve(null),
+  { lazy: true, watch: [isAdmin] },
 );
 
 const segmentCards = computed(() => {
@@ -228,7 +241,9 @@ function fmtDate(iso: string | null) {
       </button>
     </header>
 
-    <section class="mb-5 grid grid-cols-2 gap-4 sm:grid-cols-4">
+    <!-- Segmentación comercial: solo administración (ver authorizeAdmin()
+         en ClientAdminController::getSegmentation). -->
+    <section v-if="isAdmin" class="mb-5 grid grid-cols-2 gap-4 sm:grid-cols-4">
       <button
         v-for="card in segmentCards"
         :key="card.key"
@@ -344,7 +359,10 @@ function fmtDate(iso: string | null) {
                 >
                   Editar
                 </button>
+                <!-- Baja de cliente: acción destructiva, solo administración
+                     (authorizeAdmin() en ClientAdminController::destroy). -->
                 <button
+                  v-if="isAdmin"
                   type="button"
                   class="rounded-lg border border-red-500/20 px-3 py-1 text-xs text-red-400 hover:bg-red-500/10"
                   @click="removeClient(client)"

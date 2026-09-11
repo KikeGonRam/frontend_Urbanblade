@@ -53,6 +53,14 @@ const DETAIL = {
 };
 
 async function asAdmin(page: Page, detail: unknown = DETAIL) {
+  return asRole(page, "administrador", detail);
+}
+
+async function asRole(
+  page: Page,
+  rol: string,
+  detail: unknown = DETAIL,
+) {
   await page.context().addCookies([
     {
       name: "ub_token",
@@ -66,11 +74,11 @@ async function asAdmin(page: Page, detail: unknown = DETAIL) {
       contentType: "application/json",
       body: JSON.stringify({
         user: {
-          id: "u-admin",
-          name: "Admin Prueba",
-          email: "admin@test.local",
+          id: "u-staff",
+          name: "Usuario Prueba",
+          email: "staff@test.local",
           avatar_url: null,
-          roles: ["administrador"],
+          roles: [rol],
           profile_complete: true,
           profile_missing: [],
           client_id: null,
@@ -184,4 +192,23 @@ test("un error de carga muestra el estado de error, no una ficha vacía", async 
   await page.goto("/clients/cliente-prueba");
 
   await expect(page.getByText("No se pudo cargar la ficha")).toBeVisible();
+});
+
+test("recepción entra a la ficha del cliente desde el mostrador", async ({
+  page,
+}) => {
+  // Antes la página estaba tras middleware 'admin': el menú lateral ya
+  // mostraba "Clientes" a recepción, pero el enlace los rebotaba al
+  // dashboard. Ahora es 'staff' y el backend lo permite por acción
+  // (authorizeCounterStaff en show/update).
+  await asRole(page, "recepcionista");
+  await page.goto("/clients/cliente-prueba");
+
+  await expect(
+    page.getByRole("heading", { name: "Cliente Prueba" }),
+  ).toBeVisible();
+  await expect(page.getByText("Nivel oro")).toBeVisible();
+  await expect(
+    page.getByLabel("Notas del equipo sobre este cliente"),
+  ).toBeVisible();
 });

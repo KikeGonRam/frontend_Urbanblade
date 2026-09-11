@@ -9,11 +9,12 @@
  * lealtad, puntos y notas del staff se agregaron a esa respuesta para esta
  * pantalla.
  *
- * Sigue siendo admin (mismo gate que /clients). Recepción todavía no tiene
- * acceso a clientes en el producto: Api\Client\ClientController no expone
- * show() y la página está tras middleware 'admin'.
+ * Abierta a recepción ('staff'), que es quien atiende el mostrador y necesita
+ * el contexto del cliente que tiene enfrente. El backend lo permite por
+ * acción: ClientAdminController::show()/update() usan authorizeCounterStaff(),
+ * mientras exportar, segmentar y dar de baja siguen en authorizeAdmin().
  */
-definePageMeta({ middleware: ["auth", "admin"], layout: "dashboard" });
+definePageMeta({ middleware: ["auth", "staff"], layout: "dashboard" });
 
 interface HistoryRow {
   id: string;
