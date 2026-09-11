@@ -110,8 +110,12 @@ async function submitReview() {
           </p>
         </div>
 
+        <!-- Antes mandaba a /register sin sesión: el visitante que llegaba a
+             esta ficha desde redes chocaba con un muro de registro. Ahora
+             entra a /reservar con este barbero ya elegido, y la cuenta solo
+             se pide al confirmar. -->
         <NuxtLink
-          :to="isAuthenticated ? `/my/appointments?barber=${barber.id}` : '/register'"
+          :to="`/reservar?barbero=${barber.id}`"
           class="rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-black hover:bg-gold-dim sm:ml-auto"
         >
           Reservar con {{ (barber.user?.name ?? 'este barbero').split(' ')[0] }}

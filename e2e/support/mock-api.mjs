@@ -44,6 +44,20 @@ const routes = {
   "/auth/me": { user },
   "/barbers": { data: barbers },
   "/services": { data: services },
+  // Ficha pública del negocio (CatalogController::barbershop), la consumen
+  // la landing y /reservar sin token. Nunca incluye datos bancarios.
+  "/barbershop": {
+    data: {
+      nombre: "UrbanBlade Centro",
+      logo: null,
+      direccion: "Av. Juárez 120, Centro",
+      telefono: "+52 55 0000 0000",
+      horario_apertura: "09:00",
+      horario_cierre: "21:00",
+      politica_cancelacion: 24,
+      redes_sociales: { instagram: "urbanblade", facebook: null, tiktok: null },
+    },
+  },
   "/dashboard": { role: "cliente", data: {} },
   "/appointments": {
     data: [],

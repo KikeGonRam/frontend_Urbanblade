@@ -6,13 +6,14 @@
  * (bg-main/bg-panel/text-gold/...) en vez de hex fijos, así que respeta los
  * 4 temas del selector en vez de quedar siempre en negro.
  *
- * /services y /barbers (CatalogController) son públicas sin token -- se
- * llaman igual que en cualquier otra página, sin auth. El catálogo público
- * completo vive en /servicios y /equipo(/[slug]) (paridad con Blade's
- * /servicios y /equipo/{barber}, cerrada 2026-09-09) -- las tarjetas de
- * barbero de "Los Maestros" enlazan ahí. El catálogo de servicios de esta
- * landing sigue siendo solo la vista previa inline (6 primeros); "ver más"
- * manda a /register porque reservar sí exige cuenta.
+ * /services, /barbers y /barbershop (CatalogController) son públicas sin
+ * token -- se llaman igual que en cualquier otra página, sin auth. El
+ * catálogo público completo vive en /servicios y /equipo(/[slug]) (paridad
+ * con Blade's /servicios y /equipo/{barber}, cerrada 2026-09-09) -- las
+ * tarjetas de barbero de "Los Maestros" enlazan ahí. El catálogo de
+ * servicios de esta landing sigue siendo solo la vista previa inline (6
+ * primeros); desde 2026-09-10 todos los CTA de reserva van a /reservar, que
+ * muestra disponibilidad real sin cuenta y solo pide sesión al confirmar.
  */
 useSeoMeta({
   title: 'UrbanBlade — Elite Grooming Studio',
@@ -68,17 +69,68 @@ function currency(n: number) {
 }
 
 const steps = [
-  { num: '1', title: 'Regístrate', desc: 'Crea tu cuenta gratuita en menos de un minuto. Solo tu nombre y correo.', active: false },
-  { num: '2', title: 'Elige tu Cita', desc: 'Selecciona el servicio, tu barbero favorito y el horario que prefieras.', active: true },
+  { num: '1', title: 'Elige tu Servicio', desc: 'Corte, barba o el tratamiento que necesites, con precio y duración a la vista.', active: false },
+  { num: '2', title: 'Elige tu Cita', desc: 'Selecciona tu barbero favorito y un horario realmente disponible.', active: true },
   { num: '3', title: '¡Luce Increíble!', desc: 'Llega, relájate y déjate transformar. Sin esperas, sin sorpresas.', active: false },
 ]
 
-const contactInfo = [
-  { label: 'Ubicación', lines: ['Av. de la Reforma 123,', 'Suite 405, CDMX'] },
-  { label: 'Contacto', lines: ['+52 55 1234 5678', 'hola@urbanblade.com'] },
-  { label: 'Horario', lines: ['Lun – Sáb: 9:00 – 21:00', 'Dom: Cerrado'], mutedLastLine: true },
-]
-const mapAddress = 'Av. de la Reforma 123, Suite 405, Ciudad de México'
+/*
+ * Ficha del negocio (dirección, teléfono, horario, redes) desde
+ * GET /barbershop, público y sin token. Antes estos datos eran literales
+ * en este archivo ("Av. de la Reforma 123...", "+52 55 1234 5678", redes
+ * en href="#"), así que cualquier barbería que instalara UrbanBlade
+ * publicaba los datos de contacto de otra persona aunque ya los hubiera
+ * capturado en /settings. El respaldo se mantiene por si la barbería
+ * todavía no llena su configuración.
+ */
+interface Barbershop {
+  nombre: string | null
+  direccion: string | null
+  telefono: string | null
+  horario_apertura: string | null
+  horario_cierre: string | null
+  redes_sociales: Record<string, string | null> | null
+}
+const { data: shopData } = await useAsyncData<{ data: Barbershop }>(
+  'landing-barbershop',
+  () => apiFetch('/barbershop'),
+  { server: false },
+)
+const shop = computed(() => shopData.value?.data ?? null)
+
+const contactInfo = computed(() => {
+  const rows: { label: string, lines: string[], mutedLastLine?: boolean }[] = []
+  if (shop.value?.direccion) {
+    rows.push({ label: 'Ubicación', lines: [shop.value.direccion] })
+  }
+  if (shop.value?.telefono) {
+    rows.push({ label: 'Contacto', lines: [shop.value.telefono] })
+  }
+  if (shop.value?.horario_apertura && shop.value?.horario_cierre) {
+    rows.push({ label: 'Horario', lines: [`${shop.value.horario_apertura} – ${shop.value.horario_cierre}`] })
+  }
+
+  return rows
+})
+
+// Solo se pintan las redes realmente capturadas: un ícono que lleva a "#"
+// se ve peor que no mostrarlo.
+const SOCIAL_BASE: Record<string, string> = {
+  instagram: 'https://instagram.com/',
+  facebook: 'https://facebook.com/',
+  tiktok: 'https://tiktok.com/@',
+}
+const socials = computed(() =>
+  Object.entries(shop.value?.redes_sociales ?? {})
+    .filter((entry): entry is [string, string] => Boolean(entry[1]) && entry[0] in SOCIAL_BASE)
+    .map(([network, handle]) => ({
+      network,
+      // Acepta tanto "urbanblade" como una URL completa ya capturada.
+      url: handle.startsWith('http') ? handle : `${SOCIAL_BASE[network]}${handle.replace(/^@/, '')}`,
+    })),
+)
+
+const mapAddress = computed(() => shop.value?.direccion ?? '')
 
 let scrollHandler: (() => void) | undefined
 let parallaxHandler: (() => void) | undefined
@@ -171,7 +223,7 @@ onBeforeUnmount(() => {
             <NuxtLink v-if="isAuthenticated" to="/dashboard" class="ui-btn px-6 py-2">Mi Panel</NuxtLink>
             <template v-else>
               <NuxtLink to="/login" class="transition-colors hover:text-gold">Acceso</NuxtLink>
-              <NuxtLink to="/register" class="ui-btn group px-7 py-2.5 text-[11px] tracking-[0.15em] shadow-[0_0_25px_rgba(212,175,55,0.4)]">
+              <NuxtLink to="/reservar" class="ui-btn group px-7 py-2.5 text-[11px] tracking-[0.15em] shadow-[0_0_25px_rgba(212,175,55,0.4)]">
                 Reservar
                 <svg class="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
               </NuxtLink>
@@ -196,7 +248,7 @@ onBeforeUnmount(() => {
             <NuxtLink v-if="isAuthenticated" to="/dashboard" class="ui-btn w-full py-3">Mi Panel</NuxtLink>
             <template v-else>
               <NuxtLink to="/login" class="py-2 text-center text-[11px] font-black uppercase tracking-widest text-muted">Acceso</NuxtLink>
-              <NuxtLink to="/register" class="ui-btn w-full py-3">Reservar Ahora</NuxtLink>
+              <NuxtLink to="/reservar" class="ui-btn w-full py-3">Reservar Ahora</NuxtLink>
             </template>
           </div>
         </div>
@@ -330,8 +382,8 @@ onBeforeUnmount(() => {
         </ClientOnly>
 
         <div class="mt-12 text-center">
-          <NuxtLink to="/register" class="ui-btn-secondary px-10 py-4 text-[11px] tracking-[0.2em]">
-            Regístrate para reservar &rarr;
+          <NuxtLink to="/reservar" class="ui-btn-secondary px-10 py-4 text-[11px] tracking-[0.2em]">
+            Reservar ahora &rarr;
           </NuxtLink>
         </div>
       </div>
@@ -376,7 +428,7 @@ onBeforeUnmount(() => {
         </div>
 
         <div class="mt-16 flex justify-center">
-          <NuxtLink to="/register" class="ui-btn w-full px-12 py-5 text-[13px] tracking-[0.15em] shadow-[0_0_50px_rgba(212,175,55,0.18)] sm:w-auto">
+          <NuxtLink to="/reservar" class="ui-btn w-full px-12 py-5 text-[13px] tracking-[0.15em] shadow-[0_0_50px_rgba(212,175,55,0.18)] sm:w-auto">
             Comenzar Ahora
             <svg class="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
           </NuxtLink>
@@ -527,24 +579,28 @@ onBeforeUnmount(() => {
                   </div>
                 </div>
               </div>
-              <div class="relative z-10 mt-10 border-t border-line pt-8">
+              <div v-if="socials.length" class="relative z-10 mt-10 border-t border-line pt-8">
                 <p class="mb-4 text-[9px] font-black uppercase tracking-widest text-muted">Síguenos</p>
                 <div class="flex gap-3">
-                  <a href="#" class="flex h-9 w-9 items-center justify-center rounded-xl border border-line bg-ink/5 text-muted transition-all hover:border-gold/20 hover:bg-gold/10 hover:text-gold">
-                    <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" /></svg>
-                  </a>
-                  <a href="#" class="flex h-9 w-9 items-center justify-center rounded-xl border border-line bg-ink/5 text-muted transition-all hover:border-gold/20 hover:bg-gold/10 hover:text-gold">
-                    <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>
+                  <a
+                    v-for="social in socials" :key="social.network"
+                    :href="social.url" target="_blank" rel="noopener noreferrer"
+                    :aria-label="`UrbanBlade en ${social.network}`"
+                    class="flex h-9 w-9 items-center justify-center rounded-xl border border-line bg-ink/5 text-muted transition-all hover:border-gold/20 hover:bg-gold/10 hover:text-gold"
+                  >
+                    <svg v-if="social.network === 'instagram'" class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" /></svg>
+                    <svg v-else-if="social.network === 'facebook'" class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>
+                    <svg v-else class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z" /></svg>
                   </a>
                 </div>
               </div>
             </div>
 
-            <div class="group relative h-[320px] overflow-hidden bg-panel lg:h-auto lg:flex-1">
+            <div v-if="mapAddress" class="group relative h-[320px] overflow-hidden bg-panel lg:h-auto lg:flex-1">
               <iframe
                 :src="`https://www.google.com/maps?q=${encodeURIComponent(mapAddress)}&output=embed`"
                 class="absolute inset-0 h-full w-full border-0 opacity-90 grayscale-[35%] contrast-125 transition-all duration-500 group-hover:opacity-100 group-hover:grayscale-0"
-                loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Ubicación de UrbanBlade en el mapa"
+                loading="lazy" referrerpolicy="no-referrer-when-downgrade" :title="`Ubicación de ${shop?.nombre || 'UrbanBlade'} en el mapa`"
               />
               <a
                 :href="`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapAddress)}`"
@@ -604,22 +660,32 @@ onBeforeUnmount(() => {
                 <li><NuxtLink to="/login" class="transition hover:text-gold">Acceso Staff</NuxtLink></li>
               </ul>
             </div>
-            <div>
+            <!-- Segundo bloque de contacto de la landing (el otro está en la
+                 sección "Visítanos"): también sale de /barbershop, no de
+                 literales, y cada dato se oculta si la barbería no lo capturó. -->
+            <div v-if="shop?.telefono || (shop?.horario_apertura && shop?.horario_cierre)">
               <h5 class="mb-5 text-[10px] font-black uppercase tracking-widest text-ink">Contacto</h5>
               <ul class="space-y-3 text-[11px] font-bold tracking-wider text-muted">
-                <li>+52 55 1234 5678</li>
-                <li>hola@urbanblade.com</li>
-                <li class="text-muted/80">Lun – Sáb: 9 – 21h</li>
+                <li v-if="shop?.telefono">
+                  <a :href="`tel:${shop.telefono.replace(/\s+/g, '')}`" class="transition hover:text-gold">{{ shop.telefono }}</a>
+                </li>
+                <li v-if="shop?.horario_apertura && shop?.horario_cierre" class="text-muted/80">
+                  {{ shop.horario_apertura }} – {{ shop.horario_cierre }}
+                </li>
               </ul>
             </div>
-            <div>
+            <div v-if="socials.length">
               <h5 class="mb-5 text-[10px] font-black uppercase tracking-widest text-ink">Social</h5>
               <div class="flex gap-3">
-                <a href="#" class="flex h-8 w-8 items-center justify-center rounded-lg bg-ink/5 text-muted transition-all hover:bg-gold/10 hover:text-gold">
-                  <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" /></svg>
-                </a>
-                <a href="#" class="flex h-8 w-8 items-center justify-center rounded-lg bg-ink/5 text-muted transition-all hover:bg-gold/10 hover:text-gold">
-                  <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>
+                <a
+                  v-for="social in socials" :key="`footer-${social.network}`"
+                  :href="social.url" target="_blank" rel="noopener noreferrer"
+                  :aria-label="`UrbanBlade en ${social.network}`"
+                  class="flex h-8 w-8 items-center justify-center rounded-lg bg-ink/5 text-muted transition-all hover:bg-gold/10 hover:text-gold"
+                >
+                  <svg v-if="social.network === 'instagram'" class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" /></svg>
+                  <svg v-else-if="social.network === 'facebook'" class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>
+                  <svg v-else class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z" /></svg>
                 </a>
               </div>
             </div>

@@ -94,6 +94,15 @@ function currency(n: number) {
           <span class="text-2xl font-black text-ink">{{ currency(service.precio) }}</span>
           <span class="rounded-full border border-gold/10 bg-gold/5 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-gold">{{ service.duracion_min }} min</span>
         </div>
+        <!-- Enlace profundo a /reservar con este servicio ya elegido: el
+             catálogo público es una de las entradas típicas desde redes/QR. -->
+        <NuxtLink
+          :to="`/reservar?servicio=${service.id}`"
+          class="ui-btn mt-6 flex w-full justify-center py-3 text-[11px] tracking-[0.15em]"
+          :aria-label="`Reservar ${service.nombre}`"
+        >
+          Reservar
+        </NuxtLink>
       </article>
     </div>
 

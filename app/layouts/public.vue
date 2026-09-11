@@ -23,7 +23,7 @@ const { isAuthenticated } = useAuth()
           <NuxtLink v-if="isAuthenticated" to="/dashboard" class="ui-btn px-6 py-2">Mi Panel</NuxtLink>
           <template v-else>
             <NuxtLink to="/login" class="transition-colors hover:text-gold">Acceso</NuxtLink>
-            <NuxtLink to="/register" class="ui-btn px-6 py-2.5 text-[11px] tracking-[0.15em]">Reservar</NuxtLink>
+            <NuxtLink to="/reservar" class="ui-btn px-6 py-2.5 text-[11px] tracking-[0.15em]">Reservar</NuxtLink>
           </template>
         </div>
       </div>
