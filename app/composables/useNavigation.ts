@@ -52,6 +52,7 @@ const ICONS: Record<string, string> = {
   gift_cards: '<path d="M20 12v10H4V12M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/>',
   packages: '<rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V5a4 4 0 018 0v2"/>',
   membership: '<rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>',
+  referrals: '<circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><path d="M16 3.5a4 4 0 010 7"/><path d="M19 21v-2a4 4 0 00-2.5-3.7"/>',
 }
 
 /** Único path real hoy — todo lo demás se muestra pero deshabilitado ("Próximamente") hasta su fase. */
@@ -63,7 +64,7 @@ const IMPLEMENTED_PATHS = new Set([
   '/my/appointments', '/barbers', '/my/invoices',
   '/campaigns', '/raffles', '/logs', '/settings', '/reports', '/analytics',
   '/social/feed', '/reviews', '/system', '/notifications', '/gift-cards', '/packages',
-  '/membership', '/admin/membership-plans',
+  '/membership', '/admin/membership-plans', '/referrals',
 ])
 
 function item(label: string, to: string, icon: string, primary = false, badge: number | null = null): NavItem {
@@ -210,6 +211,7 @@ export function useNavigation() {
           item('Gift Cards', '/gift-cards', 'gift_cards'),
           item('Paquetes', '/packages', 'packages'),
           item('Membresía', '/membership', 'membership'),
+          item('Referidos', '/referrals', 'referrals'),
           item('Nuestros Barberos', '/barbers', 'barbers_client', true),
           item('Mis Facturas', '/my/invoices', 'invoices'),
           item('Recomendado para ti', '/analytics', 'analytics'),
