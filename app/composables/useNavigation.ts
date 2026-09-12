@@ -49,6 +49,7 @@ const ICONS: Record<string, string> = {
   raffles: '<circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/>',
   system: '<rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>',
   notifications: '<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>',
+  gift_cards: '<path d="M20 12v10H4V12M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/>',
 }
 
 /** Único path real hoy — todo lo demás se muestra pero deshabilitado ("Próximamente") hasta su fase. */
@@ -59,7 +60,7 @@ const IMPLEMENTED_PATHS = new Set([
   '/barber/agenda', '/barber/portfolio', '/barber/schedule', '/barber/profile',
   '/my/appointments', '/barbers', '/my/invoices',
   '/campaigns', '/raffles', '/logs', '/settings', '/reports', '/analytics',
-  '/social/feed', '/reviews', '/system', '/notifications',
+  '/social/feed', '/reviews', '/system', '/notifications', '/gift-cards',
 ])
 
 function item(label: string, to: string, icon: string, primary = false, badge: number | null = null): NavItem {
@@ -113,6 +114,7 @@ export function useNavigation() {
           item('Pagos', '/payments', 'payments', true),
           item('Pedidos', '/orders', 'orders', isReception.value),
           item('Movimientos', '/inventory/movements', 'movements'),
+          item('Gift Cards', '/gift-cards', 'gift_cards'),
           ...(isReception.value ? [item('Analítica', '/analytics', 'analytics')] : []),
         ],
       })
@@ -200,6 +202,7 @@ export function useNavigation() {
           item('Tienda', '/store', 'products'),
           item('Carrito', '/cart', 'cart', true),
           item('Mis Pedidos', '/my/orders', 'orders'),
+          item('Gift Cards', '/gift-cards', 'gift_cards'),
           item('Nuestros Barberos', '/barbers', 'barbers_client', true),
           item('Mis Facturas', '/my/invoices', 'invoices'),
           item('Recomendado para ti', '/analytics', 'analytics'),

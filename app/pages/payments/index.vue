@@ -230,6 +230,11 @@ const form = reactive({
   propina: 0,
   puntosCanjear: 0,
   usarPremioRifa: false,
+  // Redimir una gift card solo está resuelto para efectivo/transferencia:
+  // el intent de Stripe (stripe-intent) no manda el código en su metadata,
+  // así que el webhook no puede aplicarlo -- ver PaymentController::
+  // stripeIntent() en barber. El campo se oculta con method === "tarjeta".
+  codigoGiftCard: "",
   metodo: "efectivo" as "efectivo" | "transferencia" | "tarjeta",
   stripePaymentId: "",
 });
@@ -258,6 +263,7 @@ async function openCharge(preselectId = "") {
   form.propina = 0;
   form.puntosCanjear = 0;
   form.usarPremioRifa = false;
+  form.codigoGiftCard = "";
   form.metodo = "efectivo";
   form.stripePaymentId = "";
   chargeError.value = "";
@@ -299,6 +305,7 @@ onMounted(() => {
 function selectAppointment() {
   form.puntosCanjear = 0;
   form.usarPremioRifa = false;
+  form.codigoGiftCard = "";
   if (form.metodo === "tarjeta" && selected.value?.premio_rifa)
     form.metodo = "efectivo";
 }
@@ -308,8 +315,16 @@ watch(
   (usar) => {
     if (usar) {
       form.puntosCanjear = 0;
+      form.codigoGiftCard = "";
       if (form.metodo === "tarjeta") form.metodo = "efectivo";
     }
+  },
+);
+
+watch(
+  () => form.metodo,
+  (m) => {
+    if (m === "tarjeta") form.codigoGiftCard = "";
   },
 );
 
@@ -328,6 +343,7 @@ async function submitCharge() {
         propina: form.propina || 0,
         puntos_canjeados: form.puntosCanjear || 0,
         usar_premio_rifa: form.usarPremioRifa,
+        codigo_gift_card: form.codigoGiftCard.trim() || undefined,
         stripe_payment_id: form.stripePaymentId || undefined,
       },
     });
@@ -742,6 +758,23 @@ onUnmounted(() => teardownStripe());
                   class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
                 >
               </div>
+            </div>
+
+            <div v-if="form.metodo !== 'tarjeta' && !form.usarPremioRifa">
+              <label class="mb-1 block text-xs text-muted"
+                >Código de gift card (opcional)</label
+              >
+              <input
+                v-model="form.codigoGiftCard"
+                type="text"
+                placeholder="Ej. A1B2C3D4"
+                class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm uppercase text-ink"
+              >
+              <p class="mt-1 text-[9px] italic text-muted">
+                Se aplica al total antes de cobrar el resto por
+                {{ METODO_LABEL[form.metodo]?.toLowerCase() }}. Si el saldo no
+                alcanza, cubre solo una parte.
+              </p>
             </div>
 
             <div
