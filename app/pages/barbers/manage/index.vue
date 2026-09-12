@@ -20,6 +20,7 @@ interface BarberRow {
   descripcion: string | null;
   foto: string | null;
   activo: boolean;
+  comision_pct: number;
   user: { id: string; name: string; email: string };
 }
 
@@ -67,6 +68,7 @@ const form = reactive({
   descripcion: "",
   foto: "",
   activo: true,
+  comisionPct: 0,
 });
 const formError = ref("");
 const fieldErrors = ref<Record<string, string[]>>({});
@@ -80,6 +82,7 @@ function openEdit(barber: BarberRow) {
   form.descripcion = barber.descripcion ?? "";
   form.foto = barber.foto ?? "";
   form.activo = barber.activo;
+  form.comisionPct = barber.comision_pct;
   formError.value = "";
   fieldErrors.value = {};
   showForm.value = true;
@@ -102,6 +105,7 @@ async function submitForm() {
         descripcion: form.descripcion || null,
         foto: form.foto || null,
         activo: form.activo,
+        comision_pct: form.comisionPct,
       },
     });
     showForm.value = false;
@@ -191,6 +195,7 @@ async function submitForm() {
           >
             <th class="px-4 py-3">Barbero</th>
             <th class="px-4 py-3">Especialidades</th>
+            <th class="px-4 py-3 text-center">Comisión</th>
             <th class="px-4 py-3 text-center">Estado</th>
             <th class="px-4 py-3 text-right">Acciones</th>
           </tr>
@@ -224,6 +229,9 @@ async function submitForm() {
             <td class="px-4 py-3 text-muted">
               <span class="line-clamp-1">{{ barber.especialidades || "—" }}</span>
             </td>
+            <td class="px-4 py-3 text-center text-ink">
+              {{ barber.comision_pct }}%
+            </td>
             <td class="px-4 py-3 text-center">
               <span
                 class="rounded-full border px-2 py-0.5 text-[9px] font-black uppercase"
@@ -247,7 +255,7 @@ async function submitForm() {
             </td>
           </tr>
           <tr v-if="!barbers.length">
-            <td colspan="4" class="px-4 py-12 text-center text-sm text-muted">
+            <td colspan="5" class="px-4 py-12 text-center text-sm text-muted">
               Sin barberos registrados.
             </td>
           </tr>
@@ -370,6 +378,23 @@ async function submitForm() {
               type="text"
               maxlength="255"
               placeholder="https://…"
+              class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]"
+            >
+          </div>
+
+          <div>
+            <label
+              for="barber-comision"
+              class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted"
+              >Comisión (% sobre el precio de lista del servicio)</label
+            >
+            <input
+              id="barber-comision"
+              v-model.number="form.comisionPct"
+              type="number"
+              min="0"
+              max="100"
+              step="1"
               class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]"
             >
           </div>

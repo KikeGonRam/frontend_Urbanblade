@@ -49,6 +49,19 @@ interface ClientsData {
   inactiveClients: number;
   clientRetention: number;
 }
+interface BarberCommissionRow {
+  barber: { id: string; nombre: string };
+  citas_completadas: number;
+  total_generado: number;
+  comision_pct: number;
+  comision_monto: number;
+}
+interface CommissionsData {
+  periodo: { desde: string; hasta: string };
+  barberos: BarberCommissionRow[];
+  total_generado: number;
+  total_comisiones: number;
+}
 
 const { apiFetch } = useApi();
 const period = ref<Period>("mes");
@@ -82,17 +95,27 @@ const { data: clientsRes, pending: clientsPending } = await useAsyncData(
     }),
   { watch: [period], lazy: true },
 );
+const { data: commissionsRes, pending: commissionsPending } = await useAsyncData(
+  buildDataKey("reports-barber-commissions", { period: period.value }),
+  () =>
+    apiFetch<{ data: CommissionsData }>("/admin/reports/barber-commissions", {
+      query: { period: period.value },
+    }),
+  { watch: [period], lazy: true },
+);
 
 const revenue = computed(() => revenueRes.value?.data);
 const appt = computed(() => apptRes.value?.data);
 const inventory = computed(() => inventoryRes.value?.data);
 const clients = computed(() => clientsRes.value?.data);
+const commissions = computed(() => commissionsRes.value?.data);
 const anyPending = computed(
   () =>
     revenuePending.value ||
     apptPending.value ||
     inventoryPending.value ||
-    clientsPending.value,
+    clientsPending.value ||
+    commissionsPending.value,
 );
 
 function fmtMoney(n: number | undefined) {
@@ -302,6 +325,58 @@ async function downloadReport(type: string, format: "excel" | "pdf") {
         </div>
       </section>
     </div>
+
+    <section class="ui-card mb-8 p-5">
+      <div class="mb-3 flex items-center justify-between">
+        <h2 class="text-sm font-black uppercase tracking-wide text-ink">
+          Comisiones de barberos
+        </h2>
+        <p v-if="commissions" class="text-xs text-muted">
+          {{ commissions.periodo.desde }} — {{ commissions.periodo.hasta }}
+        </p>
+      </div>
+      <div v-if="commissions" class="mb-4 grid grid-cols-2 gap-3">
+        <div>
+          <p class="text-[10px] font-bold uppercase text-muted">Generado (precio de lista)</p>
+          <p class="mt-1 text-lg font-black text-ink">{{ fmtMoney(commissions.total_generado) }}</p>
+        </div>
+        <div>
+          <p class="text-[10px] font-bold uppercase text-muted">Total a pagar</p>
+          <p class="mt-1 text-lg font-black text-gold">{{ fmtMoney(commissions.total_comisiones) }}</p>
+        </div>
+      </div>
+      <p v-if="commissions && !commissions.barberos.length" class="rounded-xl border border-dashed border-line p-6 text-center text-sm text-muted">
+        Sin citas completadas en este periodo.
+      </p>
+      <div v-else-if="commissions" class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-left text-[10px] font-bold uppercase text-muted">
+              <th class="pb-2">Barbero</th>
+              <th class="pb-2 text-right">Citas</th>
+              <th class="pb-2 text-right">Generado</th>
+              <th class="pb-2 text-right">%</th>
+              <th class="pb-2 text-right">Comisión</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="row in commissions.barberos" :key="row.barber.id" class="border-t border-line">
+              <td class="py-2 text-ink">{{ row.barber.nombre }}</td>
+              <td class="py-2 text-right text-ink">{{ row.citas_completadas }}</td>
+              <td class="py-2 text-right text-ink">{{ fmtMoney(row.total_generado) }}</td>
+              <td class="py-2 text-right text-muted">{{ row.comision_pct }}%</td>
+              <td class="py-2 text-right font-black text-gold">{{ fmtMoney(row.comision_monto) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="mt-3 text-[10px] italic text-muted">
+        Sobre el precio de lista del servicio, no lo que realmente entró en caja
+        (descuentos, paquetes, gift cards y premios de rifa son decisión del
+        negocio, no reducen lo que se le debe al barbero). Este reporte solo
+        informa -- el pago real se sigue manejando fuera del sistema.
+      </p>
+    </section>
 
     <section class="ui-card p-5">
       <h2 class="mb-3 text-sm font-black uppercase tracking-wide text-ink">
