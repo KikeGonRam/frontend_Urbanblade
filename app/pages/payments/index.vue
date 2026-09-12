@@ -83,6 +83,7 @@ interface ChargeableAppointment {
   nivel_pct: number;
   puntos_disponibles: number;
   premio_rifa: string | null;
+  paquete_disponible: { id: string; usos_restantes: number } | null;
 }
 
 interface Barber {
@@ -230,6 +231,10 @@ const form = reactive({
   propina: 0,
   puntosCanjear: 0,
   usarPremioRifa: false,
+  // Igual que usarPremioRifa: cubre el 100% del servicio, así que no se
+  // combina con puntos ni con gift card (backend ya lo valida, ver
+  // PaymentService::create()).
+  usarPaquete: false,
   // Redimir una gift card solo está resuelto para efectivo/transferencia:
   // el intent de Stripe (stripe-intent) no manda el código en su metadata,
   // así que el webhook no puede aplicarlo -- ver PaymentController::
@@ -254,7 +259,10 @@ const preview = computed(() =>
     puntosDisponibles: selected.value?.puntos_disponibles ?? 0,
     puntosCanjear: form.puntosCanjear,
     propina: form.propina,
-    usarPremioRifa: form.usarPremioRifa,
+    // El paquete cubre el 100% igual que el premio de rifa -- se reusa el
+    // mismo "apagador" del util compartido en vez de duplicar la lógica de
+    // ponerlo en $0 aquí.
+    usarPremioRifa: form.usarPremioRifa || form.usarPaquete,
   }),
 );
 
@@ -263,6 +271,7 @@ async function openCharge(preselectId = "") {
   form.propina = 0;
   form.puntosCanjear = 0;
   form.usarPremioRifa = false;
+  form.usarPaquete = false;
   form.codigoGiftCard = "";
   form.metodo = "efectivo";
   form.stripePaymentId = "";
@@ -305,8 +314,9 @@ onMounted(() => {
 function selectAppointment() {
   form.puntosCanjear = 0;
   form.usarPremioRifa = false;
+  form.usarPaquete = false;
   form.codigoGiftCard = "";
-  if (form.metodo === "tarjeta" && selected.value?.premio_rifa)
+  if (form.metodo === "tarjeta" && (selected.value?.premio_rifa || selected.value?.paquete_disponible))
     form.metodo = "efectivo";
 }
 
@@ -315,6 +325,19 @@ watch(
   (usar) => {
     if (usar) {
       form.puntosCanjear = 0;
+      form.usarPaquete = false;
+      form.codigoGiftCard = "";
+      if (form.metodo === "tarjeta") form.metodo = "efectivo";
+    }
+  },
+);
+
+watch(
+  () => form.usarPaquete,
+  (usar) => {
+    if (usar) {
+      form.puntosCanjear = 0;
+      form.usarPremioRifa = false;
       form.codigoGiftCard = "";
       if (form.metodo === "tarjeta") form.metodo = "efectivo";
     }
@@ -324,7 +347,10 @@ watch(
 watch(
   () => form.metodo,
   (m) => {
-    if (m === "tarjeta") form.codigoGiftCard = "";
+    if (m === "tarjeta") {
+      form.codigoGiftCard = "";
+      form.usarPaquete = false;
+    }
   },
 );
 
@@ -343,6 +369,7 @@ async function submitCharge() {
         propina: form.propina || 0,
         puntos_canjeados: form.puntosCanjear || 0,
         usar_premio_rifa: form.usarPremioRifa,
+        usar_paquete_id: form.usarPaquete ? selected.value.paquete_disponible?.id : undefined,
         codigo_gift_card: form.codigoGiftCard.trim() || undefined,
         stripe_payment_id: form.stripePaymentId || undefined,
       },
@@ -760,7 +787,35 @@ onUnmounted(() => teardownStripe());
               </div>
             </div>
 
-            <div v-if="form.metodo !== 'tarjeta' && !form.usarPremioRifa">
+            <div
+              v-if="selected.paquete_disponible"
+              class="rounded-xl border border-sky-400/25 bg-sky-400/5 p-4"
+            >
+              <label class="flex cursor-pointer items-start gap-3">
+                <input
+                  v-model="form.usarPaquete"
+                  type="checkbox"
+                  class="mt-0.5 h-4 w-4 rounded border-line"
+                >
+                <span>
+                  <span
+                    class="block text-[10px] font-black uppercase tracking-widest text-sky-300"
+                    >Paquete prepagado disponible</span
+                  >
+                  <span class="mt-0.5 block text-xs text-ink/80"
+                    >Le quedan {{ selected.paquete_disponible.usos_restantes }}
+                    uso{{ selected.paquete_disponible.usos_restantes === 1 ? "" : "s" }}
+                    de este servicio</span
+                  >
+                  <span class="mt-1 block text-[9px] italic text-muted"
+                    >Cubre el 100% del servicio (no se combina con puntos ni
+                    gift card).</span
+                  >
+                </span>
+              </label>
+            </div>
+
+            <div v-if="form.metodo !== 'tarjeta' && !form.usarPremioRifa && !form.usarPaquete">
               <label class="mb-1 block text-xs text-muted"
                 >Código de gift card (opcional)</label
               >
@@ -805,7 +860,7 @@ onUnmounted(() => teardownStripe());
 
             <div
               v-if="selected.nivel_pct > 0 || selected.puntos_disponibles > 0"
-              v-show="!form.usarPremioRifa"
+              v-show="!form.usarPremioRifa && !form.usarPaquete"
               class="space-y-3 rounded-xl border border-gold/20 bg-ink/3 p-4"
             >
               <p
@@ -871,7 +926,7 @@ onUnmounted(() => teardownStripe());
                   >
                 </button>
                 <button
-                  v-if="stripeConfigured && !form.usarPremioRifa"
+                  v-if="stripeConfigured && !form.usarPremioRifa && !form.usarPaquete"
                   type="button"
                   class="relative rounded-xl border p-3 text-center transition"
                   :class="
@@ -932,6 +987,13 @@ onUnmounted(() => teardownStripe());
                   <span class="text-[10px] font-bold uppercase text-muted"
                     >Premio de rifa</span
                   ><span class="text-fuchsia-400"
+                    >-{{ fmtMoney(selected.precio) }}</span
+                  >
+                </div>
+                <div v-else-if="form.usarPaquete" class="flex justify-between">
+                  <span class="text-[10px] font-bold uppercase text-muted"
+                    >Paquete prepagado</span
+                  ><span class="text-sky-400"
                     >-{{ fmtMoney(selected.precio) }}</span
                   >
                 </div>
