@@ -51,6 +51,7 @@ const ICONS: Record<string, string> = {
   notifications: '<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>',
   gift_cards: '<path d="M20 12v10H4V12M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/>',
   packages: '<rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V5a4 4 0 018 0v2"/>',
+  membership: '<rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>',
 }
 
 /** Único path real hoy — todo lo demás se muestra pero deshabilitado ("Próximamente") hasta su fase. */
@@ -62,6 +63,7 @@ const IMPLEMENTED_PATHS = new Set([
   '/my/appointments', '/barbers', '/my/invoices',
   '/campaigns', '/raffles', '/logs', '/settings', '/reports', '/analytics',
   '/social/feed', '/reviews', '/system', '/notifications', '/gift-cards', '/packages',
+  '/membership', '/admin/membership-plans',
 ])
 
 function item(label: string, to: string, icon: string, primary = false, badge: number | null = null): NavItem {
@@ -129,6 +131,7 @@ export function useNavigation() {
         collapsible: true,
         items: [
           item('Barberos', '/barbers/manage', 'barbers'),
+          item('Planes de Membresía', '/admin/membership-plans', 'membership'),
           item('Reseñas', '/reviews', 'reviews'),
           item('Usuarios', '/users', 'users'),
           item('Servicios', '/services', 'services'),
@@ -206,6 +209,7 @@ export function useNavigation() {
           item('Mis Pedidos', '/my/orders', 'orders'),
           item('Gift Cards', '/gift-cards', 'gift_cards'),
           item('Paquetes', '/packages', 'packages'),
+          item('Membresía', '/membership', 'membership'),
           item('Nuestros Barberos', '/barbers', 'barbers_client', true),
           item('Mis Facturas', '/my/invoices', 'invoices'),
           item('Recomendado para ti', '/analytics', 'analytics'),
