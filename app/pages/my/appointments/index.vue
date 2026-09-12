@@ -357,10 +357,14 @@ const payError = ref("");
 const payProcessing = ref(false);
 const payConfirming = ref(false);
 const paySucceeded = ref(false);
+// Opcional: una gift card es parcial por diseño, así que sí se combina con
+// tarjeta para el remanente (ver PaymentController::stripeIntent() en barber).
+const payGiftCardCode = ref("");
 
 async function openPay(appt: AppointmentRow) {
   payingAppt.value = appt;
   payError.value = "";
+  payGiftCardCode.value = "";
   paySucceeded.value = false;
   showPay.value = true;
   await nextTick();
@@ -413,7 +417,10 @@ async function payWithCard() {
       "/payments/stripe-intent",
       {
         method: "POST",
-        body: { appointment_id: payingAppt.value.id },
+        body: {
+          appointment_id: payingAppt.value.id,
+          codigo_gift_card: payGiftCardCode.value.trim() || undefined,
+        },
       },
     );
 
@@ -749,6 +756,16 @@ onUnmounted(() => teardownStripe());
         </p>
 
         <template v-if="!paySucceeded">
+          <label class="mb-1 block text-xs text-muted"
+            >Código de gift card (opcional)</label
+          >
+          <input
+            v-model="payGiftCardCode"
+            type="text"
+            placeholder="Ej. A1B2C3D4"
+            :disabled="payProcessing"
+            class="mb-3 w-full rounded-lg border border-line bg-main px-3 py-2 text-sm uppercase text-ink disabled:opacity-50"
+          >
           <div
             ref="cardElementRef"
             class="rounded-lg border border-line bg-main px-3 py-3"

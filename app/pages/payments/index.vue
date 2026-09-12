@@ -235,10 +235,10 @@ const form = reactive({
   // combina con puntos ni con gift card (backend ya lo valida, ver
   // PaymentService::create()).
   usarPaquete: false,
-  // Redimir una gift card solo está resuelto para efectivo/transferencia:
-  // el intent de Stripe (stripe-intent) no manda el código en su metadata,
-  // así que el webhook no puede aplicarlo -- ver PaymentController::
-  // stripeIntent() en barber. El campo se oculta con method === "tarjeta".
+  // A diferencia del paquete/premio de rifa (cubren el 100%, incompatibles
+  // con tarjeta porque dejarían $0 a cobrar), la gift card es parcial por
+  // diseño -- stripeIntent() en barber sí la combina con tarjeta para el
+  // remanente (ver PaymentController::stripeIntent()).
   codigoGiftCard: "",
   metodo: "efectivo" as "efectivo" | "transferencia" | "tarjeta",
   stripePaymentId: "",
@@ -347,10 +347,9 @@ watch(
 watch(
   () => form.metodo,
   (m) => {
-    if (m === "tarjeta") {
-      form.codigoGiftCard = "";
-      form.usarPaquete = false;
-    }
+    // El paquete sigue sin combinarse con tarjeta (cubre el 100%, dejaría $0
+    // a cobrar); la gift card sí se conserva -- se manda en el stripe-intent.
+    if (m === "tarjeta") form.usarPaquete = false;
   },
 );
 
@@ -447,6 +446,7 @@ async function payWithCard() {
         body: {
           appointment_id: selected.value.id,
           puntos_canjeados: form.puntosCanjear || 0,
+          codigo_gift_card: form.codigoGiftCard.trim() || undefined,
         },
       },
     );
@@ -815,7 +815,7 @@ onUnmounted(() => teardownStripe());
               </label>
             </div>
 
-            <div v-if="form.metodo !== 'tarjeta' && !form.usarPremioRifa && !form.usarPaquete">
+            <div v-if="!form.usarPremioRifa && !form.usarPaquete">
               <label class="mb-1 block text-xs text-muted"
                 >Código de gift card (opcional)</label
               >
