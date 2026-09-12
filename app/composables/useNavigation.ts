@@ -53,6 +53,7 @@ const ICONS: Record<string, string> = {
   packages: '<rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V5a4 4 0 018 0v2"/>',
   membership: '<rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>',
   referrals: '<circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><path d="M16 3.5a4 4 0 010 7"/><path d="M19 21v-2a4 4 0 00-2.5-3.7"/>',
+  waitlist: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/><path d="M3 3l3 3M21 3l-3 3"/>',
 }
 
 /** Único path real hoy — todo lo demás se muestra pero deshabilitado ("Próximamente") hasta su fase. */
@@ -64,7 +65,7 @@ const IMPLEMENTED_PATHS = new Set([
   '/my/appointments', '/barbers', '/my/invoices',
   '/campaigns', '/raffles', '/logs', '/settings', '/reports', '/analytics',
   '/social/feed', '/reviews', '/system', '/notifications', '/gift-cards', '/packages',
-  '/membership', '/admin/membership-plans', '/referrals',
+  '/membership', '/admin/membership-plans', '/referrals', '/waitlist',
 ])
 
 function item(label: string, to: string, icon: string, primary = false, badge: number | null = null): NavItem {
@@ -120,6 +121,7 @@ export function useNavigation() {
           item('Movimientos', '/inventory/movements', 'movements'),
           item('Gift Cards', '/gift-cards', 'gift_cards'),
           item('Paquetes', '/packages', 'packages'),
+          item('Lista de Espera', '/waitlist', 'waitlist'),
           ...(isReception.value ? [item('Analítica', '/analytics', 'analytics')] : []),
         ],
       })
@@ -212,6 +214,7 @@ export function useNavigation() {
           item('Paquetes', '/packages', 'packages'),
           item('Membresía', '/membership', 'membership'),
           item('Referidos', '/referrals', 'referrals'),
+          item('Lista de Espera', '/waitlist', 'waitlist'),
           item('Nuestros Barberos', '/barbers', 'barbers_client', true),
           item('Mis Facturas', '/my/invoices', 'invoices'),
           item('Recomendado para ti', '/analytics', 'analytics'),
