@@ -131,6 +131,44 @@ async function loadSlots() {
 }
 watch([serviceId, barberId, date], loadSlots, { immediate: true })
 
+// ── Lista de espera (cuando el día elegido ya no tiene horarios) ──────────
+// Mismo criterio de quién puede reservar (canBookHere, definido más abajo)
+// -- solo cliente o invitado, nunca staff/barbero.
+const joiningWaitlist = ref(false)
+const waitlistJoined = ref(false)
+const waitlistError = ref('')
+watch([serviceId, barberId, date], () => {
+  waitlistJoined.value = false
+  waitlistError.value = ''
+})
+
+async function joinWaitlist() {
+  if (joiningWaitlist.value || !barberId.value || !serviceId.value || !date.value) return
+
+  if (!isAuthenticated.value) {
+    await navigateTo(`/login?redirect=${encodeURIComponent(currentUrl())}`)
+
+    return
+  }
+
+  joiningWaitlist.value = true
+  waitlistError.value = ''
+  try {
+    await apiFetch('/waitlist', {
+      method: 'POST',
+      body: { barber_id: barberId.value, service_id: serviceId.value, fecha: date.value },
+    })
+    waitlistJoined.value = true
+  }
+  catch (err: unknown) {
+    waitlistError.value = (err as { data?: { message?: string } })?.data?.message
+      ?? 'No se pudo anotar en la lista de espera.'
+  }
+  finally {
+    joiningWaitlist.value = false
+  }
+}
+
 // ── Pasos ─────────────────────────────────────────────────────────────────
 const STEPS = ['Servicio', 'Barbero', 'Horario', 'Confirmar'] as const
 const step = computed(() => {
@@ -415,11 +453,32 @@ function prettyDate(iso: string) {
           v-else-if="slotsFailed" mascot="bruno" state="error" tone="danger"
           title="No se pudieron cargar los horarios" description="Revisa tu conexión e inténtalo nuevamente."
         />
-        <BrandStatePanel
-          v-else-if="!slots.length" mascot="nava" state="empty"
-          title="Sin horarios libres ese día"
-          description="Prueba con otra fecha o con otro barbero del equipo."
-        />
+        <template v-else-if="!slots.length">
+          <BrandStatePanel
+            mascot="nava" state="empty"
+            title="Sin horarios libres ese día"
+            description="Prueba con otra fecha o con otro barbero del equipo."
+          />
+          <div v-if="canBookHere" class="ui-card mt-4 p-4 text-center">
+            <template v-if="waitlistJoined">
+              <p class="text-sm font-bold text-emerald-400">
+                Te anotamos en la lista de espera. Te avisaremos si se libera un horario ese día.
+              </p>
+            </template>
+            <template v-else>
+              <p class="text-sm text-muted">
+                ¿Prefieres esperar a que se libere un horario en vez de cambiar de día?
+              </p>
+              <button
+                type="button" class="ui-btn-secondary mt-3 px-6 py-2.5 text-xs"
+                :disabled="joiningWaitlist" @click="joinWaitlist"
+              >
+                {{ joiningWaitlist ? 'Anotando…' : 'Anotarme en lista de espera' }}
+              </button>
+              <p v-if="waitlistError" role="alert" class="mt-2 text-xs text-red-400">{{ waitlistError }}</p>
+            </template>
+          </div>
+        </template>
         <div v-else class="grid grid-cols-3 gap-2 sm:grid-cols-5">
           <button
             v-for="slot in slots" :key="slot.time" type="button"
