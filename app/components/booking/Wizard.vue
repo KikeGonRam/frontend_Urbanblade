@@ -20,6 +20,7 @@ interface BarberRow {
   avg_rating: number | null
   total_reviews: number
   citas_conmigo: number | null
+  es_favorito: boolean
 }
 interface Slot { time: string, label: string }
 interface Barbershop {
@@ -75,6 +76,34 @@ const { data: barbersData, pending: barbersPending, error: barbersError } = awai
   () => apiFetch('/barbers'),
 )
 const barbers = computed(() => barbersData.value?.data ?? [])
+
+// ── Barbero favorito ─────────────────────────────────────────────────────
+// Solo preferencia de UI (pre-destacarlo), nunca bloquea reservar con otro.
+// Optimista: actualiza el heart al instante y revierte si el PUT falla, en
+// vez de esperar el round-trip antes de reflejar el click.
+const favoriteSaving = ref(false)
+async function toggleFavorite(barber: BarberRow) {
+  if (!isAuthenticated.value || favoriteSaving.value) return
+  const next = !barber.es_favorito
+  const previous = barbers.value.map(b => ({ id: b.id, es_favorito: b.es_favorito }))
+  for (const b of barbers.value) b.es_favorito = b.id === barber.id ? next : false
+  favoriteSaving.value = true
+  try {
+    await apiFetch('/profile/favorite-barber', {
+      method: 'PUT',
+      body: { barber_id: next ? barber.id : null },
+    })
+  }
+  catch {
+    for (const b of barbers.value) {
+      const found = previous.find(p => p.id === b.id)
+      if (found) b.es_favorito = found.es_favorito
+    }
+  }
+  finally {
+    favoriteSaving.value = false
+  }
+}
 
 const selectedService = computed(() => services.value.find(s => s.id === serviceId.value) ?? null)
 const selectedBarber = computed(() => barbers.value.find(b => b.id === barberId.value) ?? null)
@@ -444,9 +473,23 @@ function prettyDate(iso: string) {
         <div v-else class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <div
             v-for="barber in barbers" :key="barber.id"
-            class="ui-card flex flex-col gap-3 p-4 transition-colors hover:border-gold/40"
+            class="ui-card relative flex flex-col gap-3 p-4 transition-colors hover:border-gold/40"
+            :class="barber.es_favorito && 'border-gold/50'"
           >
-            <button type="button" class="flex min-h-11 items-center gap-3 text-left" @click="pickBarber(barber.id)">
+            <button
+              v-if="isAuthenticated" type="button"
+              class="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full transition-colors"
+              :class="barber.es_favorito ? 'text-gold' : 'text-muted hover:text-gold'"
+              :aria-pressed="barber.es_favorito"
+              :aria-label="barber.es_favorito ? `Quitar a ${barber.user?.name} de favoritos` : `Marcar a ${barber.user?.name} como favorito`"
+              :disabled="favoriteSaving"
+              @click.stop="toggleFavorite(barber)"
+            >
+              <svg viewBox="0 0 24 24" :fill="barber.es_favorito ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="1.5" class="h-5 w-5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 20.5s-7.5-4.6-10-9.3C.5 8 2 4.5 5.5 4c2-.3 3.8.7 4.9 2.2l1.6 2 1.6-2C14.7 4.7 16.5 3.7 18.5 4c3.5.5 5 4 3.5 7.2-2.5 4.7-10 9.3-10 9.3Z" />
+              </svg>
+            </button>
+            <button type="button" class="flex min-h-11 items-center gap-3 pr-8 text-left" @click="pickBarber(barber.id)">
               <img
                 v-if="barber.foto" :src="barber.foto" :alt="`Foto de ${barber.user?.name}`"
                 class="h-12 w-12 shrink-0 rounded-full object-cover" loading="lazy" decoding="async"
