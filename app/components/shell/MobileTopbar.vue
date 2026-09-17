@@ -9,7 +9,6 @@ const { user } = useAuth()
     </NuxtLink>
 
     <div class="flex items-center gap-3">
-      <ShellPushToggle />
       <NuxtLink
         to="/profile"
         class="flex h-11 w-11 items-center justify-center rounded-full bg-gold/20 text-xs font-semibold text-gold transition hover:bg-gold/30"

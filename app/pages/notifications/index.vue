@@ -194,6 +194,13 @@ function fmtDate(iso: string | null) {
           >
         </label>
       </div>
+      <div class="flex min-h-14 items-center justify-between gap-4 rounded-lg border border-line bg-main px-3 py-2.5">
+        <div>
+          <p class="text-sm font-semibold text-ink">Avisos en este dispositivo</p>
+          <p class="text-xs text-muted">Activa la campana del navegador para citas y novedades.</p>
+        </div>
+        <ShellPushToggle />
+      </div>
       <p v-if="prefsMessage" role="status" class="text-sm text-emerald-400">{{ prefsMessage }}</p>
     </section>
   </div>

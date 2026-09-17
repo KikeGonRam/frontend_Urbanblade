@@ -61,7 +61,6 @@ watch(
           </option>
         </select>
       </label>
-      <ShellPushToggle />
       <NuxtLink to="/profile" class="ub-topbar-profile" title="Mi perfil">
         <img
           v-if="user?.avatar_url && !avatarFailed"

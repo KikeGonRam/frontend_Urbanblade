@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import BrandMark from "~/components/brand/BrandMark.vue";
+import NotificationCenter from "~/components/shell/NotificationCenter.vue";
 import type { NavSection } from "~/composables/useNavigation";
 const route = useRoute();
 const { sections } = useNavigation();
@@ -115,8 +116,12 @@ async function onLogout() {
           "
         >
           <li v-for="item in section.items" :key="item.to">
+            <NotificationCenter
+              v-if="item.to === '/notifications'"
+              :collapsed="railCollapsed"
+            />
             <NuxtLink
-              v-if="item.implemented"
+              v-else-if="item.implemented"
               :to="item.to"
               class="ub-sidebar__item"
               :class="{
