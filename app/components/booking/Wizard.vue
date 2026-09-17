@@ -9,6 +9,7 @@ interface ServiceRow {
   precio: number
   duracion_min: number
   descripcion: string | null
+  imagen: string | null
 }
 interface BarberRow {
   id: string
@@ -377,10 +378,19 @@ function prettyDate(iso: string) {
         <div v-else class="grid gap-3 sm:grid-cols-2">
           <button
             v-for="service in services" :key="service.id" type="button"
-            class="ui-card flex min-h-11 items-center justify-between gap-4 p-4 text-left transition-colors hover:border-gold/40"
+            class="ui-card flex min-h-11 items-center gap-4 p-4 text-left transition-colors hover:border-gold/40"
             @click="pickService(service.id)"
           >
-            <span class="min-w-0">
+            <img
+              v-if="service.imagen" :src="service.imagen" :alt="service.nombre"
+              class="h-14 w-14 shrink-0 rounded-lg border border-line object-cover"
+            >
+            <span v-else class="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-line bg-gold/10 text-gold" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-6 w-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 6a2 2 0 1 1 4 0 2 2 0 0 1-4 0Zm0 12a2 2 0 1 1 4 0 2 2 0 0 1-4 0Zm2-10 10 8m0-8L8 16" />
+              </svg>
+            </span>
+            <span class="min-w-0 flex-1">
               <span class="block truncate text-sm font-black text-ink">{{ service.nombre }}</span>
               <span class="mt-0.5 block text-xs text-muted">{{ service.duracion_min }} min</span>
             </span>
