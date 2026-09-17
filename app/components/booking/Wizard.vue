@@ -17,6 +17,9 @@ interface BarberRow {
   user: { id: string, name: string } | null
   especialidades: string | null
   foto: string | null
+  avg_rating: number | null
+  total_reviews: number
+  citas_conmigo: number | null
 }
 interface Slot { time: string, label: string }
 interface Barbershop {
@@ -439,23 +442,44 @@ function prettyDate(iso: string) {
           title="Aún no hay barberos activos" description="Vuelve pronto o comunícate con la barbería."
         />
         <div v-else class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          <button
-            v-for="barber in barbers" :key="barber.id" type="button"
-            class="ui-card flex min-h-11 items-center gap-3 p-4 text-left transition-colors hover:border-gold/40"
-            @click="pickBarber(barber.id)"
+          <div
+            v-for="barber in barbers" :key="barber.id"
+            class="ui-card flex flex-col gap-3 p-4 transition-colors hover:border-gold/40"
           >
-            <img
-              v-if="barber.foto" :src="barber.foto" :alt="`Foto de ${barber.user?.name}`"
-              class="h-12 w-12 shrink-0 rounded-full object-cover" loading="lazy" decoding="async"
+            <button type="button" class="flex min-h-11 items-center gap-3 text-left" @click="pickBarber(barber.id)">
+              <img
+                v-if="barber.foto" :src="barber.foto" :alt="`Foto de ${barber.user?.name}`"
+                class="h-12 w-12 shrink-0 rounded-full object-cover" loading="lazy" decoding="async"
+              >
+              <span v-else class="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-gold/15 text-xs font-black text-gold" aria-hidden="true">
+                {{ (barber.user?.name ?? '?').slice(0, 1) }}
+              </span>
+              <span class="min-w-0">
+                <span class="block truncate text-sm font-black text-ink">{{ barber.user?.name }}</span>
+                <span class="mt-0.5 block truncate text-xs text-muted">{{ barber.especialidades || 'Barbero' }}</span>
+              </span>
+            </button>
+
+            <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+              <span v-if="barber.avg_rating" class="flex items-center gap-1 font-bold text-gold">
+                <svg viewBox="0 0 20 20" fill="currentColor" class="h-3.5 w-3.5">
+                  <path d="M10 1.5l2.6 5.27 5.82.85-4.21 4.1 1 5.8L10 14.9l-5.21 2.74 1-5.8-4.21-4.1 5.82-.85L10 1.5Z" />
+                </svg>
+                {{ barber.avg_rating }} <span class="font-normal text-muted">({{ barber.total_reviews }})</span>
+              </span>
+              <span v-else class="text-muted">Sin reseñas todavía</span>
+              <span v-if="barber.citas_conmigo" class="rounded-full bg-gold/10 px-2 py-0.5 font-bold text-gold">
+                Ya te cortaste {{ barber.citas_conmigo }}x con él
+              </span>
+            </div>
+
+            <NuxtLink
+              v-if="barber.slug" :to="`/equipo/${barber.slug}`" target="_blank"
+              class="text-xs font-bold text-muted underline decoration-dotted hover:text-gold"
             >
-            <span v-else class="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-gold/15 text-xs font-black text-gold" aria-hidden="true">
-              {{ (barber.user?.name ?? '?').slice(0, 1) }}
-            </span>
-            <span class="min-w-0">
-              <span class="block truncate text-sm font-black text-ink">{{ barber.user?.name }}</span>
-              <span class="mt-0.5 block truncate text-xs text-muted">{{ barber.especialidades || 'Barbero' }}</span>
-            </span>
-          </button>
+              Ver perfil y portafolio →
+            </NuxtLink>
+          </div>
         </div>
       </section>
 
