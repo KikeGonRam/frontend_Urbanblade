@@ -132,6 +132,31 @@ async function loadSlots() {
 }
 watch([serviceId, barberId, date], loadSlots, { immediate: true })
 
+// Agrupar horarios por franja del día -- una sola lista plana de 20+ botones
+// se siente vacia/monotona aunque haya bastante disponibilidad; agruparlos
+// con un encabezado da la sensacion de "hay opciones organizadas" en vez de
+// "aqui hay una lista".
+const SLOT_GROUPS = [
+  { key: 'manana', label: 'Mañana', max: 12 * 60 },
+  { key: 'tarde', label: 'Tarde', max: 18 * 60 },
+  { key: 'noche', label: 'Noche', max: Infinity },
+] as const
+
+function slotMinutes(time: string): number {
+  const [h, m] = time.split(':').map(Number)
+  return (h ?? 0) * 60 + (m ?? 0)
+}
+
+const groupedSlots = computed(() => {
+  const groups = SLOT_GROUPS.map(g => ({ ...g, slots: [] as Slot[] }))
+  for (const slot of slots.value) {
+    const minutes = slotMinutes(slot.time)
+    const group = groups.find(g => minutes < g.max) ?? groups[groups.length - 1]!
+    group.slots.push(slot)
+  }
+  return groups.filter(g => g.slots.length)
+})
+
 // ── Lista de espera (cuando el día elegido ya no tiene horarios) ──────────
 // Mismo criterio de quién puede reservar (canBookHere, definido más abajo)
 // -- solo cliente o invitado, nunca staff/barbero.
@@ -489,17 +514,28 @@ function prettyDate(iso: string) {
             </template>
           </div>
         </template>
-        <div v-else class="grid grid-cols-3 gap-2 sm:grid-cols-5">
-          <button
-            v-for="slot in slots" :key="slot.time" type="button"
-            class="min-h-11 rounded-xl border px-2 py-2 text-sm font-bold transition-colors"
-            :class="time === slot.time ? 'border-gold bg-gold/10 text-gold' : 'border-line text-ink hover:border-gold/30'"
-            :aria-pressed="time === slot.time"
-            @click="time = slot.time; activeStep = null"
-          >
-            {{ slot.time }}
-          </button>
-        </div>
+        <template v-else>
+          <p class="mb-4 text-xs font-bold text-muted">
+            {{ slots.length }} horario{{ slots.length === 1 ? '' : 's' }} disponible{{ slots.length === 1 ? '' : 's' }} para
+            {{ prettyDate(date) }}
+          </p>
+          <div v-for="group in groupedSlots" :key="group.key" class="mb-5 last:mb-0">
+            <h3 class="mb-2 text-[10px] font-black uppercase tracking-widest text-muted">
+              {{ group.label }} <span class="text-ink/40">· {{ group.slots.length }}</span>
+            </h3>
+            <div class="grid grid-cols-3 gap-2 sm:grid-cols-5">
+              <button
+                v-for="slot in group.slots" :key="slot.time" type="button"
+                class="min-h-11 rounded-xl border px-2 py-2 text-sm font-bold transition-colors"
+                :class="time === slot.time ? 'border-gold bg-gold/10 text-gold' : 'border-line text-ink hover:border-gold/30'"
+                :aria-pressed="time === slot.time"
+                @click="time = slot.time; activeStep = null"
+              >
+                {{ slot.time }}
+              </button>
+            </div>
+          </div>
+        </template>
       </section>
 
       <!-- Paso 4: confirmar -->
