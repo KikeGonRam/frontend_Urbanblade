@@ -22,6 +22,15 @@ interface BarberRow {
   citas_conmigo: number | null
   es_favorito: boolean
 }
+interface ProductRow {
+  id: string
+  nombre: string
+  categoria: string | null
+  descripcion: string | null
+  precio_venta: number
+  stock_actual: number
+  imagen: string | null
+}
 interface Slot { time: string, label: string }
 interface Barbershop {
   nombre: string | null
@@ -76,6 +85,29 @@ const { data: barbersData, pending: barbersPending, error: barbersError } = awai
   () => apiFetch('/barbers'),
 )
 const barbers = computed(() => barbersData.value?.data ?? [])
+
+// ── Productos sugeridos (paso de confirmar) ──────────────────────────────
+// Reutiliza el mismo catalogo publico de la tienda (GET /products) -- no es
+// un catalogo aparte, solo se sugieren 4 con stock disponible para no
+// abrumar el paso de confirmar con la tienda completa.
+const { data: productsData } = await useAsyncData<{ data: ProductRow[] }>(
+  'reservar-products',
+  () => apiFetch('/products'),
+)
+const suggestedProducts = computed(() =>
+  (productsData.value?.data ?? []).filter(p => p.stock_actual > 0).slice(0, 4),
+)
+const selectedProductIds = ref<Set<string>>(new Set())
+function toggleProduct(id: string) {
+  const next = new Set(selectedProductIds.value)
+  next.has(id) ? next.delete(id) : next.add(id)
+  selectedProductIds.value = next
+}
+const selectedProducts = computed(() =>
+  suggestedProducts.value.filter(p => selectedProductIds.value.has(p.id)),
+)
+const productsTotal = computed(() => selectedProducts.value.reduce((sum, p) => sum + p.precio_venta, 0))
+const grandTotal = computed(() => (selectedService.value?.precio ?? 0) + productsTotal.value)
 
 // ── Barbero favorito ─────────────────────────────────────────────────────
 // Solo preferencia de UI (pre-destacarlo), nunca bloquea reservar con otro.
@@ -263,6 +295,7 @@ const saving = ref(false)
 watch(saving, value => emit('busy', value))
 const submitError = ref('')
 const confirmedCode = ref('')
+const productsWarning = ref('')
 
 function currentUrl() {
   const q = new URLSearchParams({
@@ -288,7 +321,7 @@ async function confirm() {
 
   saving.value = true
   try {
-    const res = await apiFetch<{ data: { code: string } }>('/appointments', {
+    const res = await apiFetch<{ data: { code: string }, productos_error?: string | null }>('/appointments', {
       method: 'POST',
       body: {
         barber_id: barberId.value,
@@ -296,9 +329,15 @@ async function confirm() {
         fecha: date.value,
         hora_inicio: time.value,
         notas: notes.value || undefined,
+        productos: selectedProducts.value.length
+          ? selectedProducts.value.map(p => ({ product_id: p.id, cantidad: 1 }))
+          : undefined,
       },
     })
     confirmedCode.value = res.data?.code ?? ''
+    // La cita ya quedo creada aunque los productos fallen (ver backend): se
+    // avisa aparte en vez de tratarlo como un error de la reserva completa.
+    productsWarning.value = res.productos_error ?? ''
     if (confirmedCode.value) emit('confirmed', confirmedCode.value)
   }
   catch (err: unknown) {
@@ -354,6 +393,9 @@ function prettyDate(iso: string) {
           <dd class="text-right font-bold text-ink">{{ prettyDate(date) }} · {{ time }}</dd>
         </div>
       </dl>
+      <p v-if="productsWarning" role="alert" class="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-300">
+        Tu cita quedó confirmada, pero no pudimos agregar los productos: {{ productsWarning }}
+      </p>
       <p v-if="shop?.politica_cancelacion" class="mt-6 text-xs leading-5 text-muted">
         Puedes cancelar o reprogramar hasta {{ shop.politica_cancelacion }} horas antes de tu cita.
       </p>
@@ -627,11 +669,42 @@ function prettyDate(iso: string) {
               <dt class="text-muted">Cuándo</dt>
               <dd class="text-right font-bold text-ink">{{ prettyDate(date) }} · {{ time }}</dd>
             </div>
+            <div v-for="p in selectedProducts" :key="p.id" class="flex items-start justify-between gap-4 text-xs">
+              <dt class="text-muted">+ {{ p.nombre }}</dt>
+              <dd class="text-right text-ink">{{ currency(p.precio_venta) }}</dd>
+            </div>
             <div class="flex items-start justify-between gap-4 border-t border-line pt-3">
               <dt class="font-black uppercase tracking-widest text-ink">Total</dt>
-              <dd class="text-right text-lg font-black text-gold">{{ currency(selectedService?.precio ?? 0) }}</dd>
+              <dd class="text-right text-lg font-black text-gold">{{ currency(grandTotal) }}</dd>
             </div>
           </dl>
+
+          <div v-if="suggestedProducts.length" class="mt-5 border-t border-line pt-5">
+            <p class="mb-3 text-xs font-bold text-ink">¿Se te antoja algo para llevar a tu cita?</p>
+            <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              <button
+                v-for="p in suggestedProducts" :key="p.id" type="button"
+                class="rounded-xl border p-2 text-left transition-colors"
+                :class="selectedProductIds.has(p.id) ? 'border-gold bg-gold/10' : 'border-line hover:border-gold/30'"
+                :aria-pressed="selectedProductIds.has(p.id)"
+                @click="toggleProduct(p.id)"
+              >
+                <img
+                  v-if="p.imagen" :src="p.imagen" :alt="p.nombre"
+                  class="mb-2 h-16 w-full rounded-lg object-cover"
+                >
+                <span v-else class="mb-2 flex h-16 w-full items-center justify-center rounded-lg bg-gold/10 text-[10px] text-muted">
+                  Sin foto
+                </span>
+                <span class="block truncate text-xs font-bold text-ink">{{ p.nombre }}</span>
+                <span class="mt-0.5 flex items-center justify-between text-xs">
+                  <span class="font-bold text-gold">{{ currency(p.precio_venta) }}</span>
+                  <span v-if="selectedProductIds.has(p.id)" class="font-black text-gold">✓ Agregado</span>
+                </span>
+              </button>
+            </div>
+          </div>
+
           <div class="mt-5">
             <label for="booking-notes" class="mb-1 block text-xs font-bold text-ink">Notas para tu cita (opcional)</label>
             <textarea id="booking-notes" v-model="notes" class="ui-input w-full" rows="2" maxlength="1000" />
