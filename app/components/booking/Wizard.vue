@@ -159,23 +159,32 @@ let cardElement: StripeCardElement | null = null
 const cardElementRef = ref<HTMLDivElement | null>(null)
 const stripeConfigured = Boolean(runtimeConfig.public.stripeKey)
 const cardError = ref('')
+// `stripe` es una variable normal (no reactiva) a proposito, para no meter
+// el objeto Stripe en un Proxy de Vue; este ref es lo que el template observa.
+const stripeReady = ref(false)
 
 async function ensureStripeMounted() {
   if (!stripeConfigured || cardElement) return
   stripe = await loadStripe(runtimeConfig.public.stripeKey as string)
   if (!stripe) return
   elements = stripe.elements()
+  // El iframe de Stripe es de otro origen: no puede heredar el color del tema
+  // ("inherit" lo dejaba oscuro sobre fondo oscuro), asi que se le pasa el
+  // color ya calculado del contenedor.
+  const textColor = cardElementRef.value ? getComputedStyle(cardElementRef.value).color : '#ffffff'
   cardElement = elements.create('card', {
-    style: { base: { fontFamily: 'inherit', fontSize: '15px', color: 'inherit' }, invalid: { color: '#f87171' } },
+    style: { base: { fontFamily: 'Figtree, sans-serif', fontSize: '15px', color: textColor, '::placeholder': { color: '#8a8a8a' } }, invalid: { color: '#f87171' } },
   })
   if (cardElementRef.value) cardElement.mount(cardElementRef.value)
   cardElement.on('change', ({ error: elError }) => { cardError.value = elError?.message ?? '' })
+  stripeReady.value = true
 }
 function teardownStripe() {
   cardElement?.unmount()
   cardElement = null
   elements = null
   cardError.value = ''
+  stripeReady.value = false
 }
 watch(payChoice, async (choice) => {
   if (choice === 'ahora_tarjeta') await nextTick().then(ensureStripeMounted)
@@ -432,7 +441,7 @@ async function confirm() {
         pagar_ahora: payChoice.value !== 'despues' || undefined,
       },
     })
-    confirmedCode.value = res.data?.code ?? ''
+    const code = res.data?.code ?? ''
     // La cita ya quedo creada aunque los productos fallen (ver backend): se
     // avisa aparte en vez de tratarlo como un error de la reserva completa.
     productsWarning.value = res.productos_error ?? ''
@@ -440,11 +449,16 @@ async function confirm() {
     // El cobro (si eligio pagar ahora) va DESPUES de crear la cita: reutiliza
     // los mismos endpoints del deposito anti-no-show. Si el cobro falla, la
     // cita ya quedo reservada -- se avisa aparte, nunca se revierte la cita.
-    if (confirmedCode.value && payChoice.value !== 'despues') {
-      await chargeBookingPayment(confirmedCode.value)
+    // IMPORTANTE: confirmedCode se asigna DESPUES de cobrar. Asignarlo antes
+    // cambia la vista a "cita registrada", que desmonta el campo de tarjeta
+    // de Stripe y el confirmCardPayment falla con "Element not mounted"
+    // (detectado en una prueba real en AWS).
+    if (code && payChoice.value !== 'despues') {
+      await chargeBookingPayment(code)
     }
 
-    if (confirmedCode.value) emit('confirmed', confirmedCode.value)
+    confirmedCode.value = code
+    if (code) emit('confirmed', code)
   }
   catch (err: unknown) {
     // El 422 del backend trae el motivo real ("El barbero ya tiene una cita
@@ -919,9 +933,10 @@ function prettyDate(iso: string) {
             </p>
 
             <div v-if="payChoice === 'ahora_tarjeta'" class="mt-3">
-              <div ref="cardElementRef" class="ui-input flex items-center px-3 py-3" />
+              <!-- Sin flex: en un contenedor flex el iframe de Stripe se colapsaba a 1px de ancho -->
+              <div ref="cardElementRef" class="ui-input block w-full px-3 py-3" />
               <p v-if="cardError" role="alert" class="mt-2 text-xs text-red-400">{{ cardError }}</p>
-              <p v-if="!stripe" class="mt-2 text-xs text-muted">Cargando formulario de tarjeta…</p>
+              <p v-if="!stripeReady" class="mt-2 text-xs text-muted">Cargando formulario de tarjeta…</p>
             </div>
 
             <div v-if="payChoice === 'ahora_transferencia'" class="mt-3">
