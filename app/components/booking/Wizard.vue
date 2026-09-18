@@ -107,7 +107,29 @@ const selectedProducts = computed(() =>
   suggestedProducts.value.filter(p => selectedProductIds.value.has(p.id)),
 )
 const productsTotal = computed(() => selectedProducts.value.reduce((sum, p) => sum + p.precio_venta, 0))
-const grandTotal = computed(() => (selectedService.value?.precio ?? 0) + productsTotal.value)
+
+// ── Propina sugerida ──────────────────────────────────────────────────────
+// Solo se calcula sobre el precio del SERVICIO (no sobre productos, igual
+// que hace el staff al cobrar en recepción -- ver loyaltyCharge.ts). Es
+// nada más una referencia que viaja con la cita; el cobro real (Fase 7)
+// sigue siendo autoridad exclusiva de PaymentService.
+const TIP_PRESETS = [0, 0.10, 0.15, 0.20] as const
+const tipPreset = ref<number>(0)
+const customTip = ref<string>('')
+const usingCustomTip = computed(() => customTip.value !== '')
+const tipAmount = computed(() => {
+  if (usingCustomTip.value) {
+    const parsed = Number(customTip.value)
+    return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0
+  }
+  return Math.round((selectedService.value?.precio ?? 0) * tipPreset.value)
+})
+function pickTipPreset(pct: number) {
+  tipPreset.value = pct
+  customTip.value = ''
+}
+
+const grandTotal = computed(() => (selectedService.value?.precio ?? 0) + productsTotal.value + tipAmount.value)
 
 // ── Barbero favorito ─────────────────────────────────────────────────────
 // Solo preferencia de UI (pre-destacarlo), nunca bloquea reservar con otro.
@@ -332,6 +354,7 @@ async function confirm() {
         productos: selectedProducts.value.length
           ? selectedProducts.value.map(p => ({ product_id: p.id, cantidad: 1 }))
           : undefined,
+        propina_sugerida: tipAmount.value > 0 ? tipAmount.value : undefined,
       },
     })
     confirmedCode.value = res.data?.code ?? ''
@@ -673,6 +696,10 @@ function prettyDate(iso: string) {
               <dt class="text-muted">+ {{ p.nombre }}</dt>
               <dd class="text-right text-ink">{{ currency(p.precio_venta) }}</dd>
             </div>
+            <div v-if="tipAmount > 0" class="flex items-start justify-between gap-4 text-xs">
+              <dt class="text-muted">+ Propina</dt>
+              <dd class="text-right text-ink">{{ currency(tipAmount) }}</dd>
+            </div>
             <div class="flex items-start justify-between gap-4 border-t border-line pt-3">
               <dt class="font-black uppercase tracking-widest text-ink">Total</dt>
               <dd class="text-right text-lg font-black text-gold">{{ currency(grandTotal) }}</dd>
@@ -702,6 +729,29 @@ function prettyDate(iso: string) {
                   <span v-if="selectedProductIds.has(p.id)" class="font-black text-gold">✓ Agregado</span>
                 </span>
               </button>
+            </div>
+          </div>
+
+          <div v-if="selectedService" class="mt-5 border-t border-line pt-5">
+            <p class="mb-3 text-xs font-bold text-ink">¿Quieres dejar propina para {{ selectedBarber?.user?.name || 'tu barbero' }}?</p>
+            <div class="grid grid-cols-4 gap-2">
+              <button
+                v-for="pct in TIP_PRESETS" :key="pct" type="button"
+                class="min-h-11 rounded-xl border text-sm font-bold transition-colors"
+                :class="!usingCustomTip && tipPreset === pct ? 'border-gold bg-gold/10 text-gold' : 'border-line text-ink hover:border-gold/30'"
+                :aria-pressed="!usingCustomTip && tipPreset === pct"
+                @click="pickTipPreset(pct)"
+              >
+                {{ pct === 0 ? 'Sin propina' : `${pct * 100}%` }}
+              </button>
+            </div>
+            <div class="mt-2 flex items-center gap-2">
+              <span class="text-xs text-muted">Otro monto:</span>
+              <input
+                v-model="customTip" type="number" min="0" step="10" placeholder="$"
+                class="ui-input w-24 py-1.5 text-sm"
+                @focus="customTip = customTip || String(tipAmount || '')"
+              >
             </div>
           </div>
 
