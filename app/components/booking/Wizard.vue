@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { loadStripe, type Stripe, type StripeCardElement, type StripeElements } from '@stripe/stripe-js'
+
 const props = withDefaults(defineProps<{ initialBarber?: string, embedded?: boolean }>(), { initialBarber: '', embedded: false })
 const emit = defineEmits<{ confirmed: [code: string], busy: [value: boolean] }>()
 
@@ -43,6 +45,7 @@ interface Barbershop {
 
 const { apiFetch } = useApi()
 const { isAuthenticated, hasRole, user, fetchMe } = useAuth()
+const runtimeConfig = useRuntimeConfig()
 const route = useRoute()
 
 // /reservar es pública y no pasa por el middleware 'auth', así que nadie
@@ -108,11 +111,21 @@ const selectedProducts = computed(() =>
 )
 const productsTotal = computed(() => selectedProducts.value.reduce((sum, p) => sum + p.precio_venta, 0))
 
+// ── Descuento de membresia/lealtad ───────────────────────────────────────
+// El mismo % que ya calcula PaymentService al cobrar (ver
+// LoyaltyService::bestDiscountPct) -- se muestra aqui solo como referencia
+// honesta de cuanto va a pagar realmente, sea que pague ahora o despues.
+const membershipDiscountPct = computed(() => user.value?.client?.descuento_activo_pct ?? 0)
+const discountedServicePrice = computed(() => {
+  const base = selectedService.value?.precio ?? 0
+  return membershipDiscountPct.value > 0
+    ? Math.round(base * (1 - membershipDiscountPct.value / 100) * 100) / 100
+    : base
+})
+
 // ── Propina sugerida ──────────────────────────────────────────────────────
-// Solo se calcula sobre el precio del SERVICIO (no sobre productos, igual
-// que hace el staff al cobrar en recepción -- ver loyaltyCharge.ts). Es
-// nada más una referencia que viaja con la cita; el cobro real (Fase 7)
-// sigue siendo autoridad exclusiva de PaymentService.
+// Se calcula sobre el precio YA con descuento (mismo criterio que
+// loyaltyCharge.ts usa en recepcion: descuento primero, propina despues).
 const TIP_PRESETS = [0, 0.10, 0.15, 0.20] as const
 const tipPreset = ref<number>(0)
 const customTip = ref<string>('')
@@ -122,14 +135,62 @@ const tipAmount = computed(() => {
     const parsed = Number(customTip.value)
     return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0
   }
-  return Math.round((selectedService.value?.precio ?? 0) * tipPreset.value)
+  return Math.round(discountedServicePrice.value * tipPreset.value)
 })
 function pickTipPreset(pct: number) {
   tipPreset.value = pct
   customTip.value = ''
 }
 
-const grandTotal = computed(() => (selectedService.value?.precio ?? 0) + productsTotal.value + tipAmount.value)
+const grandTotal = computed(() => discountedServicePrice.value + productsTotal.value + tipAmount.value)
+
+// ── Pagar ahora vs pagar despues (Fase 7) ────────────────────────────────
+// "Pagar ahora" reutiliza el mecanismo de deposito anti-no-show tal cual
+// (mismo backend, mismo webhook de Stripe) pero por el monto completo -- ver
+// AppointmentController::store() en barber. Default 'despues' para no
+// forzar el cambio de comportamiento a nadie que solo quiera reservar.
+type PayChoice = 'despues' | 'ahora_tarjeta' | 'ahora_transferencia'
+const payChoice = ref<PayChoice>('despues')
+const payAmountToCharge = computed(() => discountedServicePrice.value + tipAmount.value)
+
+let stripe: Stripe | null = null
+let elements: StripeElements | null = null
+let cardElement: StripeCardElement | null = null
+const cardElementRef = ref<HTMLDivElement | null>(null)
+const stripeConfigured = Boolean(runtimeConfig.public.stripeKey)
+const cardError = ref('')
+
+async function ensureStripeMounted() {
+  if (!stripeConfigured || cardElement) return
+  stripe = await loadStripe(runtimeConfig.public.stripeKey as string)
+  if (!stripe) return
+  elements = stripe.elements()
+  cardElement = elements.create('card', {
+    style: { base: { fontFamily: 'inherit', fontSize: '15px', color: 'inherit' }, invalid: { color: '#f87171' } },
+  })
+  if (cardElementRef.value) cardElement.mount(cardElementRef.value)
+  cardElement.on('change', ({ error: elError }) => { cardError.value = elError?.message ?? '' })
+}
+function teardownStripe() {
+  cardElement?.unmount()
+  cardElement = null
+  elements = null
+  cardError.value = ''
+}
+watch(payChoice, async (choice) => {
+  if (choice === 'ahora_tarjeta') await nextTick().then(ensureStripeMounted)
+  else teardownStripe()
+})
+onUnmounted(() => teardownStripe())
+
+// Transferencia: el cliente sube su comprobante DESPUES de que la cita ya
+// existe (mismo flujo que el deposito anti-no-show) -- se guarda el archivo
+// aqui y se sube en confirm(), una vez se tiene el codigo de la cita.
+const transferReceipt = ref<File | null>(null)
+function onTransferFileChange(e: Event) {
+  const input = e.target as HTMLInputElement
+  transferReceipt.value = input.files?.[0] ?? null
+}
 
 // ── Barbero favorito ─────────────────────────────────────────────────────
 // Solo preferencia de UI (pre-destacarlo), nunca bloquea reservar con otro.
@@ -330,6 +391,9 @@ function currentUrl() {
   return `/reservar?${q}`
 }
 
+const paymentWarning = ref('')
+const paymentConfirming = ref(false)
+
 async function confirm() {
   if (saving.value || slotsPending.value || !selectedService.value || !selectedBarber.value || !time.value) return
   submitError.value = ''
@@ -337,6 +401,16 @@ async function confirm() {
     // Única puerta de sesión del flujo, y solo al final: la selección viaja
     // en ?redirect para volver exactamente a este punto.
     await navigateTo(`/login?redirect=${encodeURIComponent(currentUrl())}`)
+
+    return
+  }
+  if (payChoice.value === 'ahora_tarjeta' && (!stripe || !cardElement)) {
+    submitError.value = 'El formulario de tarjeta todavía no está listo. Espera un momento e intenta de nuevo.'
+
+    return
+  }
+  if (payChoice.value === 'ahora_transferencia' && !transferReceipt.value) {
+    submitError.value = 'Sube tu comprobante de transferencia para continuar.'
 
     return
   }
@@ -355,12 +429,21 @@ async function confirm() {
           ? selectedProducts.value.map(p => ({ product_id: p.id, cantidad: 1 }))
           : undefined,
         propina_sugerida: tipAmount.value > 0 ? tipAmount.value : undefined,
+        pagar_ahora: payChoice.value !== 'despues' || undefined,
       },
     })
     confirmedCode.value = res.data?.code ?? ''
     // La cita ya quedo creada aunque los productos fallen (ver backend): se
     // avisa aparte en vez de tratarlo como un error de la reserva completa.
     productsWarning.value = res.productos_error ?? ''
+
+    // El cobro (si eligio pagar ahora) va DESPUES de crear la cita: reutiliza
+    // los mismos endpoints del deposito anti-no-show. Si el cobro falla, la
+    // cita ya quedo reservada -- se avisa aparte, nunca se revierte la cita.
+    if (confirmedCode.value && payChoice.value !== 'despues') {
+      await chargeBookingPayment(confirmedCode.value)
+    }
+
     if (confirmedCode.value) emit('confirmed', confirmedCode.value)
   }
   catch (err: unknown) {
@@ -375,6 +458,39 @@ async function confirm() {
   }
   finally {
     saving.value = false
+  }
+}
+
+async function chargeBookingPayment(code: string) {
+  paymentConfirming.value = true
+  paymentWarning.value = ''
+  try {
+    if (payChoice.value === 'ahora_tarjeta') {
+      if (!stripe || !cardElement) throw new Error('Stripe no está listo.')
+      const intentRes = await apiFetch<{ data: { client_secret: string } }>(
+        `/appointments/${code}/deposit/stripe-intent`,
+        { method: 'POST' },
+      )
+      const result = await stripe.confirmCardPayment(intentRes.data.client_secret, {
+        payment_method: { card: cardElement },
+      })
+      if (result.error) throw new Error(result.error.message ?? 'Error al procesar el pago.')
+    }
+    else if (payChoice.value === 'ahora_transferencia' && transferReceipt.value) {
+      const form = new FormData()
+      form.append('comprobante', transferReceipt.value)
+      await apiFetch(`/appointments/${code}/deposit/receipt`, { method: 'POST', body: form })
+    }
+  }
+  catch (err: unknown) {
+    // La cita ya esta reservada -- un fallo aqui NUNCA la cancela, solo se
+    // avisa para que el cliente pague despues (tarjeta de nuevo o en el salon).
+    paymentWarning.value = (err as { message?: string, data?: { message?: string } })?.data?.message
+      ?? (err as Error)?.message
+      ?? 'No se pudo procesar el pago. Podrás pagar en el salón.'
+  }
+  finally {
+    paymentConfirming.value = false
   }
 }
 
@@ -418,6 +534,15 @@ function prettyDate(iso: string) {
       </dl>
       <p v-if="productsWarning" role="alert" class="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-300">
         Tu cita quedó confirmada, pero no pudimos agregar los productos: {{ productsWarning }}
+      </p>
+      <p v-if="paymentWarning" role="alert" class="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-300">
+        Tu cita quedó confirmada, pero no pudimos procesar el pago: {{ paymentWarning }} Podrás pagar en el salón.
+      </p>
+      <p v-else-if="payChoice === 'ahora_tarjeta'" class="mt-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-300">
+        Pago con tarjeta procesado correctamente.
+      </p>
+      <p v-else-if="payChoice === 'ahora_transferencia'" class="mt-4 rounded-xl border border-gold/30 bg-gold/10 p-3 text-xs text-gold">
+        Recibimos tu comprobante de transferencia. Te avisaremos cuando se verifique.
       </p>
       <p v-if="shop?.politica_cancelacion" class="mt-6 text-xs leading-5 text-muted">
         Puedes cancelar o reprogramar hasta {{ shop.politica_cancelacion }} horas antes de tu cita.
@@ -692,6 +817,10 @@ function prettyDate(iso: string) {
               <dt class="text-muted">Cuándo</dt>
               <dd class="text-right font-bold text-ink">{{ prettyDate(date) }} · {{ time }}</dd>
             </div>
+            <div v-if="membershipDiscountPct > 0" class="flex items-start justify-between gap-4 text-xs">
+              <dt class="text-emerald-400">Descuento de membresía ({{ membershipDiscountPct }}%)</dt>
+              <dd class="text-right text-emerald-400">-{{ currency((selectedService?.precio ?? 0) - discountedServicePrice) }}</dd>
+            </div>
             <div v-for="p in selectedProducts" :key="p.id" class="flex items-start justify-between gap-4 text-xs">
               <dt class="text-muted">+ {{ p.nombre }}</dt>
               <dd class="text-right text-ink">{{ currency(p.precio_venta) }}</dd>
@@ -755,6 +884,58 @@ function prettyDate(iso: string) {
             </div>
           </div>
 
+          <div v-if="canBookHere" class="mt-5 border-t border-line pt-5">
+            <p class="mb-3 text-xs font-bold text-ink">¿Cuándo prefieres pagar?</p>
+            <div class="grid grid-cols-1 gap-2 sm:grid-cols-3">
+              <button
+                type="button" class="min-h-11 rounded-xl border px-3 py-2 text-left text-xs font-bold transition-colors"
+                :class="payChoice === 'despues' ? 'border-gold bg-gold/10 text-gold' : 'border-line text-ink hover:border-gold/30'"
+                :aria-pressed="payChoice === 'despues'"
+                @click="payChoice = 'despues'"
+              >
+                Pagar en el salón
+              </button>
+              <button
+                v-if="stripeConfigured" type="button" class="min-h-11 rounded-xl border px-3 py-2 text-left text-xs font-bold transition-colors"
+                :class="payChoice === 'ahora_tarjeta' ? 'border-gold bg-gold/10 text-gold' : 'border-line text-ink hover:border-gold/30'"
+                :aria-pressed="payChoice === 'ahora_tarjeta'"
+                @click="payChoice = 'ahora_tarjeta'"
+              >
+                Pagar ahora con tarjeta
+              </button>
+              <button
+                type="button" class="min-h-11 rounded-xl border px-3 py-2 text-left text-xs font-bold transition-colors"
+                :class="payChoice === 'ahora_transferencia' ? 'border-gold bg-gold/10 text-gold' : 'border-line text-ink hover:border-gold/30'"
+                :aria-pressed="payChoice === 'ahora_transferencia'"
+                @click="payChoice = 'ahora_transferencia'"
+              >
+                Pagar ahora por transferencia
+              </button>
+            </div>
+
+            <p v-if="payChoice !== 'despues'" class="mt-3 text-xs text-muted">
+              Pagarás {{ currency(payAmountToCharge) }} ahora (servicio con tu descuento + propina). Los productos que
+              agregaste se pagan aparte, en el salón.
+            </p>
+
+            <div v-if="payChoice === 'ahora_tarjeta'" class="mt-3">
+              <div ref="cardElementRef" class="ui-input flex items-center px-3 py-3" />
+              <p v-if="cardError" role="alert" class="mt-2 text-xs text-red-400">{{ cardError }}</p>
+              <p v-if="!stripe" class="mt-2 text-xs text-muted">Cargando formulario de tarjeta…</p>
+            </div>
+
+            <div v-if="payChoice === 'ahora_transferencia'" class="mt-3">
+              <label for="transfer-receipt" class="mb-1 block text-xs font-bold text-ink">
+                Sube tu comprobante de transferencia
+              </label>
+              <input
+                id="transfer-receipt" type="file" accept=".jpg,.jpeg,.png,.pdf"
+                class="ui-input w-full text-xs" @change="onTransferFileChange"
+              >
+              <p class="mt-2 text-xs text-muted">Tu cita queda reservada mientras revisamos el comprobante.</p>
+            </div>
+          </div>
+
           <div class="mt-5">
             <label for="booking-notes" class="mb-1 block text-xs font-bold text-ink">Notas para tu cita (opcional)</label>
             <textarea id="booking-notes" v-model="notes" class="ui-input w-full" rows="2" maxlength="1000" />
@@ -776,9 +957,10 @@ function prettyDate(iso: string) {
           <template v-else>
             <button
               type="button" class="ui-btn mt-5 w-full py-4 text-[12px] tracking-[0.15em]"
-              :disabled="saving || slotsPending || slotsFailed || !time || !selectedService || !selectedBarber" @click="confirm"
+              :disabled="saving || paymentConfirming || slotsPending || slotsFailed || !time || !selectedService || !selectedBarber"
+              @click="confirm"
             >
-              {{ saving ? 'Confirmando…' : isAuthenticated ? 'Confirmar cita' : 'Continuar y confirmar' }}
+              {{ paymentConfirming ? 'Procesando pago…' : saving ? 'Confirmando…' : isAuthenticated ? 'Confirmar cita' : 'Continuar y confirmar' }}
             </button>
             <p v-if="!isAuthenticated" class="mt-3 text-center text-xs text-muted">
               Te pediremos iniciar sesión o crear tu cuenta solo para guardar esta cita. No perderás lo que elegiste.

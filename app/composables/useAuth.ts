@@ -12,6 +12,7 @@ export interface AuthUser {
     telefono: string | null;
     fecha_nacimiento: string | null;
     sexo: "masculino" | "femenino" | "prefiero_no_decir" | null;
+    descuento_activo_pct: number;
   } | null;
 }
 
