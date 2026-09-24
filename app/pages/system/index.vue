@@ -40,7 +40,7 @@ const STATUS_CLASS: Record<string, string> = {
   unknown: 'border-line bg-panel text-muted',
 }
 const STATUS_LABEL: Record<string, string> = {
-  up: 'Activo', down: 'Caído', success: 'Exitosa', failed: 'Falló', unknown: 'Sin datos',
+  up: 'Activo', down: 'Caído', success: 'Exitosa', failed: 'Falló', unknown: 'Sin datos', no_usado: 'No se usa',
 }
 
 const health = computed(() => {
@@ -119,10 +119,10 @@ function fmtDate(iso: string | null) {
             <p class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/50">Redis</p>
             <span class="relative flex h-3 w-3">
               <span v-if="data.redis.status === 'up'" class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-              <span class="relative inline-flex h-3 w-3 rounded-full" :class="data.redis.status === 'up' ? 'bg-emerald-400' : 'bg-red-500'" />
+              <span class="relative inline-flex h-3 w-3 rounded-full" :class="data.redis.status === 'up' ? 'bg-emerald-400' : data.redis.status === 'no_usado' ? 'bg-ink/30' : 'bg-red-500'" />
             </span>
           </div>
-          <p class="mt-3 text-xl font-black" :class="data.redis.status === 'up' ? 'text-emerald-400' : 'text-red-400'">{{ STATUS_LABEL[data.redis.status] }}</p>
+          <p class="mt-3 text-xl font-black" :class="data.redis.status === 'up' ? 'text-emerald-400' : data.redis.status === 'no_usado' ? 'text-ink/50' : 'text-red-400'">{{ STATUS_LABEL[data.redis.status] }}</p>
           <p v-if="data.redis.latency_ms !== null" class="mt-1 text-xs text-ink/45">{{ data.redis.latency_ms }} ms de latencia</p>
           <p v-if="data.redis.error" class="mt-2 text-xs text-red-400">{{ data.redis.error }}</p>
         </div>
