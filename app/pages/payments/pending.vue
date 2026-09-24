@@ -5,6 +5,12 @@
  * (Payment\PaymentController::pending/approve/reject); esta página
  * consume los nuevos endpoints GET /payments/pending y
  * POST /payments/{id}/approve|reject agregados en esta misma fase.
+ *
+ * También muestra los anticipos (GET /deposits/pending): la transferencia
+ * de "pagar ahora" al reservar y los depósitos anti-no-show. Antes ninguna
+ * pantalla los listaba y se quedaban en revisión para siempre. Tienen la
+ * misma forma que un pago pendiente, pero se aprueban/rechazan en
+ * /deposits/{id}/approve|reject y no completan la cita.
  */
 definePageMeta({ middleware: ["auth", "staff"], layout: "dashboard" });
 
@@ -16,15 +22,27 @@ interface PendingPayment {
   monto: string;
   created_at: string | null;
   comprobante_url: string | null;
-  ocr_texto: string | null;
-  ocr_monto_detectado: string | null;
+  ocr_texto?: string | null;
+  ocr_monto_detectado?: string | null;
   appointment: {
     id: string | null;
     client: string | null;
     service: string | null;
-    service_price: number | null;
+    service_price?: number | null;
   };
+  /** Agregado en el cliente: de qué lista viene y a qué endpoint se revisa. */
+  kind: "pago" | "anticipo";
 }
+
+type PendingRow = Omit<PendingPayment, "kind">;
+
+/** Motivos frecuentes de rechazo, los mismos que ofrece la app. */
+const QUICK_REASONS = [
+  "El monto no coincide con el servicio",
+  "La imagen no se lee bien",
+  "No es un comprobante de transferencia",
+  "No vemos el depósito en la cuenta",
+];
 
 const { apiFetch } = useApi();
 
@@ -35,10 +53,24 @@ const {
   refresh,
 } = await useAsyncData(
   "payments-pending",
-  () => apiFetch<{ data: PendingPayment[] }>("/payments/pending"),
+  async () => {
+    // Si falla la lista de anticipos no se oculta la de pagos (y al revés no aplica: pagos es la principal).
+    const [pagos, anticipos] = await Promise.all([
+      apiFetch<{ data: PendingRow[] }>("/payments/pending"),
+      apiFetch<{ data: PendingRow[] }>("/deposits/pending").catch(() => ({ data: [] as PendingRow[] })),
+    ]);
+    return [
+      ...pagos.data.map((row) => ({ ...row, kind: "pago" as const })),
+      ...anticipos.data.map((row) => ({ ...row, kind: "anticipo" as const })),
+    ];
+  },
   { lazy: true },
 );
-const payments = computed(() => response.value?.data ?? []);
+const payments = computed<PendingPayment[]>(() => response.value ?? []);
+
+function endpoint(payment: PendingPayment) {
+  return payment.kind === "anticipo" ? `/deposits/${payment.id}` : `/payments/${payment.id}`;
+}
 
 const rejecting = ref<string | null>(null);
 const motivo = ref("");
@@ -50,6 +82,7 @@ function fmtMoney(n: number | string | null) {
 }
 
 function montoMatches(payment: PendingPayment) {
+  if (payment.appointment.service_price == null) return true;
   return (
     Math.abs((payment.appointment.service_price ?? 0) - Number(payment.monto)) <
     0.01
@@ -75,7 +108,7 @@ async function approve(payment: PendingPayment) {
   busy.value = payment.id;
   actionError.value = "";
   try {
-    await apiFetch(`/payments/${payment.id}/approve`, { method: "POST" });
+    await apiFetch(`${endpoint(payment)}/approve`, { method: "POST" });
     await refresh();
   } catch (err: unknown) {
     actionError.value =
@@ -97,7 +130,7 @@ async function confirmReject(payment: PendingPayment) {
   busy.value = payment.id;
   actionError.value = "";
   try {
-    await apiFetch(`/payments/${payment.id}/reject`, {
+    await apiFetch(`${endpoint(payment)}/reject`, {
       method: "POST",
       body: { motivo_rechazo: motivo.value },
     });
@@ -124,7 +157,7 @@ async function confirmReject(payment: PendingPayment) {
           Comprobantes <span class="text-gold">por Revisar</span>
         </h1>
         <p class="mt-1 text-sm text-muted">
-          Transferencias subidas por clientes, pendientes de aprobación.
+          Transferencias y anticipos subidos por clientes, pendientes de aprobación.
         </p>
       </div>
       <NuxtLink
@@ -159,6 +192,12 @@ async function confirmReject(payment: PendingPayment) {
             >
               {{ payment.appointment.service ?? "Servicio" }}
             </p>
+            <span
+              v-if="payment.kind === 'anticipo'"
+              class="mt-1 inline-block rounded-full border border-gold/30 bg-gold/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-gold"
+            >
+              Anticipo al reservar
+            </span>
           </div>
           <span
             class="text-[9px] font-black uppercase tracking-widest text-muted"
@@ -188,7 +227,10 @@ async function confirmReject(payment: PendingPayment) {
             >
           </a>
 
-          <div class="grid grid-cols-2 gap-3 text-sm">
+          <p v-if="payment.kind === 'anticipo'" class="text-xs text-muted">
+            Al aprobarlo se descuenta al cobrar; la cita sigue esperando que el barbero la confirme.
+          </p>
+          <div v-if="payment.appointment.service_price != null" class="grid grid-cols-2 gap-3 text-sm">
             <div class="rounded-xl border border-line bg-ink/5 p-3">
               <p
                 class="text-[9px] font-black uppercase tracking-widest text-muted"
@@ -222,6 +264,10 @@ async function confirmReject(payment: PendingPayment) {
               </p>
             </div>
           </div>
+
+          <p v-else class="text-sm text-ink">
+            Monto: <span class="font-black text-gold">{{ fmtMoney(payment.monto) }}</span>
+          </p>
 
           <div
             v-if="payment.ocr_texto"
@@ -265,6 +311,18 @@ async function confirmReject(payment: PendingPayment) {
                 v-else
                 class="space-y-2 rounded-xl border border-line bg-card p-3"
               >
+                <div class="flex flex-wrap gap-1.5">
+                  <button
+                    v-for="reason in QUICK_REASONS"
+                    :key="reason"
+                    type="button"
+                    class="rounded-full border px-2.5 py-1 text-[10px]"
+                    :class="motivo === reason ? 'border-gold bg-gold/10 text-gold' : 'border-line text-muted hover:text-ink'"
+                    @click="motivo = reason"
+                  >
+                    {{ reason }}
+                  </button>
+                </div>
                 <textarea
                   v-model="motivo"
                   rows="2"
