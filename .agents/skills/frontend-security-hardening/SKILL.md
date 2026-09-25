@@ -167,6 +167,20 @@ export default defineNuxtConfig({
 })
 ```
 
+**CSP, HSTS y `x-powered-by` (TT10/TT11, HT-04) viven en `server/plugins/security-headers.ts`**, no en
+`routeRules`: la CSP necesita el origen real de la API (`NUXT_PUBLIC_API_BASE`, que llega en runtime) y
+solo se aplican en producción (en `npm run dev` bloquearían el HMR de Vite). El plugin también quita
+`x-powered-by: Nuxt`, que el renderizador de Nuxt pone fijo.
+
+- Dominios permitidos hoy: Stripe (`js.stripe.com`, `*.js.stripe.com`, `hooks.stripe.com`,
+  `api.stripe.com`), el mapa de Google de la landing (`www.google.com`), la API y cualquier imagen o
+  video `https:` (S3, Unsplash).
+- **Si agregas un servicio externo** (otro script, iframe o API), súmalo a la directiva que corresponda
+  en ese plugin y pruébalo con `npm run build` + `node .output/server/index.mjs`: una CSP incompleta
+  rompe la página en producción sin avisar en desarrollo. Busca en consola «Refused to…».
+- `'unsafe-inline'` en `script-src` es obligatorio mientras Nuxt inyecte su configuración y el script
+  del tema en línea.
+
 ---
 
 ## 6. Manejo de Errores y Fuga de Información
