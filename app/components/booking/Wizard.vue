@@ -103,7 +103,8 @@ const suggestedProducts = computed(() =>
 const selectedProductIds = ref<Set<string>>(new Set())
 function toggleProduct(id: string) {
   const next = new Set(selectedProductIds.value)
-  next.has(id) ? next.delete(id) : next.add(id)
+  if (next.has(id)) next.delete(id)
+  else next.add(id)
   selectedProductIds.value = next
 }
 const selectedProducts = computed(() =>

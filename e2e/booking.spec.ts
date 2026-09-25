@@ -47,7 +47,8 @@ test("un cliente puede reservar su propia cita", async ({ page }) => {
 
   // Paso 1-3: servicio, barbero (fixture de mock-api.mjs), día y hora reales.
   await page.getByRole("button", { name: /Corte clásico/ }).click();
-  await page.getByRole("button", { name: /Nava Panther/ }).click();
+  // ^: la tarjeta también tiene «Marcar a Nava Panther como favorito»; se elige el barbero, no el corazón.
+  await page.getByRole("button", { name: /^Nava Panther/ }).click();
   await page.getByRole("button", { name: "Hoy" }).click();
   await page.getByRole("button", { name: "10:00" }).click();
 
