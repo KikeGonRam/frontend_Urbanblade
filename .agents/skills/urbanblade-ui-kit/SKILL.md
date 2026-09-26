@@ -46,9 +46,9 @@ Complementa a `ui-ux-visual-polish` (límites del pase visual) y a
 | `UiImageUpload` | Hecho (26-sep) | Elegir imagen del dispositivo con vista previa; devuelve `File` por v-model |
 | `UiSwitch` | Hecho (26-sep) | Todo activar/desactivar (reemplaza `input type=checkbox` sueltos) |
 | `UiChoiceCards` | Hecho (26-sep) | Elegir una opción entre 2–4 con ícono, título y detalle (método de pago, cuándo pagar) |
-| `UiStatCard` | Fase 2 | KPI: etiqueta, valor, variación (+/−, color por signo), minigráfica opcional |
-| `UiChartCard` + `useChartTheme()` | Fase 2 | Marco de gráfica (título, periodo, estado vacío) y colores Chart.js leídos del tema activo |
-| `UiBadge` | Fase 2 | Estados (pendiente, confirmada, pagado…) con tono semántico |
+| `UiStatCard` | Hecho (26-sep) | KPI: etiqueta, valor, variación (+/−, color por signo), minigráfica opcional |
+| `UiChartCard` + `utils/chartTheme.ts` | Hecho (26-sep) | Marco de gráfica (título, periodo, estado vacío). Colores: `goldRgba()`, `goldSeries(n)`, `chartTooltip()`, `chartAxisClean()` leen el tema activo |
+| `UiBadge` + `utils/appointmentStatus.ts` | Hecho (26-sep) | Estados con tono semántico; tonos `success/warning/danger/info` son tokens por tema (más oscuros en Libreta) |
 | `UiTable` | Fase 3 | Encabezado fijo, filas compactas, acciones al final, vista de tarjetas en celular |
 | `UiEmptyState` | Fase 2 | Estado vacío breve; si es pantalla completa usar `BrandStatePanel` |
 
@@ -103,6 +103,21 @@ leyenda abajo, tooltip con `bg-card`, colores de `useChartTheme()` (oro + neutro
   pedidos. En pedidos el selector ofrecía "QR", que el backend rechaza (422); ahora solo
   muestra efectivo, transferencia y tarjeta.
 - Pruebas: `e2e/ui-kit.spec.ts`; `e2e/payments.spec.ts` busca la tarjeta como `radio`.
+
+## 5b. Fase 2 — dashboards (26-sep-2026)
+
+- Hechos: **Administrador** (KPIs con variación y minigráfica, aviso de stock bajo, "Ingresos
+  por semana" y "Servicios más pedidos" a la vista, estados con `UiBadge`; antes
+  "confirmada" salía "—") y **Recepción** (6 KPIs que llevan a su pantalla, citas por hora,
+  llegadas y pedidos).
+- Pendientes: Barbero, Cliente (incluye `MembershipCard`), Ingeniero y la app.
+- Títulos fieles al backend: `incomeChart` = 8 semanas; `clientTrends` = citas
+  completadas del mes en tramos de 3 días (no "clientes").
+- Pruebas: `e2e/dashboard-admin.spec.ts`, `e2e/dashboard-reception.spec.ts`, datos en
+  `e2e/support/dashboard-fixtures.ts`. Para abrir el dashboard con `page.route` se entra
+  por otra página y se hace clic en el enlace a `/dashboard` (en SSR no aplica el mock).
+- `UiStatCard` con enlace: resolver `NuxtLink` en el script; `resolveComponent` dentro de la
+  plantilla dejaba la tarjeta sin enlace.
 
 ## 6. Validación antes de entregar
 

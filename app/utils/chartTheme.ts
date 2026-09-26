@@ -42,3 +42,39 @@ export function fmtMoney(v: number | null | undefined): string {
 export function fmtInt(v: number | null | undefined): string {
   return Number(v ?? 0).toLocaleString('es-MX', { maximumFractionDigits: 0 })
 }
+
+// ── Kit de dashboards (26-sep-2026, skill urbanblade-ui-kit) ──────────────────
+// Las gráficas protagonistas van en el oro del tema activo (cobre en "acero",
+// latón en "salón"), no en colores sueltos: la identidad es el oro.
+
+export function goldRgba(alpha: number): string {
+  return `rgba(${cssVar('--gold-rgb', '212 175 55').replace(/\s+/g, ',')}, ${alpha})`
+}
+
+/** n tonos del oro, del más fuerte al más tenue (barras de categorías). */
+export function goldSeries(n: number): string[] {
+  return Array.from({ length: n }, (_, i) => goldRgba(n <= 1 ? 0.9 : 0.9 - (i * 0.6) / (n - 1)))
+}
+
+/** Tooltip común: fondo de tarjeta del tema, texto en tinta, sin el cuadrito de color. */
+export function chartTooltip() {
+  return {
+    backgroundColor: cssVar('--bg-card', '#161616'),
+    borderColor: cssVar('--line', '#2c2c2c'),
+    borderWidth: 1,
+    titleColor: inkRgba(0.9),
+    bodyColor: inkRgba(0.75),
+    padding: 10,
+    cornerRadius: 10,
+    displayColors: false,
+  }
+}
+
+/** Eje sin líneas (el de categorías): la cuadrícula solo en el eje de valores. */
+export function chartAxisClean() {
+  return {
+    ticks: { color: inkRgba(0.5), font: { size: 11 } },
+    grid: { display: false },
+    border: { display: false },
+  }
+}

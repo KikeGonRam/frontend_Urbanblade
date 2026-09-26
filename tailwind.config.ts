@@ -50,6 +50,11 @@ export default <Config>{
 
         gold: 'rgb(var(--gold-rgb) / <alpha-value>)',
         'gold-dim': 'rgb(var(--gold-dim-rgb) / <alpha-value>)',
+        // Estados (kit de UI): cambian por tema, más oscuros en "libreta".
+        success: 'rgb(var(--success-rgb) / <alpha-value>)',
+        warning: 'rgb(var(--warning-rgb) / <alpha-value>)',
+        danger: 'rgb(var(--danger-rgb) / <alpha-value>)',
+        info: 'rgb(var(--info-rgb) / <alpha-value>)',
       },
     },
   },

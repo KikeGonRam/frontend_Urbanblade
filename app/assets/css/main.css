@@ -57,6 +57,13 @@
     --bg-bottomnav: rgba(10, 10, 10, 0.97);
 
     --dot-color: rgba(255, 255, 255, 0.03);
+
+    /* Colores de estado (kit, 26-sep): éxito, aviso, peligro, información. Solo para
+       estados y variaciones (+/−); la identidad sigue siendo el oro de cada tema. */
+    --success-rgb: 52 211 153;
+    --warning-rgb: 245 180 70;
+    --danger-rgb:  248 113 113;
+    --info-rgb:    96 165 250;
 }
 
 /* ── "Taller de Acero" — grafito frío + cobre ── */
@@ -147,6 +154,12 @@ html[data-theme="libreta"] {
     --bg-bottomnav: rgba(243, 237, 224, 0.96);
 
     --dot-color: rgba(30, 42, 60, 0.035);
+
+    /* Versiones oscuras de los colores de estado: las claras no se leen sobre marfil. */
+    --success-rgb: 21 128 61;
+    --warning-rgb: 161 98 7;
+    --danger-rgb:  185 28 28;
+    --info-rgb:    29 78 216;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

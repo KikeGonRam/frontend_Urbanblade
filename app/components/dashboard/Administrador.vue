@@ -1,13 +1,16 @@
 <script setup lang="ts">
-import { Bar, Doughnut, Line } from "vue-chartjs";
+import { Bar, Line } from "vue-chartjs";
 import type { DashboardInsight } from "~/components/dashboard/AnalyticsInsights.vue";
 import {
+  chartAxisClean,
   chartScale,
+  chartTooltip,
   fmtInt,
   fmtMoney,
-  inkRgba,
-  UB_CATEGORICAL,
+  goldRgba,
+  goldSeries,
 } from "~/utils/chartTheme";
+import { appointmentStatus } from "~/utils/appointmentStatus";
 import { ensureChartjsRegistered } from "~/utils/registerChartjs";
 
 ensureChartjsRegistered();
@@ -73,61 +76,7 @@ interface AdminData {
 
 const props = defineProps<{ data: AdminData }>();
 
-const STATUS_STYLE: Record<
-  string,
-  { cls: string; dot: string; label: string }
-> = {
-  completada: {
-    cls: "border-emerald-500/25 bg-emerald-500/10 text-emerald-300",
-    dot: "bg-emerald-400",
-    label: "Completada",
-  },
-  pendiente: {
-    cls: "border-amber-500/25 bg-amber-500/10 text-amber-300",
-    dot: "bg-amber-400",
-    label: "Pendiente",
-  },
-  en_proceso: {
-    cls: "border-blue-500/25 bg-blue-500/10 text-blue-300",
-    dot: "bg-blue-400",
-    label: "En proceso",
-  },
-  cancelada: {
-    cls: "border-red-500/25 bg-red-500/10 text-red-400",
-    dot: "bg-red-400",
-    label: "Cancelada",
-  },
-};
-function statusStyle(estado: string) {
-  return (
-    STATUS_STYLE[estado] ?? {
-      cls: "border-ink/10 bg-ink/5 text-ink/40",
-      dot: "bg-ink/30",
-      label: "—",
-    }
-  );
-}
 
-// Puerto directo de la función PHP $adminSparkline de dashboard.blade.php — aritmética pura.
-function sparklinePath(values: number[], w = 80, h = 22): string {
-  const vals = (values ?? []).filter((v) => v !== null && v !== undefined);
-  if (vals.length < 2) return "";
-
-  const max = Math.max(...vals) || 1;
-  const min = Math.min(...vals);
-  const rng = max - min || 1;
-  const step = w / (vals.length - 1);
-  const pts = vals.map(
-    (v, i) =>
-      `${(i * step).toFixed(2)},${(h - ((v - min) / rng) * h).toFixed(2)}`,
-  );
-
-  return `M ${pts.join(" L ")}`;
-}
-
-const incomeSpark = computed(() =>
-  sparklinePath(props.data.incomeChart.values),
-);
 const ratioActiveClients = computed(() =>
   props.data.kpis.total_clients > 0
     ? Math.round(
@@ -177,50 +126,28 @@ const incomeData = computed(() => ({
   labels: props.data.incomeChart.labels ?? [],
   datasets: [
     {
-      label: "Ingresos ($)",
+      label: "Ingresos",
       data: props.data.incomeChart.values ?? [],
-      borderColor: "#34d399",
-      backgroundColor: (context: {
-        chart: {
-          ctx: CanvasRenderingContext2D;
-          chartArea?: { top: number; bottom: number };
-        };
-      }) => {
-        const { ctx, chartArea } = context.chart;
-        if (!chartArea) return "rgba(52,211,153,0.05)";
-        const gradient = ctx.createLinearGradient(
-          0,
-          chartArea.top,
-          0,
-          chartArea.bottom,
-        );
-        gradient.addColorStop(0, "rgba(52,211,153,0.24)");
-        gradient.addColorStop(1, "rgba(52,211,153,0.01)");
-
-        return gradient;
-      },
-      borderWidth: 2.5,
-      fill: true,
-      tension: 0.35,
-      pointRadius: 3,
-      pointHoverRadius: 6,
-      pointBackgroundColor: "#0d0d0d",
-      pointBorderColor: "#34d399",
-      pointBorderWidth: 2,
+      // La semana en curso en oro pleno; las anteriores más tenues.
+      backgroundColor: (props.data.incomeChart.values ?? []).map((_, i, all) =>
+        goldRgba(i === all.length - 1 ? 0.95 : 0.4),
+      ),
+      hoverBackgroundColor: goldRgba(1),
+      borderRadius: 6,
+      maxBarThickness: 36,
     },
   ],
 }));
 const incomeOptions = {
   responsive: true,
   maintainAspectRatio: false,
-  interaction: { intersect: false, mode: "index" as const },
   plugins: {
     legend: { display: false },
     tooltip: {
-      displayColors: false,
+      ...chartTooltip(),
       callbacks: {
-        label: (ctx: { parsed: { y: number } }) =>
-          `Ingresos: ${fmtMoney(ctx.parsed.y)}`,
+        title: (items: { label: string }[]) => `Semana del ${items[0]?.label ?? ""}`,
+        label: (ctx: { parsed: { y: number } }) => `Ingresos: ${fmtMoney(ctx.parsed.y)}`,
       },
     },
   },
@@ -228,49 +155,47 @@ const incomeOptions = {
     y: {
       ...chartScale(),
       beginAtZero: true,
-      ticks: { ...chartScale().ticks, callback: (v: number) => fmtMoney(v) },
+      ticks: { ...chartScale().ticks, maxTicksLimit: 5, callback: (v: number) => fmtMoney(v) },
     },
-    x: chartScale(),
+    x: chartAxisClean(),
   },
 };
 
 const hasServices = computed(() =>
   (props.data.servicesChart.values ?? []).some((v) => v),
 );
+// Barras horizontales ordenadas (se leen mejor que la dona de 6 colores de antes).
+const servicesSorted = computed(() =>
+  (props.data.servicesChart.labels ?? [])
+    .map((label, i) => ({ label, value: props.data.servicesChart.values?.[i] ?? 0 }))
+    .sort((x, y) => y.value - x.value),
+);
 const servicesData = computed(() => ({
-  labels: props.data.servicesChart.labels ?? [],
+  labels: servicesSorted.value.map((s) => s.label),
   datasets: [
     {
-      data: props.data.servicesChart.values ?? [],
-      backgroundColor: UB_CATEGORICAL,
-      borderColor: "#111111",
-      borderWidth: 3,
-      hoverOffset: 10,
+      label: "Citas",
+      data: servicesSorted.value.map((s) => s.value),
+      backgroundColor: goldSeries(servicesSorted.value.length),
+      borderRadius: 6,
+      maxBarThickness: 22,
     },
   ],
 }));
 const servicesOptions = {
+  indexAxis: "y" as const,
   responsive: true,
   maintainAspectRatio: false,
-  cutout: "72%",
   plugins: {
-    legend: {
-      position: "bottom" as const,
-      labels: {
-        color: inkRgba(0.45),
-        usePointStyle: true,
-        pointStyle: "circle",
-        padding: 16,
-        font: { size: 10, weight: "bold" as const },
-      },
-    },
+    legend: { display: false },
     tooltip: {
-      displayColors: true,
-      callbacks: {
-        label: (ctx: { label: string; parsed: number }) =>
-          `${ctx.label}: ${fmtInt(ctx.parsed)}`,
-      },
+      ...chartTooltip(),
+      callbacks: { label: (ctx: { parsed: { x: number } }) => `${fmtInt(ctx.parsed.x)} citas` },
     },
+  },
+  scales: {
+    x: { ...chartScale(), beginAtZero: true, ticks: { ...chartScale().ticks, precision: 0, maxTicksLimit: 5 } },
+    y: chartAxisClean(),
   },
 };
 
@@ -285,10 +210,10 @@ const barberCitasData = computed(() => ({
     {
       label: "Citas",
       data: props.data.barberPerformance.appointments ?? [],
-      backgroundColor: "rgba(59,130,246,0.75)",
-      hoverBackgroundColor: "#3b82f6",
-      borderRadius: 4,
-      barThickness: 18,
+      backgroundColor: goldRgba(0.85),
+      hoverBackgroundColor: goldRgba(1),
+      borderRadius: 6,
+      maxBarThickness: 28,
     },
   ],
 }));
@@ -298,7 +223,7 @@ const barberCitasOptions = {
   plugins: {
     legend: { display: false },
     tooltip: {
-      displayColors: false,
+      ...chartTooltip(),
       callbacks: {
         label: (ctx: { parsed: { y: number } }) =>
           `Citas: ${fmtInt(ctx.parsed.y)}`,
@@ -320,10 +245,10 @@ const barberIngresosData = computed(() => ({
     {
       label: "Ingresos ($)",
       data: props.data.barberPerformance.revenue ?? [],
-      backgroundColor: "rgba(16,185,129,0.75)",
-      hoverBackgroundColor: "#10b981",
-      borderRadius: 4,
-      barThickness: 18,
+      backgroundColor: goldRgba(0.45),
+      hoverBackgroundColor: goldRgba(0.7),
+      borderRadius: 6,
+      maxBarThickness: 28,
     },
   ],
 }));
@@ -333,7 +258,7 @@ const barberIngresosOptions = {
   plugins: {
     legend: { display: false },
     tooltip: {
-      displayColors: false,
+      ...chartTooltip(),
       callbacks: {
         label: (ctx: { parsed: { y: number } }) =>
           `Ingresos: ${fmtMoney(ctx.parsed.y)}`,
@@ -359,15 +284,15 @@ const clientTrendsData = computed(() => ({
     {
       label: "Citas Completadas",
       data: props.data.clientTrends.values ?? [],
-      borderColor: "#c084fc",
-      backgroundColor: "rgba(192,132,252,0.1)",
+      borderColor: goldRgba(0.95),
+      backgroundColor: goldRgba(0.1),
       borderWidth: 2.5,
       fill: true,
       cubicInterpolationMode: "monotone" as const,
       pointRadius: 3,
       pointHoverRadius: 6,
-      pointBackgroundColor: "#0d0d0d",
-      pointBorderColor: "#c084fc",
+      pointBackgroundColor: goldRgba(1),
+      pointBorderColor: goldRgba(1),
       pointBorderWidth: 2,
     },
   ],
@@ -379,7 +304,7 @@ const clientTrendsOptions = {
   plugins: {
     legend: { display: false },
     tooltip: {
-      displayColors: false,
+      ...chartTooltip(),
       callbacks: {
         label: (ctx: { parsed: { y: number } }) =>
           `${fmtInt(ctx.parsed.y)} cita${ctx.parsed.y === 1 ? "" : "s"}`,
@@ -498,261 +423,85 @@ onMounted(async () => {
       <span class="h-px flex-1 bg-ink/[0.06]" />
     </div>
 
-    <section class="grid grid-cols-2 gap-4 lg:grid-cols-4">
-      <div
-        class="relative overflow-hidden rounded-2xl border border-ink/[0.06] bg-card p-5"
+    <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Resumen">
+      <UiStatCard
+        label="Citas de hoy"
+        :value="fmtInt(data.kpis.appointments_today)"
+        :delta="data.kpis.appointment_growth"
+        delta-label="vs. mes pasado"
+        :hint="`${fmtInt(data.kpis.appointments_week)} esta semana · ${fmtInt(data.kpis.appointments_month)} este mes`"
+        to="/appointments"
       >
-        <div
-          class="absolute left-0 top-0 h-0.5 w-full bg-gradient-to-r from-blue-500/60 to-transparent"
-        />
-        <div class="mb-4 flex items-start justify-between">
-          <p
-            class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/35"
-          >
-            Citas Hoy
-          </p>
-          <div
-            class="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-500/10"
-          >
-            <svg
-              class="h-3.5 w-3.5 text-blue-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
-          </div>
-        </div>
-        <p class="text-3xl font-black leading-none text-ink">
-          {{ data.kpis.appointments_today }}
-        </p>
-        <div
-          class="mt-3 flex items-center gap-2 text-[9px] font-black text-ink/50"
-        >
-          <span class="text-blue-400/80"
-            >Sem {{ data.kpis.appointments_week }}</span
-          >
-          <span>·</span>
-          <span>Mes {{ data.kpis.appointments_month }}</span>
-          <span
-            v-if="data.kpis.appointment_growth != 0"
-            class="ml-auto"
-            :class="
-              data.kpis.appointment_growth >= 0
-                ? 'text-emerald-400'
-                : 'text-red-400'
-            "
-          >
-            {{ data.kpis.appointment_growth >= 0 ? "▲" : "▼"
-            }}{{ Math.abs(data.kpis.appointment_growth) }}%
-          </span>
-        </div>
-      </div>
+        <template #icon>
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+        </template>
+      </UiStatCard>
+      <UiStatCard
+        label="Ingresos de hoy"
+        :value="fmtMoney(data.kpis.income_today)"
+        :delta="data.kpis.income_growth"
+        delta-label="vs. mes pasado"
+        :spark="data.incomeChart.values"
+        :hint="`${fmtMoney(data.kpis.income_week)} esta semana · ${fmtMoney(data.kpis.income_month)} este mes`"
+        to="/payments"
+      >
+        <template #icon>
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        </template>
+      </UiStatCard>
+      <UiStatCard
+        label="Clientes activos"
+        :value="fmtInt(data.kpis.active_clients)"
+        :progress="ratioActiveClients"
+        :hint="`${ratioActiveClients}% de ${fmtInt(data.kpis.total_clients)} clientes · ${fmtInt(data.kpis.new_clients)} nuevos`"
+        to="/clients"
+      >
+        <template #icon>
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+        </template>
+      </UiStatCard>
+      <UiStatCard
+        label="Retención"
+        :value="`${data.kpis.retention_rate.toFixed(1)}%`"
+        :progress="data.kpis.retention_rate"
+        :hint="`${fmtInt(data.kpis.recurring_clients)} clientes recurrentes`"
+      >
+        <template #icon>
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+        </template>
+      </UiStatCard>
+    </section>
 
-      <div
-        class="relative overflow-hidden rounded-2xl border border-ink/[0.06] bg-card p-5"
-      >
-        <div
-          class="absolute left-0 top-0 h-0.5 w-full bg-gradient-to-r from-emerald-500/60 to-transparent"
-        />
-        <div class="mb-4 flex items-start justify-between">
-          <p
-            class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/35"
-          >
-            Ingresos Hoy
-          </p>
-          <div
-            class="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/10"
-          >
-            <svg
-              class="h-3.5 w-3.5 text-emerald-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-          </div>
-        </div>
-        <p class="text-3xl font-black leading-none text-emerald-400">
-          ${{
-            Number(data.kpis.income_today).toLocaleString("es-MX", {
-              maximumFractionDigits: 0,
-            })
-          }}
-        </p>
-        <svg
-          v-if="incomeSpark"
-          viewBox="0 0 80 22"
-          class="my-2 h-5 w-full"
-          preserveAspectRatio="none"
-        >
-          <path
-            :d="incomeSpark"
-            fill="none"
-            stroke="rgba(52,211,153,0.45)"
-            stroke-width="1.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
-        <div v-else class="my-2 h-5" />
-        <div class="flex items-center gap-2 text-[9px] font-black text-ink/50">
-          <span class="text-emerald-400/80"
-            >Sem ${{
-              Number(data.kpis.income_week).toLocaleString("es-MX", {
-                maximumFractionDigits: 0,
-              })
-            }}</span
-          >
-          <span>·</span>
-          <span
-            >Mes ${{
-              Number(data.kpis.income_month).toLocaleString("es-MX", {
-                maximumFractionDigits: 0,
-              })
-            }}</span
-          >
-          <span
-            v-if="data.kpis.income_growth != 0"
-            class="ml-auto"
-            :class="
-              data.kpis.income_growth >= 0 ? 'text-emerald-400' : 'text-red-400'
-            "
-          >
-            {{ data.kpis.income_growth >= 0 ? "▲" : "▼"
-            }}{{ Math.abs(data.kpis.income_growth) }}%
-          </span>
-        </div>
-      </div>
+    <NuxtLink
+      v-if="(data.kpis.low_stock_count ?? 0) > 0"
+      to="/inventory/products"
+      class="flex items-center gap-3 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning transition hover:border-warning/60"
+    >
+      <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /></svg>
+      <span class="font-semibold">{{ data.kpis.low_stock_count }} {{ data.kpis.low_stock_count === 1 ? "producto" : "productos" }} con stock bajo</span>
+      <span class="ml-auto text-xs font-semibold">Revisar inventario →</span>
+    </NuxtLink>
 
-      <div
-        class="relative overflow-hidden rounded-2xl border border-ink/[0.06] bg-card p-5"
+    <!-- Gráficas protagonistas a la vista (antes estaban escondidas en "Analítica avanzada"). -->
+    <section class="grid grid-cols-1 gap-4 lg:grid-cols-5">
+      <UiChartCard
+        class="lg:col-span-3"
+        title="Ingresos por semana"
+        subtitle="Últimas 8 semanas"
+        :empty="!hasIncome"
+        empty-text="Todavía no hay ingresos registrados."
       >
-        <div
-          class="absolute left-0 top-0 h-0.5 w-full bg-gradient-to-r from-cyan-500/60 to-transparent"
-        />
-        <div class="mb-4 flex items-start justify-between">
-          <p
-            class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/35"
-          >
-            Clientes
-          </p>
-          <div
-            class="flex h-7 w-7 items-center justify-center rounded-lg bg-cyan-500/10"
-          >
-            <svg
-              class="h-3.5 w-3.5 text-cyan-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
-              />
-            </svg>
-          </div>
-        </div>
-        <p class="text-3xl font-black leading-none text-ink">
-          {{ data.kpis.active_clients }}
-        </p>
-        <div class="mt-3 h-1 w-full overflow-hidden rounded-full bg-ink/5">
-          <div
-            class="h-full rounded-full bg-cyan-400"
-            :style="{ width: `${ratioActiveClients}%` }"
-          />
-        </div>
-        <div
-          class="mt-2 flex items-center gap-2 text-[9px] font-black text-ink/50"
-        >
-          <span class="text-cyan-400/80"
-            >{{ ratioActiveClients }}% activos</span
-          >
-          <span>de {{ data.kpis.total_clients }} totales</span>
-        </div>
-      </div>
-
-      <div
-        class="relative overflow-hidden rounded-2xl border border-ink/[0.06] bg-card p-5"
+        <Bar :data="incomeData" :options="incomeOptions" />
+      </UiChartCard>
+      <UiChartCard
+        class="lg:col-span-2"
+        title="Servicios más pedidos"
+        subtitle="Citas por servicio"
+        :empty="!hasServices"
+        empty-text="Todavía no hay servicios reservados."
       >
-        <div
-          class="absolute left-0 top-0 h-0.5 w-full bg-gradient-to-r from-purple-500/60 to-transparent"
-        />
-        <div class="mb-4 flex items-start justify-between">
-          <p
-            class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/35"
-          >
-            Retención
-          </p>
-          <div
-            class="flex h-7 w-7 items-center justify-center rounded-lg bg-purple-500/10"
-          >
-            <svg
-              class="h-3.5 w-3.5 text-purple-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-              />
-            </svg>
-          </div>
-        </div>
-        <p class="text-3xl font-black leading-none text-purple-400">
-          {{ data.kpis.retention_rate.toFixed(1)
-          }}<span class="text-lg text-ink/40">%</span>
-        </p>
-        <div class="mt-3 h-1 w-full overflow-hidden rounded-full bg-ink/5">
-          <div
-            class="h-full rounded-full bg-purple-400"
-            :style="{ width: `${Math.min(100, data.kpis.retention_rate)}%` }"
-          />
-        </div>
-        <div
-          class="mt-2 flex items-center gap-2 text-[9px] font-black text-ink/50"
-        >
-          <span class="text-purple-400/80"
-            >{{ data.kpis.recurring_clients }} recurrentes</span
-          >
-          <span
-            v-if="(data.kpis.low_stock_count ?? 0) > 0"
-            class="ml-auto flex items-center gap-1 text-amber-400/80"
-          >
-            <svg
-              class="h-3 w-3"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
-              />
-            </svg>
-            {{ data.kpis.low_stock_count }} stock bajo
-          </span>
-        </div>
-      </div>
+        <Bar :data="servicesData" :options="servicesOptions" />
+      </UiChartCard>
     </section>
 
     <section
@@ -874,16 +623,9 @@ onMounted(async () => {
                 {{ appt.servicio }} · {{ appt.barbero }}
               </p>
             </div>
-            <span
-              class="flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-[8px] font-black uppercase tracking-wider"
-              :class="statusStyle(appt.estado).cls"
-            >
-              <span
-                class="h-1.5 w-1.5 rounded-full"
-                :class="statusStyle(appt.estado).dot"
-              />
-              {{ statusStyle(appt.estado).label }}
-            </span>
+            <UiBadge :tone="appointmentStatus(appt.estado).tone" class="shrink-0">
+              {{ appointmentStatus(appt.estado).label }}
+            </UiBadge>
           </div>
         </div>
       </div>
@@ -925,11 +667,9 @@ onMounted(async () => {
                     {{ appt.fecha }} · {{ appt.hora_inicio?.slice(0, 5) }}
                   </p>
                 </div>
-                <span
-                  class="shrink-0 rounded-full border px-2 py-0.5 text-[8px] font-black uppercase"
-                  :class="statusStyle(appt.estado).cls"
-                  >{{ statusStyle(appt.estado).label }}</span
-                >
+                <UiBadge :tone="appointmentStatus(appt.estado).tone" class="shrink-0">
+                  {{ appointmentStatus(appt.estado).label }}
+                </UiBadge>
               </div>
               <p
                 v-if="!data.recentAppointments.length"
@@ -1154,7 +894,7 @@ onMounted(async () => {
             Analítica avanzada
           </p>
           <p class="text-[9px] font-bold text-ink/45">
-            4 gráficas · predicciones IA · telemetría chatbot
+            Desempeño por barbero · citas del mes · predicciones IA · telemetría de Bladebot
           </p>
         </div>
         <span
@@ -1171,64 +911,6 @@ onMounted(async () => {
                 <p
                   class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/50"
                 >
-                  Últimas 8 semanas
-                </p>
-                <h3 class="mt-0.5 text-sm font-black uppercase text-ink">
-                  Tendencia de Ingresos
-                </h3>
-              </div>
-              <div
-                class="h-2 w-2 rounded-full bg-emerald-400"
-                title="Ingresos ($)"
-              />
-            </div>
-            <div v-if="hasIncome" class="h-52">
-              <Line :data="incomeData" :options="incomeOptions" />
-            </div>
-            <div
-              v-else
-              class="flex h-52 items-center justify-center rounded-xl border border-dashed border-ink/[0.06]"
-            >
-              <p
-                class="text-xs font-bold uppercase tracking-widest text-ink/45"
-              >
-                Sin ingresos aún
-              </p>
-            </div>
-          </div>
-
-          <div class="rounded-2xl border border-ink/[0.06] bg-card p-5">
-            <div class="mb-5">
-              <p
-                class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/50"
-              >
-                Distribución
-              </p>
-              <h3 class="mt-0.5 text-sm font-black uppercase text-ink">
-                Demanda de Servicios
-              </h3>
-            </div>
-            <div v-if="hasServices" class="h-52">
-              <Doughnut :data="servicesData" :options="servicesOptions" />
-            </div>
-            <div
-              v-else
-              class="flex h-52 items-center justify-center rounded-xl border border-dashed border-ink/[0.06]"
-            >
-              <p
-                class="text-xs font-bold uppercase tracking-widest text-ink/45"
-              >
-                Sin servicios registrados
-              </p>
-            </div>
-          </div>
-
-          <div class="rounded-2xl border border-ink/[0.06] bg-card p-5">
-            <div class="mb-5 flex items-center justify-between">
-              <div>
-                <p
-                  class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/50"
-                >
                   Este mes
                 </p>
                 <h3 class="mt-0.5 text-sm font-black uppercase text-ink">
@@ -1239,11 +921,11 @@ onMounted(async () => {
                 class="flex gap-3 text-[8px] font-black uppercase text-ink/45"
               >
                 <span class="flex items-center gap-1"
-                  ><span class="h-2 w-2 rounded-sm bg-blue-500" />Citas</span
+                  ><span class="h-2 w-2 rounded-sm bg-gold" />Citas</span
                 >
                 <span class="flex items-center gap-1"
                   ><span
-                    class="h-2 w-2 rounded-sm bg-emerald-500"
+                    class="h-2 w-2 rounded-sm bg-gold/50"
                   />Ingresos</span
                 >
               </div>
@@ -1283,10 +965,10 @@ onMounted(async () => {
                   Mes actual
                 </p>
                 <h3 class="mt-0.5 text-sm font-black uppercase text-ink">
-                  Tendencia de Clientes
+                  Citas completadas del mes
                 </h3>
               </div>
-              <div class="h-2 w-2 rounded-full bg-purple-400" />
+
             </div>
             <div v-if="hasClientTrends" class="h-52">
               <Line :data="clientTrendsData" :options="clientTrendsOptions" />
