@@ -122,14 +122,7 @@ const flowChartOptions = {
       />
     </section>
 
-    <DashboardAnalyticsInsights
-      :insights="data.sparkHighlights"
-      titulo="Prioridades del turno"
-    />
-    <DashboardAnalyticsCta
-      titulo="Analítica operativa"
-      descripcion="Horarios de mayor demanda, clientes por reactivar y productos por reabastecer — para planear mejor el día a día."
-    />
+    <DashboardAnalyticsInsights :insights="data.sparkHighlights" show-link />
 
     <section class="grid grid-cols-1 gap-4 lg:grid-cols-12">
       <section class="rounded-2xl border border-line bg-card p-5 lg:col-span-7">

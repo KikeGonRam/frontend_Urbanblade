@@ -14,7 +14,7 @@ withDefaults(
 </script>
 
 <template>
-  <section class="flex flex-col rounded-2xl border border-line bg-card p-5">
+  <section class="ub-rise flex flex-col rounded-2xl border border-line bg-card p-5">
     <header class="mb-4 flex items-start justify-between gap-3">
       <div>
         <h3 class="text-base font-semibold text-ink">{{ title }}</h3>

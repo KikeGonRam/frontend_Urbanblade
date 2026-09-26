@@ -209,6 +209,7 @@ async function submitDeleteAccount() {
       <section class="ui-card flex flex-col gap-5 p-6 sm:flex-row sm:items-center">
         <img
           v-if="avatarPreview || user?.avatar_url"
+          referrerpolicy="no-referrer"
           :src="avatarPreview || user?.avatar_url || ''"
           :alt="`Foto de ${name}`"
           class="h-24 w-24 rounded-full border border-line object-cover"

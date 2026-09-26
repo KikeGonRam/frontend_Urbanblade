@@ -64,6 +64,7 @@ watch(
       <NuxtLink to="/profile" class="ub-topbar-profile" title="Mi perfil">
         <img
           v-if="user?.avatar_url && !avatarFailed"
+          referrerpolicy="no-referrer"
           :src="user.avatar_url"
           :alt="`Foto de ${user.name}`"
           class="ub-sidebar__avatar object-cover"

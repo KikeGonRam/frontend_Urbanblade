@@ -110,7 +110,20 @@ leyenda abajo, tooltip con `bg-card`, colores de `useChartTheme()` (oro + neutro
   por semana" y "Servicios más pedidos" a la vista, estados con `UiBadge`; antes
   "confirmada" salía "—") y **Recepción** (6 KPIs que llevan a su pantalla, citas por hora,
   llegadas y pedidos).
-- Pendientes: Barbero, Cliente (incluye `MembershipCard`), Ingeniero y la app.
+- También hechos (26-sep, 2.ª ronda): **Barbero** (aprobar/rechazar, agenda con "Siguiente",
+  semana en español: barber manda `Carbon::format('D')` en inglés y la web lo traduce) y
+  **Cliente** (próxima cita con su estado, recomendación, 4 KPIs, visitas por mes, lealtad).
+- **Decisión del usuario:** nada escondido tras botones. "Analítica avanzada" del admin ya
+  no se pliega ("Desempeño y predicciones", siempre visible). Las tarjetas de degradados
+  "Prioridades detectadas"/"Insights del análisis" y `AnalyticsCta` se reemplazaron por
+  `DashboardAnalyticsInsights` compacto ("Lo que dicen tus datos"): acepta `insights`
+  (spark) y `simple` (`titulo/dato/detalle` del admin) y `show-link` a `/analytics`.
+- Movimiento: `.ub-rise` (aparición 420 ms, escalonada) y `.ub-collapse` (despliegue
+  grid 0fr→1fr) en `main.css`; Chart.js a 650 ms `easeOutQuart`. Solo opacidad/transform;
+  todo se apaga con `prefers-reduced-motion`.
+- "Citas completadas del mes": el backend arma 12 tramos de 3 días que pasan al mes
+  siguiente; la web quita los tramos futuros en vez de dibujarlos en 0.
+- Pendientes: Ingeniero, `MembershipCard` (colores por nivel, se dejó a propósito) y la app.
 - Títulos fieles al backend: `incomeChart` = 8 semanas; `clientTrends` = citas
   completadas del mes en tramos de 3 días (no "clientes").
 - Pruebas: `e2e/dashboard-admin.spec.ts`, `e2e/dashboard-reception.spec.ts`, datos en

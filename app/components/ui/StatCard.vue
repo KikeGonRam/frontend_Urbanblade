@@ -45,7 +45,7 @@ const showDelta = computed(() => props.delta !== null && props.delta !== 0 && Nu
   <component
     :is="to ? NuxtLink : 'div'"
     :to="to ?? undefined"
-    class="group flex flex-col rounded-2xl border border-line bg-card p-5 transition-colors"
+    class="ub-rise group flex flex-col rounded-2xl border border-line bg-card p-5 transition-colors duration-200"
     :class="to ? 'hover:border-gold/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold' : ''"
   >
     <div class="flex items-start justify-between gap-3">

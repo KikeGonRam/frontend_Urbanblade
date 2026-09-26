@@ -1,11 +1,15 @@
 <script setup lang="ts">
-import { Bar, Doughnut } from "vue-chartjs";
+import { Bar } from "vue-chartjs";
 import type { DashboardInsight } from "~/components/dashboard/AnalyticsInsights.vue";
+import { appointmentStatus } from "~/utils/appointmentStatus";
 import {
-    chartScale,
-    fmtInt,
-    inkRgba,
-    UB_CATEGORICAL,
+  chartAxisClean,
+  chartScale,
+  chartTooltip,
+  fmtInt,
+  fmtMoney,
+  goldRgba,
+  goldSeries,
 } from "~/utils/chartTheme";
 import { ensureChartjsRegistered } from "~/utils/registerChartjs";
 
@@ -54,47 +58,12 @@ const { apiFetch } = useApi();
 const { confirm } = useConfirm();
 
 const kpiCards = computed(() => [
-  {
-    label: "Citas Hoy",
-    val: props.data.kpis.appointments_today,
-    text: "text-gold",
-  },
-  {
-    label: "Por Aprobar",
-    val: props.data.barberPending.length,
-    text: "text-amber-300",
-  },
-  {
-    label: "Ingresos Mes",
-    val: `$${Number(props.data.kpis.income_month ?? 0).toLocaleString("es-MX", { maximumFractionDigits: 0 })}`,
-    text: "text-emerald-400",
-  },
-  {
-    label: "Propinas Mes",
-    val: `$${Number(props.data.kpis.tips_month ?? 0).toLocaleString("es-MX", { maximumFractionDigits: 0 })}`,
-    text: "text-gold",
-  },
-  { label: "Rating", val: props.data.kpis.rating, text: "text-ink" },
+  { label: "Citas de hoy", value: fmtInt(props.data.kpis.appointments_today), hint: `${fmtInt(props.data.kpis.appointments_month)} este mes` },
+  { label: "Por aprobar", value: fmtInt(props.data.barberPending.length), hint: "Solicitudes nuevas" },
+  { label: "Ingresos del mes", value: fmtMoney(props.data.kpis.income_month), hint: "Servicios cobrados" },
+  { label: "Propinas del mes", value: fmtMoney(props.data.kpis.tips_month), hint: "Directo para ti" },
+  { label: "Calificación", value: props.data.kpis.rating ? `${Number(props.data.kpis.rating).toFixed(1)} ★` : "—", hint: "Promedio de reseñas" },
 ]);
-
-const STATUS_STYLE: Record<string, [string, string]> = {
-  completada: [
-    "border-emerald-500/25 bg-emerald-500/10 text-emerald-300",
-    "Completada",
-  ],
-  pendiente: [
-    "border-amber-500/25 bg-amber-500/10 text-amber-300",
-    "Pendiente",
-  ],
-  en_proceso: ["border-blue-500/25 bg-blue-500/10 text-blue-300", "En proceso"],
-  confirmada: ["border-gold/25 bg-gold/10 text-gold", "Confirmada"],
-  cancelada: ["border-red-500/25 bg-red-500/10 text-red-400", "Cancelada"],
-  no_asistio: ["border-ink/10 bg-ink/5 text-ink/40", "No asistió"],
-};
-
-function statusStyle(estado: string) {
-  return STATUS_STYLE[estado] ?? ["border-ink/10 bg-ink/5 text-ink/40", "—"];
-}
 
 const actingOn = ref<string | null>(null);
 const actionError = ref("");
@@ -132,224 +101,150 @@ async function setStatus(
   }
 }
 
+// barber manda el día con Carbon::format('D') (en inglés); aquí se muestra en español.
+const DAY_ES: Record<string, string> = { Mon: "Lun", Tue: "Mar", Wed: "Mié", Thu: "Jue", Fri: "Vie", Sat: "Sáb", Sun: "Dom" };
+
 const hasPerformance = computed(() =>
   (props.data.performanceChart.values ?? []).some((v) => v),
 );
-const performanceData = computed(() => ({
-  labels: props.data.performanceChart.labels ?? [],
-  datasets: [
-    {
-      label: "Citas",
-      data: props.data.performanceChart.values ?? [],
-      backgroundColor: "rgba(212,175,55,0.75)",
-      hoverBackgroundColor: "#d4af37",
-      borderRadius: 6,
-      barThickness: 18,
-    },
-  ],
-}));
+const performanceData = computed(() => {
+  const values = props.data.performanceChart.values ?? [];
+
+  return {
+    labels: (props.data.performanceChart.labels ?? []).map((l) => DAY_ES[l] ?? l),
+    datasets: [
+      {
+        label: "Citas",
+        data: values,
+        // Hoy (el último día) en oro pleno.
+        backgroundColor: values.map((_, i) => goldRgba(i === values.length - 1 ? 0.95 : 0.4)),
+        hoverBackgroundColor: goldRgba(1),
+        borderRadius: 6,
+        maxBarThickness: 32,
+      },
+    ],
+  };
+});
 const performanceOptions = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
     legend: { display: false },
     tooltip: {
-      displayColors: false,
+      ...chartTooltip(),
       callbacks: {
         label: (ctx: { parsed: { y: number } }) =>
-          `Citas: ${fmtInt(ctx.parsed.y)}`,
+          `${fmtInt(ctx.parsed.y)} cita${ctx.parsed.y === 1 ? "" : "s"}`,
       },
     },
   },
   scales: {
-    y: {
-      ...chartScale(),
-      beginAtZero: true,
-      ticks: { ...chartScale().ticks, precision: 0 },
-    },
-    x: chartScale(),
+    y: { ...chartScale(), beginAtZero: true, ticks: { ...chartScale().ticks, precision: 0, maxTicksLimit: 5 } },
+    x: chartAxisClean(),
   },
 };
 
 const hasServices = computed(() =>
   (props.data.servicesChart.values ?? []).some((v) => v),
 );
+const servicesSorted = computed(() =>
+  (props.data.servicesChart.labels ?? [])
+    .map((label, i) => ({ label, value: props.data.servicesChart.values?.[i] ?? 0 }))
+    .sort((x, y) => y.value - x.value),
+);
 const servicesData = computed(() => ({
-  labels: props.data.servicesChart.labels ?? [],
+  labels: servicesSorted.value.map((s) => s.label),
   datasets: [
     {
-      data: props.data.servicesChart.values ?? [],
-      backgroundColor: UB_CATEGORICAL,
-      borderColor: "#111111",
-      borderWidth: 3,
-      hoverOffset: 8,
+      label: "Citas",
+      data: servicesSorted.value.map((s) => s.value),
+      backgroundColor: goldSeries(servicesSorted.value.length),
+      borderRadius: 6,
+      maxBarThickness: 22,
     },
   ],
 }));
 const servicesOptions = {
+  indexAxis: "y" as const,
   responsive: true,
   maintainAspectRatio: false,
-  cutout: "72%",
   plugins: {
-    legend: {
-      position: "bottom" as const,
-      labels: {
-        color: inkRgba(0.45),
-        usePointStyle: true,
-        pointStyle: "circle",
-        padding: 14,
-        font: { size: 10, weight: "bold" as const },
-      },
-    },
+    legend: { display: false },
     tooltip: {
-      displayColors: true,
-      callbacks: {
-        label: (ctx: { label: string; parsed: number }) =>
-          `${ctx.label}: ${fmtInt(ctx.parsed)}`,
-      },
+      ...chartTooltip(),
+      callbacks: { label: (ctx: { parsed: { x: number } }) => `${fmtInt(ctx.parsed.x)} citas` },
     },
+  },
+  scales: {
+    x: { ...chartScale(), beginAtZero: true, ticks: { ...chartScale().ticks, precision: 0, maxTicksLimit: 5 } },
+    y: chartAxisClean(),
   },
 };
 </script>
 
 <template>
-  <p v-if="actionError" role="alert" class="mb-4 text-sm text-red-400">
-    {{ actionError }}
-  </p>
   <div class="space-y-5">
     <DashboardHeader
       label="Profesional"
-      color="text-amber-400"
+      color="text-gold"
       :today-label="data.todayLabel"
     />
 
-    <section
-      class="relative overflow-hidden rounded-2xl border border-ink/[0.06] bg-card p-6"
-    >
-      <div
-        class="pointer-events-none absolute -top-16 -right-16 h-48 w-48 rounded-full bg-gold/5 blur-3xl"
-      />
-      <div class="relative flex flex-col items-center gap-6 sm:flex-row">
-        <div
-          class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-gold to-amber-600 text-black"
-        >
-          <svg
-            class="h-8 w-8"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-        </div>
-        <div>
-          <p
-            class="text-[9px] font-black uppercase tracking-[0.3em] text-ink/50"
-          >
-            Bienvenido de vuelta
-          </p>
-          <h3 class="mt-0.5 text-xl font-black uppercase text-ink">
-            Maestro <span class="text-gold">{{ firstName }}</span>
-          </h3>
-          <p class="mt-1 text-xs text-ink/40">
-            Tienes
-            <strong class="text-ink">{{ data.kpis.appointments_today }}</strong>
-            servicio{{ data.kpis.appointments_today !== 1 ? "s" : "" }} hoy
-            <template v-if="data.barberPending.length">
-              ·
-              <strong class="text-amber-300">{{
-                data.barberPending.length
-              }}</strong>
-              por aprobar </template
-            >.
-          </p>
-        </div>
-      </div>
-    </section>
+    <p class="text-sm text-muted">
+      Hola, <span class="font-semibold text-ink">{{ firstName }}</span>. Tienes
+      <strong class="text-ink">{{ data.kpis.appointments_today }}</strong>
+      servicio{{ data.kpis.appointments_today !== 1 ? "s" : "" }} hoy<template v-if="data.barberPending.length">
+        y <strong class="text-warning">{{ data.barberPending.length }}</strong>
+        por aprobar</template>.
+    </p>
 
-    <section class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-      <div
+    <p v-if="actionError" role="alert" class="rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+      {{ actionError }}
+    </p>
+
+    <section class="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5" aria-label="Resumen">
+      <UiStatCard
         v-for="kpi in kpiCards"
         :key="kpi.label"
-        class="rounded-[8px] border border-ink/[0.06] bg-card p-5 text-center"
-      >
-        <p
-          class="mb-3 text-[9px] font-black uppercase tracking-[0.22em] text-ink/50"
-        >
-          {{ kpi.label }}
-        </p>
-        <p class="text-2xl font-black" :class="kpi.text">{{ kpi.val }}</p>
-      </div>
+        :label="kpi.label"
+        :value="kpi.value"
+        :hint="kpi.hint"
+      />
     </section>
-
-    <DashboardAnalyticsInsights
-      :insights="data.sparkHighlights"
-      titulo="Tus oportunidades"
-    />
-    <DashboardAnalyticsCta
-      titulo="Tu analítica personal"
-      descripcion="Descubre a qué horas tienes más demanda y cómo le está yendo a tus publicaciones — solo tus datos, en lenguaje simple."
-    />
 
     <section
       v-if="data.barberPending.length"
-      class="rounded-2xl border border-amber-500/25 bg-amber-500/[0.04] p-5"
+      class="ub-rise rounded-2xl border border-warning/30 bg-warning/5 p-5"
+      aria-labelledby="barber-pending"
     >
-      <div class="mb-4 flex items-center gap-2">
-        <svg
-          class="h-4 w-4 text-amber-300"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
-        <h3
-          class="text-[11px] font-black uppercase tracking-widest text-amber-300"
-        >
-          Esperando tu aprobación
-        </h3>
-        <span class="ml-auto text-[9px] font-black text-amber-300/70">
-          {{ data.barberPending.length }} solicitud{{
-            data.barberPending.length !== 1 ? "es" : ""
-          }}
-        </span>
-      </div>
-      <div class="space-y-2">
-        <div
+      <header class="mb-3 flex items-center justify-between gap-3">
+        <div>
+          <h3 id="barber-pending" class="text-base font-semibold text-ink">Esperando tu aprobación</h3>
+          <p class="mt-0.5 text-sm text-muted">
+            {{ data.barberPending.length }} solicitud{{ data.barberPending.length !== 1 ? "es" : "" }} de cita
+          </p>
+        </div>
+        <UiBadge tone="warning">Por aprobar</UiBadge>
+      </header>
+      <ul class="divide-y divide-line">
+        <li
           v-for="appt in data.barberPending"
           :key="appt.id"
-          class="flex flex-wrap items-center gap-3 rounded-xl border border-amber-500/10 bg-ink/[0.04] p-3"
+          class="flex flex-wrap items-center gap-3 py-3"
         >
-          <div class="w-14 shrink-0 text-center">
-            <p class="text-[11px] font-black text-ink">
-              {{ appt.hora_inicio?.slice(0, 5) ?? "--:--" }}
-            </p>
-            <p class="text-[8px] font-bold text-ink/45">{{ appt.fecha }}</p>
+          <div class="w-20 shrink-0">
+            <p class="text-sm font-semibold tabular-nums text-ink">{{ appt.hora_inicio?.slice(0, 5) ?? "--:--" }}</p>
+            <p class="text-xs text-muted">{{ appt.fecha }}</p>
           </div>
           <div class="min-w-0 flex-1">
-            <p class="truncate text-xs font-black text-ink">
-              {{ appt.cliente }}
-            </p>
-            <p class="truncate text-[9px] font-bold text-ink/40">
-              {{ appt.servicio }}
-            </p>
+            <p class="truncate text-sm font-semibold text-ink">{{ appt.cliente }}</p>
+            <p class="truncate text-xs text-muted">{{ appt.servicio }}</p>
           </div>
           <div class="flex shrink-0 items-center gap-2">
             <button
               type="button"
               :disabled="actingOn === appt.id"
-              class="rounded-lg bg-gold px-4 py-2 text-[9px] font-black uppercase tracking-widest text-black transition hover:bg-gold-dim focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-2 disabled:opacity-50"
+              class="min-h-10 rounded-lg bg-gold px-4 text-sm font-semibold text-black transition-colors hover:bg-gold-dim focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold disabled:opacity-50"
               @click="setStatus(appt, 'confirmada')"
             >
               Aprobar
@@ -357,143 +252,78 @@ const servicesOptions = {
             <button
               type="button"
               :disabled="actingOn === appt.id"
-              class="px-2 text-[9px] font-black uppercase tracking-widest text-ink/40 transition hover:text-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-2 disabled:opacity-50"
+              class="min-h-10 rounded-lg border border-line px-4 text-sm font-semibold text-muted transition-colors hover:border-danger/40 hover:text-danger focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold disabled:opacity-50"
               @click="setStatus(appt, 'cancelada')"
             >
               Rechazar
             </button>
           </div>
-        </div>
-      </div>
+        </li>
+      </ul>
     </section>
 
-    <section class="rounded-2xl border border-ink/[0.06] bg-card p-5">
-      <div class="mb-5 flex items-center justify-between">
+    <section class="ub-rise rounded-2xl border border-line bg-card p-5" aria-labelledby="barber-today">
+      <header class="mb-3 flex items-center justify-between">
         <div>
-          <p
-            class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/50"
-          >
-            Agenda
-          </p>
-          <h3 class="mt-0.5 text-sm font-black uppercase text-ink">
-            Citas de Hoy
-          </h3>
+          <h3 id="barber-today" class="text-base font-semibold text-ink">Tu agenda de hoy</h3>
+          <p class="mt-0.5 text-sm text-muted">En orden de llegada</p>
         </div>
-      </div>
-      <div
+        <NuxtLink to="/appointments" class="text-sm font-semibold text-gold hover:underline">Ver todas</NuxtLink>
+      </header>
+      <p
         v-if="!data.barberToday.length"
-        class="flex flex-col items-center justify-center rounded-xl border border-dashed border-ink/[0.06] py-12"
+        class="rounded-xl border border-dashed border-line py-10 text-center text-sm text-muted"
       >
-        <svg
-          class="mb-2 h-8 w-8 text-ink/10"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="1.2"
-            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-          />
-        </svg>
-        <p class="text-xs font-bold uppercase tracking-widest text-ink/45">
-          Sin citas hoy
-        </p>
-      </div>
-      <div v-else class="space-y-2">
-        <div
+        No tienes citas hoy.
+      </p>
+      <ul v-else class="divide-y divide-line">
+        <li
           v-for="appt in data.barberToday"
           :key="appt.id"
-          class="flex items-center gap-3 rounded-xl border p-3 transition-all"
-          :class="
-            appt.isNext
-              ? 'border-gold/30 bg-gold/[0.04]'
-              : 'border-ink/[0.05] hover:border-ink/10'
-          "
+          class="flex items-center gap-3 py-3"
+          :class="appt.isNext ? '-mx-3 rounded-xl bg-gold/10 px-3' : ''"
         >
-          <div class="w-12 shrink-0 text-center">
-            <p
-              class="text-[11px] font-black"
-              :class="appt.isNext ? 'text-gold' : 'text-ink'"
-            >
+          <div class="w-16 shrink-0">
+            <p class="text-sm font-semibold tabular-nums" :class="appt.isNext ? 'text-gold' : 'text-ink'">
               {{ appt.hora_inicio?.slice(0, 5) ?? "--:--" }}
             </p>
-            <p class="text-[8px] font-bold text-ink/45">
-              {{ appt.hora_fin?.slice(0, 5) }}
-            </p>
+            <p class="text-xs tabular-nums text-muted">{{ appt.hora_fin?.slice(0, 5) }}</p>
           </div>
-          <div class="h-7 w-px shrink-0 bg-ink/[0.06]" />
           <div class="min-w-0 flex-1">
-            <p class="truncate text-xs font-black text-ink">
+            <p class="truncate text-sm font-semibold text-ink">
               {{ appt.cliente }}
-              <span
-                v-if="appt.isNext"
-                class="ml-1 text-[8px] font-black uppercase tracking-wider text-gold"
-                >· Siguiente</span
-              >
+              <span v-if="appt.isNext" class="ml-1 text-xs font-semibold text-gold">· Siguiente</span>
             </p>
-            <p class="truncate text-[9px] font-bold text-ink/35">
-              {{ appt.servicio }}
-            </p>
+            <p class="truncate text-xs text-muted">{{ appt.servicio }}</p>
           </div>
-          <span
-            class="shrink-0 rounded-full border px-2 py-0.5 text-[8px] font-black uppercase tracking-wider"
-            :class="statusStyle(appt.estado)[0]"
-          >
-            {{ statusStyle(appt.estado)[1] }}
-          </span>
-        </div>
-      </div>
+          <UiBadge :tone="appointmentStatus(appt.estado).tone" class="shrink-0">
+            {{ appointmentStatus(appt.estado).label }}
+          </UiBadge>
+        </li>
+      </ul>
     </section>
 
-    <section class="grid grid-cols-1 gap-5 lg:grid-cols-2">
-      <div class="rounded-2xl border border-ink/[0.06] bg-card p-5">
-        <div class="mb-5">
-          <p
-            class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/50"
-          >
-            Últimos 7 días
-          </p>
-          <h3 class="mt-0.5 text-sm font-black uppercase text-ink">
-            Productividad Semanal
-          </h3>
-        </div>
-        <div v-if="hasPerformance" class="h-52">
-          <Bar :data="performanceData" :options="performanceOptions" />
-        </div>
-        <div
-          v-else
-          class="flex h-52 items-center justify-center rounded-xl border border-dashed border-ink/[0.06]"
-        >
-          <p class="text-xs font-bold uppercase tracking-widest text-ink/45">
-            Sin datos suficientes
-          </p>
-        </div>
-      </div>
-      <div class="rounded-2xl border border-ink/[0.06] bg-card p-5">
-        <div class="mb-5">
-          <p
-            class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/50"
-          >
-            Último año
-          </p>
-          <h3 class="mt-0.5 text-sm font-black uppercase text-ink">
-            Top Especialidades
-          </h3>
-        </div>
-        <div v-if="hasServices" class="h-52">
-          <Doughnut :data="servicesData" :options="servicesOptions" />
-        </div>
-        <div
-          v-else
-          class="flex h-52 items-center justify-center rounded-xl border border-dashed border-ink/[0.06]"
-        >
-          <p class="text-xs font-bold uppercase tracking-widest text-ink/45">
-            Sin especialidades aún
-          </p>
-        </div>
-      </div>
+    <section class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <UiChartCard
+        title="Tu semana"
+        subtitle="Citas de los últimos 7 días"
+        :empty="!hasPerformance"
+        empty-text="Todavía no hay citas esta semana."
+        height="h-56"
+      >
+        <Bar :data="performanceData" :options="performanceOptions" />
+      </UiChartCard>
+      <UiChartCard
+        title="Tus servicios más pedidos"
+        subtitle="Último año"
+        :empty="!hasServices"
+        empty-text="Todavía no hay servicios registrados."
+        height="h-56"
+      >
+        <Bar :data="servicesData" :options="servicesOptions" />
+      </UiChartCard>
     </section>
+
+    <DashboardAnalyticsInsights :insights="data.sparkHighlights" titulo="Tus oportunidades" show-link />
   </div>
 </template>

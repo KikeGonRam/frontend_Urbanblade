@@ -1111,9 +1111,6 @@ const barberOptions = {
       </div>
     </section>
 
-    <DashboardAnalyticsInsights
-      :insights="data.sparkHighlights"
-      titulo="Prioridades detectadas"
-    />
+    <DashboardAnalyticsInsights :insights="data.sparkHighlights" />
   </div>
 </template>

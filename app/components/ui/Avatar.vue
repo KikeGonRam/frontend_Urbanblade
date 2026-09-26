@@ -7,7 +7,7 @@ const initials = computed(() => (props.name?.trim().split(/\s+/).filter(Boolean)
 
 <template>
   <span class="ui-avatar" :title="name || undefined">
-    <img v-if="src && !failed" :src="src" :alt="`Foto de ${name || 'usuario'}`" loading="lazy" decoding="async" @error="failed = true">
+    <img v-if="src && !failed" :src="src" :alt="`Foto de ${name || 'usuario'}`" loading="lazy" decoding="async" referrerpolicy="no-referrer" @error="failed = true">
     <span v-else aria-hidden="true">{{ initials }}</span>
   </span>
 </template>

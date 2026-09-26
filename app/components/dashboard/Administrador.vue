@@ -100,24 +100,6 @@ const TABS = [
   { id: "topbarber", label: "Top Mes" },
 ];
 
-// Recuerda si el panel de analítica avanzada estaba abierto — misma clave de
-// localStorage ('adminAnalytics') que la versión Inertia/Blade.
-const analyticsOpen = ref(false);
-onMounted(() => {
-  try {
-    analyticsOpen.value = localStorage.getItem("adminAnalytics") === "true";
-  } catch {
-    analyticsOpen.value = false;
-  }
-});
-function toggleAnalytics() {
-  analyticsOpen.value = !analyticsOpen.value;
-  try {
-    localStorage.setItem("adminAnalytics", String(analyticsOpen.value));
-  } catch {
-    // localStorage puede fallar en modo privado — solo se pierde el "recordar".
-  }
-}
 
 const hasIncome = computed(() =>
   (props.data.incomeChart.values ?? []).some((v) => v),
@@ -275,15 +257,34 @@ const barberIngresosOptions = {
   },
 };
 
+const MONTHS: Record<string, number> = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 };
+const clientTrendsUntilToday = computed(() => {
+  const labels = props.data.clientTrends.labels ?? [];
+  const values = props.data.clientTrends.values ?? [];
+  const today = new Date();
+  const keep = labels.map((label) => {
+    const [day, mon] = label.split(" ");
+    const month = MONTHS[mon ?? ""];
+    if (month === undefined || !day) return true;
+    const date = new Date(today.getFullYear(), month, Number(day));
+    // Diciembre → enero del año siguiente.
+    if (month < today.getMonth() - 6) date.setFullYear(today.getFullYear() + 1);
+
+    return date <= today;
+  });
+
+  return { labels: labels.filter((_, i) => keep[i]), values: values.filter((_, i) => keep[i]) };
+});
+
 const hasClientTrends = computed(() =>
-  (props.data.clientTrends.values ?? []).some((v) => v),
+  clientTrendsUntilToday.value.values.some((v) => v),
 );
 const clientTrendsData = computed(() => ({
-  labels: props.data.clientTrends.labels ?? [],
+  labels: clientTrendsUntilToday.value.labels,
   datasets: [
     {
-      label: "Citas Completadas",
-      data: props.data.clientTrends.values ?? [],
+      label: "Citas completadas",
+      data: clientTrendsUntilToday.value.values,
       borderColor: goldRgba(0.95),
       backgroundColor: goldRgba(0.1),
       borderWidth: 2.5,
@@ -338,14 +339,14 @@ const aiConfidence = ref<string | null>(null);
 const aiInsights = ref<AiInsight[] | null>(null);
 const AI_STATUS_STYLE: Record<string, { cls: string; dot: string }> = {
   positive: {
-    cls: "border-emerald-500/20 bg-emerald-500/[0.04]",
-    dot: "bg-emerald-400",
+    cls: "border-success/20 bg-success/[0.04]",
+    dot: "bg-success",
   },
   warning: {
-    cls: "border-amber-500/20 bg-amber-500/[0.04]",
-    dot: "bg-amber-400",
+    cls: "border-warning/20 bg-warning/[0.04]",
+    dot: "bg-warning",
   },
-  neutral: { cls: "border-blue-500/20 bg-blue-500/[0.04]", dot: "bg-blue-400" },
+  neutral: { cls: "border-info/20 bg-info/[0.04]", dot: "bg-info" },
 };
 
 const { apiFetch } = useApi();
@@ -504,55 +505,10 @@ onMounted(async () => {
       </UiChartCard>
     </section>
 
-    <section
-      v-if="data.insights.length"
-      aria-label="Insights del análisis de datos"
-    >
-      <div class="mb-3 flex items-center gap-2 px-1">
-        <svg
-          class="h-4 w-4 text-gold"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0013 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-          />
-        </svg>
-        <h3 class="text-[11px] font-black uppercase tracking-widest text-gold">
-          Insights del análisis de datos
-        </h3>
-        <span class="text-[9px] text-muted">· UrbanBlade Analytics</span>
-      </div>
-      <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <article
-          v-for="(insight, i) in data.insights"
-          :key="`${insight.titulo ?? ''}-${i}`"
-          class="rounded-2xl border border-gold/15 bg-gold/[0.03] p-4"
-        >
-          <p
-            class="text-[9px] font-black uppercase tracking-widest text-gold/70"
-          >
-            {{ insight.titulo }}
-          </p>
-          <p class="mt-1 text-2xl font-black text-ink">{{ insight.dato }}</p>
-          <p class="mt-1.5 text-[11px] leading-snug text-muted">
-            {{ insight.detalle }}
-          </p>
-        </article>
-      </div>
-    </section>
-
     <DashboardAnalyticsInsights
+      :simple="data.insights"
       :insights="data.sparkHighlights"
-      titulo="Prioridades detectadas"
-    />
-    <DashboardAnalyticsCta
-      titulo="Analítica avanzada completa"
-      descripcion="Preparación de datos, predicciones (supervisado), patrones ocultos (no supervisado) y gráficas — todo explicado en lenguaje simple, con datos reales de tu barbería."
+      show-link
     />
 
     <div class="flex items-center gap-3 px-1 pt-2">
@@ -568,14 +524,8 @@ onMounted(async () => {
       >
         <div class="mb-5 flex items-center justify-between">
           <div>
-            <p
-              class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/50"
-            >
-              Agenda
-            </p>
-            <h3 class="mt-0.5 text-sm font-black uppercase text-ink">
-              Citas de Hoy
-            </h3>
+            <h3 class="text-base font-semibold text-ink">Citas de Hoy</h3>
+            <p class="mt-0.5 text-sm text-muted">Agenda</p>
           </div>
         </div>
 
@@ -610,7 +560,7 @@ onMounted(async () => {
               <p class="text-[11px] font-black text-ink">
                 {{ appt.hora_inicio?.slice(0, 5) ?? "--:--" }}
               </p>
-              <p class="text-[8px] font-bold text-ink/45">
+              <p class="text-[11px] font-bold text-ink/45">
                 {{ appt.hora_fin?.slice(0, 5) }}
               </p>
             </div>
@@ -619,7 +569,7 @@ onMounted(async () => {
               <p class="truncate text-xs font-black text-ink">
                 {{ appt.cliente }}
               </p>
-              <p class="truncate text-[9px] font-bold text-ink/35">
+              <p class="truncate text-xs font-bold text-ink/35">
                 {{ appt.servicio }} · {{ appt.barbero }}
               </p>
             </div>
@@ -639,7 +589,7 @@ onMounted(async () => {
               v-for="tab in TABS"
               :key="tab.id"
               type="button"
-              class="flex-1 py-3 text-[9px] font-black uppercase tracking-[0.2em] transition-all"
+              class="flex-1 py-3 text-xs font-black uppercase tracking-[0.2em] transition-all"
               :class="
                 activeTab === tab.id
                   ? '-mb-px border-b-2 border-gold text-gold'
@@ -663,7 +613,7 @@ onMounted(async () => {
                   <p class="truncate text-[11px] font-bold text-ink">
                     {{ appt.cliente }}
                   </p>
-                  <p class="truncate text-[9px] text-ink/50">
+                  <p class="truncate text-xs text-ink/50">
                     {{ appt.fecha }} · {{ appt.hora_inicio?.slice(0, 5) }}
                   </p>
                 </div>
@@ -682,38 +632,38 @@ onMounted(async () => {
             <div v-else-if="activeTab === 'stations'">
               <div class="mb-4 flex items-center justify-between">
                 <p
-                  class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/50"
+                  class="text-sm text-muted"
                 >
                   Ocupación en tiempo real
                 </p>
                 <span
-                  class="flex items-center gap-1 text-[8px] font-black uppercase text-emerald-400"
+                  class="flex items-center gap-1 text-[11px] font-black uppercase text-success"
                 >
                   <span
-                    class="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400"
+                    class="h-1.5 w-1.5 animate-pulse rounded-full bg-success"
                   />Live
                 </span>
               </div>
               <template v-if="(data.kpis.barbers_status ?? []).length">
                 <div class="mb-4 flex gap-3">
                   <div
-                    class="flex-1 rounded-xl border border-red-500/20 bg-red-500/[0.04] p-3 text-center"
+                    class="flex-1 rounded-xl border border-danger/20 bg-danger/[0.04] p-3 text-center"
                   >
-                    <p class="text-lg font-black text-red-400">
+                    <p class="text-lg font-black text-danger">
                       {{ busyStatuses.length }}
                     </p>
-                    <p class="text-[8px] font-black uppercase text-red-400/80">
+                    <p class="text-[11px] font-black uppercase text-danger/80">
                       Ocupados
                     </p>
                   </div>
                   <div
-                    class="flex-1 rounded-xl border border-emerald-500/15 bg-emerald-500/[0.04] p-3 text-center"
+                    class="flex-1 rounded-xl border border-success/15 bg-success/[0.04] p-3 text-center"
                   >
-                    <p class="text-lg font-black text-emerald-400">
+                    <p class="text-lg font-black text-success">
                       {{ freeStatuses.length }}
                     </p>
                     <p
-                      class="text-[8px] font-black uppercase text-emerald-400/80"
+                      class="text-[11px] font-black uppercase text-success/80"
                     >
                       Libres
                     </p>
@@ -724,7 +674,7 @@ onMounted(async () => {
                   <div
                     v-for="st in busyStatuses"
                     :key="st.name"
-                    class="rounded-xl border border-red-500/20 bg-red-500/[0.04] p-3 text-center"
+                    class="rounded-xl border border-danger/20 bg-danger/[0.04] p-3 text-center"
                   >
                     <div class="relative mb-2 inline-flex">
                       <div
@@ -733,13 +683,13 @@ onMounted(async () => {
                         {{ st.name.slice(0, 2).toUpperCase() }}
                       </div>
                       <span
-                        class="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-[#111] bg-red-500"
+                        class="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-[#111] bg-danger"
                       />
                     </div>
                     <p class="truncate text-[10px] font-black text-ink">
                       {{ st.name.split(" ")[0] }}
                     </p>
-                    <p class="text-[8px] font-black uppercase text-red-400">
+                    <p class="text-[11px] font-black uppercase text-danger">
                       Ocupado
                     </p>
                     <div
@@ -759,7 +709,7 @@ onMounted(async () => {
                 <template v-if="freeStatuses.length">
                   <button
                     type="button"
-                    class="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-ink/[0.06] bg-ink/[0.02] py-2.5 text-[9px] font-black uppercase tracking-widest text-ink/50 transition hover:text-ink/70"
+                    class="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-ink/[0.06] bg-ink/[0.02] py-2.5 text-xs font-black uppercase tracking-widest text-ink/50 transition hover:text-ink/70"
                     @click="showFree = !showFree"
                   >
                     <span>{{
@@ -786,7 +736,7 @@ onMounted(async () => {
                     <div
                       v-for="st in freeStatuses"
                       :key="st.name"
-                      class="rounded-xl border border-emerald-500/15 bg-emerald-500/[0.04] p-3 text-center"
+                      class="rounded-xl border border-success/15 bg-success/[0.04] p-3 text-center"
                     >
                       <div class="relative mb-2 inline-flex">
                         <div
@@ -795,14 +745,14 @@ onMounted(async () => {
                           {{ st.name.slice(0, 2).toUpperCase() }}
                         </div>
                         <span
-                          class="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-[#111] bg-emerald-500"
+                          class="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-[#111] bg-success"
                         />
                       </div>
                       <p class="truncate text-[10px] font-black text-ink">
                         {{ st.name.split(" ")[0] }}
                       </p>
                       <p
-                        class="text-[8px] font-black uppercase text-emerald-400"
+                        class="text-[11px] font-black uppercase text-success"
                       >
                         Libre
                       </p>
@@ -829,7 +779,7 @@ onMounted(async () => {
                   {{ data.kpis.top_barber_name }}
                 </p>
                 <p
-                  class="mt-0.5 text-[9px] font-bold uppercase tracking-widest text-ink/50"
+                  class="mt-0.5 text-xs font-bold uppercase tracking-widest text-ink/50"
                 >
                   Mejor del mes
                 </p>
@@ -853,7 +803,7 @@ onMounted(async () => {
                     {{ data.kpis.top_barber_total }}
                   </p>
                   <p
-                    class="text-[9px] font-bold uppercase tracking-wider text-ink/50"
+                    class="text-xs font-bold uppercase tracking-wider text-ink/50"
                   >
                     citas
                   </p>
@@ -868,57 +818,21 @@ onMounted(async () => {
       </div>
     </section>
 
-    <section class="space-y-5">
-      <button
-        type="button"
-        class="flex w-full items-center gap-3 rounded-2xl border border-ink/[0.06] bg-card px-5 py-4 transition-all hover:border-ink/12"
-        :aria-expanded="analyticsOpen"
-        @click="toggleAnalytics"
-      >
-        <svg
-          class="h-4 w-4 shrink-0 text-gold transition-transform duration-200"
-          :class="analyticsOpen ? 'rotate-90' : ''"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          stroke-width="2.5"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M9 5l7 7-7 7"
-          />
-        </svg>
-        <div class="text-left">
-          <p class="text-[11px] font-black uppercase tracking-widest text-ink">
-            Analítica avanzada
-          </p>
-          <p class="text-[9px] font-bold text-ink/45">
-            Desempeño por barbero · citas del mes · predicciones IA · telemetría de Bladebot
-          </p>
-        </div>
-        <span
-          class="ml-auto text-[9px] font-black uppercase tracking-widest text-gold/70"
-          >{{ analyticsOpen ? "Ocultar" : "Ver" }}</span
-        >
-      </button>
-
-      <div v-if="analyticsOpen" class="space-y-5">
+    <section class="space-y-5" aria-labelledby="admin-analitica">
+      <header class="px-1 pt-2">
+        <h2 id="admin-analitica" class="text-lg font-semibold text-ink">Desempeño y predicciones</h2>
+        <p class="mt-0.5 text-sm text-muted">Barberos, citas del mes, predicciones y uso de Bladebot.</p>
+      </header>
+      <div class="space-y-5">
         <section class="grid grid-cols-1 gap-5 lg:grid-cols-2">
           <div class="rounded-2xl border border-ink/[0.06] bg-card p-5">
             <div class="mb-5 flex items-center justify-between">
               <div>
-                <p
-                  class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/50"
-                >
-                  Este mes
-                </p>
-                <h3 class="mt-0.5 text-sm font-black uppercase text-ink">
-                  Desempeño Barberos
-                </h3>
+                <h3 class="text-base font-semibold text-ink">Desempeño por barbero</h3>
+                <p class="mt-0.5 text-sm text-muted">Este mes</p>
               </div>
               <div
-                class="flex gap-3 text-[8px] font-black uppercase text-ink/45"
+                class="flex gap-3 text-[11px] font-black uppercase text-ink/45"
               >
                 <span class="flex items-center gap-1"
                   ><span class="h-2 w-2 rounded-sm bg-gold" />Citas</span
@@ -959,14 +873,8 @@ onMounted(async () => {
           <div class="rounded-2xl border border-ink/[0.06] bg-card p-5">
             <div class="mb-5 flex items-center justify-between">
               <div>
-                <p
-                  class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/50"
-                >
-                  Mes actual
-                </p>
-                <h3 class="mt-0.5 text-sm font-black uppercase text-ink">
-                  Citas completadas del mes
-                </h3>
+                <h3 class="text-base font-semibold text-ink">Citas completadas del mes</h3>
+                <p class="mt-0.5 text-sm text-muted">Mes actual</p>
               </div>
 
             </div>
@@ -992,16 +900,16 @@ onMounted(async () => {
           >
             <div class="mb-5">
               <p
-                class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/50"
+                class="text-sm text-muted"
               >
                 Próximos 7 días
               </p>
               <h3
-                class="mt-0.5 flex items-center gap-2 text-sm font-black uppercase text-ink"
+                class="mt-0.5 flex items-center gap-2 text-base font-semibold text-ink"
               >
                 Predicciones IA
                 <span
-                  class="rounded-full border border-indigo-500/30 bg-indigo-500/10 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-widest text-indigo-400"
+                  class="rounded-full border border-gold/30 bg-gold/10 px-1.5 py-0.5 text-[11px] font-black uppercase tracking-widest text-gold"
                   >Beta</span
                 >
               </h3>
@@ -1012,14 +920,14 @@ onMounted(async () => {
                 class="rounded-[8px] border border-ink/[0.05] bg-ink/[0.02] p-3 text-center"
               >
                 <p
-                  class="mb-2 text-[8px] font-black uppercase tracking-wider text-ink/50"
+                  class="mb-1 text-xs font-medium text-muted"
                 >
-                  Ingresos Est.
+                  Ingresos estimados
                 </p>
-                <p class="text-lg font-black text-emerald-400">
+                <p class="text-lg font-semibold tabular-nums text-ink">
                   <span
                     v-if="incomeForecast === null"
-                    class="inline-block h-1 w-8 animate-pulse rounded bg-emerald-500/25"
+                    class="inline-block h-1 w-8 animate-pulse rounded bg-success/25"
                   />
                   <template v-else>{{ incomeForecast }}</template>
                 </p>
@@ -1028,14 +936,14 @@ onMounted(async () => {
                 class="rounded-[8px] border border-ink/[0.05] bg-ink/[0.02] p-3 text-center"
               >
                 <p
-                  class="mb-2 text-[8px] font-black uppercase tracking-wider text-ink/50"
+                  class="mb-1 text-xs font-medium text-muted"
                 >
-                  Citas Est.
+                  Citas estimadas
                 </p>
-                <p class="text-lg font-black text-blue-400">
+                <p class="text-lg font-semibold tabular-nums text-ink">
                   <span
                     v-if="appointmentForecast === null"
-                    class="inline-block h-1 w-8 animate-pulse rounded bg-blue-500/25"
+                    class="inline-block h-1 w-8 animate-pulse rounded bg-info/25"
                   />
                   <template v-else>{{ appointmentForecast }}</template>
                 </p>
@@ -1044,14 +952,14 @@ onMounted(async () => {
                 class="rounded-[8px] border border-ink/[0.05] bg-ink/[0.02] p-3 text-center"
               >
                 <p
-                  class="mb-2 text-[8px] font-black uppercase tracking-wider text-ink/50"
+                  class="mb-1 text-xs font-medium text-muted"
                 >
                   Confianza
                 </p>
-                <p class="text-lg font-black text-indigo-400">
+                <p class="text-lg font-semibold tabular-nums text-ink">
                   <span
                     v-if="aiConfidence === null"
-                    class="inline-block h-1 w-8 animate-pulse rounded bg-indigo-500/25"
+                    class="inline-block h-1 w-8 animate-pulse rounded bg-gold/25"
                   />
                   <template v-else>{{ aiConfidence }}</template>
                 </p>
@@ -1060,7 +968,7 @@ onMounted(async () => {
 
             <div>
               <p
-                class="mb-3 text-[9px] font-black uppercase tracking-[0.2em] text-ink/45"
+                class="mb-2 text-sm font-medium text-muted"
               >
                 Insights
               </p>
@@ -1070,7 +978,7 @@ onMounted(async () => {
                   class="flex animate-pulse items-start gap-2 rounded-xl border border-ink/[0.05] bg-ink/[0.02] p-3"
                 >
                   <div
-                    class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400"
+                    class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-warning"
                   />
                   <p class="text-[10px] text-ink/45">Cargando análisis...</p>
                 </div>
@@ -1110,19 +1018,19 @@ onMounted(async () => {
             <div class="mb-5 flex items-center justify-between">
               <div>
                 <p
-                  class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/50"
+                  class="text-sm text-muted"
                 >
                   Últimos {{ data.chatbotTelemetry.window_days ?? 7 }} días
                 </p>
                 <h3
-                  class="mt-0.5 flex items-center gap-2 text-sm font-black uppercase text-ink"
+                  class="mt-0.5 flex items-center gap-2 text-base font-semibold text-ink"
                 >
-                  Telemetría Chatbot
+                  Uso de Bladebot
                   <span
-                    class="flex items-center gap-1 text-[8px] font-black uppercase text-emerald-400"
+                    class="flex items-center gap-1 text-[11px] font-black uppercase text-success"
                   >
                     <span
-                      class="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400"
+                      class="h-1.5 w-1.5 animate-pulse rounded-full bg-success"
                     />OK
                   </span>
                 </h3>
@@ -1134,11 +1042,11 @@ onMounted(async () => {
                 class="rounded-[8px] border border-ink/[0.05] bg-ink/[0.02] p-3"
               >
                 <p
-                  class="mb-1.5 text-[8px] font-black uppercase tracking-wider text-ink/50"
+                  class="mb-1 text-xs font-medium text-muted"
                 >
-                  Eventos
+                  Consultas
                 </p>
-                <p class="text-lg font-black text-blue-400">
+                <p class="text-lg font-semibold tabular-nums text-ink">
                   {{ data.chatbotTelemetry.total_requests ?? 0 }}
                 </p>
               </div>
@@ -1146,11 +1054,14 @@ onMounted(async () => {
                 class="rounded-[8px] border border-ink/[0.05] bg-ink/[0.02] p-3"
               >
                 <p
-                  class="mb-1.5 text-[8px] font-black uppercase tracking-wider text-ink/50"
+                  class="mb-1 text-xs font-medium text-muted"
                 >
-                  Error Rate
+                  Con error
                 </p>
-                <p class="text-lg font-black text-red-400">
+                <p
+                  class="text-lg font-semibold tabular-nums"
+                  :class="(data.chatbotTelemetry.error_rate_pct ?? 0) > 5 ? 'text-danger' : 'text-ink'"
+                >
                   {{ (data.chatbotTelemetry.error_rate_pct ?? 0).toFixed(1) }}%
                 </p>
               </div>
@@ -1158,23 +1069,23 @@ onMounted(async () => {
                 class="rounded-[8px] border border-ink/[0.05] bg-ink/[0.02] p-3"
               >
                 <p
-                  class="mb-1.5 text-[8px] font-black uppercase tracking-wider text-ink/50"
+                  class="mb-1 text-xs font-medium text-muted"
                 >
-                  Latencia Prom.
+                  Respuesta promedio
                 </p>
-                <p class="text-lg font-black text-sky-400">
-                  {{ data.chatbotTelemetry.avg_latency_ms ?? 0 }}ms
+                <p class="text-lg font-semibold tabular-nums text-ink">
+                  {{ ((data.chatbotTelemetry.avg_latency_ms ?? 0) / 1000).toFixed(1) }} s
                 </p>
               </div>
               <div
                 class="rounded-[8px] border border-ink/[0.05] bg-ink/[0.02] p-3"
               >
                 <p
-                  class="mb-1.5 text-[8px] font-black uppercase tracking-wider text-ink/50"
+                  class="mb-1 text-xs font-medium text-muted"
                 >
-                  Costo Est.
+                  Costo estimado
                 </p>
-                <p class="text-lg font-black text-emerald-400">
+                <p class="text-lg font-semibold tabular-nums text-ink">
                   ${{
                     (data.chatbotTelemetry.estimated_cost_usd ?? 0).toFixed(4)
                   }}
@@ -1189,9 +1100,9 @@ onMounted(async () => {
               "
             >
               <p
-                class="mb-3 text-[9px] font-black uppercase tracking-[0.2em] text-ink/45"
+                class="mb-2 text-sm font-medium text-muted"
               >
-                Top Fuentes
+                Quién respondió
               </p>
               <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
                 <div
@@ -1200,10 +1111,10 @@ onMounted(async () => {
                   class="flex items-center justify-between rounded-xl border border-ink/[0.05] bg-ink/[0.02] px-3 py-2"
                 >
                   <span
-                    class="truncate text-[9px] font-bold uppercase text-ink"
+                    class="truncate text-xs font-bold uppercase text-ink"
                     >{{ String(source).replace(/_/g, " ") }}</span
                   >
-                  <span class="ml-2 shrink-0 text-[9px] font-black text-gold">{{
+                  <span class="ml-2 shrink-0 text-xs font-black text-gold">{{
                     count
                   }}</span>
                 </div>

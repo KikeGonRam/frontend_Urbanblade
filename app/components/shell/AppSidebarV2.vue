@@ -175,6 +175,7 @@ async function onLogout() {
       >
         <img
           v-if="user?.avatar_url && !avatarFailed"
+          referrerpolicy="no-referrer"
           :src="user.avatar_url"
           :alt="`Foto de ${user.name}`"
           class="ub-sidebar__avatar object-cover"

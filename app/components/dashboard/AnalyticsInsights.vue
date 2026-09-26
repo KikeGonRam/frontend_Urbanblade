@@ -1,4 +1,13 @@
 <script setup lang="ts">
+/*
+ * "Lo que dicen tus datos": hallazgos del análisis (spark) y, en el dashboard del
+ * administrador, los indicadores calculados por barber (premium, cancelaciones, hora pico),
+ * juntos en una sola sección compacta. Reemplaza a las tarjetas grandes de degradados de
+ * colores ("Prioridades detectadas", "Insights del análisis de datos") y a la tarjeta
+ * publicitaria de analítica: ahora es un enlace en el encabezado. Mismos datos de /dashboard.
+ */
+import type { BadgeTone } from "~/utils/appointmentStatus";
+
 export interface DashboardInsight {
   titulo: string
   dato: string
@@ -10,111 +19,89 @@ export interface DashboardInsight {
   progress_value: number | null
 }
 
-withDefaults(defineProps<{ insights?: DashboardInsight[], titulo?: string }>(), {
-  insights: () => [],
-  titulo: 'Analítica avanzada',
-})
-
-const PALETTE: Record<string, { border: string, bg: string, texto: string, dot: string }> = {
-  gold: {
-    border: 'border-gold/20',
-    bg: 'bg-[linear-gradient(180deg,rgba(212,175,55,.07),rgba(255,255,255,.025))]',
-    texto: 'text-gold',
-    dot: 'bg-gold',
-  },
-  success: {
-    border: 'border-emerald-400/20',
-    bg: 'bg-[linear-gradient(180deg,rgba(52,211,153,.07),rgba(255,255,255,.025))]',
-    texto: 'text-emerald-300',
-    dot: 'bg-emerald-400',
-  },
-  warning: {
-    border: 'border-amber-400/20',
-    bg: 'bg-[linear-gradient(180deg,rgba(245,158,11,.075),rgba(255,255,255,.025))]',
-    texto: 'text-amber-300',
-    dot: 'bg-amber-400',
-  },
-  danger: {
-    border: 'border-rose-400/20',
-    bg: 'bg-[linear-gradient(180deg,rgba(251,113,133,.07),rgba(255,255,255,.025))]',
-    texto: 'text-rose-300',
-    dot: 'bg-rose-400',
-  },
-  info: {
-    border: 'border-sky-400/20',
-    bg: 'bg-[linear-gradient(180deg,rgba(56,189,248,.07),rgba(255,255,255,.025))]',
-    texto: 'text-sky-300',
-    dot: 'bg-sky-400',
-  },
+/** Forma de `insights` del dashboard del administrador (DashboardController::analysisInsights). */
+export interface SimpleInsight {
+  titulo: string
+  dato: string
+  detalle: string
 }
 
-function tone(color: string) {
-  return PALETTE[color] ?? PALETTE.gold
+const props = withDefaults(
+  defineProps<{
+    insights?: DashboardInsight[]
+    simple?: SimpleInsight[]
+    titulo?: string
+    /** Muestra "Ver analítica completa" (roles con acceso a /analytics). */
+    showLink?: boolean
+  }>(),
+  { insights: () => [], simple: () => [], titulo: 'Lo que dicen tus datos', showLink: false },
+)
+
+interface Row { key: string; titulo: string; dato: string; texto: string; detalle: string | null; tone: BadgeTone; progress: number | null }
+
+const TONES: Record<string, BadgeTone> = { gold: 'gold', success: 'success', warning: 'warning', danger: 'danger', info: 'info' }
+
+const rows = computed<Row[]>(() => [
+  ...props.simple.map((s, i) => ({ key: `s${i}`, titulo: s.titulo, dato: s.dato, texto: s.detalle, detalle: null, tone: 'gold' as BadgeTone, progress: null })),
+  ...props.insights.map((s, i) => ({
+    key: `i${i}`,
+    titulo: s.titulo,
+    dato: s.dato,
+    texto: s.brief,
+    detalle: s.is_truncated ? s.mensaje : null,
+    tone: TONES[s.color] ?? 'gold',
+    progress: s.progress_value,
+  })),
+])
+
+const DOT: Record<BadgeTone, string> = {
+  neutral: 'bg-muted', gold: 'bg-gold', success: 'bg-success', warning: 'bg-warning', danger: 'bg-danger', info: 'bg-info',
 }
+
+const open = ref<Record<string, boolean>>({})
 </script>
 
 <template>
-  <section v-if="insights.length" :aria-label="titulo">
-    <div class="mb-3 flex items-center justify-between gap-3 px-1">
-      <div class="flex items-center gap-2">
-        <span class="h-2 w-2 rounded-full bg-gold shadow-[0_0_16px_rgba(212,175,55,.45)]" />
-        <h3 class="text-[11px] font-black uppercase tracking-[0.18em] text-gold">{{ titulo }}</h3>
+  <section v-if="rows.length || showLink" :aria-label="titulo" class="rounded-2xl border border-line bg-card p-5">
+    <header class="flex items-center justify-between gap-3" :class="rows.length ? 'mb-4' : ''">
+      <div>
+        <h3 class="text-base font-semibold text-ink">{{ titulo }}</h3>
+        <p v-if="rows.length" class="mt-0.5 text-sm text-muted">Hallazgos calculados con el historial real de la barbería</p>
+        <p v-else class="mt-0.5 text-sm text-muted">Patrones, predicciones y recomendaciones sobre tu historial</p>
       </div>
-      <span class="hidden text-[10px] font-bold text-ink/35 sm:inline">{{ insights.length }} resultados</span>
-    </div>
+      <NuxtLink v-if="showLink" to="/analytics" class="shrink-0 text-sm font-semibold text-gold hover:underline">
+        Ver analítica completa →
+      </NuxtLink>
+    </header>
 
-    <div class="grid grid-cols-1 gap-5 xl:grid-cols-2">
-      <article
-        v-for="(insight, index) in insights"
-        :key="insight.titulo + index"
-        class="group overflow-hidden rounded-2xl border p-4 transition duration-300 hover:-translate-y-0.5 hover:border-ink/15 sm:p-5"
-        :class="[tone(insight.color).border, tone(insight.color).bg]"
-      >
-        <div class="space-y-4">
-          <div class="min-w-0">
-            <div class="mb-4 flex items-start justify-between gap-4">
-              <div class="min-w-0">
-                <div class="mb-2 flex flex-wrap items-center gap-2">
-                  <span class="rounded-full border border-ink/[0.08] bg-ink/[0.04] px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.16em] text-ink/42">
-                    {{ insight.visual_label }}
-                  </span>
-                </div>
-                <p class="text-[10px] font-black uppercase tracking-[0.18em]" :class="tone(insight.color).texto">
-                  {{ insight.titulo }}
-                </p>
-                <p class="mt-1 text-2xl font-black leading-tight text-ink sm:text-3xl">
-                  {{ insight.dato }}
-                </p>
-              </div>
-              <span class="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-ink/[0.08] bg-ink/[0.035]">
-                <span class="h-2 w-2 rounded-full" :class="tone(insight.color).dot" />
-              </span>
-            </div>
+    <ul v-if="rows.length" class="grid gap-3 md:grid-cols-2">
+      <li v-for="row in rows" :key="row.key" class="ub-rise rounded-xl border border-line bg-main/40 p-4">
+        <div class="flex items-center gap-2">
+          <span class="h-2 w-2 shrink-0 rounded-full" :class="DOT[row.tone]" aria-hidden="true" />
+          <p class="text-sm font-medium text-muted">{{ row.titulo }}</p>
+        </div>
+        <p class="mt-1 text-xl font-semibold tracking-tight text-ink">{{ row.dato }}</p>
+        <div v-if="row.progress !== null" class="mt-2 h-1.5 overflow-hidden rounded-full bg-ink/10" role="presentation">
+          <span class="block h-full rounded-full" :class="DOT[row.tone]" :style="{ width: `${row.progress}%` }" />
+        </div>
+        <p class="mt-2 text-sm leading-relaxed text-muted">{{ row.texto }}</p>
 
-            <div class="rounded-xl border border-ink/[0.06] bg-ink/[0.04] p-4">
-              <div v-if="insight.progress_value !== null" class="mb-4 h-2 overflow-hidden rounded-full bg-ink/[0.07]">
-                <span class="block h-full rounded-full" :class="tone(insight.color).dot" :style="{ width: insight.progress_value + '%' }" />
-              </div>
-              <div v-else class="mb-4 flex gap-1">
-                <span class="h-1.5 flex-1 rounded-full" :class="tone(insight.color).dot" />
-                <span class="h-1.5 flex-1 rounded-full opacity-70" :class="tone(insight.color).dot" />
-                <span class="h-1.5 flex-1 rounded-full opacity-40" :class="tone(insight.color).dot" />
-              </div>
-              <p class="max-w-2xl text-sm leading-relaxed text-ink/58">{{ insight.brief }}</p>
+        <template v-if="row.detalle">
+          <div class="ub-collapse" :class="{ 'is-open': open[row.key] }">
+            <div class="overflow-hidden">
+              <p class="pt-2 text-sm leading-relaxed text-muted">{{ row.detalle }}</p>
             </div>
           </div>
-
-          <details v-if="insight.is_truncated" class="group/details rounded-xl border border-ink/[0.07] bg-ink/[0.025] px-3 py-2">
-            <summary class="flex cursor-pointer list-none items-center justify-between gap-3 rounded-md text-[10px] font-black uppercase tracking-[0.16em] text-ink/45 transition-colors hover:text-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-4">
-              <span>Ver hallazgo</span>
-              <svg class="h-3.5 w-3.5 transition-transform group-open/details:rotate-180" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.17l3.71-3.94a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd" />
-              </svg>
-            </summary>
-            <p class="mt-3 text-[12px] leading-relaxed text-ink/62">{{ insight.mensaje }}</p>
-          </details>
-        </div>
-      </article>
-    </div>
+          <button
+            type="button"
+            class="mt-2 text-sm font-semibold text-gold hover:underline"
+            :aria-expanded="!!open[row.key]"
+            @click="open[row.key] = !open[row.key]"
+          >
+            {{ open[row.key] ? 'Ver menos' : 'Ver detalle' }}
+          </button>
+        </template>
+      </li>
+    </ul>
   </section>
 </template>

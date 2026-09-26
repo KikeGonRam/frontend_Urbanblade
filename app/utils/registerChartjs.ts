@@ -11,6 +11,10 @@ export function ensureChartjsRegistered() {
   ChartJS.defaults.color = inkRgba(0.4);
   ChartJS.defaults.font.weight = "bold";
 
+  // Animación corta y con frenado suave; nada si el sistema pide reducir movimiento.
+  const reduceMotion = import.meta.client && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  ChartJS.defaults.animation = reduceMotion ? false : { duration: 650, easing: "easeOutQuart" };
+
   Object.assign(ChartJS.defaults.plugins.tooltip, {
     backgroundColor: "rgba(10,10,10,0.96)",
     titleColor: goldHex(),

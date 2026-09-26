@@ -80,3 +80,44 @@ export const RECEPTION_DASHBOARD = {
     sparkHighlights: [],
   },
 };
+
+export const BARBER_DASHBOARD = {
+  role: "barbero",
+  data: {
+    todayLabel: "Sábado 26 de septiembre",
+    kpis: { appointments_today: 3, appointments_month: 41, income_month: 14100, tips_month: 1350, rating: 4.8 },
+    performanceChart: { labels: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], values: [0, 4, 6, 3, 5, 7, 3] },
+    servicesChart: { labels: ["Fade", "Corte Clásico", "Barba"], values: [22, 30, 12] },
+    barberToday: [
+      { id: "b1", code: "UB-1", estado: "completada", hora_inicio: "10:00:00", hora_fin: "10:30:00", cliente: "Carlos Ruiz", servicio: "Corte Clásico", isNext: false },
+      { id: "b2", code: "UB-2", estado: "confirmada", hora_inicio: "16:00:00", hora_fin: "17:00:00", cliente: "Ana Torres", servicio: "Combo Corte + Barba", isNext: true },
+    ],
+    barberPending: [{ id: "p1", code: "UB-9", fecha: "27/09", hora_inicio: "11:00:00", cliente: "Mario León", servicio: "Fade" }],
+    sparkHighlights: [
+      { titulo: "Tu hora más pedida", dato: "18:00", color: "gold", visual_label: "Indicador", mensaje: "Los sábados a las 18:00 se llenan primero.", brief: "Los sábados a las 18:00 se llenan primero.", is_truncated: false, progress_value: null },
+    ],
+  },
+};
+
+export const CLIENT_DASHBOARD = {
+  role: "cliente",
+  data: {
+    todayLabel: "Sábado 26 de septiembre",
+    kpis: { total_appointments: 12, completed_appointments: 10, completion_rate: 83.3, cancellation_rate: 8.3, favorite_barber: "Nava Panther", membership_status: "activa" },
+    nextAppointment: {
+      id: "n1", fecha: "2026-09-28", hora_inicio: "16:00:00", estado: "confirmada",
+      service: { nombre: "Combo Corte + Barba" }, barber: { user: { name: "Nava Panther" } },
+      day: "28", monthShort: "sep", dateLong: "lunes 28 de septiembre", canManage: true,
+    },
+    visitChart: { labels: ["abr", "may", "jun", "jul", "ago", "sep"], values: [1, 2, 1, 3, 2, 3] },
+    loyalty: {
+      nivel: "regular", nivelLabel: "Regular", puntos: 120, discountPct: 5, nextNivel: "vip", nextNivelLabel: "V.I.P",
+      citasFaltan: 2, progressPct: 60,
+      recentTransactions: [{ descripcion: "Cita completada", puntos: 10 }, { descripcion: "Canje en cobro", puntos: -50 }],
+      wonRaffle: null,
+    },
+    member: { number: "UB-000123", since: "2026", qr: null, downloadUrl: null },
+    recommendation: { valorDestacado: "Arreglo de Barba", mensaje: "Clientes con tu historial suelen sumar un arreglo de barba cada tres cortes." },
+    sparkHighlights: [],
+  },
+};

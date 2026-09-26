@@ -84,6 +84,7 @@ async function submit() {
       <div class="mb-6 flex items-center gap-3">
         <img
           v-if="user?.avatar_url"
+          referrerpolicy="no-referrer"
           :src="user.avatar_url"
           :alt="`Foto de ${user.name}`"
           class="h-12 w-12 rounded-full object-cover"
