@@ -31,7 +31,13 @@ onBeforeUnmount(() => {
   if (preview.value) URL.revokeObjectURL(preview.value);
 });
 
-const shown = computed(() => preview.value ?? props.currentUrl);
+// Si la imagen guardada no carga (borrada o URL rota) se muestra "Sin imagen", no el alt roto.
+const broken = ref(false);
+watch(() => props.currentUrl, () => { broken.value = false; });
+const shown = computed(() => preview.value ?? (broken.value ? null : props.currentUrl));
+function onImageError() {
+  if (!preview.value) broken.value = true;
+}
 const message = computed(() => localError.value || props.error || "");
 
 function onChange(event: Event) {
@@ -66,6 +72,7 @@ function onChange(event: Event) {
         alt="Vista previa"
         class="h-20 w-20 shrink-0 border border-line object-cover"
         :class="round ? 'rounded-full' : 'rounded-lg'"
+        @error="onImageError"
       >
       <div
         v-else

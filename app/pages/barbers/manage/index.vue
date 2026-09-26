@@ -397,14 +397,11 @@ async function submitForm() {
             >
           </div>
 
-          <label class="flex cursor-pointer items-center gap-2 text-sm text-ink">
-            <input
-              v-model="form.activo"
-              type="checkbox"
-              class="h-4 w-4 rounded border-line text-gold focus:ring-gold"
-            >
-            <span>Activo (visible en el catálogo público)</span>
-          </label>
+          <UiSwitch
+            v-model="form.activo"
+            label="Activo"
+            description="Visible en el catálogo público"
+          />
 
           <p v-if="formError" class="text-xs text-red-400">{{ formError }}</p>
 

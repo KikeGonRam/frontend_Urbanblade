@@ -61,7 +61,8 @@ test("el cobro con tarjeta conserva el contrato seguro con Stripe", async ({ pag
 
   await page.getByRole("button", { name: /Nuevo cobro/i }).click();
   await page.locator("select").filter({ has: page.locator("option[value='appt-1']") }).selectOption("appt-1");
-  await page.getByRole("button", { name: "Tarjeta" }).click();
+  // Método de pago como tarjetas del kit (role="radio"), mismo valor "tarjeta".
+  await page.getByRole("radio", { name: /^Tarjeta/ }).click();
   await page.getByRole("button", { name: "Cobrar con tarjeta" }).click();
 
   await expect.poll(() => intentBody).toEqual({ appointment_id: "appt-1", puntos_canjeados: 0 });

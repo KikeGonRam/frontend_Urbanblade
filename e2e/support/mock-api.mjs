@@ -72,12 +72,31 @@ const routes = {
         duracion_min: 30,
         descripcion: null,
         imagen: "services/corte.png",
-        imagen_url: "http://127.0.0.1:8099/storage/services/corte.png",
+        // PNG 1x1 real: UiImageUpload muestra "Sin imagen" si la guardada no carga.
+        imagen_url:
+          "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
         activo: true,
       },
     ],
     meta: { current_page: 1, last_page: 1, total: 1 },
     categories: ["Cortes"],
+  },
+  // Bandeja de pedidos (ui-kit.spec.ts): uno pendiente para probar "Entregar".
+  "/orders": {
+    data: [
+      {
+        id: "o-1",
+        folio: "PED-0001",
+        estado: "pendiente",
+        tipo: "tienda",
+        total: 250,
+        metodo_pago: null,
+        created_at: "2026-09-25T10:00:00+00:00",
+        items: [{ nombre: "Cera Modeladora", cantidad: 1, precio: 250 }],
+        client: { id: "c-1", name: "Cliente Prueba" },
+      },
+    ],
+    meta: { current_page: 1, last_page: 1, total: 1, stats: { pendientes: 1, entregados: 0, por_cobrar: 250 } },
   },
   "/barbers/manage": {
     data: [

@@ -182,17 +182,12 @@ function fmtDate(iso: string | null) {
         <p class="text-sm text-muted">Elige por qué canales quieres que te avisemos.</p>
       </div>
       <div class="grid gap-3 sm:grid-cols-2">
-        <label
+        <UiSwitch
           v-for="(label, key) in PREF_LABELS" :key="key"
-          class="flex items-center justify-between rounded-lg border border-line bg-main px-3 py-2.5"
-        >
-          <span class="text-sm text-ink">{{ label }}</span>
-          <input
-            type="checkbox" :checked="prefs[key]" :disabled="savingPrefs"
-            class="h-4 w-4 rounded border-line accent-gold"
-            @change="togglePref(key, ($event.target as HTMLInputElement).checked)"
-          >
-        </label>
+          :model-value="prefs[key]" :label="label" :disabled="savingPrefs"
+          class="rounded-lg border border-line bg-main px-3 py-2.5"
+          @update:model-value="togglePref(key, $event)"
+        />
       </div>
       <div class="flex min-h-14 items-center justify-between gap-4 rounded-lg border border-line bg-main px-3 py-2.5">
         <div>

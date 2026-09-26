@@ -20,3 +20,5 @@ Usa esta skill al mejorar la UI/UX de `frontend-urban` cuando el producto ya fun
 Prioriza jerarquia, legibilidad, foco de teclado visible, objetivos tactiles de 44 px, contraste por tema, estados hover/activo/disabled y responsive. No conviertas un control visual en una funcion nueva.
 
 No inicies ni reinicies el servidor de desarrollo si el usuario indica que ya esta corriendo. Si surge un defecto funcional o vulnerabilidad, reportalo con evidencia breve sin corregirlo durante el pase visual.
+
+Para controles, dashboards, gráficas y tablas usa el kit propio descrito en `urbanblade-ui-kit` (interruptor, selector de método de pago, KPI, tablas) en vez de estilos locales.

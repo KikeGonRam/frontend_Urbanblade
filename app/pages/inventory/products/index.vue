@@ -379,16 +379,7 @@ async function removeProduct(product: ProductRow) {
           {{ t === "venta_cliente" ? "Venta" : "Insumo" }}
         </option>
       </select>
-      <label
-        class="flex cursor-pointer items-center gap-2 text-xs font-semibold text-ink"
-      >
-        <input
-          v-model="soloBajoStock"
-          type="checkbox"
-          class="h-4 w-4 rounded border-line text-gold focus:ring-gold"
-        >
-        Solo bajo stock
-      </label>
+      <UiSwitch v-model="soloBajoStock" label="Solo bajo stock" class="gap-2" />
       <button
         v-if="search || categoria || tipo || soloBajoStock"
         type="button"
@@ -723,16 +714,11 @@ async function removeProduct(product: ProductRow) {
             </div>
           </div>
 
-          <label
-            class="flex cursor-pointer items-center gap-2 text-sm text-ink"
-          >
-            <input
-              v-model="form.activo"
-              type="checkbox"
-              class="h-4 w-4 rounded border-line text-gold focus:ring-gold"
-            >
-            <span>Activo en catálogo y tienda</span>
-          </label>
+          <UiSwitch
+            v-model="form.activo"
+            label="Activo"
+            description="Visible en el catálogo y la tienda"
+          />
 
           <p v-if="formError" class="text-xs text-red-400">{{ formError }}</p>
 

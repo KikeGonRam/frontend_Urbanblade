@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { loadStripe, type Stripe, type StripeCardElement, type StripeElements } from '@stripe/stripe-js'
+import type { ChoiceOption } from '~/types/choice'
 
 const props = withDefaults(defineProps<{ initialBarber?: string, embedded?: boolean }>(), { initialBarber: '', embedded: false })
 const emit = defineEmits<{ confirmed: [code: string], busy: [value: boolean] }>()
@@ -159,6 +160,14 @@ let elements: StripeElements | null = null
 let cardElement: StripeCardElement | null = null
 const cardElementRef = ref<HTMLDivElement | null>(null)
 const stripeConfigured = Boolean(runtimeConfig.public.stripeKey)
+// Mismos tres valores de siempre (el backend no cambia); solo se presentan como tarjetas.
+const payOptions = computed<ChoiceOption<PayChoice>[]>(() => [
+  { value: 'despues', title: 'Pagar en el salón', detail: 'Efectivo, tarjeta o transferencia el día de tu cita', icon: 'salon' },
+  ...(stripeConfigured
+    ? [{ value: 'ahora_tarjeta' as const, title: 'Pagar ahora con tarjeta', detail: 'Se cobra al instante de forma segura', icon: 'tarjeta' as const }]
+    : []),
+  { value: 'ahora_transferencia', title: 'Pagar ahora por transferencia', detail: 'Sube tu comprobante para confirmar', icon: 'transferencia' },
+])
 const cardError = ref('')
 // `stripe` es una variable normal (no reactiva) a proposito, para no meter
 // el objeto Stripe en un Proxy de Vue; este ref es lo que el template observa.
@@ -900,33 +909,8 @@ function prettyDate(iso: string) {
           </div>
 
           <div v-if="canBookHere" class="mt-5 border-t border-line pt-5">
-            <p class="mb-3 text-xs font-bold text-ink">¿Cuándo prefieres pagar?</p>
-            <div class="grid grid-cols-1 gap-2 sm:grid-cols-3">
-              <button
-                type="button" class="min-h-11 rounded-xl border px-3 py-2 text-left text-xs font-bold transition-colors"
-                :class="payChoice === 'despues' ? 'border-gold bg-gold/10 text-gold' : 'border-line text-ink hover:border-gold/30'"
-                :aria-pressed="payChoice === 'despues'"
-                @click="payChoice = 'despues'"
-              >
-                Pagar en el salón
-              </button>
-              <button
-                v-if="stripeConfigured" type="button" class="min-h-11 rounded-xl border px-3 py-2 text-left text-xs font-bold transition-colors"
-                :class="payChoice === 'ahora_tarjeta' ? 'border-gold bg-gold/10 text-gold' : 'border-line text-ink hover:border-gold/30'"
-                :aria-pressed="payChoice === 'ahora_tarjeta'"
-                @click="payChoice = 'ahora_tarjeta'"
-              >
-                Pagar ahora con tarjeta
-              </button>
-              <button
-                type="button" class="min-h-11 rounded-xl border px-3 py-2 text-left text-xs font-bold transition-colors"
-                :class="payChoice === 'ahora_transferencia' ? 'border-gold bg-gold/10 text-gold' : 'border-line text-ink hover:border-gold/30'"
-                :aria-pressed="payChoice === 'ahora_transferencia'"
-                @click="payChoice = 'ahora_transferencia'"
-              >
-                Pagar ahora por transferencia
-              </button>
-            </div>
+            <UiChoiceCards v-model="payChoice" label="¿Cuándo prefieres pagar?" :options="payOptions" />
+
 
             <p v-if="payChoice !== 'despues'" class="mt-3 text-xs text-muted">
               Pagarás {{ currency(payAmountToCharge) }} ahora (servicio con tu descuento + propina). Los productos que

@@ -106,18 +106,11 @@ async function save() {
           { 'opacity-60': !day.is_active }
         ]"
       >
-        <label :for="`active-${day.day_of_week}`" class="flex cursor-pointer items-center gap-3 font-bold text-ink">
-          <input
-            :id="`active-${day.day_of_week}`"
-            v-model="day.is_active"
-            type="checkbox"
-            class="h-5 w-5 rounded border-line text-gold focus:ring-gold"
-          >
-          <div>
-            <span>{{ names[day.day_of_week] }}</span>
-            <span class="block text-xs font-normal text-muted">{{ day.is_active ? 'Laboral' : 'Descanso' }}</span>
-          </div>
-        </label>
+        <UiSwitch
+          v-model="day.is_active"
+          :label="names[day.day_of_week] ?? ''"
+          :description="day.is_active ? 'Laboral' : 'Descanso'"
+        />
 
         <div>
           <label :for="`start-${day.day_of_week}`" class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted">Apertura</label>

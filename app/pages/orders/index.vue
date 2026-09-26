@@ -5,6 +5,8 @@
  * método de pago) y cancelar (devuelve stock, delegado en
  * OrderService::cancel()).
  */
+import type { ChoiceOption } from "~/types/choice";
+
 definePageMeta({ middleware: ["auth", "staff"], layout: "dashboard" });
 
 const METODO_LABEL: Record<string, string> = {
@@ -89,7 +91,14 @@ function fmtDate(iso: string | null) {
 
 // ── Entregar ──────────────────────────────────────────────────────────────
 const delivering = ref<OrderRow | null>(null);
-const metodoPago = ref("efectivo");
+type DeliverMetodo = "efectivo" | "transferencia" | "tarjeta";
+const metodoPago = ref<DeliverMetodo>("efectivo");
+// Solo lo que acepta OrderController::deliver (antes el selector ofrecía "QR" y respondía 422).
+const DELIVER_METODOS: ChoiceOption<DeliverMetodo>[] = [
+  { value: "efectivo", title: "Efectivo", detail: "Se suma al arqueo de caja", icon: "efectivo" },
+  { value: "transferencia", title: "Transferencia", detail: "Confirma que llegó el depósito", icon: "transferencia" },
+  { value: "tarjeta", title: "Tarjeta", detail: "Cobrada en la terminal del mostrador", icon: "tarjeta" },
+];
 const busy = ref<string | null>(null);
 const actionError = ref("");
 
@@ -329,10 +338,13 @@ async function downloadReceipt(order: OrderRow) {
     <div
       v-if="delivering"
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="deliver-title"
       @click.self="delivering = null"
     >
       <div class="w-full max-w-sm rounded-2xl border border-line bg-card p-6">
-        <h2 class="mb-1 text-lg font-semibold text-ink">
+        <h2 id="deliver-title" class="mb-1 text-lg font-semibold text-ink">
           Entregar {{ delivering.folio }}
         </h2>
         <p class="mb-4 text-sm text-muted">
@@ -341,15 +353,13 @@ async function downloadReceipt(order: OrderRow) {
             fmtMoney(delivering.total)
           }}</span>
         </p>
-        <label class="mb-1 block text-xs text-muted">Método de pago</label>
-        <select
+        <UiChoiceCards
           v-model="metodoPago"
-          class="mb-4 w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
-        >
-          <option v-for="(label, val) in METODO_LABEL" :key="val" :value="val">
-            {{ label }}
-          </option>
-        </select>
+          label="Método de pago"
+          :options="DELIVER_METODOS"
+          :columns="1"
+          class="mb-4"
+        />
         <p v-if="actionError" class="mb-3 text-sm text-red-400">
           {{ actionError }}
         </p>

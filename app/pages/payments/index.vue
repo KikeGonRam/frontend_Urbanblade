@@ -22,6 +22,7 @@ import {
     type StripeElements,
 } from "@stripe/stripe-js";
 import { computeLoyaltyCharge } from "~/utils/loyaltyCharge";
+import type { ChoiceOption } from "~/types/choice";
 
 definePageMeta({ middleware: ["auth", "staff"], layout: "dashboard" });
 
@@ -398,6 +399,14 @@ const cardElementRef = ref<HTMLDivElement | null>(null);
 const stripeErrors = ref("");
 const stripeProcessing = ref(false);
 const stripeConfigured = Boolean(config.public.stripeKey);
+// Mismos valores de metodo_pago de siempre; la tarjeta no aplica con paquete ni premio de rifa.
+const metodoOptions = computed<ChoiceOption<"efectivo" | "transferencia" | "tarjeta">[]>(() => [
+  { value: "efectivo", title: "Efectivo", detail: "Se suma al arqueo de caja", icon: "efectivo" },
+  { value: "transferencia", title: "Transferencia", detail: "Confirma que llegó el depósito", icon: "transferencia" },
+  ...(stripeConfigured && !form.usarPremioRifa && !form.usarPaquete
+    ? [{ value: "tarjeta" as const, title: "Tarjeta", detail: "Cobro real con Stripe (beta)", icon: "tarjeta" as const }]
+    : []),
+]);
 
 async function ensureStripeMounted() {
   if (!stripeConfigured || cardElement) return;
@@ -791,13 +800,8 @@ onUnmounted(() => teardownStripe());
               v-if="selected.paquete_disponible"
               class="rounded-xl border border-sky-400/25 bg-sky-400/5 p-4"
             >
-              <label class="flex cursor-pointer items-start gap-3">
-                <input
-                  v-model="form.usarPaquete"
-                  type="checkbox"
-                  class="mt-0.5 h-4 w-4 rounded border-line"
-                >
-                <span>
+              <div class="flex items-start gap-3">
+                <span class="min-w-0 flex-1">
                   <span
                     class="block text-[10px] font-black uppercase tracking-widest text-sky-300"
                     >Paquete prepagado disponible</span
@@ -812,7 +816,8 @@ onUnmounted(() => teardownStripe());
                     gift card).</span
                   >
                 </span>
-              </label>
+                <UiSwitch v-model="form.usarPaquete" label="Usar paquete prepagado" hide-label />
+              </div>
             </div>
 
             <div v-if="!form.usarPremioRifa && !form.usarPaquete">
@@ -836,13 +841,8 @@ onUnmounted(() => teardownStripe());
               v-if="selected.premio_rifa"
               class="rounded-xl border border-fuchsia-400/25 bg-fuchsia-400/5 p-4"
             >
-              <label class="flex cursor-pointer items-start gap-3">
-                <input
-                  v-model="form.usarPremioRifa"
-                  type="checkbox"
-                  class="mt-0.5 h-4 w-4 rounded border-line"
-                >
-                <span>
+              <div class="flex items-start gap-3">
+                <span class="min-w-0 flex-1">
                   <span
                     class="block text-[10px] font-black uppercase tracking-widest text-fuchsia-300"
                     >Premio de rifa disponible</span
@@ -855,7 +855,8 @@ onUnmounted(() => teardownStripe());
                     puntos).</span
                   >
                 </span>
-              </label>
+                <UiSwitch v-model="form.usarPremioRifa" label="Usar premio de rifa" hide-label />
+              </div>
             </div>
 
             <div
@@ -892,60 +893,11 @@ onUnmounted(() => teardownStripe());
               </div>
             </div>
 
-            <div>
-              <label class="mb-2 block text-xs text-muted"
-                >Método de pago</label
-              >
-              <div class="grid grid-cols-3 gap-3">
-                <button
-                  type="button"
-                  class="relative rounded-xl border p-3 text-center transition"
-                  :class="
-                    form.metodo === 'efectivo'
-                      ? 'border-gold bg-gold/10 text-gold'
-                      : 'border-line bg-ink/5 text-muted'
-                  "
-                  @click="form.metodo = 'efectivo'"
-                >
-                  <span class="text-[10px] font-black uppercase tracking-widest"
-                    >Efectivo</span
-                  >
-                </button>
-                <button
-                  type="button"
-                  class="relative rounded-xl border p-3 text-center transition"
-                  :class="
-                    form.metodo === 'transferencia'
-                      ? 'border-gold bg-gold/10 text-gold'
-                      : 'border-line bg-ink/5 text-muted'
-                  "
-                  @click="form.metodo = 'transferencia'"
-                >
-                  <span class="text-[10px] font-black uppercase tracking-widest"
-                    >Transferencia</span
-                  >
-                </button>
-                <button
-                  v-if="stripeConfigured && !form.usarPremioRifa && !form.usarPaquete"
-                  type="button"
-                  class="relative rounded-xl border p-3 text-center transition"
-                  :class="
-                    form.metodo === 'tarjeta'
-                      ? 'border-gold bg-gold/10 text-gold'
-                      : 'border-line bg-ink/5 text-muted'
-                  "
-                  @click="form.metodo = 'tarjeta'"
-                >
-                  <span
-                    class="absolute -right-2 -top-2 rounded-full bg-gold px-1.5 py-0.5 text-[7px] font-black uppercase text-black"
-                    >Beta</span
-                  >
-                  <span class="text-[10px] font-black uppercase tracking-widest"
-                    >Tarjeta</span
-                  >
-                </button>
-              </div>
-            </div>
+            <UiChoiceCards
+              v-model="form.metodo"
+              label="Método de pago"
+              :options="metodoOptions"
+            />
 
             <div
               v-show="form.metodo === 'tarjeta'"
