@@ -17,6 +17,7 @@ interface ProductRow {
   stock_minimo: number;
   tipo: string;
   imagen?: string | null;
+  imagen_url?: string | null;
   activo?: boolean;
 }
 
@@ -137,7 +138,7 @@ const form = reactive({
   stock_actual: 0,
   stock_minimo: 0,
   tipo: "venta_cliente",
-  imagen: "",
+  imagenFile: null as File | null,
   activo: true,
 });
 const formError = ref("");
@@ -154,7 +155,7 @@ function openCreate() {
   form.stock_actual = 0;
   form.stock_minimo = 5;
   form.tipo = "venta_cliente";
-  form.imagen = "";
+  form.imagenFile = null;
   form.activo = true;
   formError.value = "";
   fieldErrors.value = {};
@@ -171,7 +172,7 @@ function openEdit(product: ProductRow) {
   form.stock_actual = product.stock_actual;
   form.stock_minimo = product.stock_minimo;
   form.tipo = product.tipo;
-  form.imagen = product.imagen ?? "";
+  form.imagenFile = null;
   form.activo = product.activo ?? true;
   formError.value = "";
   fieldErrors.value = {};
@@ -184,10 +185,19 @@ async function submitForm() {
   fieldErrors.value = {};
 
   try {
-    const body = { ...form };
+    // Multipart con la imagen elegida; al editar va como POST con _method=PUT
+    // porque PHP no lee archivos de un PUT. Sin imagen nueva se conserva la actual.
+    const body = new FormData();
+    const { imagenFile, ...fields } = form;
+    for (const [key, value] of Object.entries(fields)) {
+      body.append(key, typeof value === "boolean" ? (value ? "1" : "0") : String(value ?? ""));
+    }
+    if (imagenFile) body.append("imagen", imagenFile);
+
     if (editing.value) {
+      body.append("_method", "PUT");
       await apiFetch(`/inventory/products/${editing.value.id}`, {
-        method: "PUT",
+        method: "POST",
         body,
       });
     } else {
@@ -417,8 +427,8 @@ async function removeProduct(product: ProductRow) {
             <td class="px-4 py-3">
               <div class="flex items-center gap-3">
                 <img
-                  v-if="product.imagen"
-                  :src="product.imagen"
+                  v-if="product.imagen_url"
+                  :src="product.imagen_url"
                   :alt="product.nombre"
                   class="h-9 w-9 rounded-lg border border-line object-cover"
                 >
@@ -578,20 +588,13 @@ async function removeProduct(product: ProductRow) {
             </div>
           </div>
 
-          <div>
-            <label
-              for="prod-imagen"
-              class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted"
-              >URL de Imagen del producto (opcional)</label
-            >
-            <input
-              id="prod-imagen"
-              v-model="form.imagen"
-              type="text"
-              placeholder="https://... o ruta de imagen"
-              class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]"
-            >
-          </div>
+          <UiImageUpload
+            id="prod-imagen"
+            v-model="form.imagenFile"
+            label="Imagen del producto (opcional)"
+            :current-url="editing?.imagen_url"
+            :error="fieldErrors.imagen?.[0]"
+          />
 
           <div>
             <label

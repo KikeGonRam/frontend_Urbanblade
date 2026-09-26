@@ -14,6 +14,7 @@ interface ServiceRow {
   duracion_min: number;
   descripcion: string | null;
   imagen: string | null;
+  imagen_url: string | null;
   activo: boolean;
 }
 
@@ -70,7 +71,7 @@ const form = reactive({
   precio: 0,
   duracion_min: 30,
   descripcion: "",
-  imagen: "",
+  imagenFile: null as File | null,
   activo: true,
 });
 const formError = ref("");
@@ -84,7 +85,7 @@ function openCreate() {
   form.precio = 150;
   form.duracion_min = 30;
   form.descripcion = "";
-  form.imagen = "";
+  form.imagenFile = null;
   form.activo = true;
   formError.value = "";
   fieldErrors.value = {};
@@ -98,7 +99,7 @@ function openEdit(service: ServiceRow) {
   form.precio = service.precio;
   form.duracion_min = service.duracion_min;
   form.descripcion = service.descripcion ?? "";
-  form.imagen = service.imagen ?? "";
+  form.imagenFile = null;
   form.activo = service.activo;
   formError.value = "";
   fieldErrors.value = {};
@@ -111,23 +112,26 @@ async function submitForm() {
   fieldErrors.value = {};
 
   try {
-    const payload = {
-      nombre: form.nombre,
-      categoria: form.categoria,
-      precio: form.precio,
-      duracion_min: form.duracion_min,
-      descripcion: form.descripcion || null,
-      imagen: form.imagen || null,
-      activo: form.activo,
-    };
+    // Multipart para poder mandar la imagen elegida; al editar va como POST con
+    // _method=PUT porque PHP no lee archivos de un PUT. Sin imagen nueva no se
+    // manda el campo y el servidor conserva la actual.
+    const body = new FormData();
+    body.append("nombre", form.nombre);
+    body.append("categoria", form.categoria);
+    body.append("precio", String(form.precio));
+    body.append("duracion_min", String(form.duracion_min));
+    body.append("descripcion", form.descripcion);
+    body.append("activo", form.activo ? "1" : "0");
+    if (form.imagenFile) body.append("imagen", form.imagenFile);
 
     if (editing.value) {
+      body.append("_method", "PUT");
       await apiFetch(`/services/manage/${editing.value.slug}`, {
-        method: "PUT",
-        body: payload,
+        method: "POST",
+        body,
       });
     } else {
-      await apiFetch("/services/manage", { method: "POST", body: payload });
+      await apiFetch("/services/manage", { method: "POST", body });
     }
     showForm.value = false;
     await refresh();
@@ -257,8 +261,8 @@ async function removeService(service: ServiceRow) {
             <td class="px-4 py-3">
               <div class="flex items-center gap-3">
                 <img
-                  v-if="service.imagen"
-                  :src="service.imagen"
+                  v-if="service.imagen_url"
+                  :src="service.imagen_url"
                   :alt="service.nombre"
                   class="h-9 w-9 rounded-lg border border-line object-cover"
                 >
@@ -467,21 +471,13 @@ async function removeService(service: ServiceRow) {
             </div>
           </div>
 
-          <div>
-            <label
-              for="service-imagen"
-              class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted"
-              >URL de Imagen representativa (opcional)</label
-            >
-            <input
-              id="service-imagen"
-              v-model="form.imagen"
-              type="text"
-              maxlength="255"
-              placeholder="https://... o ruta relativa de imagen"
-              class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]"
-            >
-          </div>
+          <UiImageUpload
+            id="service-imagen"
+            v-model="form.imagenFile"
+            label="Imagen representativa (opcional)"
+            :current-url="editing?.imagen_url"
+            :error="fieldErrors.imagen?.[0]"
+          />
 
           <div>
             <label

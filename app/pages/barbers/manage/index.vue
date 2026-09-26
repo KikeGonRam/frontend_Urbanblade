@@ -19,6 +19,7 @@ interface BarberRow {
   especialidades: string | null;
   descripcion: string | null;
   foto: string | null;
+  foto_url: string | null;
   activo: boolean;
   comision_pct: number;
   user: { id: string; name: string; email: string };
@@ -66,7 +67,7 @@ const form = reactive({
   email: "",
   especialidades: "",
   descripcion: "",
-  foto: "",
+  fotoFile: null as File | null,
   activo: true,
   comisionPct: 0,
 });
@@ -80,7 +81,7 @@ function openEdit(barber: BarberRow) {
   form.email = barber.user.email;
   form.especialidades = barber.especialidades ?? "";
   form.descripcion = barber.descripcion ?? "";
-  form.foto = barber.foto ?? "";
+  form.fotoFile = null;
   form.activo = barber.activo;
   form.comisionPct = barber.comision_pct;
   formError.value = "";
@@ -96,17 +97,21 @@ async function submitForm() {
   fieldErrors.value = {};
 
   try {
+    // Multipart con la foto elegida, como POST con _method=PUT porque PHP no lee
+    // archivos de un PUT. Sin foto nueva no se manda el campo y se conserva la actual.
+    const body = new FormData();
+    body.append("_method", "PUT");
+    body.append("name", form.name);
+    body.append("email", form.email);
+    body.append("especialidades", form.especialidades);
+    body.append("descripcion", form.descripcion);
+    body.append("activo", form.activo ? "1" : "0");
+    body.append("comision_pct", String(form.comisionPct));
+    if (form.fotoFile) body.append("foto", form.fotoFile);
+
     await apiFetch(`/barbers/manage/${editing.value.slug}`, {
-      method: "PUT",
-      body: {
-        name: form.name,
-        email: form.email,
-        especialidades: form.especialidades || null,
-        descripcion: form.descripcion || null,
-        foto: form.foto || null,
-        activo: form.activo,
-        comision_pct: form.comisionPct,
-      },
+      method: "POST",
+      body,
     });
     showForm.value = false;
     await refresh();
@@ -209,8 +214,8 @@ async function submitForm() {
             <td class="px-4 py-3">
               <div class="flex items-center gap-3">
                 <img
-                  v-if="barber.foto"
-                  :src="barber.foto"
+                  v-if="barber.foto_url"
+                  :src="barber.foto_url"
                   :alt="barber.user.name"
                   class="h-9 w-9 rounded-full border border-line object-cover"
                 >
@@ -366,21 +371,14 @@ async function submitForm() {
             />
           </div>
 
-          <div>
-            <label
-              for="barber-foto"
-              class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted"
-              >URL de foto (opcional)</label
-            >
-            <input
-              id="barber-foto"
-              v-model="form.foto"
-              type="text"
-              maxlength="255"
-              placeholder="https://…"
-              class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]"
-            >
-          </div>
+          <UiImageUpload
+            id="barber-foto"
+            v-model="form.fotoFile"
+            label="Foto (opcional)"
+            :current-url="editing?.foto_url"
+            :error="fieldErrors.foto?.[0]"
+            round
+          />
 
           <div>
             <label

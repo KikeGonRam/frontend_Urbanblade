@@ -59,6 +59,42 @@ const routes = {
     },
   },
   "/dashboard": { role: "cliente", data: {} },
+  // Catálogos de administración (image-upload.spec.ts): una fila con imagen
+  // ya guardada para probar la edición con archivo.
+  "/services/manage": {
+    data: [
+      {
+        id: "s-1",
+        slug: "corte-clasico",
+        nombre: "Corte clásico",
+        categoria: "Cortes",
+        precio: 150,
+        duracion_min: 30,
+        descripcion: null,
+        imagen: "services/corte.png",
+        imagen_url: "http://127.0.0.1:8099/storage/services/corte.png",
+        activo: true,
+      },
+    ],
+    meta: { current_page: 1, last_page: 1, total: 1 },
+    categories: ["Cortes"],
+  },
+  "/barbers/manage": {
+    data: [
+      {
+        id: "b-1",
+        slug: "nava-panther",
+        especialidades: "Fades",
+        descripcion: null,
+        foto: null,
+        foto_url: null,
+        activo: true,
+        comision_pct: 40,
+        user: { id: "bu-1", name: "Nava Panther", email: "nava@test.local" },
+      },
+    ],
+    meta: { current_page: 1, last_page: 1, total: 1 },
+  },
   "/appointments": {
     data: [],
     stats: { total: 0, proximas: 0, completadas: 0, canceladas: 0 },
@@ -98,8 +134,8 @@ createServer((req, res) => {
     return res.end();
   }
 
-  // Ficha de un barbero: /barbers/<slug>
-  if (path.startsWith("/barbers/")) {
+  // Ficha de un barbero: /barbers/<slug> (menos /barbers/manage, que está en routes)
+  if (path.startsWith("/barbers/") && !routes[path]) {
     res.writeHead(200);
 
     return res.end(
