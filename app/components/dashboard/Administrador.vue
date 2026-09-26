@@ -11,6 +11,7 @@ import {
   goldSeries,
 } from "~/utils/chartTheme";
 import { appointmentStatus } from "~/utils/appointmentStatus";
+import { untilToday } from "~/utils/chartBuckets";
 import { ensureChartjsRegistered } from "~/utils/registerChartjs";
 
 ensureChartjsRegistered();
@@ -257,24 +258,9 @@ const barberIngresosOptions = {
   },
 };
 
-const MONTHS: Record<string, number> = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 };
-const clientTrendsUntilToday = computed(() => {
-  const labels = props.data.clientTrends.labels ?? [];
-  const values = props.data.clientTrends.values ?? [];
-  const today = new Date();
-  const keep = labels.map((label) => {
-    const [day, mon] = label.split(" ");
-    const month = MONTHS[mon ?? ""];
-    if (month === undefined || !day) return true;
-    const date = new Date(today.getFullYear(), month, Number(day));
-    // Diciembre → enero del año siguiente.
-    if (month < today.getMonth() - 6) date.setFullYear(today.getFullYear() + 1);
-
-    return date <= today;
-  });
-
-  return { labels: labels.filter((_, i) => keep[i]), values: values.filter((_, i) => keep[i]) };
-});
+const clientTrendsUntilToday = computed(() =>
+  untilToday(props.data.clientTrends.labels ?? [], props.data.clientTrends.values ?? []),
+);
 
 const hasClientTrends = computed(() =>
   clientTrendsUntilToday.value.values.some((v) => v),

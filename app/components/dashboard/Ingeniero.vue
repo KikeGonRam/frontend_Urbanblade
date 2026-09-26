@@ -10,15 +10,18 @@
  * adminMetrics() pero omite a propósito todayAppointments/
  * recentAppointments (nombres de clientes).
  */
-import { Bar, Doughnut, Line } from "vue-chartjs";
+import { Bar, Line } from "vue-chartjs";
 import type { DashboardInsight } from "~/components/dashboard/AnalyticsInsights.vue";
 import {
+  chartAxisClean,
   chartScale,
+  chartTooltip,
   fmtInt,
   fmtMoney,
-  inkRgba,
-  UB_CATEGORICAL,
+  goldRgba,
+  goldSeries,
 } from "~/utils/chartTheme";
+import { untilToday } from "~/utils/chartBuckets";
 import { ensureChartjsRegistered } from "~/utils/registerChartjs";
 
 ensureChartjsRegistered();
@@ -131,22 +134,22 @@ const systemHealth = computed(() => {
     return {
       label: "Crítico",
       detail: "Una dependencia de infraestructura no responde.",
-      dot: "bg-red-400",
-      tone: "text-red-400",
+      dot: "bg-danger",
+      tone: "text-danger",
     };
   if (failedJobs > 0 || failedTasks > 0)
     return {
       label: "Atención",
       detail: `${failedJobs} jobs y ${failedTasks} tareas requieren revisión.`,
-      dot: "bg-amber-300",
-      tone: "text-amber-300",
+      dot: "bg-warning",
+      tone: "text-warning",
     };
 
   return {
     label: "Estable",
     detail: "Infraestructura y tareas programadas saludables.",
-    dot: "bg-emerald-300",
-    tone: "text-emerald-300",
+    dot: "bg-success",
+    tone: "text-success",
   };
 });
 
@@ -197,23 +200,26 @@ const moduleTelemetry = computed(() => ({
 }));
 
 const hasAppointmentTrend = computed(() =>
-  (props.data.clientTrends.values ?? []).some((v) => v),
+  appointmentTrend.value.values.some((v) => v),
+);
+const appointmentTrend = computed(() =>
+  untilToday(props.data.clientTrends.labels ?? [], props.data.clientTrends.values ?? []),
 );
 const appointmentTrendData = computed(() => ({
-  labels: props.data.clientTrends.labels ?? [],
+  labels: appointmentTrend.value.labels,
   datasets: [
     {
       label: "Citas",
-      data: props.data.clientTrends.values ?? [],
-      borderColor: "#3987e5",
-      backgroundColor: "rgba(57,135,229,0.1)",
+      data: appointmentTrend.value.values,
+      borderColor: goldRgba(0.95),
+      backgroundColor: goldRgba(0.1),
       borderWidth: 2.5,
       fill: true,
       cubicInterpolationMode: "monotone" as const,
       pointRadius: 2.5,
       pointHoverRadius: 5,
-      pointBackgroundColor: "#0d0d0d",
-      pointBorderColor: "#3987e5",
+      pointBackgroundColor: goldRgba(1),
+      pointBorderColor: goldRgba(1),
       pointBorderWidth: 2,
     },
   ],
@@ -225,7 +231,7 @@ const lineOptionsFor = (formatter: (v: number) => string) => ({
   plugins: {
     legend: { display: false },
     tooltip: {
-      displayColors: false,
+      ...chartTooltip(),
       callbacks: {
         label: (ctx: { parsed: { y: number } }) => formatter(ctx.parsed.y),
       },
@@ -237,7 +243,7 @@ const lineOptionsFor = (formatter: (v: number) => string) => ({
       beginAtZero: true,
       ticks: { ...chartScale().ticks, precision: 0 },
     },
-    x: chartScale(),
+    x: chartAxisClean(),
   },
 });
 
@@ -250,15 +256,15 @@ const incomeData = computed(() => ({
     {
       label: "Ingresos ($)",
       data: props.data.incomeChart.values ?? [],
-      borderColor: "#199e70",
-      backgroundColor: "rgba(25,158,112,0.12)",
+      borderColor: goldRgba(0.95),
+      backgroundColor: goldRgba(0.1),
       borderWidth: 2.5,
       fill: true,
       tension: 0.35,
       pointRadius: 2.5,
       pointHoverRadius: 5,
-      pointBackgroundColor: "#0d0d0d",
-      pointBorderColor: "#199e70",
+      pointBackgroundColor: goldRgba(1),
+      pointBorderColor: goldRgba(1),
       pointBorderWidth: 2,
     },
   ],
@@ -267,40 +273,34 @@ const incomeData = computed(() => ({
 const hasServices = computed(() =>
   (props.data.servicesChart.values ?? []).some((v) => v),
 );
+const servicesSorted = computed(() =>
+  (props.data.servicesChart.labels ?? [])
+    .map((label, i) => ({ label, value: props.data.servicesChart.values?.[i] ?? 0 }))
+    .sort((x, y) => y.value - x.value),
+);
 const servicesData = computed(() => ({
-  labels: props.data.servicesChart.labels ?? [],
+  labels: servicesSorted.value.map((s) => s.label),
   datasets: [
     {
-      data: props.data.servicesChart.values ?? [],
-      backgroundColor: UB_CATEGORICAL,
-      borderColor: "#111111",
-      borderWidth: 3,
-      hoverOffset: 8,
+      label: "Citas",
+      data: servicesSorted.value.map((s) => s.value),
+      backgroundColor: goldSeries(servicesSorted.value.length),
+      borderRadius: 6,
+      maxBarThickness: 18,
     },
   ],
 }));
 const servicesOptions = {
+  indexAxis: "y" as const,
   responsive: true,
   maintainAspectRatio: false,
-  cutout: "72%",
   plugins: {
-    legend: {
-      position: "bottom" as const,
-      labels: {
-        color: inkRgba(0.45),
-        usePointStyle: true,
-        pointStyle: "circle",
-        padding: 12,
-        font: { size: 9, weight: "bold" as const },
-      },
-    },
-    tooltip: {
-      displayColors: true,
-      callbacks: {
-        label: (ctx: { label: string; parsed: number }) =>
-          `${ctx.label}: ${fmtInt(ctx.parsed)}`,
-      },
-    },
+    legend: { display: false },
+    tooltip: { ...chartTooltip(), callbacks: { label: (ctx: { parsed: { x: number } }) => `${fmtInt(ctx.parsed.x)} citas` } },
+  },
+  scales: {
+    x: { ...chartScale(), beginAtZero: true, ticks: { ...chartScale().ticks, precision: 0, maxTicksLimit: 4 } },
+    y: chartAxisClean(),
   },
 };
 
@@ -315,9 +315,10 @@ const barberData = computed(() => ({
     {
       label: "Citas",
       data: props.data.barberPerformance.appointments ?? [],
-      backgroundColor: "rgba(57,135,229,0.75)",
-      borderRadius: 4,
-      barThickness: 14,
+      backgroundColor: goldRgba(0.85),
+      hoverBackgroundColor: goldRgba(1),
+      borderRadius: 6,
+      maxBarThickness: 24,
     },
   ],
 }));
@@ -327,7 +328,7 @@ const barberOptions = {
   plugins: {
     legend: { display: false },
     tooltip: {
-      displayColors: false,
+      ...chartTooltip(),
       callbacks: {
         label: (ctx: { parsed: { y: number } }) =>
           `Citas: ${fmtInt(ctx.parsed.y)}`,
@@ -340,7 +341,7 @@ const barberOptions = {
       beginAtZero: true,
       ticks: { ...chartScale().ticks, precision: 0 },
     },
-    x: chartScale(),
+    x: chartAxisClean(),
   },
 };
 </script>
@@ -353,7 +354,7 @@ const barberOptions = {
       :today-label="data.todayLabel"
     >
       <span
-        class="flex min-h-10 items-center gap-1.5 rounded-xl border border-ink/[0.08] bg-ink/[0.03] px-3 py-2 text-[9px] font-black uppercase tracking-widest text-ink/40"
+        class="flex min-h-10 items-center gap-1.5 rounded-xl border border-ink/[0.08] bg-ink/[0.03] px-3 py-2 text-xs font-black uppercase tracking-widest text-ink/40"
       >
         <svg
           class="h-3 w-3"
@@ -402,7 +403,7 @@ const barberOptions = {
             class="rounded-xl border border-ink/[0.06] bg-ink/[0.03] px-3 py-2"
           >
             <p
-              class="text-[8px] font-black uppercase tracking-widest text-ink/40"
+              class="text-xs font-medium text-muted"
             >
               MongoDB
             </p>
@@ -410,14 +411,14 @@ const barberOptions = {
               class="mt-1 text-sm font-black"
               :class="
                 systemStatus?.database.status === 'down'
-                  ? 'text-red-400'
-                  : 'text-emerald-300'
+                  ? 'text-danger'
+                  : 'text-success'
               "
             >
               {{ systemStatus?.database.latency_ms ?? "—"
               }}<small
                 v-if="systemStatus?.database.latency_ms !== null"
-                class="ml-0.5 text-[9px]"
+                class="ml-0.5 text-xs"
                 >ms</small
               >
             </p>
@@ -426,7 +427,7 @@ const barberOptions = {
             class="rounded-xl border border-ink/[0.06] bg-ink/[0.03] px-3 py-2"
           >
             <p
-              class="text-[8px] font-black uppercase tracking-widest text-ink/40"
+              class="text-xs font-medium text-muted"
             >
               Redis
             </p>
@@ -434,14 +435,14 @@ const barberOptions = {
               class="mt-1 text-sm font-black"
               :class="
                 systemStatus?.redis.status === 'down'
-                  ? 'text-red-400'
-                  : 'text-emerald-300'
+                  ? 'text-danger'
+                  : 'text-success'
               "
             >
               {{ systemStatus?.redis.latency_ms ?? "—"
               }}<small
                 v-if="systemStatus?.redis.latency_ms !== null"
-                class="ml-0.5 text-[9px]"
+                class="ml-0.5 text-xs"
                 >ms</small
               >
             </p>
@@ -450,7 +451,7 @@ const barberOptions = {
             class="rounded-xl border border-ink/[0.06] bg-ink/[0.03] px-3 py-2"
           >
             <p
-              class="text-[8px] font-black uppercase tracking-widest text-ink/40"
+              class="text-xs font-medium text-muted"
             >
               En cola
             </p>
@@ -462,7 +463,7 @@ const barberOptions = {
             to="/system"
             class="rounded-xl border border-gold/20 bg-gold/[0.06] px-3 py-2 transition hover:border-gold/50 hover:bg-gold/[0.1] focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-2"
             ><p
-              class="text-[8px] font-black uppercase tracking-widest text-gold/70"
+              class="text-[11px] font-black uppercase tracking-widest text-gold/70"
             >
               Detalle
             </p>
@@ -486,29 +487,22 @@ const barberOptions = {
     </p>
 
     <div class="flex items-center gap-3 px-1 pt-1">
-      <span class="text-[10px] font-black uppercase tracking-[0.22em] text-gold"
-        >Módulos</span
-      >
+      <h2 class="text-lg font-semibold text-ink">Módulos del negocio</h2>
       <span class="h-px flex-1 bg-ink/[0.06]" />
     </div>
 
     <section class="grid grid-cols-1 gap-5 lg:grid-cols-2">
       <!-- Módulo Citas -->
-      <div class="rounded-2xl border border-ink/[0.06] bg-card p-5">
+      <div class="ub-rise rounded-2xl border border-line bg-card p-5">
         <div class="mb-4 flex items-center justify-between">
           <div>
-            <p
-              class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/50"
-            >
-              Módulo
-            </p>
-            <h3 class="mt-0.5 text-sm font-black uppercase text-ink">Citas</h3>
+            <h3 class="text-base font-semibold text-ink">Citas</h3>
           </div>
           <div class="text-right">
-            <p class="text-2xl font-black leading-none text-ink">
+            <p class="text-2xl font-semibold leading-none text-ink">
               {{ data.kpis.appointments_today }}
             </p>
-            <p class="text-[9px] font-bold uppercase text-ink/40">hoy</p>
+            <p class="text-xs font-bold uppercase text-ink/40">hoy</p>
           </div>
         </div>
         <div v-if="hasAppointmentTrend" class="h-36">
@@ -526,7 +520,7 @@ const barberOptions = {
           </p>
         </div>
         <div
-          class="mt-3 flex items-center gap-2 text-[9px] font-black text-ink/50"
+          class="mt-3 flex items-center gap-2 text-xs font-black text-ink/50"
         >
           <span>Sem {{ data.kpis.appointments_week }}</span
           ><span>·</span><span>Mes {{ data.kpis.appointments_month }}</span>
@@ -535,8 +529,8 @@ const barberOptions = {
             class="ml-auto"
             :class="
               data.kpis.appointment_growth >= 0
-                ? 'text-emerald-400'
-                : 'text-red-400'
+                ? 'text-success'
+                : 'text-danger'
             "
           >
             {{ data.kpis.appointment_growth >= 0 ? "▲" : "▼"
@@ -546,23 +540,16 @@ const barberOptions = {
       </div>
 
       <!-- Módulo Ingresos -->
-      <div class="rounded-2xl border border-ink/[0.06] bg-card p-5">
+      <div class="ub-rise rounded-2xl border border-line bg-card p-5">
         <div class="mb-4 flex items-center justify-between">
           <div>
-            <p
-              class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/50"
-            >
-              Módulo
-            </p>
-            <h3 class="mt-0.5 text-sm font-black uppercase text-ink">
-              Ingresos
-            </h3>
+            <h3 class="text-base font-semibold text-ink">Ingresos</h3>
           </div>
           <div class="text-right">
-            <p class="text-2xl font-black leading-none text-emerald-400">
+            <p class="text-2xl font-semibold leading-none text-ink">
               {{ fmtMoney(data.kpis.income_today) }}
             </p>
-            <p class="text-[9px] font-bold uppercase text-ink/40">hoy</p>
+            <p class="text-xs font-bold uppercase text-ink/40">hoy</p>
           </div>
         </div>
         <div v-if="hasIncome" class="h-36">
@@ -580,7 +567,7 @@ const barberOptions = {
           </p>
         </div>
         <div
-          class="mt-3 flex items-center gap-2 text-[9px] font-black text-ink/50"
+          class="mt-3 flex items-center gap-2 text-xs font-black text-ink/50"
         >
           <span>Sem {{ fmtMoney(data.kpis.income_week) }}</span
           ><span>·</span><span>Mes {{ fmtMoney(data.kpis.income_month) }}</span>
@@ -588,7 +575,7 @@ const barberOptions = {
             v-if="data.kpis.income_growth != 0"
             class="ml-auto"
             :class="
-              data.kpis.income_growth >= 0 ? 'text-emerald-400' : 'text-red-400'
+              data.kpis.income_growth >= 0 ? 'text-success' : 'text-danger'
             "
           >
             {{ data.kpis.income_growth >= 0 ? "▲" : "▼"
@@ -598,19 +585,12 @@ const barberOptions = {
       </div>
 
       <!-- Módulo Servicios -->
-      <div class="rounded-2xl border border-ink/[0.06] bg-card p-5">
+      <div class="ub-rise rounded-2xl border border-line bg-card p-5">
         <div class="mb-4">
-          <p
-            class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/50"
-          >
-            Módulo
-          </p>
-          <h3 class="mt-0.5 text-sm font-black uppercase text-ink">
-            Servicios
-          </h3>
+          <h3 class="text-base font-semibold text-ink">Servicios</h3>
         </div>
         <div v-if="hasServices" class="h-40">
-          <Doughnut :data="servicesData" :options="servicesOptions" />
+          <Bar :data="servicesData" :options="servicesOptions" />
         </div>
         <div
           v-else
@@ -623,25 +603,18 @@ const barberOptions = {
       </div>
 
       <!-- Módulo Barberos -->
-      <div class="rounded-2xl border border-ink/[0.06] bg-card p-5">
+      <div class="ub-rise rounded-2xl border border-line bg-card p-5">
         <div class="mb-4 flex items-center justify-between">
           <div>
-            <p
-              class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/50"
-            >
-              Módulo
-            </p>
-            <h3 class="mt-0.5 text-sm font-black uppercase text-ink">
-              Barberos
-            </h3>
+            <h3 class="text-base font-semibold text-ink">Barberos</h3>
           </div>
-          <div class="flex gap-2 text-[9px] font-black uppercase">
+          <div class="flex gap-2 text-xs font-black uppercase">
             <span
-              class="rounded-full border border-red-500/20 bg-red-500/[0.06] px-2 py-1 text-red-400"
+              class="rounded-full border border-danger/20 bg-danger/[0.06] px-2 py-1 text-danger"
               >{{ busyCount }} ocupados</span
             >
             <span
-              class="rounded-full border border-emerald-500/20 bg-emerald-500/[0.06] px-2 py-1 text-emerald-400"
+              class="rounded-full border border-success/20 bg-success/[0.06] px-2 py-1 text-success"
               >{{ freeCount }} libres</span
             >
           </div>
@@ -670,32 +643,25 @@ const barberOptions = {
       </div>
 
       <!-- Módulo Clientes -->
-      <div class="rounded-2xl border border-ink/[0.06] bg-card p-5">
+      <div class="ub-rise rounded-2xl border border-line bg-card p-5">
         <div class="mb-4 flex items-center justify-between">
           <div>
-            <p
-              class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/50"
-            >
-              Módulo
-            </p>
-            <h3 class="mt-0.5 text-sm font-black uppercase text-ink">
-              Clientes
-            </h3>
+            <h3 class="text-base font-semibold text-ink">Clientes</h3>
           </div>
-          <p class="text-2xl font-black leading-none text-cyan-400">
+          <p class="text-2xl font-semibold leading-none text-ink">
             {{ data.kpis.active_clients }}
           </p>
         </div>
         <div class="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-ink/5">
           <div
-            class="h-full rounded-full bg-cyan-400"
+            class="h-full rounded-full bg-info"
             :style="{ width: `${ratioActiveClients}%` }"
           />
         </div>
         <div
-          class="mt-2 flex items-center gap-2 text-[9px] font-black text-ink/50"
+          class="mt-2 flex items-center gap-2 text-xs font-black text-ink/50"
         >
-          <span class="text-cyan-400/80"
+          <span class="text-info/80"
             >{{ ratioActiveClients }}% activos</span
           >
           <span>de {{ data.kpis.total_clients }} totales</span>
@@ -704,41 +670,34 @@ const barberOptions = {
           <div
             class="rounded-xl border border-ink/[0.05] bg-ink/[0.02] p-3 text-center"
           >
-            <p class="text-lg font-black text-ink">
+            <p class="text-lg font-semibold text-ink">
               {{ data.kpis.new_clients }}
             </p>
-            <p class="text-[8px] font-black uppercase text-ink/45">Nuevos</p>
+            <p class="text-[11px] font-black uppercase text-ink/45">Nuevos</p>
           </div>
           <div
             class="rounded-xl border border-ink/[0.05] bg-ink/[0.02] p-3 text-center"
           >
-            <p class="text-lg font-black text-purple-400">
+            <p class="text-lg font-semibold text-ink">
               {{ data.kpis.retention_rate.toFixed(1) }}%
             </p>
-            <p class="text-[8px] font-black uppercase text-ink/45">Retención</p>
+            <p class="text-[11px] font-black uppercase text-ink/45">Retención</p>
           </div>
         </div>
       </div>
 
       <!-- Módulo Inventario: el dashboard ya entrega este indicador agregado. -->
-      <div class="rounded-2xl border border-ink/[0.06] bg-card p-5">
+      <div class="ub-rise rounded-2xl border border-line bg-card p-5">
         <div class="mb-4 flex items-center justify-between">
           <div>
-            <p
-              class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/50"
-            >
-              Módulo
-            </p>
-            <h3 class="mt-0.5 text-sm font-black uppercase text-ink">
-              Inventario
-            </h3>
+            <h3 class="text-base font-semibold text-ink">Inventario</h3>
           </div>
           <span
-            class="rounded-full border px-2 py-1 text-[9px] font-black uppercase"
+            class="rounded-full border px-2 py-1 text-xs font-black uppercase"
             :class="
               data.kpis.low_stock_count > 0
-                ? 'border-amber-500/25 bg-amber-500/[0.06] text-amber-300'
-                : 'border-emerald-500/25 bg-emerald-500/[0.06] text-emerald-300'
+                ? 'border-warning/25 bg-warning/[0.06] text-warning'
+                : 'border-success/25 bg-success/[0.06] text-success'
             "
             >{{ data.kpis.low_stock_count > 0 ? "Atención" : "Estable" }}</span
           >
@@ -751,14 +710,14 @@ const barberOptions = {
               class="text-3xl font-black"
               :class="
                 data.kpis.low_stock_count > 0
-                  ? 'text-amber-300'
-                  : 'text-emerald-300'
+                  ? 'text-warning'
+                  : 'text-success'
               "
             >
               {{ data.kpis.low_stock_count }}
             </p>
             <p
-              class="mt-1 text-[9px] font-black uppercase tracking-widest text-ink/45"
+              class="mt-1 text-xs font-black uppercase tracking-widest text-ink/45"
             >
               productos con stock bajo
             </p>
@@ -767,8 +726,8 @@ const barberOptions = {
             class="h-9 w-9 shrink-0"
             :class="
               data.kpis.low_stock_count > 0
-                ? 'text-amber-300'
-                : 'text-emerald-300'
+                ? 'text-warning'
+                : 'text-success'
             "
             fill="none"
             viewBox="0 0 24 24"
@@ -789,146 +748,127 @@ const barberOptions = {
       </div>
 
       <!-- Cobertura agregada de módulos operativos, sin abrir sus pantallas ni datos individuales. -->
-      <div class="rounded-2xl border border-ink/[0.06] bg-card p-5">
+      <div class="ub-rise rounded-2xl border border-line bg-card p-5">
         <div class="mb-4 flex items-start justify-between gap-3">
           <div>
-            <p
-              class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/50"
-            >
-              Módulo
-            </p>
-            <h3 class="mt-0.5 text-sm font-black uppercase text-ink">Pagos</h3>
+            <h3 class="text-base font-semibold text-ink">Pagos</h3>
           </div>
           <span
-            class="rounded-full border px-2 py-1 text-[9px] font-black uppercase"
+            class="rounded-full border px-2 py-1 text-xs font-black uppercase"
             :class="
               moduleTelemetry.payments.pending > 0
-                ? 'border-amber-500/25 bg-amber-500/[0.06] text-amber-300'
-                : 'border-emerald-500/25 bg-emerald-500/[0.06] text-emerald-300'
+                ? 'border-warning/25 bg-warning/[0.06] text-warning'
+                : 'border-success/25 bg-success/[0.06] text-success'
             "
             >{{
               moduleTelemetry.payments.pending > 0 ? "Revisión" : "Al día"
             }}</span
           >
         </div>
-        <p class="text-2xl font-black text-emerald-400">
+        <p class="text-2xl font-semibold text-ink">
           {{ fmtMoney(moduleTelemetry.payments.amount) }}
         </p>
-        <p class="text-[9px] font-black uppercase tracking-widest text-ink/45">
+        <p class="text-xs font-black uppercase tracking-widest text-ink/45">
           recaudado en la ventana
         </p>
         <div class="mt-4 grid grid-cols-3 gap-2 text-center">
           <div class="rounded-lg bg-ink/[0.03] p-2">
-            <p class="text-sm font-black text-emerald-300">
+            <p class="text-sm font-black text-success">
               {{ moduleTelemetry.payments.verified }}
             </p>
-            <p class="text-[8px] font-black uppercase text-ink/45">
+            <p class="text-[11px] font-black uppercase text-ink/45">
               Verificados
             </p>
           </div>
           <div class="rounded-lg bg-ink/[0.03] p-2">
-            <p class="text-sm font-black text-amber-300">
+            <p class="text-sm font-black text-warning">
               {{ moduleTelemetry.payments.pending }}
             </p>
-            <p class="text-[8px] font-black uppercase text-ink/45">
+            <p class="text-[11px] font-black uppercase text-ink/45">
               Pendientes
             </p>
           </div>
           <div class="rounded-lg bg-ink/[0.03] p-2">
-            <p class="text-sm font-black text-red-400">
+            <p class="text-sm font-black text-danger">
               {{ moduleTelemetry.payments.rejected }}
             </p>
-            <p class="text-[8px] font-black uppercase text-ink/45">
+            <p class="text-[11px] font-black uppercase text-ink/45">
               Rechazados
             </p>
           </div>
         </div>
       </div>
 
-      <div class="rounded-2xl border border-ink/[0.06] bg-card p-5">
+      <div class="ub-rise rounded-2xl border border-line bg-card p-5">
         <div class="mb-4 flex items-start justify-between gap-3">
           <div>
-            <p
-              class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/50"
-            >
-              Módulo
-            </p>
-            <h3 class="mt-0.5 text-sm font-black uppercase text-ink">
-              Pedidos
-            </h3>
+            <h3 class="text-base font-semibold text-ink">Pedidos</h3>
           </div>
           <span
-            class="rounded-full border px-2 py-1 text-[9px] font-black uppercase"
+            class="rounded-full border px-2 py-1 text-xs font-black uppercase"
             :class="
               moduleTelemetry.orders.pending > 0
-                ? 'border-amber-500/25 bg-amber-500/[0.06] text-amber-300'
-                : 'border-emerald-500/25 bg-emerald-500/[0.06] text-emerald-300'
+                ? 'border-warning/25 bg-warning/[0.06] text-warning'
+                : 'border-success/25 bg-success/[0.06] text-success'
             "
             >{{ moduleTelemetry.orders.pending }} en espera</span
           >
         </div>
         <div class="grid grid-cols-3 gap-3 text-center">
           <div class="rounded-xl border border-ink/[0.05] bg-ink/[0.02] p-3">
-            <p class="text-lg font-black text-amber-300">
+            <p class="text-lg font-semibold text-warning">
               {{ moduleTelemetry.orders.pending }}
             </p>
-            <p class="text-[8px] font-black uppercase text-ink/45">
+            <p class="text-[11px] font-black uppercase text-ink/45">
               Pendientes
             </p>
           </div>
           <div class="rounded-xl border border-ink/[0.05] bg-ink/[0.02] p-3">
-            <p class="text-lg font-black text-emerald-300">
+            <p class="text-lg font-semibold text-ink">
               {{ moduleTelemetry.orders.delivered }}
             </p>
-            <p class="text-[8px] font-black uppercase text-ink/45">
+            <p class="text-[11px] font-black uppercase text-ink/45">
               Entregados
             </p>
           </div>
           <div class="rounded-xl border border-ink/[0.05] bg-ink/[0.02] p-3">
-            <p class="text-lg font-black text-red-400">
+            <p class="text-lg font-semibold text-danger">
               {{ moduleTelemetry.orders.cancelled }}
             </p>
-            <p class="text-[8px] font-black uppercase text-ink/45">
+            <p class="text-[11px] font-black uppercase text-ink/45">
               Cancelados
             </p>
           </div>
         </div>
       </div>
 
-      <div class="rounded-2xl border border-ink/[0.06] bg-card p-5">
+      <div class="ub-rise rounded-2xl border border-line bg-card p-5">
         <div class="mb-4 flex items-start justify-between gap-3">
           <div>
-            <p
-              class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/50"
-            >
-              Módulo
-            </p>
-            <h3 class="mt-0.5 text-sm font-black uppercase text-ink">
-              Campañas
-            </h3>
+            <h3 class="text-base font-semibold text-ink">Campañas</h3>
           </div>
-          <span class="text-[9px] font-black uppercase text-ink/40"
+          <span class="text-xs font-black uppercase text-ink/40"
             >{{ moduleTelemetry.campaigns.scheduled }} programadas</span
           >
         </div>
         <div class="grid grid-cols-3 gap-2 text-center">
           <div class="rounded-lg bg-ink/[0.03] p-2">
-            <p class="text-base font-black text-blue-400">
+            <p class="text-base font-semibold text-ink">
               {{ moduleTelemetry.campaigns.sent }}
             </p>
-            <p class="text-[8px] font-black uppercase text-ink/45">Enviadas</p>
+            <p class="text-[11px] font-black uppercase text-ink/45">Enviadas</p>
           </div>
           <div class="rounded-lg bg-ink/[0.03] p-2">
-            <p class="text-base font-black text-cyan-400">
+            <p class="text-base font-semibold text-ink">
               {{ moduleTelemetry.campaigns.opens }}
             </p>
-            <p class="text-[8px] font-black uppercase text-ink/45">Aperturas</p>
+            <p class="text-[11px] font-black uppercase text-ink/45">Aperturas</p>
           </div>
           <div class="rounded-lg bg-ink/[0.03] p-2">
-            <p class="text-base font-black text-purple-400">
+            <p class="text-base font-semibold text-ink">
               {{ moduleTelemetry.campaigns.clicks }}
             </p>
-            <p class="text-[8px] font-black uppercase text-ink/45">Clics</p>
+            <p class="text-[11px] font-black uppercase text-ink/45">Clics</p>
           </div>
         </div>
         <p class="mt-3 text-[10px] text-ink/50">
@@ -937,76 +877,67 @@ const barberOptions = {
         </p>
       </div>
 
-      <div class="rounded-2xl border border-ink/[0.06] bg-card p-5">
+      <div class="ub-rise rounded-2xl border border-line bg-card p-5">
         <div class="mb-4">
-          <p
-            class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/50"
-          >
-            Módulo
-          </p>
-          <h3 class="mt-0.5 text-sm font-black uppercase text-ink">Sorteos</h3>
+          <h3 class="text-base font-semibold text-ink">Sorteos</h3>
         </div>
         <div class="grid grid-cols-3 gap-2 text-center">
           <div class="rounded-lg bg-ink/[0.03] p-2">
-            <p class="text-base font-black text-gold">
+            <p class="text-base font-semibold text-ink">
               {{ moduleTelemetry.raffles.redeemable }}
             </p>
-            <p class="text-[8px] font-black uppercase text-ink/45">Vigentes</p>
+            <p class="text-[11px] font-black uppercase text-ink/45">Vigentes</p>
           </div>
           <div class="rounded-lg bg-ink/[0.03] p-2">
-            <p class="text-base font-black text-emerald-300">
+            <p class="text-base font-semibold text-ink">
               {{ moduleTelemetry.raffles.claimed }}
             </p>
-            <p class="text-[8px] font-black uppercase text-ink/45">Canjeados</p>
+            <p class="text-[11px] font-black uppercase text-ink/45">Canjeados</p>
           </div>
           <div class="rounded-lg bg-ink/[0.03] p-2">
-            <p class="text-base font-black text-red-400">
+            <p class="text-base font-semibold text-danger">
               {{ moduleTelemetry.raffles.expired }}
             </p>
-            <p class="text-[8px] font-black uppercase text-ink/45">Vencidos</p>
+            <p class="text-[11px] font-black uppercase text-ink/45">Vencidos</p>
           </div>
         </div>
       </div>
 
-      <div class="rounded-2xl border border-ink/[0.06] bg-card p-5">
+      <div class="ub-rise rounded-2xl border border-line bg-card p-5">
         <div class="mb-4">
-          <p
-            class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/50"
-          >
-            Telemetría social
-          </p>
-          <h3 class="mt-0.5 text-sm font-black uppercase text-ink">Muro</h3>
+          <h3 class="text-base font-semibold text-ink">Muro</h3>
+          <p class="mt-0.5 text-sm text-muted">Telemetría social</p>
         </div>
         <div class="grid grid-cols-2 gap-2">
           <div class="rounded-lg bg-ink/[0.03] p-2.5">
-            <p class="text-base font-black text-gold">
+            <p class="text-base font-semibold text-ink">
               {{ moduleTelemetry.social.works }}
             </p>
-            <p class="text-[8px] font-black uppercase text-ink/45">
+            <p class="text-[11px] font-black uppercase text-ink/45">
               Publicaciones
             </p>
           </div>
           <div class="rounded-lg bg-ink/[0.03] p-2.5">
-            <p class="text-base font-black text-pink-400">
+            <p class="text-base font-semibold text-ink">
               {{ moduleTelemetry.social.reactions }}
             </p>
-            <p class="text-[8px] font-black uppercase text-ink/45">
+            <p class="text-[11px] font-black uppercase text-ink/45">
               Reacciones
             </p>
           </div>
           <div class="rounded-lg bg-ink/[0.03] p-2.5">
-            <p class="text-base font-black text-cyan-400">
+            <p class="text-base font-semibold text-ink">
               {{ moduleTelemetry.social.comments }}
             </p>
-            <p class="text-[8px] font-black uppercase text-ink/45">
+            <p class="text-[11px] font-black uppercase text-ink/45">
               Comentarios
             </p>
           </div>
           <div class="rounded-lg bg-ink/[0.03] p-2.5">
-            <p class="text-base font-black text-purple-400">
+            <p class="text-base font-semibold text-ink">
               {{ moduleTelemetry.social.saves }}
             </p>
-            <p class="text-[8px] font-black uppercase text-ink/45">Guardados</p>
+            <p class="text-[11px] font-black uppercase text-ink/45">Guardados</p>
           </div>
         </div>
         <p class="mt-3 text-[10px] leading-relaxed text-ink/50">
@@ -1016,56 +947,51 @@ const barberOptions = {
       </div>
 
       <!-- Módulo Chatbot -->
-      <div class="rounded-2xl border border-ink/[0.06] bg-card p-5">
+      <div class="ub-rise rounded-2xl border border-line bg-card p-5">
         <div class="mb-4">
-          <p
-            class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/50"
-          >
-            Módulo
-          </p>
-          <h3 class="mt-0.5 text-sm font-black uppercase text-ink">Chatbot</h3>
-          <p class="text-[9px] font-bold text-ink/40">
+          <h3 class="text-base font-semibold text-ink">Bladebot</h3>
+          <p class="text-xs font-bold text-ink/40">
             Últimos {{ data.chatbotTelemetry.window_days ?? 7 }} días
           </p>
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div class="rounded-xl border border-ink/[0.05] bg-ink/[0.02] p-3">
             <p
-              class="mb-1 text-[8px] font-black uppercase tracking-wider text-ink/50"
+              class="mb-1 text-[11px] font-black uppercase tracking-wider text-ink/50"
             >
-              Eventos
+              Consultas
             </p>
-            <p class="text-lg font-black text-blue-400">
+            <p class="text-lg font-semibold text-ink">
               {{ data.chatbotTelemetry.total_requests ?? 0 }}
             </p>
           </div>
           <div class="rounded-xl border border-ink/[0.05] bg-ink/[0.02] p-3">
             <p
-              class="mb-1 text-[8px] font-black uppercase tracking-wider text-ink/50"
+              class="mb-1 text-[11px] font-black uppercase tracking-wider text-ink/50"
             >
-              Error Rate
+              Con error
             </p>
-            <p class="text-lg font-black text-red-400">
+            <p class="text-lg font-semibold text-danger">
               {{ (data.chatbotTelemetry.error_rate_pct ?? 0).toFixed(1) }}%
             </p>
           </div>
           <div class="rounded-xl border border-ink/[0.05] bg-ink/[0.02] p-3">
             <p
-              class="mb-1 text-[8px] font-black uppercase tracking-wider text-ink/50"
+              class="mb-1 text-[11px] font-black uppercase tracking-wider text-ink/50"
             >
-              Latencia
+              Respuesta promedio
             </p>
-            <p class="text-lg font-black text-sky-400">
-              {{ data.chatbotTelemetry.avg_latency_ms ?? 0 }}ms
+            <p class="text-lg font-semibold text-ink">
+              {{ ((data.chatbotTelemetry.avg_latency_ms ?? 0) / 1000).toFixed(1) }} s
             </p>
           </div>
           <div class="rounded-xl border border-ink/[0.05] bg-ink/[0.02] p-3">
             <p
-              class="mb-1 text-[8px] font-black uppercase tracking-wider text-ink/50"
+              class="mb-1 text-[11px] font-black uppercase tracking-wider text-ink/50"
             >
-              Costo Est.
+              Costo estimado
             </p>
-            <p class="text-lg font-black text-emerald-400">
+            <p class="text-lg font-semibold text-ink">
               ${{ (data.chatbotTelemetry.estimated_cost_usd ?? 0).toFixed(4) }}
             </p>
           </div>
@@ -1073,44 +999,6 @@ const barberOptions = {
       </div>
     </section>
 
-    <section v-if="data.insights.length" aria-label="Hallazgos de negocio">
-      <div class="mb-3 flex items-center gap-2 px-1">
-        <svg
-          class="h-4 w-4 text-gold"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0013 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-          />
-        </svg>
-        <h3 class="text-[11px] font-black uppercase tracking-widest text-gold">
-          Hallazgos de negocio
-        </h3>
-      </div>
-      <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <article
-          v-for="(insight, i) in data.insights"
-          :key="`${insight.titulo ?? ''}-${i}`"
-          class="rounded-2xl border border-gold/15 bg-gold/[0.03] p-4"
-        >
-          <p
-            class="text-[9px] font-black uppercase tracking-widest text-gold/70"
-          >
-            {{ insight.titulo }}
-          </p>
-          <p class="mt-1 text-2xl font-black text-ink">{{ insight.dato }}</p>
-          <p class="mt-1.5 text-[11px] leading-snug text-muted">
-            {{ insight.detalle }}
-          </p>
-        </article>
-      </div>
-    </section>
-
-    <DashboardAnalyticsInsights :insights="data.sparkHighlights" />
+    <DashboardAnalyticsInsights :simple="data.insights" :insights="data.sparkHighlights" />
   </div>
 </template>

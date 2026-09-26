@@ -123,7 +123,11 @@ leyenda abajo, tooltip con `bg-card`, colores de `useChartTheme()` (oro + neutro
   todo se apaga con `prefers-reduced-motion`.
 - "Citas completadas del mes": el backend arma 12 tramos de 3 días que pasan al mes
   siguiente; la web quita los tramos futuros en vez de dibujarlos en 0.
-- Pendientes: Ingeniero, `MembershipCard` (colores por nivel, se dejó a propósito) y la app.
+- **Ingeniero** (26-sep): módulos con encabezados legibles, gráficas en oro, servicios en
+  barras ordenadas, números neutros (rojo solo para rechazos/cancelaciones), mismo bloque de
+  hallazgos. `utils/chartBuckets.ts` (`untilToday`) recorta los tramos futuros de
+  `clientTrends` en admin e ingeniero.
+- Pendiente: `MembershipCard` conserva sus colores por nivel a propósito (es la tarjeta de socio).
 - Títulos fieles al backend: `incomeChart` = 8 semanas; `clientTrends` = citas
   completadas del mes en tramos de 3 días (no "clientes").
 - Pruebas: `e2e/dashboard-admin.spec.ts`, `e2e/dashboard-reception.spec.ts`, datos en
