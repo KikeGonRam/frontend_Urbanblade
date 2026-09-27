@@ -124,7 +124,7 @@ async function submitReview() {
           :to="`/reservar?barbero=${barber.id}`"
           class="rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-black hover:bg-gold-dim sm:ml-auto"
         >
-          Reservar con {{ (barber.user?.name ?? 'este barbero').split(' ')[0] }}
+          Reservar cita
         </NuxtLink>
       </header>
 
