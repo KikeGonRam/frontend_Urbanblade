@@ -19,6 +19,9 @@ function originOf(url: string): string {
   }
 }
 
+/** Buckets de subidas (staging y producción) en S3, con y sin región en el host. */
+const S3 = 'https://*.s3.amazonaws.com https://*.s3.us-east-1.amazonaws.com'
+
 export default defineNitroPlugin((nitroApp) => {
   const production = process.env.NODE_ENV === 'production'
   const api = originOf(String(useRuntimeConfig().public.apiBase || ''))
@@ -28,8 +31,10 @@ export default defineNitroPlugin((nitroApp) => {
     "script-src 'self' 'unsafe-inline' https://js.stripe.com https://*.js.stripe.com",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' data: https://fonts.gstatic.com",
-    "img-src 'self' data: blob: https:",
-    "media-src 'self' blob: https:",
+    // Antes `https:` (cualquier sitio; hallazgo MEDIO de OWASP ZAP, T052). Ahora solo los orígenes
+    // reales: subidas en S3, archivos viejos servidos por la API, fotos de Google, Unsplash y Stripe.
+    `img-src 'self' data: blob: ${api} ${S3} https://*.googleusercontent.com https://images.unsplash.com https://*.stripe.com`.replace(/\s+/g, ' '),
+    `media-src 'self' blob: ${api} ${S3}`.replace(/\s+/g, ' '),
     `connect-src 'self' ${api} https://api.stripe.com https://*.stripe.com`.trim(),
     'frame-src https://js.stripe.com https://*.js.stripe.com https://hooks.stripe.com https://www.google.com',
     "worker-src 'self'",
