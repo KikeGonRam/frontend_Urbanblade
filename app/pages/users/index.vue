@@ -278,13 +278,13 @@ async function removeUser(user: UserRow) {
 
     <div
       v-if="showForm"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+      class="ub-sheet"
       role="dialog"
       aria-modal="true"
       aria-labelledby="user-form-title"
       @click.self="!saving && (showForm = false)"
     >
-      <div class="w-full max-w-md rounded-2xl border border-line bg-card p-6">
+      <div class="ub-sheet__panel">
         <h2 id="user-form-title" class="mb-4 text-lg font-semibold text-ink">
           {{ editing ? "Editar usuario" : "Nuevo usuario" }}
         </h2>

@@ -456,3 +456,21 @@ html[data-theme="libreta"] {
         .ub-collapse { transition: none; }
     }
 }
+
+/* ── Panel lateral para formularios (kit, 26-sep): más alto y ancho que un modal centrado ── */
+@layer components {
+    .ub-sheet { position: fixed; inset: 0; z-index: 50; display: flex; justify-content: flex-end; background: rgb(0 0 0 / .6); backdrop-filter: blur(4px); animation: ub-sheet-fade 200ms ease-out both; }
+    .ub-sheet__panel { height: 100%; width: 100%; max-width: 40rem; overflow-y: auto; overscroll-behavior: contain; border-left: 1px solid var(--line); background: var(--bg-card); padding: 2rem 2.25rem; box-shadow: -24px 0 60px rgb(0 0 0 / .35); animation: ub-sheet-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+    .ub-sheet__panel > h2:first-child, .ub-sheet__panel > form > h2:first-child { font-size: 1.25rem; margin-bottom: 1.5rem; }
+    @media (max-width: 640px) { .ub-sheet__panel { max-width: none; padding: 1.25rem; border-left: 0; } }
+    @keyframes ub-sheet-in { from { transform: translateX(32px); opacity: 0; } to { transform: none; opacity: 1; } }
+    @keyframes ub-sheet-fade { from { opacity: 0; } to { opacity: 1; } }
+    @media (prefers-reduced-motion: reduce) { .ub-sheet, .ub-sheet__panel { animation: none; } }
+}
+
+/* Campo de formulario del kit (la clase ya se usaba en la reserva pero no existía). */
+@layer components {
+    .ui-input { border: 1px solid var(--line); border-radius: .75rem; background-color: var(--bg-main); color: var(--ink); padding: .625rem .875rem; font-size: .875rem; line-height: 1.4; transition: border-color 160ms ease, box-shadow 160ms ease; }
+    .ui-input::placeholder { color: var(--muted); }
+    .ui-input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgb(var(--gold-rgb) / .15); }
+}

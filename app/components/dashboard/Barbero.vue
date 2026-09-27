@@ -324,6 +324,6 @@ const servicesOptions = {
       </UiChartCard>
     </section>
 
-    <DashboardAnalyticsInsights :insights="data.sparkHighlights" titulo="Tus oportunidades" show-link />
+    <DashboardAnalyticsInsights :insights="data.sparkHighlights" titulo="Tus oportunidades" />
   </div>
 </template>

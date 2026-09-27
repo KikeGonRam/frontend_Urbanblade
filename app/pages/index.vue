@@ -16,7 +16,7 @@
  * muestra disponibilidad real sin cuenta y solo pide sesión al confirmar.
  */
 useSeoMeta({
-  title: 'UrbanBlade — Elite Grooming Studio',
+  title: 'UrbanBlade',
   description: 'Donde el estilo toma vida. Reserva tu cita premium en UrbanBlade: cortes, barba y grooming de estudio.',
 })
 
@@ -27,6 +27,8 @@ interface ServiceRow {
   precio: number
   duracion_min: number
   descripcion: string | null
+  /** URL pública de la foto del servicio (CatalogController::services). */
+  imagen: string | null
 }
 interface BarberRow {
   id: string
@@ -49,6 +51,8 @@ const { data: servicesData, pending: servicesPending } = await useAsyncData<{ da
   { server: false },
 )
 const services = computed(() => (servicesData.value?.data ?? []).slice(0, 6))
+// Fotos que no cargan (URL rota o archivo borrado) muestran el ícono en lugar del alt roto.
+const brokenImages = reactive<Record<string, boolean>>({})
 
 const { data: barbersData, pending: barbersPending } = await useAsyncData<{ data: BarberRow[] }>(
   'landing-barbers',
@@ -60,9 +64,6 @@ const barbers = computed(() => (barbersData.value?.data ?? []).slice(0, 4))
 function initials(name?: string | null) {
   if (!name) return '?'
   return name.trim().split(/\s+/).slice(0, 2).map(p => p[0]?.toUpperCase() ?? '').join('')
-}
-function pad2(n: number) {
-  return String(n).padStart(2, '0')
 }
 function currency(n: number) {
   return `$${Math.round(n).toLocaleString('es-MX')}`
@@ -352,27 +353,40 @@ onBeforeUnmount(() => {
           <article
             v-for="(service, i) in services" :key="service.id"
             v-reveal
-            class="ui-card-premium reveal group p-10 hover:border-gold/40"
+            class="ui-card-premium reveal group overflow-hidden hover:border-gold/40"
             :style="{ transitionDelay: `${i * 100}ms` }"
           >
-            <div class="mb-8 flex items-start justify-between">
-              <div class="flex h-14 w-14 items-center justify-center rounded-2xl border border-gold/10 bg-gold/5 text-gold transition-all duration-500 group-hover:scale-110 group-hover:bg-gold group-hover:text-black">
-                <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <!-- Foto del servicio (la que sube el administrador); sin foto, el ícono de siempre. -->
+            <div class="relative aspect-[16/10] overflow-hidden bg-gradient-to-br from-gold/10 via-card to-main">
+              <img
+                v-if="service.imagen && !brokenImages[service.id]"
+                :src="service.imagen"
+                :alt="service.nombre"
+                loading="lazy"
+                decoding="async"
+                class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                @error="brokenImages[service.id] = true"
+              >
+              <div v-else class="flex h-full w-full items-center justify-center text-gold/60" aria-hidden="true">
+                <svg class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7.848 8.25l1.536.887M7.848 8.25a3 3 0 11-5.196-3 3 3 0 015.196 3zm1.536.887a2.165 2.165 0 011.083 1.839c.005.351.054.695.196 1.024M9.384 9.137l2.077 1.199M13.5 15.75l1.83 1.83a3 3 0 006.086-1.803L21 15.75m-6.5-4.5l-3.83-2.212M7.848 15.75l1.536-.887M7.848 15.75a3 3 0 11-5.196 3 3 3 0 015.196-3zm1.536-.887a2.165 2.165 0 001.083-1.839 4.166 4.166 0 01.196-1.024M9.384 14.863l7.632-4.406M18.75 4.5l-2.928 1.69" />
                 </svg>
               </div>
-              <span class="text-[10px] font-black text-ink/10 transition-colors group-hover:text-gold/20">{{ pad2(i + 1) }}</span>
+              <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" aria-hidden="true" />
+              <span class="absolute right-4 top-4 rounded-full bg-black/60 px-3 py-1.5 text-[11px] font-bold text-gold backdrop-blur-sm">{{ service.duracion_min }} min</span>
             </div>
-            <h3 class="text-2xl font-black uppercase text-ink">{{ service.nombre }}</h3>
-            <p class="mt-4 text-sm font-medium leading-relaxed text-muted">
-              {{ service.descripcion || 'Una experiencia diseñada para resaltar tu mejor versión con técnica clásica.' }}
-            </p>
-            <div class="mt-8 flex items-center justify-between">
-              <span class="text-2xl font-black text-ink">{{ currency(service.precio) }}</span>
-              <span class="rounded-full border border-gold/10 bg-gold/5 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-gold">{{ service.duracion_min }} min</span>
-            </div>
-            <div class="mt-6 h-px overflow-hidden rounded-full bg-ink/5">
-              <div class="h-full w-0 rounded-full bg-gradient-to-r from-gold/40 to-gold/5 transition-all duration-700 group-hover:w-full" />
+            <div class="p-8">
+              <h3 class="text-2xl font-black uppercase text-ink">{{ service.nombre }}</h3>
+              <p class="mt-3 text-sm font-medium leading-relaxed text-muted">
+                {{ service.descripcion || 'Una experiencia diseñada para resaltar tu mejor versión con técnica clásica.' }}
+              </p>
+              <div class="mt-6 flex items-center justify-between">
+                <span class="text-2xl font-black text-ink">{{ currency(service.precio) }}</span>
+                <NuxtLink
+                  :to="`/reservar?servicio=${service.id}`"
+                  class="text-xs font-bold uppercase tracking-widest text-gold transition-colors hover:text-ink"
+                >Reservar →</NuxtLink>
+              </div>
             </div>
           </article>
         </div>

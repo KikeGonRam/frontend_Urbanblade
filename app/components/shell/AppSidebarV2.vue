@@ -160,7 +160,7 @@ async function onLogout() {
       <BrandMascot :mascot="themeMascot" state="welcome" size="sm" /><span
         ><strong>¿Necesitas ayuda?</strong
         ><small>{{ activeMascot.name }} · {{ activeMascot.role }}</small
-        ><em>Abrir Concierge →</em></span
+        ><em>Abrir Bladebot →</em></span
       >
     </button>
     <footer

@@ -182,81 +182,19 @@ const servicesOptions = {
   },
 };
 
-const hasBarberPerformance = computed(
-  () =>
-    (props.data.barberPerformance.appointments ?? []).some((v) => v) ||
-    (props.data.barberPerformance.revenue ?? []).some((v) => v),
-);
-const barberCitasData = computed(() => ({
-  labels: props.data.barberPerformance.labels ?? [],
-  datasets: [
-    {
-      label: "Citas",
-      data: props.data.barberPerformance.appointments ?? [],
-      backgroundColor: goldRgba(0.85),
-      hoverBackgroundColor: goldRgba(1),
-      borderRadius: 6,
-      maxBarThickness: 28,
-    },
-  ],
-}));
-const barberCitasOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: { display: false },
-    tooltip: {
-      ...chartTooltip(),
-      callbacks: {
-        label: (ctx: { parsed: { y: number } }) =>
-          `Citas: ${fmtInt(ctx.parsed.y)}`,
-      },
-    },
-  },
-  scales: {
-    y: {
-      ...chartScale(),
-      beginAtZero: true,
-      ticks: { ...chartScale().ticks, precision: 0 },
-    },
-    x: chartScale(),
-  },
-};
-const barberIngresosData = computed(() => ({
-  labels: props.data.barberPerformance.labels ?? [],
-  datasets: [
-    {
-      label: "Ingresos ($)",
-      data: props.data.barberPerformance.revenue ?? [],
-      backgroundColor: goldRgba(0.45),
-      hoverBackgroundColor: goldRgba(0.7),
-      borderRadius: 6,
-      maxBarThickness: 28,
-    },
-  ],
-}));
-const barberIngresosOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: { display: false },
-    tooltip: {
-      ...chartTooltip(),
-      callbacks: {
-        label: (ctx: { parsed: { y: number } }) =>
-          `Ingresos: ${fmtMoney(ctx.parsed.y)}`,
-      },
-    },
-  },
-  scales: {
-    y: {
-      ...chartScale(),
-      beginAtZero: true,
-      ticks: { ...chartScale().ticks, callback: (v: number) => fmtMoney(v) },
-    },
-    x: chartScale(),
-  },
-};
+const barberRanking = computed(() => {
+  const perf = props.data.barberPerformance;
+
+  return (perf.labels ?? [])
+    .map((label, i) => ({
+      label,
+      value: perf.appointments?.[i] ?? 0,
+      display: `${fmtInt(perf.appointments?.[i] ?? 0)} citas`,
+      detail: fmtMoney(perf.revenue?.[i] ?? 0),
+      muted: label === "Barberos dados de baja",
+    }))
+    .filter((r) => r.value > 0);
+});
 
 const clientTrendsUntilToday = computed(() =>
   untilToday(props.data.clientTrends.labels ?? [], props.data.clientTrends.values ?? []),
@@ -475,6 +413,7 @@ onMounted(async () => {
         class="lg:col-span-3"
         title="Ingresos por semana"
         subtitle="Últimas 8 semanas"
+        height="h-80"
         :empty="!hasIncome"
         empty-text="Todavía no hay ingresos registrados."
       >
@@ -484,6 +423,7 @@ onMounted(async () => {
         class="lg:col-span-2"
         title="Servicios más pedidos"
         subtitle="Citas por servicio"
+        height="h-80"
         :empty="!hasServices"
         empty-text="Todavía no hay servicios reservados."
       >
@@ -810,74 +750,32 @@ onMounted(async () => {
         <p class="mt-0.5 text-sm text-muted">Barberos, citas del mes, predicciones y uso de Bladebot.</p>
       </header>
       <div class="space-y-5">
-        <section class="grid grid-cols-1 gap-5 lg:grid-cols-2">
-          <div class="rounded-2xl border border-ink/[0.06] bg-card p-5">
-            <div class="mb-5 flex items-center justify-between">
+        <section class="grid grid-cols-1 gap-5 xl:grid-cols-5">
+          <!-- Lista con barras: nombres completos y valores legibles (antes 2 gráficas diminutas con
+               nombres girados). Los barberos dados de baja se agrupan en gris. -->
+          <section class="ub-rise rounded-2xl border border-line bg-card p-5 sm:p-6 xl:col-span-2" aria-labelledby="admin-barberos">
+            <header class="mb-5 flex items-start justify-between gap-3">
               <div>
-                <h3 class="text-base font-semibold text-ink">Desempeño por barbero</h3>
-                <p class="mt-0.5 text-sm text-muted">Este mes</p>
+                <h3 id="admin-barberos" class="text-base font-semibold text-ink">Desempeño por barbero</h3>
+                <p class="mt-0.5 text-sm text-muted">Citas completadas este mes</p>
               </div>
-              <div
-                class="flex gap-3 text-[11px] font-black uppercase text-ink/45"
-              >
-                <span class="flex items-center gap-1"
-                  ><span class="h-2 w-2 rounded-sm bg-gold" />Citas</span
-                >
-                <span class="flex items-center gap-1"
-                  ><span
-                    class="h-2 w-2 rounded-sm bg-gold/50"
-                  />Ingresos</span
-                >
-              </div>
-            </div>
-            <div
-              v-if="hasBarberPerformance"
-              class="grid h-52 grid-cols-2 gap-4"
-            >
-              <div class="min-w-0">
-                <Bar :data="barberCitasData" :options="barberCitasOptions" />
-              </div>
-              <div class="min-w-0">
-                <Bar
-                  :data="barberIngresosData"
-                  :options="barberIngresosOptions"
-                />
-              </div>
-            </div>
-            <div
-              v-else
-              class="flex h-52 items-center justify-center rounded-xl border border-dashed border-ink/[0.06]"
-            >
-              <p
-                class="text-xs font-bold uppercase tracking-widest text-ink/45"
-              >
-                Sin datos de desempeño
-              </p>
-            </div>
-          </div>
+              <NuxtLink to="/barbers/manage" class="text-sm font-semibold text-gold hover:underline">Barberos</NuxtLink>
+            </header>
+            <UiBarList v-if="barberRanking.length" :items="barberRanking" />
+            <p v-else class="rounded-xl border border-dashed border-line py-10 text-center text-sm text-muted">
+              Todavía no hay citas completadas este mes.
+            </p>
+          </section>
 
-          <div class="rounded-2xl border border-ink/[0.06] bg-card p-5">
-            <div class="mb-5 flex items-center justify-between">
-              <div>
-                <h3 class="text-base font-semibold text-ink">Citas completadas del mes</h3>
-                <p class="mt-0.5 text-sm text-muted">Mes actual</p>
-              </div>
-
-            </div>
-            <div v-if="hasClientTrends" class="h-52">
-              <Line :data="clientTrendsData" :options="clientTrendsOptions" />
-            </div>
-            <div
-              v-else
-              class="flex h-52 items-center justify-center rounded-xl border border-dashed border-ink/[0.06]"
-            >
-              <p
-                class="text-xs font-bold uppercase tracking-widest text-ink/45"
-              >
-                Sin datos de tendencias
-              </p>
-            </div>
-          </div>
+          <UiChartCard
+            class="xl:col-span-3"
+            title="Citas completadas del mes"
+            subtitle="Por tramos de 3 días, hasta hoy"
+            :empty="!hasClientTrends"
+            empty-text="Todavía no hay citas completadas este mes."
+          >
+            <Line :data="clientTrendsData" :options="clientTrendsOptions" />
+          </UiChartCard>
         </section>
 
         <section class="grid grid-cols-1 gap-5 lg:grid-cols-12">

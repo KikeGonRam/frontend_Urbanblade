@@ -21,5 +21,6 @@ test("el ingeniero ve el estado del sistema y los módulos sin datos de clientes
   await expect(page.getByRole("heading", { name: "Módulos del negocio" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Citas", exact: true })).toBeVisible();
   await expect(page.getByText("Lo que dicen tus datos")).toBeVisible();
-  await expect(page.getByText("42")).toBeVisible();
+  await expect(page.getByText("42ms")).toBeVisible();
+  await expect(page.getByText("62 citas").first()).toBeVisible();
 });

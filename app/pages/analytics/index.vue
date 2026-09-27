@@ -21,6 +21,12 @@ ensureChartjsRegistered()
 
 definePageMeta({ middleware: ['auth'], layout: 'dashboard' })
 
+// El barbero ya ve sus oportunidades en su dashboard; aquí solo se repetían (se quitó del menú el 26-sep).
+const { user: analyticsUser } = useAuth()
+if (analyticsUser.value?.roles?.length && analyticsUser.value.roles.every((r) => r === 'barbero')) {
+  await navigateTo('/dashboard', { replace: true })
+}
+
 interface InsightDto {
   tipo: string
   titulo: string | null

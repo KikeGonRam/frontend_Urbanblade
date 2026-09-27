@@ -60,7 +60,7 @@ export function useChatbot() {
   const { isAuthenticated } = useAuth()
 
   function greeting(): ChatMessage {
-    return { id: makeId(), role: 'bot', text: '¡Hola! Soy el Concierge de UrbanBlade.\n¿En qué puedo ayudarte hoy?', timestamp: new Date().toISOString() }
+    return { id: makeId(), role: 'bot', text: '¡Hola! Soy Bladebot, el asistente de UrbanBlade.\n¿En qué puedo ayudarte hoy?', timestamp: new Date().toISOString() }
   }
 
   const messages = useState<ChatMessage[]>('chatbot_messages', () => [greeting()])

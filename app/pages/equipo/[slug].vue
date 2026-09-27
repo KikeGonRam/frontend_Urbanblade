@@ -11,7 +11,7 @@
 definePageMeta({ layout: 'public' })
 
 interface Work { id: string, title: string | null, description: string | null, images: string[] }
-interface Review { id: string, rating: number, comment: string | null, created_at: string | null, client: { user: { name: string | null } } }
+interface Review { id: string, rating: number, comment: string | null, created_at: string | null, client: { user: { name: string | null } }, service?: string | null }
 
 interface BarberDetail {
   barber: { id: string, slug: string | null, descripcion: string | null, especialidades: string | null, foto: string | null, user: { id: string, name: string } | null }
@@ -22,6 +22,7 @@ interface BarberDetail {
   citas_completadas: number
   can_review: boolean
   already_reviewed: boolean
+  reviewable_services?: Array<{ id: string, nombre: string }>
 }
 
 const route = useRoute()
@@ -56,6 +57,11 @@ function fmtDate(iso: string | null) {
 
 // ── Enviar reseña ────────────────────────────────────────────────────────
 const rating = ref(5)
+const serviceId = ref('')
+const reviewableServices = computed(() => response.value?.reviewable_services ?? [])
+watch(reviewableServices, (list) => {
+  if (!serviceId.value && list.length === 1) serviceId.value = list[0]!.id
+}, { immediate: true })
 const comment = ref('')
 const submitting = ref(false)
 const submitError = ref('')
@@ -69,7 +75,7 @@ async function submitReview() {
   try {
     await apiFetch(`/barbers/${barber.value.slug}/review`, {
       method: 'POST',
-      body: { rating: rating.value, comment: comment.value || undefined },
+      body: { rating: rating.value, comment: comment.value || undefined, service_id: serviceId.value || undefined },
     })
     submitted.value = true
     comment.value = ''
@@ -141,12 +147,40 @@ async function submitReview() {
         <div v-if="canReview" class="ui-card mb-5 p-5">
           <p v-if="submitted" class="text-sm text-emerald-400">¡Gracias por tu reseña!</p>
           <form v-else class="space-y-3" @submit.prevent="submitReview">
-            <div>
-              <label class="mb-1 block text-xs text-muted">Calificación</label>
-              <select v-model.number="rating" class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
-                <option v-for="n in [5, 4, 3, 2, 1]" :key="n" :value="n">{{ n }} estrella{{ n === 1 ? '' : 's' }}</option>
-              </select>
-            </div>
+            <fieldset v-if="reviewableServices.length">
+              <legend class="mb-2 block text-xs text-muted">¿Qué servicio calificas?</legend>
+              <div class="flex flex-wrap gap-2">
+                <button
+                  v-for="s in reviewableServices"
+                  :key="s.id"
+                  type="button"
+                  :aria-pressed="serviceId === s.id"
+                  class="rounded-full border px-3 py-1.5 text-xs font-semibold transition"
+                  :class="serviceId === s.id ? 'border-gold bg-gold/15 text-gold' : 'border-line text-muted hover:border-gold/40'"
+                  @click="serviceId = serviceId === s.id ? '' : s.id"
+                >
+                  {{ s.nombre }}
+                </button>
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend class="mb-1 block text-xs text-muted">Calificación</legend>
+              <div class="flex gap-1" role="radiogroup" aria-label="Calificación">
+                <button
+                  v-for="n in 5"
+                  :key="n"
+                  type="button"
+                  role="radio"
+                  :aria-checked="rating === n"
+                  :aria-label="`${n} estrella${n === 1 ? '' : 's'}`"
+                  class="text-3xl leading-none transition-transform hover:scale-110"
+                  :class="n <= rating ? 'text-gold' : 'text-ink/20'"
+                  @click="rating = n"
+                >
+                  ★
+                </button>
+              </div>
+            </fieldset>
             <div>
               <label class="mb-1 block text-xs text-muted">Comentario (opcional)</label>
               <textarea v-model="comment" rows="2" maxlength="500" class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink" />
@@ -165,7 +199,10 @@ async function submitReview() {
               <p class="font-bold text-ink">{{ review.client.user.name ?? 'Cliente' }}</p>
               <p class="text-xs text-muted">{{ fmtDate(review.created_at) }}</p>
             </div>
-            <p class="mb-1 text-gold">{{ '★'.repeat(review.rating) }}{{ '☆'.repeat(5 - review.rating) }}</p>
+            <p class="mb-1 text-gold">
+              {{ '★'.repeat(review.rating) }}{{ '☆'.repeat(5 - review.rating) }}
+              <span v-if="review.service" class="ml-2 rounded-full border border-gold/30 bg-gold/10 px-2 py-0.5 text-[11px] font-semibold">{{ review.service }}</span>
+            </p>
             <p v-if="review.comment" class="text-sm text-muted">{{ review.comment }}</p>
           </div>
         </div>

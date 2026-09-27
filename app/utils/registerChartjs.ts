@@ -13,7 +13,15 @@ export function ensureChartjsRegistered() {
 
   // Animación corta y con frenado suave; nada si el sistema pide reducir movimiento.
   const reduceMotion = import.meta.client && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-  ChartJS.defaults.animation = reduceMotion ? false : { duration: 650, easing: "easeOutQuart" };
+  // Barras y puntos entran uno tras otro (escalonado), para que se vea el crecimiento.
+  ChartJS.defaults.animation = reduceMotion
+    ? false
+    : {
+        duration: 900,
+        easing: "easeOutQuart",
+        delay: (ctx: { type?: string; mode?: string; dataIndex?: number }) =>
+          ctx.type === "data" && ctx.mode === "default" ? (ctx.dataIndex ?? 0) * 60 : 0,
+      };
 
   Object.assign(ChartJS.defaults.plugins.tooltip, {
     backgroundColor: "rgba(10,10,10,0.96)",

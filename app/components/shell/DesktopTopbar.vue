@@ -4,7 +4,6 @@ const { railCollapsed, toggleRail } = useShellState();
 const { theme, apply, THEMES, THEME_LABELS } = useTheme();
 const { user } = useAuth();
 const avatarFailed = ref(false);
-const search = ref("");
 const pageName = computed(() => {
   const segment = route.path.split("/").filter(Boolean).at(-1) ?? "dashboard";
   return segment.replaceAll("-", " ");
@@ -34,17 +33,7 @@ watch(
       </div>
     </div>
 
-    <label class="ub-topbar-search">
-      <ShellNavIcon
-        paths="<circle cx='11' cy='11' r='7' /><path d='m20 20-4-4' />"
-      />
-      <span class="sr-only">Buscar</span>
-      <input
-        v-model="search"
-        type="search"
-        placeholder="Buscar clientes, citas, servicios…"
-      >
-    </label>
+    <ShellGlobalSearch />
 
     <div class="ub-desktop-topbar__actions">
       <label class="ub-theme-switcher">

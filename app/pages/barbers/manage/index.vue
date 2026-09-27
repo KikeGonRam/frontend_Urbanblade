@@ -271,14 +271,14 @@ async function submitForm() {
     <!-- Modal de edición -->
     <div
       v-if="showForm"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-xs"
+      class="ub-sheet"
       role="dialog"
       aria-modal="true"
       aria-label="Editar barbero"
       @click.self="showForm = false"
     >
       <div
-        class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-line bg-card p-6 shadow-2xl"
+        class="ub-sheet__panel"
       >
         <h2 class="mb-4 text-lg font-semibold text-ink">Editar barbero</h2>
 

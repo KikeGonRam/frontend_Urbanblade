@@ -52,7 +52,6 @@ onBeforeUnmount(() => {
           <BrandBrandMark class="h-11 w-11" />
           <div>
             <span class="auth-shell__logo-name">Urban<strong>Blade</strong></span>
-            <span class="auth-shell__logo-tag">Elite Grooming Studio</span>
           </div>
         </NuxtLink>
 

@@ -309,41 +309,17 @@ const hasBarberPerformance = computed(
     (props.data.barberPerformance.appointments ?? []).some((v) => v) ||
     (props.data.barberPerformance.revenue ?? []).some((v) => v),
 );
-const barberData = computed(() => ({
-  labels: props.data.barberPerformance.labels ?? [],
-  datasets: [
-    {
-      label: "Citas",
-      data: props.data.barberPerformance.appointments ?? [],
-      backgroundColor: goldRgba(0.85),
-      hoverBackgroundColor: goldRgba(1),
-      borderRadius: 6,
-      maxBarThickness: 24,
-    },
-  ],
-}));
-const barberOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: { display: false },
-    tooltip: {
-      ...chartTooltip(),
-      callbacks: {
-        label: (ctx: { parsed: { y: number } }) =>
-          `Citas: ${fmtInt(ctx.parsed.y)}`,
-      },
-    },
-  },
-  scales: {
-    y: {
-      ...chartScale(),
-      beginAtZero: true,
-      ticks: { ...chartScale().ticks, precision: 0 },
-    },
-    x: chartAxisClean(),
-  },
-};
+// Lista con barras (nombres completos, sin etiquetas giradas); dados de baja en gris.
+const barberRanking = computed(() => {
+  const perf = props.data.barberPerformance;
+
+  return (perf.labels ?? []).map((label, i) => ({
+    label,
+    value: perf.appointments?.[i] ?? 0,
+    display: `${fmtInt(perf.appointments?.[i] ?? 0)} citas`,
+    muted: label === "Barberos dados de baja",
+  }));
+});
 </script>
 
 <template>
@@ -619,9 +595,7 @@ const barberOptions = {
             >
           </div>
         </div>
-        <div v-if="hasBarberPerformance" class="h-32">
-          <Bar :data="barberData" :options="barberOptions" />
-        </div>
+        <UiBarList v-if="hasBarberPerformance" :items="barberRanking" />
         <div
           v-else
           class="flex h-32 items-center justify-center rounded-xl border border-dashed border-ink/[0.06]"

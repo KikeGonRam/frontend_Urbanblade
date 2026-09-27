@@ -132,7 +132,7 @@ onUnmounted(() => { document.removeEventListener('keydown', handleKeydown); wind
               </svg>
             </div>
             <div>
-              <h3 class="text-[11px] font-black uppercase tracking-widest text-ink">Concierge UrbanBlade</h3>
+              <h3 class="text-sm font-semibold text-ink">Bladebot</h3>
               <div class="mt-0.5 flex items-center gap-1.5">
                 <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
                 <span class="text-[8px] font-bold uppercase tracking-widest text-muted">Asistente IA · En línea</span>

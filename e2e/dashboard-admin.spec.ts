@@ -41,6 +41,8 @@ test("las gráficas principales están a la vista sin abrir la analítica", asyn
 
   await expect(page.getByRole("heading", { name: "Ingresos por semana" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Servicios más pedidos" })).toBeVisible();
+  // Las gráficas se dibujan al entrar en pantalla (para que su animación se vea).
+  await page.getByRole("heading", { name: "Ingresos por semana" }).scrollIntoViewIfNeeded();
   await expect(page.locator("canvas").first()).toBeVisible();
 });
 

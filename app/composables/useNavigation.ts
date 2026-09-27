@@ -195,7 +195,7 @@ export function useNavigation() {
           item('Mi Portafolio', '/barber/portfolio', 'wall', true),
           item('Mi Horario', '/barber/schedule', 'schedule', true),
           item('Mi Perfil', '/barber/profile', 'profile'),
-          item('Mi Analítica', '/analytics', 'analytics'),
+          // "Mi Analítica" se quitó (26-sep): solo repetía las oportunidades que ya salen en su dashboard.
         ],
       })
     }

@@ -222,14 +222,14 @@ async function remove(work: Work) {
     <!-- Modal para publicar nuevo trabajo -->
     <div
       v-if="showForm"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-xs"
+      class="ub-sheet"
       role="dialog"
       aria-modal="true"
       aria-label="Publicar nuevo trabajo"
       @click.self="closeForm"
     >
       <form
-        class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-line bg-card p-6 shadow-2xl"
+        class="ub-sheet__panel"
         @submit.prevent="publish"
       >
         <h2 class="text-lg font-bold text-ink">Publicar trabajo en portafolio</h2>
