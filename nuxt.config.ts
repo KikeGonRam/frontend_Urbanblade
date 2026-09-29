@@ -27,6 +27,8 @@ export default defineNuxtConfig({
       // para "localhost", y Docker no escucha ahí en el puerto 8000 -- eso
       // agrega varios segundos de espera a cada carga antes de caer a IPv4.
       apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://127.0.0.1:8000/api/v1',
+      // Dominio público canónico para el sitemap y Search Console.
+      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'https://urbanblade.com.mx',
       // Clave PUBLICABLE de Stripe (pk_...) — segura de exponer en el
       // cliente por diseño, es la misma que barber expone en el <script>
       // de payments/create.blade.php vía config('services.stripe.key').

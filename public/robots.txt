@@ -1,2 +1,31 @@
-User-Agent: *
-Disallow:
+User-agent: *
+Allow: /
+# Área con sesión y flujos de cuenta: no aportan a la búsqueda.
+Disallow: /dashboard
+Disallow: /appointments
+Disallow: /clients
+Disallow: /payments
+Disallow: /orders
+Disallow: /store
+Disallow: /cart
+Disallow: /my/
+Disallow: /inventory
+Disallow: /services
+Disallow: /users
+Disallow: /barber/
+Disallow: /barbers
+Disallow: /campaigns
+Disallow: /raffles
+Disallow: /logs
+Disallow: /settings
+Disallow: /system
+Disallow: /reports
+Disallow: /analytics
+Disallow: /profile
+Disallow: /notifications
+Disallow: /cita/
+Disallow: /auth/
+Disallow: /reset-password
+Disallow: /complete-profile
+
+Sitemap: https://urbanblade.com.mx/sitemap.xml
