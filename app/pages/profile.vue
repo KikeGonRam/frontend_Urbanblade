@@ -166,9 +166,25 @@ async function submitChangePassword() {
   }
 }
 
+// Quien entró con Google no conoce su contraseña (se genera al azar): en una sesión abierta con
+// Google se confirma escribiendo ELIMINAR. /auth/me dice cómo se abrió la sesión.
+const viaGoogle = ref(false)
+async function openDeleteModal() {
+  deletePassword.value = ''
+  deleteError.value = ''
+  showDeleteModal.value = true
+  try {
+    viaGoogle.value = (await apiFetch<{ sesion_con_google?: boolean }>('/auth/me')).sesion_con_google === true
+  } catch {
+    viaGoogle.value = false
+  }
+}
+
 async function submitDeleteAccount() {
   if (!deletePassword.value) {
-    deleteError.value = 'Ingresa tu contraseña para confirmar la eliminación.'
+    deleteError.value = viaGoogle.value
+      ? 'Escribe ELIMINAR para confirmar.'
+      : 'Ingresa tu contraseña para confirmar la eliminación.'
     return
   }
 
@@ -178,13 +194,13 @@ async function submitDeleteAccount() {
   try {
     await apiFetch('/profile', {
       method: 'DELETE',
-      body: { password: deletePassword.value },
+      body: viaGoogle.value ? { confirmacion: deletePassword.value.trim() } : { password: deletePassword.value },
     })
     await logout()
     await navigateTo('/login', { replace: true })
   } catch (error: unknown) {
     const data = (error as { data?: { message?: string } })?.data
-    deleteError.value = data?.message ?? 'No se pudo eliminar tu cuenta. Verifica tu contraseña.'
+    deleteError.value = data?.message ?? (viaGoogle.value ? 'No se pudo eliminar tu cuenta.' : 'No se pudo eliminar tu cuenta. Verifica tu contraseña.')
   } finally {
     deleting.value = false
   }
@@ -409,7 +425,7 @@ async function submitDeleteAccount() {
           <button
             type="button"
             class="rounded-lg border border-red-500/30 px-4 py-2 text-sm font-semibold text-red-400 hover:bg-red-500/10"
-            @click="showDeleteModal = true"
+            @click="openDeleteModal"
           >
             Eliminar mi cuenta
           </button>
@@ -428,18 +444,28 @@ async function submitDeleteAccount() {
         <div class="w-full max-w-md rounded-2xl border border-line bg-card p-6 shadow-2xl">
           <h3 class="text-lg font-bold text-red-400">¿Estás seguro de eliminar tu cuenta?</h3>
           <p class="mt-2 text-sm text-muted">
-            Esta acción es irreversible. Para confirmar tu identidad, escribe tu contraseña actual.
+            <template v-if="viaGoogle">
+              Esta acción es irreversible. Entraste con Google, así que para confirmar escribe <strong class="text-ink">ELIMINAR</strong>.
+            </template>
+            <template v-else>
+              Esta acción es irreversible. Para confirmar tu identidad, escribe tu contraseña actual.
+            </template>
+          </p>
+          <p class="mt-2 text-xs text-muted">
+            Se borran tu acceso y tus sesiones. El historial de citas y pagos puede conservarse como registro del
+            negocio; si quieres que también se borre, pídelo por correo (ver Aviso de Privacidad).
           </p>
 
           <form class="mt-4 space-y-4" @submit.prevent="submitDeleteAccount">
             <div>
-              <label for="delete-account-password" class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted">Tu contraseña</label>
+              <label for="delete-account-password" class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted">{{ viaGoogle ? 'Escribe ELIMINAR' : 'Tu contraseña' }}</label>
               <input
                 id="delete-account-password"
                 v-model="deletePassword"
-                type="password"
+                :type="viaGoogle ? 'text' : 'password'"
                 required
-                placeholder="Ingresa tu contraseña"
+                autocomplete="off"
+                :placeholder="viaGoogle ? 'ELIMINAR' : 'Ingresa tu contraseña'"
                 class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-red-500 focus:outline-none focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]"
               >
             </div>

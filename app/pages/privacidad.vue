@@ -117,12 +117,8 @@ const mailto = `mailto:${LEGAL.contactEmail}`
     <ul>
       <li>Ver y corregir tus datos personales en tu perfil (sitio web: <em>Mi perfil</em>; app: <em>Cuenta → Datos</em>).</li>
       <li>Activar o desactivar promociones, correos y notificaciones en las preferencias de notificación de tu cuenta.</li>
-      <li>Eliminar tu cuenta en el sitio web, en <em>Mi perfil → Zona de peligro</em>, confirmando con tu contraseña (primero hay que cancelar las citas pendientes).</li>
+      <li>Eliminar tu cuenta (sitio web: <em>Mi perfil → Zona de peligro</em>; app: <em>Cuenta → Seguridad → Eliminar mi cuenta</em>). Se confirma con tu contraseña o, si entraste con Google, escribiendo ELIMINAR. Primero hay que cancelar las citas pendientes.</li>
     </ul>
-    <p>
-      Si entras solo con Google (sin contraseña propia) o usas la app Android, pide la eliminación de tu cuenta por
-      correo y la haremos por ti.
-    </p>
     <p>
       <strong>Por correo:</strong> escribe a <a :href="mailto">{{ LEGAL.contactEmail }}</a> desde el correo de tu
       cuenta, indicando tu nombre, el derecho que quieres ejercer y qué datos. Si escribes desde otro correo te
