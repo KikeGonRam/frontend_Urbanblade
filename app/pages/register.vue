@@ -118,7 +118,7 @@ async function onSubmit() {
       <label class="flex items-start gap-2 text-xs leading-relaxed text-muted">
         <input v-model="acceptedTerms" type="checkbox" class="mt-0.5 h-4 w-4 shrink-0 rounded border-line bg-main text-gold focus:ring-gold/40">
         <span>
-          Acepto los <NuxtLink to="/terminos" target="_blank" class="text-gold hover:underline">Términos y Condiciones</NuxtLink>
+          Soy mayor de edad y acepto los <NuxtLink to="/terminos" target="_blank" class="text-gold hover:underline">Términos y Condiciones</NuxtLink>
           y el <NuxtLink to="/privacidad" target="_blank" class="text-gold hover:underline">Aviso de Privacidad</NuxtLink> de UrbanBlade.
         </span>
       </label>

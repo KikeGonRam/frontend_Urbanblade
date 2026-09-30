@@ -1,147 +1,195 @@
 <script setup lang="ts">
 /*
- * Aviso de Privacidad Integral, redactado conforme a la LFPDPPP (Ley
- * Federal de Protección de Datos Personales en Posesión de los
- * Particulares) mexicana. Ver .claude/skills/legal-pages-plan/SKILL.md
- * para el detalle de qué datos reales maneja barber y por qué.
- *
- * NO es un sustituto de revisión legal real -- ver el aviso de borrador
- * más abajo. Los datos entre corchetes (razón social, RFC, domicilio
- * fiscal) son placeholders: este es un proyecto escolar sin entidad legal
- * constituida todavía.
+ * Aviso de Privacidad Integral (LFPDPPP, México). Cada dato que se menciona aquí corresponde a lo
+ * que el sistema realmente guarda y a los proveedores que realmente usa (revisado contra barber,
+ * frontend-urban y UrbanBladeMobile el 30-sep-2026). Si se agrega un proveedor o un dato nuevo,
+ * hay que agregarlo aquí antes de publicarlo. Datos de contacto en app/utils/legal.ts.
  */
 definePageMeta({ layout: 'legal' })
 
 useSeoMeta({
   title: 'Aviso de Privacidad — UrbanBlade',
-  description: 'Aviso de privacidad de UrbanBlade: qué datos recabamos, para qué los usamos y cómo ejercer tus derechos ARCO.',
+  description: 'Qué datos personales recaba UrbanBlade, para qué los usa, con quién los comparte y cómo ejercer tus derechos ARCO.',
 })
 
-const lastUpdated = '6 de septiembre de 2026'
+const mailto = `mailto:${LEGAL.contactEmail}`
 </script>
 
 <template>
-  <article>
+  <article class="legal">
     <p class="mb-3 text-[10px] font-black uppercase tracking-[0.3em] text-gold">Protección de datos</p>
     <h1 class="mb-2 text-3xl font-black uppercase tracking-tight text-ink sm:text-4xl">Aviso de <span class="text-gold">Privacidad</span></h1>
-    <p class="mb-8 text-xs text-muted">Última actualización: {{ lastUpdated }}</p>
+    <p class="mb-8 text-xs text-muted">Última actualización: {{ LEGAL.lastUpdated }}</p>
 
-    <div class="mb-10 rounded-2xl border border-amber-400/30 bg-amber-400/5 p-5 text-sm leading-relaxed text-amber-200">
-      <p class="mb-1 font-bold uppercase tracking-wide">Borrador — pendiente de revisión legal</p>
+    <div class="mb-10 rounded-2xl border border-gold/30 bg-gold/5 p-5 text-sm leading-relaxed text-muted">
+      <p class="mb-1 font-bold text-ink">UrbanBlade es un proyecto académico</p>
       <p>
-        Este aviso está redactado para cubrir lo que exige la LFPDPPP (Ley Federal de Protección de Datos
-        Personales en Posesión de los Particulares), pero UrbanBlade es hoy un proyecto escolar sin razón social
-        constituida. Antes de operar como negocio real con datos reales de clientes, este documento debe ser
-        revisado por un abogado y completado con los datos fiscales reales.
+        UrbanBlade es una plataforma desarrollada por estudiantes (el {{ LEGAL.responsable }}) como proyecto
+        escolar. No es una empresa constituida, no tiene razón social ni domicilio fiscal y no cobra dinero real:
+        los pagos con tarjeta funcionan en el modo de prueba de Stripe. Aun así, tratamos tus datos conforme a la
+        Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP) y te explicamos
+        aquí, con exactitud, qué hacemos con ellos.
       </p>
     </div>
 
-    <p class="mb-4 text-sm leading-relaxed text-muted">
-      En UrbanBlade ("nosotros") respetamos tu privacidad y protegemos tus datos personales conforme a la Ley
-      Federal de Protección de Datos Personales en Posesión de los Particulares y su Reglamento. Este aviso
-      explica qué datos recabamos, para qué los usamos, con quién los compartimos y cómo puedes ejercer tus
-      derechos sobre ellos.
+    <h2>1. Responsable de tus datos</h2>
+    <p>
+      El responsable del tratamiento es el <strong>{{ LEGAL.responsable }}</strong>, equipo de estudiantes que
+      desarrolla y administra la plataforma. Al ser un proyecto académico no contamos con domicilio para oír y
+      recibir notificaciones; el medio de contacto oficial para cualquier asunto de privacidad es el correo
+      <a :href="mailto">{{ LEGAL.contactEmail }}</a>.
     </p>
 
-    <h2 class="mb-3 mt-10 text-xl font-black uppercase tracking-tight text-ink">1. Responsable del tratamiento</h2>
-    <p class="mb-4 text-sm leading-relaxed text-muted">
-      El responsable del tratamiento de tus datos personales es <strong class="text-ink">UrbanBlade</strong>
-      [razón social pendiente de constitución], con domicilio en Av. de la Reforma 123, Suite 405, Ciudad de
-      México, y correo de contacto <a href="mailto:hola@urbanblade.com" class="text-gold hover:underline">hola@urbanblade.com</a>.
+    <h2>2. Datos que recabamos</h2>
+    <p>Solo los que necesita cada función, según cómo uses UrbanBlade:</p>
+    <ul>
+      <li><strong>Cuenta:</strong> nombre, correo electrónico y contraseña (se guarda cifrada con un algoritmo de un solo sentido; nadie puede leerla). Si entras con Google, recibimos de tu cuenta de Google tu nombre, correo y foto de perfil.</li>
+      <li><strong>Perfil de cliente:</strong> teléfono, fecha de nacimiento (para tu regalo de cumpleaños) y, si lo indicas, sexo; tu foto de perfil, tema visual y preferencias de notificación.</li>
+      <li><strong>Citas:</strong> servicio, barbero, fecha, hora, estado de la cita y las notas que escribas para tu barbero.</li>
+      <li><strong>Notas internas:</strong> el personal de la barbería puede anotar en tu ficha datos útiles para atenderte (por ejemplo, el corte que prefieres o una alergia). Solo el personal las ve; nunca se muestran en público.</li>
+      <li><strong>Pagos:</strong> monto, método (efectivo, transferencia o tarjeta), propina y estado. <strong>El número completo de tu tarjeta nunca llega a nuestros servidores</strong>: lo captura y procesa Stripe. Si decides guardar una tarjeta, Stripe la conserva y nosotros solo recibimos la marca, los últimos 4 dígitos y la fecha de vencimiento para mostrártela.</li>
+      <li><strong>Comprobantes de transferencia:</strong> la imagen que subes y el texto que se lee automáticamente de ella (reconocimiento de caracteres) para ayudar al personal a verificar el pago.</li>
+      <li><strong>Programa de lealtad y beneficios:</strong> nivel, puntos y su historial, código para invitar amigos, membresías, paquetes, tarjetas de regalo y pedidos de la tienda.</li>
+      <li><strong>Contenido que publicas:</strong> reseñas y calificaciones de barberos, y comentarios, reacciones y guardados en el Muro de Inspiración.</li>
+      <li><strong>Chat con Bladebot:</strong> si usas el asistente con tu sesión iniciada, guardamos tus mensajes y sus respuestas para mostrarte tu historial y mejorar las respuestas.</li>
+      <li><strong>Datos técnicos:</strong> el identificador de tu teléfono para enviarte notificaciones, la dirección IP de cada petición (para limitar intentos de acceso y detectar abusos) y la fecha de uso de tu sesión.</li>
+      <li><strong>Solo en la app Android:</strong> estadísticas de uso sin datos de identificación (qué pantallas se abren y en qué paso de la reserva se avanza), reportes de fallos de la app y mediciones de rendimiento, con modelo del teléfono, versión de Android y un identificador de instalación de la app.</li>
+    </ul>
+    <p>
+      <strong>No recabamos datos personales sensibles</strong> (salud, origen étnico, creencias, preferencias
+      sexuales, datos biométricos ni datos financieros completos). Por favor no los escribas en notas, reseñas o
+      en el chat.
     </p>
 
-    <h2 class="mb-3 mt-10 text-xl font-black uppercase tracking-tight text-ink">2. Datos personales que recabamos</h2>
-    <p class="mb-3 text-sm leading-relaxed text-muted">Dependiendo de cómo usas UrbanBlade, podemos recabar:</p>
-    <ul class="mb-4 list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-muted">
-      <li><strong class="text-ink">Datos de identificación y contacto:</strong> nombre, correo electrónico, teléfono.</li>
-      <li><strong class="text-ink">Datos de la cuenta:</strong> contraseña (almacenada cifrada, nunca en texto plano), rol, preferencias de notificación.</li>
-      <li><strong class="text-ink">Historial de servicio:</strong> citas agendadas, servicios contratados, barbero preferido, reseñas que dejas.</li>
-      <li><strong class="text-ink">Datos de pago:</strong> el número de tu tarjeta nunca llega a nuestros servidores — lo procesa directamente Stripe, nuestro procesador de pagos certificado PCI-DSS. Nosotros solo guardamos el monto, método (efectivo/transferencia/tarjeta) y un identificador de la transacción.</li>
-      <li><strong class="text-ink">Comprobantes de transferencia:</strong> si pagas por transferencia bancaria, el comprobante que subes se procesa (incluyendo lectura automática/OCR del monto) para verificar tu pago.</li>
-      <li><strong class="text-ink">Puntos de lealtad:</strong> tu saldo e historial de puntos ganados/canjeados.</li>
-      <li><strong class="text-ink">Datos técnicos:</strong> token de tu dispositivo si activas notificaciones push, cookies de sesión y preferencia de tema visual.</li>
+    <h2>3. Para qué usamos tus datos</h2>
+    <p><strong>Finalidades necesarias</strong> (sin ellas no podemos darte el servicio):</p>
+    <ul>
+      <li>Crear y administrar tu cuenta e identificarte al iniciar sesión.</li>
+      <li>Agendar, confirmar, reagendar y recordarte tus citas.</li>
+      <li>Registrar tus pagos, verificar transferencias y emitir comprobantes.</li>
+      <li>Administrar tus puntos, nivel, membresía, paquetes, tarjetas de regalo y pedidos.</li>
+      <li>Mostrar tus reseñas y comentarios públicos, y moderarlos si incumplen los Términos.</li>
+      <li>Responder tus preguntas a través de Bladebot.</li>
+      <li>Proteger la plataforma: limitar intentos de acceso, detectar abusos y corregir fallos.</li>
+    </ul>
+    <p><strong>Finalidades opcionales</strong> (puedes negarte sin perder el servicio, ver sección 6):</p>
+    <ul>
+      <li>Enviarte promociones, cupones y campañas de la barbería.</li>
+      <li>Enviarte notificaciones en tu teléfono.</li>
+      <li>Elaborar estadísticas del negocio (por ejemplo, horarios con más citas). Estas estadísticas se calculan de forma agregada y no se usan para tomar decisiones sobre ti.</li>
     </ul>
 
-    <h2 class="mb-3 mt-10 text-xl font-black uppercase tracking-tight text-ink">3. Finalidades del tratamiento</h2>
-    <p class="mb-3 text-sm leading-relaxed text-muted">
-      <strong class="text-ink">Finalidades primarias</strong> (necesarias para darte el servicio, no puedes oponerte sin dejar de usar UrbanBlade):
-    </p>
-    <ul class="mb-4 list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-muted">
-      <li>Crear y administrar tu cuenta.</li>
-      <li>Agendar, confirmar y recordar tus citas.</li>
-      <li>Procesar tus pagos y emitir comprobantes.</li>
-      <li>Administrar tu programa de lealtad.</li>
-      <li>Responder tus dudas por el chatbot o soporte directo.</li>
-    </ul>
-    <p class="mb-3 text-sm leading-relaxed text-muted">
-      <strong class="text-ink">Finalidades secundarias</strong> (opcionales — puedes oponerte sin afectar el servicio, ver sección 5):
-    </p>
-    <ul class="mb-4 list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-muted">
-      <li>Enviarte promociones, campañas o recordatorios de marketing por correo o WhatsApp.</li>
-      <li>Enviarte notificaciones push sobre novedades.</li>
-      <li>Análisis interno para mejorar el servicio (estadísticas agregadas, no perfilamiento individual con fines distintos al servicio).</li>
+    <h2>4. Qué ven otras personas</h2>
+    <ul>
+      <li>En reseñas y comentarios públicos solo se muestra tu <strong>nombre y la inicial de tu apellido</strong> (por ejemplo, «Luis G.»), nunca tu nombre completo, correo ni teléfono.</li>
+      <li>El personal de la barbería (recepción, barberos y administración) ve los datos necesarios para atenderte, según su rol.</li>
     </ul>
 
-    <h2 class="mb-3 mt-10 text-xl font-black uppercase tracking-tight text-ink">4. Transferencias de datos</h2>
-    <p class="mb-4 text-sm leading-relaxed text-muted">
-      Compartimos los datos estrictamente necesarios con los siguientes terceros para poder operar:
+    <h2>5. Con quién compartimos tus datos</h2>
+    <p>
+      No vendemos ni rentamos tus datos. Para operar usamos los siguientes proveedores, que tratan la información
+      por nuestra cuenta y solo para prestarnos su servicio:
     </p>
-    <ul class="mb-4 list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-muted">
-      <li><strong class="text-ink">Stripe, Inc.</strong> (procesamiento de pagos con tarjeta) — datos de pago, monto.</li>
-      <li><strong class="text-ink">MongoDB Atlas</strong> (alojamiento de nuestra base de datos) y <strong class="text-ink">Vercel Inc.</strong> (alojamiento del sitio) — estos proveedores pueden alojar servidores fuera de México, lo que constituye una transferencia internacional de tus datos; ambos operan bajo estándares de seguridad reconocidos (cifrado en tránsito y en reposo).</li>
+    <ul>
+      <li><strong>Amazon Web Services</strong>: servidores donde corre la plataforma, almacenamiento de fotos y comprobantes, y protección de claves.</li>
+      <li><strong>MongoDB Atlas</strong>: base de datos donde se guarda tu información.</li>
+      <li><strong>Stripe</strong>: pagos con tarjeta, tarjetas guardadas y cobro de membresías.</li>
+      <li><strong>Google</strong>: inicio de sesión con Google y, en la app Android, Firebase (envío de notificaciones, estadísticas de uso, reportes de fallos y rendimiento, y configuración remota).</li>
+      <li><strong>Wikipedia</strong>: para algunas preguntas generales (por ejemplo, sobre un estilo de corte), Bladebot consulta el texto de la pregunta en Wikipedia; no se envía tu nombre ni ningún otro dato de tu cuenta.</li>
     </ul>
-    <p class="mb-4 text-sm leading-relaxed text-muted">No vendemos ni rentamos tus datos personales a terceros con fines publicitarios ajenos a UrbanBlade.</p>
-
-    <h2 class="mb-3 mt-10 text-xl font-black uppercase tracking-tight text-ink">5. Derechos ARCO y cómo ejercerlos</h2>
-    <p class="mb-4 text-sm leading-relaxed text-muted">
-      Tienes derecho a <strong class="text-ink">Acceder</strong> a tus datos personales, <strong class="text-ink">Rectificarlos</strong>
-      si son inexactos, <strong class="text-ink">Cancelarlos</strong> cuando consideres que no se requieren para
-      alguna de las finalidades señaladas, y <strong class="text-ink">Oponerte</strong> al tratamiento de los
-      mismos para fines específicos (derechos ARCO). También puedes revocar el consentimiento que nos hayas
-      otorgado y limitar el uso o divulgación de tus datos.
+    <p>
+      Estos proveedores pueden tener servidores fuera de México (principalmente en Estados Unidos), por lo que usar
+      UrbanBlade implica una transferencia internacional de tus datos para las finalidades descritas. El asistente
+      Bladebot funciona con un modelo de inteligencia artificial que corre en nuestros propios servidores: tus
+      mensajes no se envían a empresas externas de inteligencia artificial.
     </p>
-    <p class="mb-4 text-sm leading-relaxed text-muted">
-      Para ejercer cualquiera de estos derechos, escríbenos a
-      <a href="mailto:hola@urbanblade.com" class="text-gold hover:underline">hola@urbanblade.com</a> indicando tu
-      nombre, el derecho que deseas ejercer y una copia de identificación oficial. Responderemos dentro de los
-      plazos que marca la ley (hasta 20 días hábiles para resolver, más 15 días adicionales para hacer efectiva
-      la solicitud). Puedes desactivar el envío de marketing directamente desde tu perfil, sin necesidad de
-      escribirnos.
+    <p>
+      Solo compartiríamos tus datos con una autoridad cuando una ley o una orden judicial nos obligue.
     </p>
 
-    <h2 class="mb-3 mt-10 text-xl font-black uppercase tracking-tight text-ink">6. Cookies y tecnologías de rastreo</h2>
-    <p class="mb-4 text-sm leading-relaxed text-muted">
-      Usamos únicamente cookies estrictamente necesarias para operar el sitio: una para mantener tu sesión
-      iniciada y otra para recordar tu tema visual preferido. No usamos cookies de publicidad ni de rastreo de
-      terceros. Puedes borrar estas cookies desde la configuración de tu navegador; hacerlo cerrará tu sesión.
+    <h2>6. Tus derechos (ARCO) y cómo ejercerlos</h2>
+    <p>
+      Tienes derecho a <strong>Acceder</strong> a tus datos, <strong>Rectificarlos</strong> si son inexactos,
+      <strong>Cancelarlos</strong> y <strong>Oponerte</strong> a su uso para fines específicos. También puedes
+      revocar tu consentimiento y limitar el uso de tus datos.
+    </p>
+    <p><strong>Desde tu cuenta, sin escribirnos:</strong></p>
+    <ul>
+      <li>Ver y corregir tus datos personales en tu perfil (sitio web: <em>Mi perfil</em>; app: <em>Cuenta → Datos</em>).</li>
+      <li>Activar o desactivar promociones, correos y notificaciones en las preferencias de notificación de tu cuenta.</li>
+      <li>Eliminar tu cuenta en el sitio web, en <em>Mi perfil → Zona de peligro</em>, confirmando con tu contraseña (primero hay que cancelar las citas pendientes).</li>
+    </ul>
+    <p>
+      Si entras solo con Google (sin contraseña propia) o usas la app Android, pide la eliminación de tu cuenta por
+      correo y la haremos por ti.
+    </p>
+    <p>
+      <strong>Por correo:</strong> escribe a <a :href="mailto">{{ LEGAL.contactEmail }}</a> desde el correo de tu
+      cuenta, indicando tu nombre, el derecho que quieres ejercer y qué datos. Si escribes desde otro correo te
+      pediremos confirmar tu identidad. Te responderemos en un máximo de 20 días hábiles y, si procede, lo
+      haremos efectivo dentro de los 15 días hábiles siguientes, como marca la ley. Si consideras que no
+      atendimos tu solicitud, puedes acudir al organismo garante de protección de datos personales.
+    </p>
+    <p>
+      <strong>Qué pasa al eliminar tu cuenta:</strong> se borra tu acceso y se cierran todas tus sesiones. El
+      registro de citas y pagos ya realizados puede conservarse como historial del negocio, sin usarse para
+      ningún otro fin; si quieres que también se elimine, pídelo por correo.
     </p>
 
-    <h2 class="mb-3 mt-10 text-xl font-black uppercase tracking-tight text-ink">7. Medidas de seguridad</h2>
-    <p class="mb-4 text-sm leading-relaxed text-muted">
-      Tu contraseña se almacena cifrada (nunca en texto plano). El acceso a la base de datos está restringido y
-      las conexiones viajan cifradas (HTTPS/TLS). Ningún sistema es 100% infalible, pero aplicamos medidas
-      razonables acorde al tamaño y naturaleza del proyecto para proteger tu información contra pérdida, uso
-      indebido o acceso no autorizado.
+    <h2>7. Cookies y almacenamiento en el navegador</h2>
+    <p>En el sitio web solo usamos lo necesario para que funcione:</p>
+    <ul>
+      <li><strong>ub_token</strong>: mantiene tu sesión iniciada.</li>
+      <li><strong>ub_theme</strong>: recuerda el tema visual que elegiste.</li>
+      <li><strong>sidebarRail</strong> (almacenamiento local): recuerda si contrajiste el menú lateral.</li>
+    </ul>
+    <p>
+      El sitio web no usa cookies de publicidad ni herramientas de rastreo de terceros. Cuando pagas con tarjeta,
+      el formulario de Stripe puede usar sus propias cookies para prevenir fraudes, según la política de
+      privacidad de Stripe. Si borras las cookies se cerrará tu sesión.
     </p>
 
-    <h2 class="mb-3 mt-10 text-xl font-black uppercase tracking-tight text-ink">8. Menores de edad</h2>
-    <p class="mb-4 text-sm leading-relaxed text-muted">
-      UrbanBlade no está dirigido a menores de edad. Si eres el padre, madre o tutor de un menor que haya creado
-      una cuenta sin tu autorización, contáctanos para cancelarla.
+    <h2>8. Cuánto tiempo guardamos tus datos</h2>
+    <p>
+      Mientras tu cuenta esté activa y el tiempo necesario para las finalidades descritas. Si tu cuenta pasa 365
+      días sin una cita completada, tus puntos de lealtad caducan (ver Términos). Al terminar el proyecto
+      académico, los datos se eliminarán o se anonimizarán.
     </p>
 
-    <h2 class="mb-3 mt-10 text-xl font-black uppercase tracking-tight text-ink">9. Cambios a este aviso</h2>
-    <p class="mb-4 text-sm leading-relaxed text-muted">
-      Podemos actualizar este aviso de privacidad. Si hacemos cambios importantes, te lo notificaremos por
-      correo o mediante un aviso visible en el sitio antes de que entren en vigor. La fecha de "última
-      actualización" en la parte superior siempre refleja la versión vigente.
+    <h2>9. Cómo protegemos tus datos</h2>
+    <p>
+      Todas las conexiones viajan cifradas (HTTPS). Las contraseñas y las llaves de sesión se guardan cifradas
+      con algoritmos de un solo sentido. El acceso a la información depende del rol de cada persona, las llaves
+      de los proveedores se guardan en un almacén de secretos y la base de datos y el almacenamiento de archivos
+      cifran la información guardada. Ningún sistema es infalible; si ocurriera una vulneración que afecte tus
+      derechos, te lo informaríamos sin demora.
     </p>
 
-    <h2 class="mb-3 mt-10 text-xl font-black uppercase tracking-tight text-ink">10. Contacto</h2>
-    <p class="mb-4 text-sm leading-relaxed text-muted">
-      Cualquier duda sobre este aviso o sobre el tratamiento de tus datos personales, escríbenos a
-      <a href="mailto:hola@urbanblade.com" class="text-gold hover:underline">hola@urbanblade.com</a> o llama al
-      +52 55 1234 5678.
+    <h2>10. Menores de edad</h2>
+    <p>
+      Para crear una cuenta necesitas ser mayor de edad. Los servicios para menores (como el corte infantil) debe
+      reservarlos su madre, padre o tutor desde su propia cuenta. Si detectamos una cuenta de un menor creada sin
+      autorización, la eliminaremos.
+    </p>
+
+    <h2>11. Cambios a este aviso</h2>
+    <p>
+      Si cambiamos este aviso te lo avisaremos en la plataforma antes de que el cambio aplique. La fecha de
+      «Última actualización» indica la versión vigente.
+    </p>
+
+    <h2>12. Contacto</h2>
+    <p>
+      Dudas sobre este aviso o sobre tus datos: <a :href="mailto">{{ LEGAL.contactEmail }}</a>. Consulta también
+      nuestros <NuxtLink to="/terminos">Términos y Condiciones</NuxtLink>.
     </p>
   </article>
 </template>
+
+<style scoped>
+.legal :deep(h2) { @apply mb-3 mt-10 text-xl font-black uppercase tracking-tight text-ink; }
+.legal :deep(p) { @apply mb-4 text-sm leading-relaxed text-muted; }
+.legal :deep(ul) { @apply mb-4 list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-muted; }
+.legal :deep(strong) { @apply text-ink; }
+.legal :deep(a) { @apply text-gold hover:underline; }
+</style>
