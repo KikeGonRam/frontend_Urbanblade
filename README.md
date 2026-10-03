@@ -104,8 +104,8 @@ a `http://127.0.0.1:8000/api/v1` — configurable con `NUXT_PUBLIC_API_BASE`.
 `--legacy-peer-deps` es necesario por un bug conocido de npm con el grafo de
 peer-dependencies de Nuxt 4 (ver `.claude/skills/nuxt-migration-plan/SKILL.md`).
 
-Credenciales de demo (una cuenta por rol): ver `docs/ACCESOS.md` en `barber` —
-mismo criterio ahí, no se duplican aquí.
+Cuentas y cómo crear nuevas: ver `docs/ACCESOS.md` en `barber` (ya no contiene
+contraseñas; no se duplican aquí).
 
 ## 🧪 Pruebas y validación
 
