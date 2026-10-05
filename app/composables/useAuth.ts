@@ -16,7 +16,11 @@ type MeResponse = Omit<ApiMeResponse, "user"> & { user: AuthUser };
 export function useAuth() {
   const token = useCookie<string | null>("ub_token", {
     default: () => null,
-    maxAge: 60 * 60 * 24 * 180, // 6 meses — igual al refresh-token del backend
+    // La cookie dura más que el token a propósito: quien manda es el backend. El token web
+    // caduca a los 30 días sin uso (ventana deslizante que renueva barber en cada petición,
+    // la cookie no puede seguirla) y un token vencido responde 401, que useApi() convierte
+    // en cierre de sesión.
+    maxAge: 60 * 60 * 24 * 180,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
   });
@@ -33,7 +37,9 @@ export function useAuth() {
     const data = await $fetch<LoginResponse>("/auth/login", {
       baseURL: config.public.apiBase,
       method: "POST",
-      body: { email, password, device_name: "Nuxt Web" },
+      // `plataforma` le dice al backend que este token es de web (vigencia propia, ver
+      // config/auth.php de barber) y no de la app móvil.
+      body: { email, password, device_name: "Nuxt Web", plataforma: "web" },
     });
 
     token.value = data.token;
@@ -62,6 +68,7 @@ export function useAuth() {
         password,
         password_confirmation: passwordConfirmation,
         device_name: "Nuxt Web",
+        plataforma: "web",
       },
     });
 

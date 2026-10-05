@@ -48,6 +48,30 @@ test("un cliente con el perfil completo entra al dashboard", async ({
   await expect(page).toHaveURL(/\/dashboard$/);
 });
 
+test("el login declara la plataforma web para recibir un token de web", async ({
+  page,
+}) => {
+  // barber da a cada plataforma su propia vigencia de token (config/auth.php); si la web
+  // dejara de declararla, caería en la inferencia por device_name.
+  await mockApi(page, { user: makeUser({ profile_complete: true }) });
+
+  await page.goto("/login");
+  await page.getByLabel("Correo").fill("cliente@test.local");
+  await page.locator("#password").fill("password");
+
+  const [request] = await Promise.all([
+    page.waitForRequest(
+      (r) => r.url().endsWith("/auth/login") && r.method() === "POST",
+    ),
+    page.getByRole("button", { name: "Ingresar" }).click(),
+  ]);
+
+  expect(request.postDataJSON()).toMatchObject({
+    plataforma: "web",
+    device_name: "Nuxt Web",
+  });
+});
+
 /**
  * Regresión de la corrección de Fase 6: antes, `login()` mandaba siempre a
  * /dashboard sin mirar profile_complete. Como el registro por correo nunca
