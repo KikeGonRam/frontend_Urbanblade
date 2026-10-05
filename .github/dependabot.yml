@@ -1,0 +1,42 @@
+# Dependabot (HT-08 / TT22): PR semanales con actualizaciones de dependencias.
+#
+# Proceso de actualización:
+# 1. Dependabot abre los PR los lunes. Menores y parches van agrupados en un
+#    solo PR por ecosistema; cada versión mayor llega en su propio PR.
+# 2. El CI de cada PR (ESLint, build, gate de npm audit y E2E de Playwright)
+#    tiene que pasar antes de fusionar. Una versión mayor se revisa además
+#    con su guía de migración.
+# 3. Los PR de seguridad inmediatos (sin esperar al lunes) requieren activar
+#    "Dependabot alerts" y "Dependabot security updates" en Settings >
+#    Code security del repo; este archivo solo cubre las versiones.
+# 4. Si un aviso HIGH/CRITICAL no tiene versión corregida, se documenta en
+#    la allowlist con fecha de caducidad de scripts/audit-gate.mjs, nunca
+#    desactivando el gate.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '08:00'
+      timezone: America/Mexico_City
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore(deps)
+    groups:
+      npm-menores:
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '08:00'
+      timezone: America/Mexico_City
+    commit-message:
+      prefix: chore(ci)
+    groups:
+      actions:
+        update-types: [minor, patch, major]
