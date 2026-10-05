@@ -271,6 +271,9 @@ onBeforeUnmount(() => {
         <span class="absolute right-[22%] top-[22%] h-1.5 w-1.5 animate-ping rounded-full bg-ink/10" style="animation-duration:6s;animation-delay:1.5s" />
       </div>
 
+      <!-- TT39: poste de barbería 3D (decorativo, solo en pantallas anchas). -->
+      <LandingBarberPole3D />
+
       <div class="relative z-10 mx-auto max-w-7xl px-4 text-center">
         <div class="float-badge mb-8 inline-flex">
           <span class="ui-badge px-5 py-2 text-[10px] tracking-[0.25em]">
