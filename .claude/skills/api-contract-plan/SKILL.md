@@ -61,7 +61,7 @@ ejemplo veraz da un schema veraz, sin inventar un segundo formato.
 
 Estados: ⬜ pendiente · 🔄 en curso · ✅ hecha (con commit y CI en verde).
 
-### Fase 1 — Contrato verdadero en barber (auth + citas) — 🔄 PR #12 de barber con los 4 checks obligatorios en verde, pendiente de fusion
+### Fase 1 — Contrato verdadero en barber (auth + citas) — ✅ (2026-10-05, barber PR #12, merge `975b62a`, CI de `main` verde)
 
 - `docs/contrato/` con ejemplos de `auth/login`, `auth/me`, `appointments` (staff y
   cliente) y `appointments` POST 201.
@@ -73,7 +73,7 @@ Estados: ⬜ pendiente · 🔄 en curso · ✅ hecha (con commit y CI en verde).
   contrato de rutas 160 = 160. Hallazgo de la propia prueba: `productos_agregados.total`
   es **string** (`decimal:2`), no number como se habria escrito a mano.
 
-### Fase 2 — Tipos generados y CI en frontend-urban — 🔄 en PR (2026-10-05)
+### Fase 2 — Tipos generados y CI en frontend-urban — ✅ (2026-10-05, frontend PR #9, merge `171399d`, CI de `main` verde)
 
 - `openapi-typescript` como devDependency; copia versionada del spec en
   `frontend-urban/contract/openapi.yaml` (el repo es independiente, no puede leer
@@ -86,7 +86,7 @@ Estados: ⬜ pendiente · 🔄 en curso · ✅ hecha (con commit y CI en verde).
   en lo migrado (vue-tsc no esta instalado en el repo: hay 29 errores previos en dashboards,
   analytics y agenda, ajenos a esta fase).
 
-### Fase 3 — Frontend usa los tipos; mocks tipados — 🔄 en PR (2026-10-05)
+### Fase 3 — Frontend usa los tipos; mocks tipados — ✅ (2026-10-05, mismo PR #9 de frontend-urban)
 
 - Alias en `app/types/` (`ApiUser`, `ApiAppointment`...) derivados de `api.d.ts`.
 - Migrar primero lo de mayor riesgo: `useAuth.ts`, citas del cliente y del staff.
@@ -94,7 +94,7 @@ Estados: ⬜ pendiente · 🔄 en curso · ✅ hecha (con commit y CI en verde).
   Fase 4: sus respuestas aun no estan atadas por prueba). Al tiparlo salieron dos
   divergencias reales: el mock omitia `client` y `descuento_activo_pct` solo viene en /me.
 
-### Fase 4 — Cierre y ampliacion — ⬜
+### Fase 4 — Cierre y ampliacion — ✅ cierre; la ampliacion queda como backlog (abajo)
 
 - Actualizar `PLAN_CONTRATO_API.md` (pasos 3 y 4 del orden recomendado) y esta skill.
 - Lista de endpoints pendientes de ejemplo veraz, por prioridad: pagos
