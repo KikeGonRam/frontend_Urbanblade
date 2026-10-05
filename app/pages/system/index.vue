@@ -5,24 +5,9 @@
  * consumidor de este endpoint hoy; administrador e ingeniero comparten la
  * misma ruta y el mismo middleware 'engineer' (ver app/middleware/engineer.ts).
  */
-definePageMeta({ middleware: ['auth', 'engineer'], layout: 'dashboard' })
+import { buildSystemNodes, type SystemStatus } from '~/utils/systemMap'
 
-interface ServiceStatus { status: 'up' | 'down'; latency_ms: number | null; error?: string }
-interface ScheduledTask {
-  name: string
-  expression: string
-  status: 'success' | 'failed' | 'unknown'
-  ran_at: string | null
-  runtime_ms: number | null
-  error: string | null
-}
-interface SystemStatus {
-  app: { name: string, env: string, laravel_version: string, php_version: string }
-  database: ServiceStatus
-  redis: ServiceStatus
-  queue: { connection: string, pending: number | null, failed: number | null }
-  scheduled_tasks: ScheduledTask[]
-}
+definePageMeta({ middleware: ['auth', 'engineer'], layout: 'dashboard' })
 
 const { apiFetch } = useApi()
 
@@ -31,6 +16,9 @@ const { data, pending, error, refresh } = await useAsyncData(
   () => apiFetch<SystemStatus>('/admin/system/status'),
   { lazy: true },
 )
+
+// TT38: nodos del mapa del sistema (vista 3D + lista accesible).
+const mapNodes = computed(() => (data.value ? buildSystemNodes(data.value) : []))
 
 const STATUS_CLASS: Record<string, string> = {
   up: 'border-emerald-500/25 bg-emerald-500/10 text-emerald-300',
@@ -92,6 +80,8 @@ function fmtDate(iso: string | null) {
           <div class="flex flex-wrap gap-2"><NuxtLink to="/dashboard" class="rounded-xl border border-line bg-card px-3 py-2 text-[10px] font-black uppercase tracking-widest text-muted transition hover:border-gold/40 hover:text-gold">Módulos</NuxtLink><NuxtLink to="/reports" class="rounded-xl border border-line bg-card px-3 py-2 text-[10px] font-black uppercase tracking-widest text-muted transition hover:border-gold/40 hover:text-gold">Reportes</NuxtLink><NuxtLink to="/logs" class="rounded-xl border border-line bg-card px-3 py-2 text-[10px] font-black uppercase tracking-widest text-muted transition hover:border-gold/40 hover:text-gold">Logs</NuxtLink></div>
         </div>
       </section>
+
+      <SystemMap3D :nodes="mapNodes" />
 
       <section class="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div class="rounded-2xl border border-ink/[0.06] bg-card p-4"><p class="text-[9px] font-black uppercase tracking-widest text-ink/50">Entorno</p><p class="mt-1 text-lg font-black text-ink">{{ data.app.env }}</p></div>
