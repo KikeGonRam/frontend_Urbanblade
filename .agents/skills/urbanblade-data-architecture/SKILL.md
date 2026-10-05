@@ -17,5 +17,6 @@ usuario apruebe una fase.
   extremo a extremo.
 - La analítica derivada pertenece a `urbanblade_analytics`; el frontend la recibe ya
   autorizada y agregada desde la API, nunca desde Spark o la base directamente.
-- Ninguna IA ejecuta `git commit`, `git push`, merge, rebase ni publica PR. Entrega al
-  usuario el resumen, validaciones y mensaje de commit sugerido en español.
+- Git por rama y PR a `main` con el CI en verde, sin borrar la rama; la IA solo hace
+  commit, push, PR o merge con autorización explícita del usuario para ese cambio
+  (ver `git-commit-conventions`).
