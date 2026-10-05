@@ -3422,6 +3422,11 @@ export interface operations {
                      * @example iPhone 15 Pro
                      */
                     device_name?: string | null;
+                    /**
+                     * @description Cliente que inicia sesión: `web` o `movil`. Define cuánto dura el token (config/auth.php: 30 días web, 180 móvil, deslizantes). Si se omite se infiere de device_name.
+                     * @example movil
+                     */
+                    plataforma?: string | null;
                 };
             };
         };
@@ -3438,6 +3443,8 @@ export interface operations {
                         token_type: string;
                         /** @example TOKEN_DE_EJEMPLO */
                         token: string;
+                        /** @example 2026-11-04T12:00:00.000000Z */
+                        expires_at: string;
                         user: {
                             /** @example 6710a1b2c3d4e5f607182930 */
                             id: string;
@@ -3520,6 +3527,11 @@ export interface operations {
                      * @example Android Emulator
                      */
                     device_name?: string | null;
+                    /**
+                     * @description Cliente que se registra: `web` o `movil` (ver login).
+                     * @example movil
+                     */
+                    plataforma?: string | null;
                     /**
                      * @description Debe coincidir con password.
                      * @example password123
@@ -4458,11 +4470,11 @@ export interface operations {
                     fecha: string;
                     /**
                      * @description Must be a valid date in the format <code>H:i</code>.
-                     * @example 00:26
+                     * @example 01:06
                      */
                     hora_inicio: string;
                     /**
-                     * @example pendiente
+                     * @example cancelada
                      * @enum {string}
                      */
                     estado: "pendiente" | "confirmada" | "en_proceso" | "completada" | "cancelada" | "no_asistio";
@@ -4573,12 +4585,12 @@ export interface operations {
             content: {
                 "application/json": {
                     /**
-                     * @example week
+                     * @example day
                      * @enum {string}
                      */
                     period?: "day" | "week";
                     /**
-                     * @example pendiente
+                     * @example confirmada
                      * @enum {string|null}
                      */
                     estado?: "pendiente" | "confirmada" | "en_proceso" | "completada" | "cancelada" | "no_asistio" | null;
@@ -5277,7 +5289,7 @@ export interface operations {
                      */
                     monto: number;
                     /**
-                     * @example tarjeta
+                     * @example transferencia
                      * @enum {string}
                      */
                     metodo_pago: "efectivo" | "tarjeta" | "transferencia";
@@ -5371,9 +5383,9 @@ export interface operations {
                      * @example 62
                      */
                     propina?: number | null;
-                    /** @example false */
-                    guardar_tarjeta?: boolean | null;
                     /** @example true */
+                    guardar_tarjeta?: boolean | null;
+                    /** @example false */
                     tarjeta_guardada?: boolean | null;
                 };
             };
@@ -5430,7 +5442,7 @@ export interface operations {
             content: {
                 "application/json": {
                     /**
-                     * @example transferencia
+                     * @example tarjeta
                      * @enum {string}
                      */
                     metodo_pago: "efectivo" | "tarjeta" | "transferencia";
@@ -5727,7 +5739,7 @@ export interface operations {
                      * @example 16
                      */
                     descuento_pct: number;
-                    /** @example false */
+                    /** @example true */
                     activo?: boolean | null;
                 };
             };
@@ -5847,14 +5859,14 @@ export interface operations {
                     telefono?: string | null;
                     /**
                      * @description El campo value no es una fecha válida.
-                     * @example 2026-10-05T00:26:36
+                     * @example 2026-10-05T01:06:05
                      */
                     fecha_nacimiento?: string | null;
-                    /** @example true */
+                    /** @example false */
                     pref_in_app?: boolean | null;
                     /** @example true */
                     pref_email?: boolean | null;
-                    /** @example false */
+                    /** @example true */
                     pref_sms?: boolean | null;
                     /** @example false */
                     pref_whatsapp?: boolean | null;
@@ -5896,16 +5908,16 @@ export interface operations {
                     telefono?: string | null;
                     /**
                      * @description El campo value no es una fecha válida.
-                     * @example 2026-10-05T00:26:36
+                     * @example 2026-10-05T01:06:05
                      */
                     fecha_nacimiento?: string | null;
-                    /** @example true */
-                    pref_in_app?: boolean | null;
-                    /** @example true */
-                    pref_email?: boolean | null;
-                    /** @example true */
-                    pref_sms?: boolean | null;
                     /** @example false */
+                    pref_in_app?: boolean | null;
+                    /** @example false */
+                    pref_email?: boolean | null;
+                    /** @example false */
+                    pref_sms?: boolean | null;
+                    /** @example true */
                     pref_whatsapp?: boolean | null;
                 };
             };
@@ -6120,7 +6132,7 @@ export interface operations {
                     descripcion?: string | null;
                     /** @example null */
                     foto?: string;
-                    /** @example false */
+                    /** @example true */
                     activo?: boolean | null;
                     /**
                      * @description El campo value debe ser al menos 0. El campo value no debe ser mayor que 100.
@@ -6295,7 +6307,7 @@ export interface operations {
                     telefono?: string | null;
                     /**
                      * @description Must be a valid date in the format <code>H:i</code>.
-                     * @example 00:26
+                     * @example 01:06
                      */
                     horario_apertura?: string | null;
                     /**
@@ -6676,15 +6688,15 @@ export interface operations {
                 "application/json": {
                     /** @example false */
                     in_app?: boolean;
-                    /** @example true */
-                    email?: boolean;
                     /** @example false */
+                    email?: boolean;
+                    /** @example true */
                     sms?: boolean;
-                    /** @example true */
+                    /** @example false */
                     whatsapp?: boolean;
-                    /** @example true */
+                    /** @example false */
                     push?: boolean;
-                    /** @example true */
+                    /** @example false */
                     promociones?: boolean;
                 };
             };
@@ -7542,7 +7554,7 @@ export interface operations {
                     descripcion?: string | null;
                     /** @example architecto */
                     tipo?: string | null;
-                    /** @example true */
+                    /** @example false */
                     activo?: boolean | null;
                     /** @example false */
                     active?: boolean | null;
@@ -7975,7 +7987,7 @@ export interface operations {
                      * @example n
                      */
                     response: string;
-                    /** @example true */
+                    /** @example false */
                     helpful: boolean;
                 };
             };
@@ -8183,7 +8195,7 @@ export interface operations {
                      */
                     token: string;
                     /**
-                     * @example fcm
+                     * @example expo
                      * @enum {string}
                      */
                     provider?: "expo" | "fcm";
@@ -8617,9 +8629,9 @@ export interface operations {
                      * @description El campo value debe ser una imagen. El campo value no debe pesar más de 2048 kilobytes.
                      */
                     imagen?: string | null;
-                    /** @example false */
-                    active?: boolean | null;
                     /** @example true */
+                    active?: boolean | null;
+                    /** @example false */
                     activo?: boolean | null;
                 };
             };
@@ -8684,9 +8696,9 @@ export interface operations {
                      * @description El campo value debe ser una imagen. El campo value no debe pesar más de 2048 kilobytes.
                      */
                     imagen?: string | null;
-                    /** @example true */
+                    /** @example false */
                     active?: boolean | null;
-                    /** @example true */
+                    /** @example false */
                     activo?: boolean | null;
                 };
             };
@@ -8830,7 +8842,7 @@ export interface operations {
                     appointment_id?: string | null;
                     /**
                      * @description El campo value no es una fecha válida.
-                     * @example 2026-10-05T00:26:36
+                     * @example 2026-10-05T01:06:05
                      */
                     fecha?: string | null;
                 };

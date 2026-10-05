@@ -89,6 +89,7 @@ export async function mockApi(page: Page, options: MockApiOptions = {}) {
             message: "ok",
             token_type: "Bearer",
             token: "test-token",
+            expires_at: "2026-11-04T12:00:00.000000Z",
             user,
           })
         : json(errorBody, loginStatus);
@@ -97,7 +98,13 @@ export async function mockApi(page: Page, options: MockApiOptions = {}) {
     if (path === "/auth/register" && method === "POST") {
       return registerStatus === 201
         ? json(
-            { message: "ok", token_type: "Bearer", token: "test-token", user },
+            {
+              message: "ok",
+              token_type: "Bearer",
+              token: "test-token",
+              expires_at: "2026-11-04T12:00:00.000000Z",
+              user,
+            },
             201,
           )
         : json(errorBody, registerStatus);
