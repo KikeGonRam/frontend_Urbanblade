@@ -12,30 +12,12 @@
  * devuelve como máximo 50 citas — mostrar un conteo "Total" calculado
  * sobre esas 50 sería un número falso, no una limitación cosmética.
  */
+import type { ApiAppointment } from "~/types/contract";
+
 definePageMeta({ middleware: ["auth", "staff"], layout: "dashboard" });
 
-interface AppointmentRow {
-  id: string;
-  code: string | null;
-  fecha: string;
-  hora_inicio: string;
-  hora_fin: string;
-  estado: string;
-  notas: string | null;
-  precio_cobrado: number | null;
-  client: { id: string | null; user: { name: string | null } };
-  barber: {
-    id: string | null;
-    slug: string | null;
-    user: { name: string | null };
-  };
-  service: {
-    id: string | null;
-    nombre: string | null;
-    precio: number | null;
-    duracion_min: number | null;
-  };
-}
+// Derivado del OpenAPI de barber (npm run contract:types), no escrito a mano.
+type AppointmentRow = ApiAppointment;
 
 const ESTADO_LABEL: Record<string, string> = {
   pendiente: "Pendiente",

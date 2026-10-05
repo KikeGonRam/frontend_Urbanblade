@@ -1,31 +1,10 @@
-export interface AuthUser {
-  id: string | number;
-  name: string;
-  email: string;
-  avatar_url: string | null;
-  roles: string[];
-  profile_complete: boolean;
-  profile_missing: string[];
-  client_id: string | number | null;
-  barber_id: string | number | null;
-  client: {
-    telefono: string | null;
-    fecha_nacimiento: string | null;
-    sexo: "masculino" | "femenino" | "prefiero_no_decir" | null;
-    descuento_activo_pct: number;
-  } | null;
-}
+import type { ApiLoginResponse, ApiMeResponse, ApiUser } from "~/types/contract";
 
-interface LoginResponse {
-  message: string;
-  token_type: string;
-  token: string;
-  user: AuthUser;
-}
-
-interface MeResponse {
-  user: AuthUser;
-}
+// Derivados del OpenAPI de barber (npm run contract:types), no escritos a mano:
+// si el backend cambia la forma del usuario, esto deja de compilar.
+export type AuthUser = ApiUser;
+type LoginResponse = Omit<ApiLoginResponse, "user"> & { user: AuthUser };
+type MeResponse = Omit<ApiMeResponse, "user"> & { user: AuthUser };
 
 /**
  * Sesión vía el token Bearer propio de barber (tabla mobile_api_tokens,

@@ -9,6 +9,10 @@
  * `productos[]`) se omite a propósito: Tienda/Carrito (Fase 9.4) ya cubre por
  * completo la compra de productos, y duplicarla aquí sería redundante.
  */
+import type {
+    ApiAppointment,
+    ApiClientAppointmentsResponse,
+} from "~/types/contract";
 import {
     loadStripe,
     type Stripe,
@@ -18,36 +22,9 @@ import {
 
 definePageMeta({ middleware: ["auth", "client"], layout: "dashboard" });
 
-interface AppointmentRow {
-  id: string;
-  code: string | null;
-  fecha: string;
-  hora_inicio: string;
-  hora_fin: string;
-  estado: string;
-  notas: string | null;
-  precio_cobrado: number | null;
-  has_payment?: boolean;
-  is_chargeable?: boolean;
-  barber: {
-    id: string | null;
-    slug: string | null;
-    user: { name: string | null };
-  };
-  service: {
-    id: string | null;
-    nombre: string | null;
-    precio: number | null;
-    duracion_min: number | null;
-  };
-}
-
-interface Stats {
-  total: number;
-  proximas: number;
-  completadas: number;
-  canceladas: number;
-}
+// Tipos derivados del OpenAPI de barber (npm run contract:types), no escritos a mano.
+type AppointmentRow = ApiAppointment;
+type Stats = ApiClientAppointmentsResponse["stats"];
 
 const ESTADO_LABEL: Record<string, string> = {
   pendiente: "Pendiente",
@@ -78,12 +55,7 @@ const {
 } = await useAsyncData(
   "my-appointments",
   () =>
-    apiFetch<{
-      data: AppointmentRow[];
-      stats: Stats;
-      next: AppointmentRow | null;
-      cancellation_policy_hours: number;
-    }>("/appointments"),
+    apiFetch<ApiClientAppointmentsResponse>("/appointments"),
   { lazy: true },
 );
 const appointments = computed(() => response.value?.data ?? []);
