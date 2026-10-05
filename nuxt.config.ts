@@ -48,6 +48,10 @@ export default defineNuxtConfig({
 
   app: {
     head: {
+      // WCAG 2.1 nivel A (3.1.1 Language of Page): sin esto el HTML sale con
+      // lang="" y un lector de pantalla no sabe que debe pronunciar en espanol.
+      // Toda la interfaz esta en espanol, asi que el idioma es constante.
+      htmlAttrs: { lang: 'es' },
       link: [{ rel: 'icon', type: 'image/svg+xml', href: '/images/urbanblade-mark.svg' }],
       // Aplica el tema guardado en cookie ANTES de pintar, para evitar el
       // flash de tema incorrecto (FOUC) — equivalente a que barber lo

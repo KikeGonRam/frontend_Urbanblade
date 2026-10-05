@@ -28,6 +28,16 @@ export default defineConfig({
     ? [["list"], ["html", { open: "never" }]]
     : [["html", { open: "never" }]],
 
+  // 10s en vez del default de 5s: medido el 2026-10-02, auth.spec.ts:38
+  // ("un cliente con el perfil completo entra al dashboard") falló 1 de 55
+  // corriendo la suite con el paralelismo por defecto, porque el login y la
+  // redirección del lado del cliente se pasaron de 5s con la máquina cargada.
+  // En solitario ese test tarda ~2.5s y pasa 24/24 (--repeat-each=3), y el mock
+  // de SSR no tiene estado: no era interferencia entre pruebas.
+  // Es holgura para la aserción, no un parche: si la app de verdad tarda 10s
+  // en redirigir, sigue fallando.
+  expect: { timeout: 10_000 },
+
   use: {
     // Puerto propio (3100), no el 3000 de `npm run dev`: si un servidor de
     // desarrollo quedó levantado, Playwright lo reutilizaría y las pruebas

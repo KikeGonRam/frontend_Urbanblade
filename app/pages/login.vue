@@ -1,6 +1,10 @@
 <script setup lang="ts">
 definePageMeta({ middleware: 'guest', pageTransition: { name: 'auth', mode: 'out-in' } })
 
+// WCAG 2.1 A (2.4.2 Page Titled): esta pagina salia sin <title>. Se marca
+// noindex porque no aporta nada en buscadores y no queremos el acceso indexado.
+useSeoMeta({ title: 'Acceso — UrbanBlade', robots: 'noindex' })
+
 const email = ref('')
 const password = ref('')
 const errorMessage = ref('')

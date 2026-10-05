@@ -10,6 +10,14 @@ const profile = computed(() => {
   if (status.value === 503) return { eyebrow: 'Mantenimiento programado', title: 'Estamos afinando', accent: 'cada detalle', name: 'Bladebot', image: 'states/bladebot-waiting.webp', message: 'UrbanBlade está recibiendo mejoras. Bladebot terminará pronto y podrás continuar con normalidad.' }
   return { eyebrow: 'Error del sistema', title: 'Estamos arreglando', accent: 'el detalle', name: 'Bruno', image: 'states/bruno-error.webp', message: 'Ocurrió un fallo inesperado. Inténtalo nuevamente en unos minutos.' }
 })
+
+// WCAG 2.1 A (2.4.2 Page Titled): la pagina de error salia sin <title>. El
+// titulo refleja el estado real (404, 403, 503...) en vez de dejar el generico.
+useSeoMeta({
+  title: () => `${status.value} · ${profile.value.eyebrow} — UrbanBlade`,
+  robots: 'noindex',
+})
+
 function goHome() { clearError({ redirect: '/' }) }
 </script>
 <template>

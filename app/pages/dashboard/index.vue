@@ -1,6 +1,10 @@
 <script setup lang="ts">
 definePageMeta({ middleware: "auth", layout: "dashboard" });
 
+// WCAG 2.1 A (2.4.2 Page Titled): el panel salia sin <title>. noindex porque
+// toda el area autenticada queda fuera de buscadores.
+useSeoMeta({ title: "Panel — UrbanBlade", robots: "noindex" });
+
 interface DashboardResponse {
   role: string;
   data: Record<string, unknown>;

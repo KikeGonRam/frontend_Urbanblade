@@ -46,14 +46,17 @@ export function useApi() {
 
   async function apiFetch<T>(path: string, options: Record<string, unknown> = {}): Promise<T> {
     try {
-      return await $fetch<T>(path, {
+      // El `as T` es solo para el compilador: $fetch<T> devuelve
+      // TypedInternalResponse<..., T, ...>, un condicional que no se reduce a T
+      // cuando T es un genérico sin restringir. En runtime no cambia nada.
+      return (await $fetch<T>(path, {
         baseURL: config.public.apiBase,
         ...options,
         headers: {
           ...(token.value ? { Authorization: `Bearer ${token.value}` } : {}),
           ...(options.headers as Record<string, string> | undefined),
         },
-      })
+      })) as T
     } catch (error: unknown) {
       if (isMaintenanceResponse(error)) {
         // showError(), no un throw plano: la mayoría de las llamadas viven
@@ -102,7 +105,12 @@ export function useApi() {
 
   function useApiFetch<T>(path: string, options: UseFetchOptions<T> = {}) {
     const key = (options.key as string | undefined) ?? buildAutoKey(path, options as Record<string, unknown>)
-    return useFetch<T>(path, {
+    // useFetch() sin el genérico explícito y con el retorno asegurado: Nuxt no
+    // admite useFetch<T> cuando T es un genérico sin restringir (sus overloads
+    // esperan `T extends void ? unknown : T`, que no se reduce a T). Así el
+    // objeto de opciones se sigue validando contra UseFetchOptions<T>, y el
+    // `as` es solo para el compilador: en runtime no cambia nada.
+    return useFetch(path, {
       baseURL: config.public.apiBase,
       ...options,
       key,
@@ -120,7 +128,7 @@ export function useApi() {
           void handleUnauthorized()
         }
       },
-    })
+    }) as ReturnType<typeof useFetch<T>>
   }
 
   return { apiFetch, useApiFetch, downloadFile }

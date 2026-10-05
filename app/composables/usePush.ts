@@ -30,7 +30,12 @@ export function usePush() {
     isSubscribed.value = !!subscription
   }
 
-  function urlBase64ToUint8Array(base64: string): Uint8Array {
+  // El tipo de retorno es Uint8Array<ArrayBuffer>, no Uint8Array a secas:
+  // desde TypeScript 5.7 Uint8Array es genérico sobre el buffer, y
+  // PushSubscriptionOptionsInit.applicationServerKey (BufferSource) exige un
+  // ArrayBufferView<ArrayBuffer>. Con el tipo por defecto
+  // (ArrayBufferLike) no compila, aunque en runtime sea el mismo objeto.
+  function urlBase64ToUint8Array(base64: string): Uint8Array<ArrayBuffer> {
     const padding = '='.repeat((4 - (base64.length % 4)) % 4)
     const base64Safe = (base64 + padding).replace(/-/g, '+').replace(/_/g, '/')
     const raw = atob(base64Safe)

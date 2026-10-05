@@ -214,7 +214,7 @@ onBeforeUnmount(() => {
             <NuxtLink to="/" class="text-xl font-black uppercase tracking-tighter text-ink">Urban<span class="text-gold">Blade</span></NuxtLink>
           </div>
 
-          <div class="hidden items-center gap-8 text-[10px] font-black uppercase tracking-[0.2em] text-muted md:flex">
+          <div class="hidden items-center gap-5 text-[10px] font-black uppercase tracking-[0.2em] text-muted lg:flex">
             <a href="#inicio" class="transition-colors hover:text-gold">Inicio</a>
             <a href="#servicios" class="transition-colors hover:text-gold">Servicios</a>
             <a href="#como-funciona" class="transition-colors hover:text-gold">Proceso</a>
@@ -231,7 +231,7 @@ onBeforeUnmount(() => {
             </template>
           </div>
 
-          <button type="button" class="p-2 text-ink md:hidden" aria-label="Abrir menú" @click="mobileMenuOpen = !mobileMenuOpen">
+          <button type="button" class="p-2 text-ink lg:hidden" aria-label="Abrir menú" @click="mobileMenuOpen = !mobileMenuOpen">
             <svg v-if="!mobileMenuOpen" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M4 6h16M4 12h16M4 18h16" stroke-width="2" stroke-linecap="round" /></svg>
             <svg v-else class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M6 18L18 6M6 6l12 12" stroke-width="2" stroke-linecap="round" /></svg>
           </button>
@@ -239,7 +239,7 @@ onBeforeUnmount(() => {
       </div>
 
       <Transition name="mobile-menu">
-        <div v-if="mobileMenuOpen" class="space-y-4 border-b border-line bg-main px-5 pb-6 pt-2 md:hidden">
+        <div v-if="mobileMenuOpen" class="space-y-4 border-b border-line bg-main px-5 pb-6 pt-2 lg:hidden">
           <a href="#inicio" class="block py-2 text-[11px] font-black uppercase tracking-widest text-ink" @click="mobileMenuOpen = false">Inicio</a>
           <a href="#servicios" class="block py-2 text-[11px] font-black uppercase tracking-widest text-ink" @click="mobileMenuOpen = false">Servicios</a>
           <a href="#como-funciona" class="block py-2 text-[11px] font-black uppercase tracking-widest text-ink" @click="mobileMenuOpen = false">Proceso</a>
@@ -491,7 +491,7 @@ onBeforeUnmount(() => {
               </div>
               <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
               <div class="absolute bottom-0 left-0 right-0 translate-y-1 p-6 transition-transform duration-400 group-hover:translate-y-0">
-                <h4 class="text-base font-black uppercase text-white">{{ barber.user?.name }}</h4>
+                <h3 class="text-base font-black uppercase text-white">{{ barber.user?.name }}</h3>
                 <p class="mt-1 text-[9px] font-bold uppercase tracking-widest text-gold">{{ barber.especialidades || 'Master Groomer' }}</p>
                 <div class="mt-3 flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-white/50 transition-colors duration-400 group-hover:text-gold/80">
                   <span>Reservar con {{ barber.user?.name?.split(' ')[0] }}</span>
@@ -669,7 +669,7 @@ onBeforeUnmount(() => {
 
           <div class="grid grid-cols-2 gap-12 sm:grid-cols-3">
             <div>
-              <h5 class="mb-5 text-[10px] font-black uppercase tracking-widest text-ink">Navegación</h5>
+              <h3 class="mb-5 text-[10px] font-black uppercase tracking-widest text-ink">Navegación</h3>
               <ul class="space-y-3 text-[11px] font-bold uppercase tracking-wider text-muted">
                 <li><a href="#servicios" class="transition hover:text-gold">Servicios</a></li>
                 <li><a href="#como-funciona" class="transition hover:text-gold">Proceso</a></li>
@@ -681,7 +681,7 @@ onBeforeUnmount(() => {
                  sección "Visítanos"): también sale de /barbershop, no de
                  literales, y cada dato se oculta si la barbería no lo capturó. -->
             <div v-if="shop?.telefono || (shop?.horario_apertura && shop?.horario_cierre)">
-              <h5 class="mb-5 text-[10px] font-black uppercase tracking-widest text-ink">Contacto</h5>
+              <h3 class="mb-5 text-[10px] font-black uppercase tracking-widest text-ink">Contacto</h3>
               <ul class="space-y-3 text-[11px] font-bold tracking-wider text-muted">
                 <li v-if="shop?.telefono">
                   <a :href="`tel:${shop.telefono.replace(/\s+/g, '')}`" class="transition hover:text-gold">{{ shop.telefono }}</a>
@@ -692,7 +692,7 @@ onBeforeUnmount(() => {
               </ul>
             </div>
             <div v-if="socials.length">
-              <h5 class="mb-5 text-[10px] font-black uppercase tracking-widest text-ink">Social</h5>
+              <h3 class="mb-5 text-[10px] font-black uppercase tracking-widest text-ink">Social</h3>
               <div class="flex gap-3">
                 <a
                   v-for="social in socials" :key="`footer-${social.network}`"

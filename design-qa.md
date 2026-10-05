@@ -12,6 +12,9 @@ Spike Admin was captured at 1440×1024 in `../barber/output/sidebar-audit/01-spi
 - The helper opens the existing Concierge through a scoped event.
 - Existing mobile topbar, bottom navigation and drawer remain intact.
 - Targets are at least 44px; collapsed items retain accessible titles; reduced motion is supported.
+  > Medido el 2026-10-02: **la parte de 44 px no se cumple.** Hay controles por debajo
+  > (botón de colapsar 29×29, títulos de sección 246×28, "Salir" 31×24, buscador de la
+  > topbar 286×24). Detalle y resto de la auditoría medida en `docs/AUDITORIA_UI_UX.md`.
 - `noir`, `acero`, `salon` and `libreta` were switched in the authenticated dashboard; the floating shell remained mounted and each theme applied its own sidebar surface.
 - ESLint and production build passed. Authenticated `/dashboard` was visually verified in expanded, collapsed and light-theme states.
 - Browser console: zero errors after the final reload and interactions.

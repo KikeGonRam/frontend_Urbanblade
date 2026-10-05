@@ -88,7 +88,7 @@ function currency(n: number) {
           </svg>
         </div>
         <p v-if="service.categoria" class="mb-1 text-[10px] font-black uppercase tracking-widest text-gold">{{ service.categoria }}</p>
-        <h3 class="text-xl font-black uppercase text-ink">{{ service.nombre }}</h3>
+        <h2 class="text-xl font-black uppercase text-ink">{{ service.nombre }}</h2>
         <p class="mt-3 text-sm leading-relaxed text-muted">{{ service.descripcion || 'Una experiencia diseñada para resaltar tu mejor versión con técnica clásica.' }}</p>
         <div class="mt-6 flex items-center justify-between">
           <span class="text-2xl font-black text-ink">{{ currency(service.precio) }}</span>

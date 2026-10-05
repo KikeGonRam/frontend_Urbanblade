@@ -60,11 +60,11 @@ onBeforeUnmount(() => {
             <span aria-hidden="true" />
             Arte &amp; Precisión
           </p>
-          <h2 class="auth-shell__headline auth-shell__reveal" style="--d: .16s">
+          <p class="auth-shell__headline auth-shell__reveal" style="--d: .16s">
             Donde el
             <span>estilo</span>
             toma vida.
-          </h2>
+          </p>
           <p class="auth-shell__subtitle auth-shell__reveal" style="--d: .24s">Más de una década perfeccionando el arte del grooming masculino. Tu próximo gran look comienza aquí.</p>
 
           <div class="auth-shell__stats auth-shell__reveal" style="--d: .32s">
@@ -86,7 +86,7 @@ onBeforeUnmount(() => {
           <NuxtLink to="/">
             <BrandBrandMark class="mx-auto h-14 w-14" />
           </NuxtLink>
-          <h1>Urban<strong>Blade</strong></h1>
+          <div class="auth-shell__wordmark">Urban<strong>Blade</strong></div>
           <p>Acceso Exclusivo</p>
         </div>
 
