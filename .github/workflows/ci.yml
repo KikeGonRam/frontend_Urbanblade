@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [main]
 
+# Mínimo privilegio: ningún job de este flujo escribe en el repositorio (solo lee el código y
+# sube artefactos). Sin este bloque el GITHUB_TOKEN toma los permisos por defecto del repo.
+permissions:
+  contents: read
+
 jobs:
   frontend:
     name: Frontend (ESLint + build + audit)
