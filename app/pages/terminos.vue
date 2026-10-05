@@ -156,6 +156,10 @@ const mailto = `mailto:${LEGAL.contactEmail}`
 </template>
 
 <style scoped>
+/* Tailwind 4: un <style> de componente no ve la config ni los tokens si no
+   referencia la hoja principal (sin emitirla de nuevo). */
+@reference "../assets/css/main.css";
+
 .legal :deep(h2) { @apply mb-3 mt-10 text-xl font-black uppercase tracking-tight text-ink; }
 .legal :deep(p) { @apply mb-4 text-sm leading-relaxed text-muted; }
 .legal :deep(ul) { @apply mb-4 list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-muted; }

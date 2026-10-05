@@ -34,8 +34,12 @@ jobs:
         env:
           NUXT_PUBLIC_API_BASE: http://localhost:8000/api/v1
 
+      # Igual que `npm audit --audit-level=high`, pero con una allowlist con
+      # fecha de caducidad para advisories sin parche que no llegan a
+      # .output/ (hoy braces y node-forge, dentro del toolchain de Nuxt).
+      # Ver scripts/audit-gate.mjs (HT-08 / TT22).
       - name: npm audit (high/critical)
-        run: npm audit --audit-level=high
+        run: npm run audit:gate
 
   e2e:
     name: E2E (Playwright sobre build de producción)

@@ -1,6 +1,27 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Tailwind 4 (vía @tailwindcss/vite, ver nuxt.config.ts). La configuración
+   sigue en tailwind.config.ts (tokens de tema, darkMode 'class',
+   @tailwindcss/forms) y se carga con @config, igual que en barber. */
+@import 'tailwindcss';
+
+@config '../../../tailwind.config.ts';
+
+/* Valores por defecto de Tailwind 3 que la v4 cambió: el borde sin color
+   explícito era gray-200 (ahora currentColor) y los botones mostraban la
+   mano (ahora cursor por defecto). Se conservan para no alterar la UI. */
+@layer base {
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--color-gray-200, currentColor);
+    }
+
+    button:not(:disabled),
+    [role='button']:not(:disabled) {
+        cursor: pointer;
+    }
+}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    SISTEMA DE TOKENS DE COLOR — UrbanBlade Design System
@@ -313,7 +334,10 @@ html[data-theme="libreta"] {
        original en vez de reinventarlo. ── */
     .ui-title-serif { font-family: serif; @apply italic tracking-wide text-gold; }
 
-    .ui-btn {
+    /* .ui-btn-secondary comparte la base de .ui-btn (antes "@apply ui-btn",
+       que Tailwind 4 no admite con clases propias) y la sobrescribe abajo. */
+    .ui-btn,
+    .ui-btn-secondary {
         @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold transition-all duration-300 active:scale-95;
         background: linear-gradient(180deg, var(--gold) 0%, var(--gold-dim) 100%);
         color: #000;
@@ -331,7 +355,6 @@ html[data-theme="libreta"] {
     .ui-btn:disabled:hover, .ui-btn-secondary:disabled:hover { transform: none; filter: none; box-shadow: none; }
 
     .ui-btn-secondary {
-        @apply ui-btn;
         background: var(--bg-accent);
         background-image: none;
         color: var(--gold);

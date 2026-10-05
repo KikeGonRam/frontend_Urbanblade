@@ -20,21 +20,19 @@ export default <Config>{
   ],
 
   /*
-   * BrandMascot arma sus modificadores por interpolación
-   * (`brand-mascot--${size}` / `brand-mascot--${state}`) y el escáner de
-   * Tailwind solo ve clases literales: sin esto poda esas reglas de
-   * @layer components y la mascota queda SIN TAMAÑO, estirándose al ancho
-   * de su contenedor. Detectado el 2026-09-11 en la pantalla de cita
-   * confirmada, donde la imagen medía 1151 px de alto y empujaba el código
-   * de la cita fuera de pantalla; afectaba igual a todos los estados
-   * vacíos/de error que usan BrandStatePanel.
+   * Ya no hay safelist: Tailwind 4 no la admite en la config y tampoco
+   * la necesita. Existía porque Tailwind 3 podaba de @layer components las
+   * reglas brand-mascot--${size}/${state} que BrandMascot arma por
+   * interpolación (la mascota quedaba sin tamaño, 2026-09-11); en la v4
+   * @layer components es una capa CSS nativa y sale completa.
    */
-  safelist: [
-    { pattern: /^brand-mascot--(sm|md|lg|idle|welcome|waiting|success|empty|forbidden|lost|error)$/ },
-  ],
 
   theme: {
     extend: {
+      // Tailwind 4 subió backdrop-blur-sm de 4px a 8px; se mantiene el de v3.
+      backdropBlur: {
+        sm: '4px',
+      },
       fontFamily: {
         sans: ['Figtree', ...defaultTheme.fontFamily.sans],
         analytics: ['"Plus Jakarta Sans"', 'Figtree', ...defaultTheme.fontFamily.sans],
