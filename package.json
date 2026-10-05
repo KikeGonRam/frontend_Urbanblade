@@ -10,7 +10,11 @@
     "postinstall": "nuxt prepare",
     "lint": "eslint .",
     "test:e2e": "playwright test",
-    "audit:gate": "node scripts/audit-gate.mjs"
+    "audit:gate": "node scripts/audit-gate.mjs",
+    "contract:sync": "node scripts/contract.mjs sync",
+    "contract:types": "node scripts/contract.mjs types",
+    "contract:check": "node scripts/contract.mjs check",
+    "contract:drift": "node scripts/contract.mjs drift"
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.21",
@@ -35,6 +39,7 @@
     "@tailwindcss/vite": "^4.3.3",
     "@types/three": "^0.186.0",
     "eslint": "^10.11.0",
+    "openapi-typescript": "^7.13.0",
     "tailwindcss": "^4.3.3",
     "typescript": "^5.9.3"
   }

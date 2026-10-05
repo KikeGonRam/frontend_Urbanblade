@@ -41,6 +41,34 @@ jobs:
       - name: npm audit (high/critical)
         run: npm run audit:gate
 
+  contract:
+    name: Contrato de API (tipos generados)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install Node dependencies
+        run: npm ci --legacy-peer-deps
+
+      # app/types/api.d.ts se genera de contract/openapi.yaml (copia versionada
+      # del spec de barber). Falla si alguien editó uno sin regenerar el otro.
+      - name: Tipos al día con contract/openapi.yaml
+        run: npm run contract:check
+
+      # Compara la copia con el spec de barber@main. Solo avisa: un cambio en
+      # barber no debe romper PR ajenos (p. ej. Dependabot); la señal es el
+      # aviso para correr `npm run contract:sync` y revisar el diff de tipos.
+      - name: La copia del spec sigue a barber@main (solo avisa)
+        run: npm run contract:drift
+        continue-on-error: true
+
   e2e:
     name: E2E (Playwright sobre build de producción)
     runs-on: ubuntu-latest

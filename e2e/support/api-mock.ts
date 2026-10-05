@@ -1,4 +1,5 @@
 import type { Page } from "@playwright/test";
+import type { ApiUser } from "../../app/types/contract";
 
 /**
  * Intercepta la API de barber en el navegador. Estas pruebas verifican el
@@ -14,17 +15,12 @@ import type { Page } from "@playwright/test";
  * que resolvería sus datos en el servidor.
  */
 
-export interface MockUser {
-  id: string;
-  name: string;
-  email: string;
-  avatar_url: string | null;
-  roles: string[];
-  profile_complete: boolean;
-  profile_missing: string[];
-  client_id: string | null;
-  barber_id: string | null;
-}
+/**
+ * El usuario simulado es el MISMO tipo que el de la app, derivado del OpenAPI de
+ * barber: un mock que ya no cabe en el contrato deja de compilar (vue-tsc/tsc) en
+ * vez de seguir pasando contra una forma que la API real ya no devuelve.
+ */
+export type MockUser = ApiUser;
 
 export function makeUser(overrides: Partial<MockUser> = {}): MockUser {
   return {
@@ -37,6 +33,9 @@ export function makeUser(overrides: Partial<MockUser> = {}): MockUser {
     profile_missing: [],
     client_id: "c-1",
     barber_id: null,
+    // El login/me reales siempre traen `client` (null si no hay perfil de cliente);
+    // el mock lo omitía hasta que el tipo derivado del contrato lo exigió.
+    client: { telefono: "5512345678", fecha_nacimiento: "1995-04-12", sexo: "masculino" },
     ...overrides,
   };
 }
