@@ -25,7 +25,12 @@ ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=3000
 
-COPY --from=build /app/.output ./.output
+COPY --from=build --chown=node:node /app/.output ./.output
+
+# El servidor no necesita privilegios (puerto 3000, no escribe fuera de memoria): corre
+# como el usuario `node` que ya trae la imagen, no como root, para que un fallo en la app
+# no entregue el contenedor completo.
+USER node
 
 EXPOSE 3000
 
