@@ -117,5 +117,6 @@ Crear o auditar formularios accesibles, coherentes con los cuatro temas de Urban
 - Ejecutar `npm.cmd run lint` y `npm.cmd run build` en Windows.
 - Para cambios de recorridos críticos ejecutar las pruebas Playwright pertinentes. Estas usan un mock SSR en `127.0.0.1:8099`; no apuntar el mock al puerto 8000 porque allí puede estar Laravel con datos reales.
 - Probar teclado, errores 422, estado de carga, doble clic, móvil y los cuatro temas.
-- Revisar `git diff` y no incluir cambios concurrentes ajenos. Ninguna IA hace commit o
-  push: tras comprobaciones limpias entrega al usuario el mensaje sugerido en español.
+- Revisar `git diff` y no incluir cambios concurrentes ajenos. Entrega por rama y PR
+  (`git-commit-conventions`): commit, push y PR solo con autorización explícita del usuario;
+  sin ella, entrega el mensaje sugerido en español y los comandos.
