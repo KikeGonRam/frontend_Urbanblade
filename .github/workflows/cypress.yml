@@ -1,0 +1,53 @@
+# Pruebas E2E con Cypress sobre el build de producción y la API simulada (e2e/support/mock-api.mjs),
+# registradas en Cypress Cloud (proyecto 1dpyzb) cuando existe el secreto CYPRESS_RECORD_KEY.
+# Sin el secreto (forks, PR de Dependabot, antes de configurarlo) corre igual, sin registrar.
+# Ver docs/CYPRESS_CLOUD.md.
+name: Cypress
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cypress-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  cypress-run:
+    name: Cypress (contenedor ${{ matrix.containers }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false # https://github.com/cypress-io/github-action/issues/48
+      matrix:
+        containers: [1, 2] # 2 instancias en paralelo (solo se reparten las specs cuando se registra)
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v7
+        with:
+          # Igual que ci.yml: el lockfile necesita --legacy-peer-deps.
+          install-command: npm ci --legacy-peer-deps
+          build: npm run build
+          start: npm run e2e:servers
+          wait-on: 'http://127.0.0.1:3100'
+          wait-on-timeout: 120
+          # Registrar y paralelizar exigen la llave; sin ella se corre sin registrar.
+          record: ${{ secrets.CYPRESS_RECORD_KEY != '' }}
+          parallel: ${{ secrets.CYPRESS_RECORD_KEY != '' }}
+        env:
+          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+          # Mismas variables que playwright.config.ts: el build apunta a la API simulada.
+          NUXT_PUBLIC_API_BASE: http://127.0.0.1:8099/api/v1
+          NUXT_PUBLIC_STRIPE_KEY: pk_test_e2e_fake

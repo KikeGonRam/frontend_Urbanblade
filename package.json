@@ -10,6 +10,9 @@
     "postinstall": "nuxt prepare",
     "lint": "eslint .",
     "test:e2e": "playwright test",
+    "e2e:servers": "node scripts/e2e-servers.mjs",
+    "cypress:run": "cypress run",
+    "cypress:open": "cypress open",
     "audit:gate": "node scripts/audit-gate.mjs",
     "contract:sync": "node scripts/contract.mjs sync",
     "contract:types": "node scripts/contract.mjs types",
@@ -35,6 +38,7 @@
   "devDependencies": {
     "@nuxt/eslint": "^1.17.0",
     "@playwright/test": "^1.63.0",
+    "cypress": "^16.1.1",
     "@tailwindcss/forms": "^0.5.11",
     "@tailwindcss/vite": "^4.3.3",
     "@types/three": "^0.186.0",
