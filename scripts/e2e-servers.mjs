@@ -18,7 +18,9 @@ const env = {
 
 const procesos = [
   spawn(process.execPath, ['e2e/support/mock-api.mjs'], { stdio: 'inherit', env }),
-  spawn('npm', ['run', 'preview'], { stdio: 'inherit', env, shell: true }),
+  // El servidor del build (lo mismo que hace `nuxt preview`), con el Node que ya está corriendo:
+  // sin buscar `npm` en el PATH ni pasar por un shell.
+  spawn(process.execPath, ['.output/server/index.mjs'], { stdio: 'inherit', env }),
 ]
 
 const detener = () => {
