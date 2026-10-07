@@ -33,6 +33,43 @@ const ALLOWLIST = [
       + 'no está en .output/.',
     revisar: '2026-11-13',
   },
+  // simple-git (4 avisos publicados el 2026-10-05): lo trae @nuxt/devtools, que solo corre en
+  // `nuxt dev`. El arreglo (simple-git 4.x) exige una versión mayor que @nuxt/devtools aún no
+  // adopta, así que `npm audit fix` no lo resuelve sin forzar cambios. Verificado en el build de
+  // producción: .output/server/node_modules no contiene simple-git ni @simple-git/argv-parser y
+  // la imagen final solo copia .output/. Se vuelve a evaluar cuando Nuxt actualice devtools.
+  {
+    id: 'GHSA-v5rq-49vh-5v5c',
+    paquete: '@simple-git/argv-parser <2.0.1',
+    motivo:
+      'Sin arreglo compatible. Entra solo por @nuxt/devtools -> simple-git (herramienta de '
+      + 'desarrollo, solo en `nuxt dev`); no está en .output/.',
+    revisar: '2026-11-13',
+  },
+  {
+    id: 'GHSA-x6jw-m9v5-85vh',
+    paquete: 'simple-git >=3.15.0 <4.0.1',
+    motivo:
+      'Sin arreglo compatible. Entra solo por @nuxt/devtools (solo en `nuxt dev`, sobre el '
+      + 'repositorio del propio desarrollador); no está en .output/.',
+    revisar: '2026-11-13',
+  },
+  {
+    id: 'GHSA-g4wm-2vf7-vfgr',
+    paquete: 'simple-git <=3.36.0',
+    motivo:
+      'Sin arreglo compatible. Entra solo por @nuxt/devtools (solo en `nuxt dev`, sobre el '
+      + 'repositorio del propio desarrollador); no está en .output/.',
+    revisar: '2026-11-13',
+  },
+  {
+    id: 'GHSA-858h-whjf-mvg5',
+    paquete: 'simple-git <=3.36.0',
+    motivo:
+      'Sin arreglo compatible. Entra solo por @nuxt/devtools (solo en `nuxt dev`, sobre el '
+      + 'repositorio del propio desarrollador); no está en .output/.',
+    revisar: '2026-11-13',
+  },
 ]
 
 const BLOQUEANTES = new Set(['high', 'critical'])
