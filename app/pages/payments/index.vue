@@ -761,11 +761,16 @@ onUnmounted(() => teardownStripe());
       @close="closeCharge"
     >
 
-        <p v-if="loadingChargeable" class="text-sm text-muted">
-          Cargando citas por cobrar…
-        </p>
+        <div v-if="loadingChargeable" class="flex items-center gap-3 rounded-xl border border-line bg-main/50 p-4 text-sm text-muted">
+          <span class="h-4 w-4 animate-spin rounded-full border-2 border-gold border-t-transparent" aria-hidden="true" />
+          <span>Cargando citas por cobrar…</span>
+        </div>
 
         <form v-else class="space-y-4" @submit.prevent="submitCharge">
+          <div v-if="!chargeableAppointments.length" class="rounded-xl border border-dashed border-line bg-main/40 p-6 text-center">
+            <p class="text-sm font-bold text-ink">No hay citas listas para cobrar</p>
+            <p class="mt-1 text-xs leading-relaxed text-muted">Las citas aprobadas y pendientes de pago aparecerán aquí cuando estén disponibles.</p>
+          </div>
           <div>
             <label class="mb-1 block text-xs text-muted"
               >Seleccionar cita pendiente de cobro</label
@@ -773,7 +778,7 @@ onUnmounted(() => teardownStripe());
             <select
               v-model="form.appointmentId"
               required
-              class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
+              class="ui-input w-full"
               @change="selectAppointment"
             >
               <option value="" disabled>
@@ -787,13 +792,6 @@ onUnmounted(() => teardownStripe());
                 {{ a.fecha }} — {{ a.client_name }} ({{ a.service_name }})
               </option>
             </select>
-            <p
-              v-if="!chargeableAppointments.length"
-              class="mt-2 text-xs text-muted"
-            >
-              No hay citas cobrables (aprobadas por el barbero y sin pago) en
-              este momento.
-            </p>
           </div>
 
           <template v-if="selected">
@@ -816,7 +814,7 @@ onUnmounted(() => teardownStripe());
                   type="number"
                   step="0.01"
                   min="0"
-                  class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
+                  class="ui-input w-full"
                 >
               </div>
             </div>
@@ -853,7 +851,7 @@ onUnmounted(() => teardownStripe());
                 v-model="form.codigoGiftCard"
                 type="text"
                 placeholder="Ej. A1B2C3D4"
-                class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm uppercase text-ink"
+                class="ui-input w-full uppercase"
               >
               <p class="mt-1 text-[9px] italic text-muted">
                 Se aplica al total antes de cobrar el resto por
@@ -909,7 +907,7 @@ onUnmounted(() => teardownStripe());
                   step="1"
                   min="0"
                   :max="preview.maxPuntosCanjeables"
-                  class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
+                  class="ui-input w-full"
                 >
                 <p class="mt-1 text-[9px] italic text-muted">
                   1 punto = $1 MXN. Tope: 50% del total con descuento de nivel,

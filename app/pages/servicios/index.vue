@@ -6,6 +6,8 @@
  * sin necesidad de cambios de backend. Sin middleware: cualquier visitante,
  * con o sin sesión, puede verlo.
  */
+import { publicImageUrl } from '~/utils/publicImage'
+
 definePageMeta({ layout: 'public' })
 
 useSeoMeta({
@@ -88,8 +90,8 @@ function currency(n: number) {
     <div v-else class="grid grid-cols-1 gap-6 md:grid-cols-3">
       <article v-for="service in filtered" :key="service.id" class="ui-card-premium group p-8 hover:border-gold/40">
         <img
-          v-if="service.imagen" :src="service.imagen" :alt="service.nombre"
-          class="mb-6 h-40 w-full rounded-xl object-cover"
+          v-if="service.imagen" :src="publicImageUrl(service.imagen, 1800) ?? undefined" :srcset="`${publicImageUrl(service.imagen, 900) ?? ''} 900w, ${publicImageUrl(service.imagen, 1800) ?? ''} 1800w`" sizes="(min-width: 768px) 33vw, 100vw" :alt="service.nombre"
+          class="mb-6 aspect-[16/9] w-full rounded-xl object-cover"
         >
         <div v-else class="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl border border-gold/10 bg-gold/5 text-gold">
           <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">

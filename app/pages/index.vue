@@ -15,6 +15,8 @@
  * primeros); desde 2026-09-10 todos los CTA de reserva van a /reservar, que
  * muestra disponibilidad real sin cuenta y solo pide sesión al confirmar.
  */
+import { publicImageUrl } from '~/utils/publicImage'
+
 useSeoMeta({
   title: 'UrbanBlade',
   description: 'Donde el estilo toma vida. Reserva tu cita premium en UrbanBlade: cortes, barba y grooming de estudio.',
@@ -36,6 +38,8 @@ interface BarberRow {
   user: { id: string, name: string } | null
   especialidades: string
   foto: string | null
+  avg_rating?: number | null
+  total_reviews?: number
 }
 
 const { isAuthenticated } = useAuth()
@@ -60,6 +64,22 @@ const { data: barbersData, pending: barbersPending } = await useAsyncData<{ data
   { server: false },
 )
 const barbers = computed(() => (barbersData.value?.data ?? []).slice(0, 4))
+const publicStats = computed(() => {
+  const allBarbers = barbersData.value?.data ?? []
+  const allServices = servicesData.value?.data ?? []
+  const totalReviews = allBarbers.reduce((sum, barber) => sum + (barber.total_reviews ?? 0), 0)
+  const ratedBarbers = allBarbers.filter(barber => typeof barber.avg_rating === 'number')
+  const averageRating = ratedBarbers.length
+    ? ratedBarbers.reduce((sum, barber) => sum + Number(barber.avg_rating ?? 0), 0) / ratedBarbers.length
+    : 0
+
+  return {
+    barbers: allBarbers.length,
+    services: allServices.length,
+    reviews: totalReviews,
+    rating: averageRating ? averageRating.toFixed(1) : '—',
+  }
+})
 
 function initials(name?: string | null) {
   if (!name) return '?'
@@ -316,20 +336,20 @@ onBeforeUnmount(() => {
       <div class="mx-auto max-w-7xl px-4">
         <div class="grid grid-cols-2 gap-8 md:grid-cols-4">
           <div v-reveal class="reveal text-center">
-            <p class="text-4xl font-black text-ink">500<span class="text-gold">+</span></p>
-            <p class="mt-2 text-[10px] font-black uppercase tracking-widest text-muted">Clientes Satisfechos</p>
+            <p class="text-4xl font-black text-ink">{{ publicStats.barbers }}<span class="text-gold">+</span></p>
+            <p class="mt-2 text-[10px] font-black uppercase tracking-widest text-muted">Maestros activos</p>
           </div>
           <div v-reveal class="reveal text-center" style="transition-delay:100ms">
-            <p class="text-4xl font-black text-ink">10<span class="text-gold">+</span></p>
-            <p class="mt-2 text-[10px] font-black uppercase tracking-widest text-muted">Años de Experiencia</p>
+            <p class="text-4xl font-black text-ink">{{ publicStats.services }}<span class="text-gold">+</span></p>
+            <p class="mt-2 text-[10px] font-black uppercase tracking-widest text-muted">Servicios disponibles</p>
           </div>
           <div v-reveal class="reveal text-center" style="transition-delay:200ms">
-            <p class="text-4xl font-black text-ink">15<span class="text-gold">+</span></p>
-            <p class="mt-2 text-[10px] font-black uppercase tracking-widest text-muted">Servicios Premium</p>
+            <p class="text-4xl font-black text-ink">{{ publicStats.reviews }}<span class="text-gold">+</span></p>
+            <p class="mt-2 text-[10px] font-black uppercase tracking-widest text-muted">Reseñas publicadas</p>
           </div>
           <div v-reveal class="reveal text-center" style="transition-delay:300ms">
-            <p class="text-4xl font-black text-ink">4.9</p>
-            <p class="mt-2 text-[10px] font-black uppercase tracking-widest text-muted">Calificación Promedio</p>
+            <p class="text-4xl font-black text-ink">{{ publicStats.rating }}<span v-if="publicStats.rating !== '—'" class="text-gold">★</span></p>
+            <p class="mt-2 text-[10px] font-black uppercase tracking-widest text-muted">Calificación del equipo</p>
           </div>
         </div>
       </div>
@@ -363,8 +383,10 @@ onBeforeUnmount(() => {
             <div class="relative aspect-[16/10] overflow-hidden bg-gradient-to-br from-gold/10 via-card to-main">
               <img
                 v-if="service.imagen && !brokenImages[service.id]"
-                :src="service.imagen"
+                :src="publicImageUrl(service.imagen, 1800) ?? undefined"
                 :alt="service.nombre"
+                :srcset="`${publicImageUrl(service.imagen, 900) ?? ''} 900w, ${publicImageUrl(service.imagen, 1800) ?? ''} 1800w`"
+                sizes="(min-width: 1024px) 33vw, 100vw"
                 loading="lazy"
                 decoding="async"
                 class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
@@ -483,7 +505,7 @@ onBeforeUnmount(() => {
           >
             <div class="relative aspect-[3/4] overflow-hidden rounded-3xl border border-line bg-card">
               <img
-                v-if="barber.foto" :src="barber.foto" loading="lazy" :alt="`Foto de ${barber.user?.name}`"
+                v-if="barber.foto" :src="publicImageUrl(barber.foto, 1400) ?? undefined" :srcset="`${publicImageUrl(barber.foto, 700) ?? ''} 700w, ${publicImageUrl(barber.foto, 1400) ?? ''} 1400w`" sizes="(min-width: 1024px) 25vw, 100vw" loading="lazy" :alt="`Foto de ${barber.user?.name}`"
                 class="h-full w-full object-cover grayscale transition-all duration-700 group-hover:scale-110 group-hover:grayscale-0"
               >
               <div v-else class="flex h-full w-full items-center justify-center bg-gradient-to-br from-gold/10 via-card to-main">
@@ -728,7 +750,7 @@ onBeforeUnmount(() => {
 <style scoped>
 .hero-bg { will-change: transform; }
 .hero-photo {
-  background-image: url('https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=2070&auto=format&fit=crop');
+  background-image: url('https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=90&w=2400&auto=format&fit=max');
   background-size: cover;
   background-position: center;
   opacity: 0.48;
