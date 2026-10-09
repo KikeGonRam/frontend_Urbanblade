@@ -97,7 +97,7 @@ async function cancelOrder(order: OrderRow) {
       @action="refresh"
     />
     <p v-if="actionError" role="alert" class="mb-4 text-sm text-red-400">{{ actionError }}</p>
-    <p v-else-if="!orders.length" class="rounded-2xl border border-dashed border-line p-12 text-center text-sm text-muted">
+    <p v-if="!pending && !error && !orders.length" class="rounded-2xl border border-dashed border-line p-12 text-center text-sm text-muted">
       Todavía no tienes pedidos.
     </p>
 
