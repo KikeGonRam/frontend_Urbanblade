@@ -89,7 +89,7 @@ async function waive(fee: NoShowFee) {
       <p v-if="fees.length" class="text-sm font-bold text-amber-300">{{ fees.length }} pendiente(s) · {{ money(total) }}</p>
     </div>
 
-    <p v-if="message" class="mb-3 text-sm" :class="isError ? 'text-red-400' : 'text-gold'" role="status">{{ message }}</p>
+    <output v-if="message" class="mb-3 block text-sm" :class="isError ? 'text-red-400' : 'text-gold'">{{ message }}</output>
     <p v-if="pending" class="text-sm text-muted">Cargando adeudos...</p>
     <p v-else-if="!fees.length" class="ui-card p-4 text-sm text-muted">No hay adeudos pendientes.</p>
 
@@ -119,7 +119,8 @@ async function waive(fee: NoShowFee) {
         </div>
 
         <div v-if="waiving === fee.id" class="mt-3 space-y-2 rounded-xl border border-line p-3">
-          <textarea v-model="motivo" rows="2" maxlength="300" placeholder="Motivo para condonar (queda registrado)…" class="w-full rounded-lg border border-line bg-main px-3 py-2 text-xs text-ink" />
+          <label :for="`motivo-${fee.id}`" class="sr-only">Motivo para condonar el cargo</label>
+          <textarea :id="`motivo-${fee.id}`" v-model="motivo" rows="2" maxlength="300" placeholder="Motivo para condonar (queda registrado)…" class="w-full rounded-lg border border-line bg-main px-3 py-2 text-xs text-ink" />
           <div class="flex gap-2">
             <button type="button" :disabled="motivo.trim().length < 3 || busy === fee.id" class="rounded-lg bg-red-500 px-3 py-2 text-xs font-bold text-white disabled:opacity-50" @click="waive(fee)">
               Confirmar condonación

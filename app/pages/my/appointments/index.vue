@@ -583,9 +583,9 @@ onUnmounted(() => teardownStripe());
         Tienes un adeudo por inasistencia de <strong>{{ money(debtTotal) }}</strong>.
         Págalo en la barbería (efectivo o transferencia) para volver a reservar.
       </p>
-      <p v-if="ticketError" class="text-sm text-red-400" role="status">
+      <output v-if="ticketError" class="block text-sm text-red-400">
         {{ ticketError }}
-      </p>
+      </output>
       <div v-for="appt in appointments" :key="appt.id" class="ui-card p-5">
         <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
           <div>

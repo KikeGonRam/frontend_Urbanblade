@@ -179,17 +179,19 @@ async function openTicket(appt: Appointment) {
     </section>
 
     <div class="mb-5 flex gap-3">
-      <select v-model="period" class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
+      <label for="agenda-periodo" class="sr-only">Periodo</label>
+      <select id="agenda-periodo" v-model="period" class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
         <option value="day">Día</option>
         <option value="week">Semana</option>
       </select>
-      <select v-model="estado" class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
+      <label for="agenda-estado" class="sr-only">Filtrar por estado</label>
+      <select id="agenda-estado" v-model="estado" class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
         <option value="">Todos los estados</option>
         <option v-for="(label, key) in labels" :key="key" :value="key">{{ label }}</option>
       </select>
     </div>
 
-    <p v-if="message" class="mb-4 text-sm text-gold" role="status">{{ message }}</p>
+    <output v-if="message" class="mb-4 block text-sm text-gold">{{ message }}</output>
     <p v-if="pending" class="text-sm text-muted">Cargando agenda...</p>
     <p v-else-if="error" class="text-sm text-red-400">No se pudo cargar la agenda.</p>
 
