@@ -101,7 +101,7 @@ async function cancelOrder(order: OrderRow) {
       Todavía no tienes pedidos.
     </p>
 
-    <div v-else class="space-y-4">
+    <div v-if="!pending && !error && orders.length" class="space-y-4">
       <div v-for="order in orders" :key="order.id" class="ui-card p-5">
         <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
           <div>

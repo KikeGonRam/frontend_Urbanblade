@@ -173,7 +173,7 @@ async function toggleMaintenance() {
             <input id="setting-address" v-model="form.direccion" type="text" maxlength="255" :aria-invalid="!!fieldErrors.direccion" :aria-describedby="fieldErrors.direccion ? 'setting-address-error' : undefined" :class="inputClass('direccion')">
             <p v-if="fieldErrors.direccion" id="setting-address-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.direccion[0] }}</p>
           </div>
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label for="setting-phone" class="mb-1 block text-xs text-muted">Teléfono</label>
               <input id="setting-phone" v-model="form.telefono" type="text" maxlength="30" :aria-invalid="!!fieldErrors.telefono" :aria-describedby="fieldErrors.telefono ? 'setting-phone-error' : undefined" :class="inputClass('telefono')">
@@ -185,7 +185,7 @@ async function toggleMaintenance() {
               <p v-if="fieldErrors.politica_cancelacion" id="setting-cancellation-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.politica_cancelacion[0] }}</p>
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label for="setting-opening" class="mb-1 block text-xs text-muted">Horario apertura</label>
               <input id="setting-opening" v-model="form.horario_apertura" type="time" :aria-invalid="!!fieldErrors.horario_apertura" :aria-describedby="fieldErrors.horario_apertura ? 'setting-opening-error' : undefined" :class="inputClass('horario_apertura')">
@@ -202,7 +202,7 @@ async function toggleMaintenance() {
 
       <section class="ui-card p-5">
         <h2 class="mb-4 text-sm font-black uppercase tracking-wide text-ink">Redes sociales</h2>
-        <div class="grid grid-cols-3 gap-3">
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <div>
             <label for="setting-instagram" class="mb-1 block text-xs text-muted">Instagram</label>
             <input id="setting-instagram" v-model="form.instagram" type="text" maxlength="255" :aria-invalid="!!fieldErrors.instagram" :aria-describedby="fieldErrors.instagram ? 'setting-instagram-error' : undefined" :class="inputClass('instagram')">
@@ -223,7 +223,7 @@ async function toggleMaintenance() {
 
       <section class="ui-card p-5">
         <h2 class="mb-4 text-sm font-black uppercase tracking-wide text-ink">Datos bancarios (pagos por transferencia)</h2>
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
             <label for="setting-clabe" class="mb-1 block text-xs text-muted">CLABE</label>
             <input id="setting-clabe" v-model="form.clabe" type="text" maxlength="18" :aria-invalid="!!fieldErrors.clabe" :aria-describedby="fieldErrors.clabe ? 'setting-clabe-error' : undefined" :class="inputClass('clabe')">

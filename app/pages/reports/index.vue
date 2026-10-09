@@ -263,7 +263,7 @@ async function downloadReport(type: string, format: "excel" | "pdf") {
         <h2 class="mb-3 text-sm font-black uppercase tracking-wide text-ink">
           Inventario
         </h2>
-        <div v-if="inventory" class="grid grid-cols-2 gap-3">
+        <div v-if="inventory" class="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
             <p class="text-[10px] font-bold uppercase text-muted">Productos</p>
             <p class="mt-1 text-lg font-black text-ink">
@@ -297,7 +297,7 @@ async function downloadReport(type: string, format: "excel" | "pdf") {
         <h2 class="mb-3 text-sm font-black uppercase tracking-wide text-ink">
           Clientes
         </h2>
-        <div v-if="clients" class="grid grid-cols-2 gap-3">
+        <div v-if="clients" class="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
             <p class="text-[10px] font-bold uppercase text-muted">Total</p>
             <p class="mt-1 text-lg font-black text-ink">
@@ -335,7 +335,7 @@ async function downloadReport(type: string, format: "excel" | "pdf") {
           {{ commissions.periodo.desde }} — {{ commissions.periodo.hasta }}
         </p>
       </div>
-      <div v-if="commissions" class="mb-4 grid grid-cols-2 gap-3">
+      <div v-if="commissions" class="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
           <p class="text-[10px] font-bold uppercase text-muted">Generado (precio de lista)</p>
           <p class="mt-1 text-lg font-black text-ink">{{ fmtMoney(commissions.total_generado) }}</p>
