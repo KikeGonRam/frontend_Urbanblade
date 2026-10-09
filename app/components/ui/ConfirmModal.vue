@@ -1,47 +1,45 @@
 <script setup lang="ts">
 const { state, handleConfirm, handleCancel } = useConfirm()
+const dialog = ref<HTMLDialogElement | null>(null)
+let previous: HTMLElement | null = null
 
-function onKeyDown(e: KeyboardEvent) {
-  if (!state.value.isOpen) return
-  if (e.key === 'Escape') {
-    handleCancel()
-  }
-}
+watch(
+  () => state.value.isOpen,
+  async (isOpen) => {
+    if (!import.meta.client) return
 
-onMounted(() => {
+    if (isOpen) {
+      previous = document.activeElement as HTMLElement | null
+      await nextTick()
+      if (!dialog.value?.open) dialog.value?.showModal()
+      dialog.value?.querySelector<HTMLElement>('button')?.focus()
+    } else if (dialog.value?.open) {
+      dialog.value.close()
+      previous?.focus()
+      previous = null
+    }
+  },
+  { flush: 'post' },
+)
+
+onBeforeUnmount(() => {
   if (import.meta.client) {
-    window.addEventListener('keydown', onKeyDown)
-  }
-})
-
-onUnmounted(() => {
-  if (import.meta.client) {
-    window.removeEventListener('keydown', onKeyDown)
+    if (dialog.value?.open) dialog.value.close()
+    previous?.focus()
   }
 })
 </script>
 
 <template>
   <Teleport to="body">
-    <Transition
-      enter-active-class="transition duration-200 ease-out"
-      enter-from-class="opacity-0"
-      enter-to-class="opacity-100"
-      leave-active-class="transition duration-150 ease-in"
-      leave-from-class="opacity-100"
-      leave-to-class="opacity-0"
+    <dialog
+      ref="dialog"
+      class="w-[calc(100%-2rem)] max-w-md rounded-2xl border border-line bg-card p-0 text-ink shadow-2xl"
+      :aria-label="state.title"
+      @cancel.prevent="handleCancel"
+      @click="($event.target === dialog) && handleCancel()"
     >
-      <div
-        v-if="state.isOpen"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-xs"
-        role="dialog"
-        aria-modal="true"
-        :aria-label="state.title"
-        @click.self="handleCancel"
-      >
-        <div
-          class="w-full max-w-md transform rounded-2xl border border-line bg-card p-6 shadow-2xl transition-all"
-        >
+      <div class="p-6">
           <div class="mb-4 flex items-start gap-4">
             <div
               v-if="state.isDanger"
@@ -90,8 +88,14 @@ onUnmounted(() => {
               {{ state.confirmText }}
             </button>
           </div>
-        </div>
       </div>
-    </Transition>
+    </dialog>
   </Teleport>
 </template>
+
+<style scoped>
+dialog::backdrop {
+  background: rgb(0 0 0 / 75%);
+  backdrop-filter: blur(4px);
+}
+</style>

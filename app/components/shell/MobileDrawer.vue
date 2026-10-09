@@ -2,9 +2,69 @@
 const { sections } = useNavigation()
 const { drawerOpen } = useShellState()
 const { user, logout } = useAuth()
+const drawer = ref<HTMLElement | null>(null)
+const closeButton = ref<HTMLButtonElement | null>(null)
+let previous: HTMLElement | null = null
+
+const focusableSelector =
+  'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+
+function closeDrawer() {
+  drawerOpen.value = false
+}
+
+function onKeyDown(event: KeyboardEvent) {
+  if (!drawerOpen.value) return
+
+  if (event.key === 'Escape') {
+    event.preventDefault()
+    closeDrawer()
+    return
+  }
+
+  if (event.key !== 'Tab' || !drawer.value) return
+  const focusable = [...drawer.value.querySelectorAll<HTMLElement>(focusableSelector)]
+  if (!focusable.length) return
+
+  const first = focusable[0]
+  const last = focusable[focusable.length - 1]
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault()
+    last.focus()
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault()
+    first.focus()
+  }
+}
+
+watch(drawerOpen, async (isOpen) => {
+  if (!import.meta.client) return
+
+  if (isOpen) {
+    previous = document.activeElement as HTMLElement | null
+    document.body.style.overflow = 'hidden'
+    await nextTick()
+    closeButton.value?.focus()
+  } else {
+    document.body.style.overflow = ''
+    previous?.focus()
+    previous = null
+  }
+})
+
+onMounted(() => {
+  if (import.meta.client) window.addEventListener('keydown', onKeyDown)
+})
+
+onBeforeUnmount(() => {
+  if (import.meta.client) {
+    window.removeEventListener('keydown', onKeyDown)
+    document.body.style.overflow = ''
+  }
+})
 
 async function onLogout() {
-  drawerOpen.value = false
+  closeDrawer()
   await logout()
   await navigateTo('/login')
 }
@@ -15,7 +75,7 @@ async function onLogout() {
     enter-active-class="transition-opacity duration-200" enter-from-class="opacity-0" enter-to-class="opacity-100"
     leave-active-class="transition-opacity duration-150" leave-from-class="opacity-100" leave-to-class="opacity-0"
   >
-    <div v-if="drawerOpen" class="fixed inset-0 z-40 bg-black/50 md:hidden" @click="drawerOpen = false" />
+    <div v-if="drawerOpen" class="fixed inset-0 z-40 bg-black/50 md:hidden" @click="closeDrawer" />
   </Transition>
 
   <Transition
@@ -24,9 +84,26 @@ async function onLogout() {
   >
     <div
       v-if="drawerOpen"
+      id="mobile-navigation-drawer"
+      ref="drawer"
       class="ub-mobile-drawer fixed inset-x-0 bottom-0 z-50 max-h-[80vh] overflow-y-auto rounded-t-2xl border-t border-line p-4 md:hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="mobile-navigation-title"
     >
-      <div class="mx-auto mb-3 h-1 w-10 rounded-full bg-line" />
+      <div class="mb-3 flex items-center justify-between">
+        <h2 id="mobile-navigation-title" class="text-sm font-semibold text-ink">Más opciones</h2>
+        <button
+          ref="closeButton"
+          type="button"
+          class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg text-muted hover:bg-accent hover:text-ink"
+          aria-label="Cerrar menú de navegación"
+          @click="closeDrawer"
+        >
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+      <div class="mx-auto mb-3 h-1 w-10 rounded-full bg-line" aria-hidden="true" />
 
       <div v-for="section in sections" :key="section.key" class="mb-4">
         <p class="mb-1 px-1 text-xs font-semibold uppercase tracking-wider text-muted">{{ section.title }}</p>
@@ -36,7 +113,7 @@ async function onLogout() {
               v-if="navItem.implemented"
               :to="navItem.to"
               class="flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm text-ink hover:bg-accent"
-              @click="drawerOpen = false"
+              @click="closeDrawer"
             >
               <ShellNavIcon :paths="navItem.icon" />
               {{ navItem.label }}
@@ -51,7 +128,7 @@ async function onLogout() {
       </div>
 
       <div class="flex items-center gap-2 border-t border-line pt-3">
-        <NuxtLink to="/profile" class="flex min-w-0 flex-1 items-center gap-2 rounded-lg p-1 hover:bg-accent" @click="drawerOpen = false">
+        <NuxtLink to="/profile" class="flex min-w-0 flex-1 items-center gap-2 rounded-lg p-1 hover:bg-accent" @click="closeDrawer">
           <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gold/20 text-xs font-semibold text-gold">
             {{ (user?.name ?? 'U').slice(0, 2).toUpperCase() }}
           </div>

@@ -31,6 +31,7 @@ function isActive(to: string) {
       :class="drawerOpen ? 'is-active text-gold' : 'text-muted'"
       aria-label="Más opciones"
       :aria-expanded="drawerOpen"
+      aria-controls="mobile-navigation-drawer"
       @click="drawerOpen = !drawerOpen"
     >
       <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">

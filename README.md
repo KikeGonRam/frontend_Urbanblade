@@ -115,6 +115,11 @@ npm run build                      # build de producción
 npm run test:e2e                   # Playwright, contra el build ya compilado
 ```
 
+`e2e/security.spec.ts` fija las regresiones de seguridad: que el build emita la CSP
+(sin `unsafe-inline` en `script-src`, con `object-src 'none'`, `base-uri` y
+`frame-ancestors`), que un texto con HTML que venga de la API se pinte escapado y no se
+ejecute, y que el token no acabe en `localStorage`.
+
 CI (`.github/workflows/ci.yml`) corre dos jobs en cada push/PR a `main`:
 
 - **Frontend**: `eslint . --max-warnings=0` (más estricto que `npm run lint` local —
@@ -125,6 +130,29 @@ CI (`.github/workflows/ci.yml`) corre dos jobs en cada push/PR a `main`:
   intercepta en el navegador (`e2e/support/api-mock.ts` + `e2e/support/mock-api.mjs`
   para las peticiones que Nuxt resuelve en SSR), así que este job no necesita
   Laravel/Mongo/Redis corriendo.
+
+### Tres cosas que conviene saber antes de correrlas
+
+Las descubrió el sandbox del workspace (`barber/scripts/verificacion/`), que corre esto
+mismo más los otros tres proyectos:
+
+1. **La suite es sensible a la carga de la máquina.** Con el paralelismo por defecto
+   (`fullyParallel`, ~CPU/2 workers) falló 1 de 55 el 2026-10-02: `auth.spec.ts:38` se
+   pasó del timeout de 5 s de `toHaveURL`, mientras que en solitario tarda ~2.5 s y pasa
+   24/24 (`--repeat-each=3`). **Ya está mitigado**: `playwright.config.ts` fija
+   `expect: { timeout: 10_000 }`. El CI además usa `workers: 1` y `retries: 2`; el
+   sandbox usa `--workers=1` sin reintentos, a propósito, para que la inestabilidad se
+   vea en vez de esconderse.
+2. **El build no verifica tipos, así que hay que comprobarlos aparte.** `tsc` encontró 3
+   errores el 2026-10-02 que ni `eslint` ni el build detectaban; **ya están corregidos**.
+   Para revisarlos:
+   ```bash
+   npx tsc --noEmit -p .nuxt/tsconfig.json
+   ```
+   El sandbox lo hace y **ahora es bloqueante**. Sigue siendo parcial: sin `vue-tsc` los
+   archivos `.vue` no se revisan, solo el TypeScript suelto.
+3. **`npm run lint` local no es lo que corre el CI**: el CI usa
+   `npx eslint . --max-warnings=0`, más estricto.
 
 ## 📚 Documentación relacionada
 
