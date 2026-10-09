@@ -103,12 +103,12 @@ function fmtDate(iso: string | null) {
       :busy="pending"
     />
 
-    <section class="mb-5 flex flex-wrap gap-3">
-      <select v-model="barberFilter" class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
+    <section class="mb-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+      <select v-model="barberFilter" class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink sm:w-auto">
         <option value="">Todos los barberos</option>
         <option v-for="b in barbers" :key="b.id" :value="b.id">{{ b.name }}</option>
       </select>
-      <select v-model="ratingFilter" class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
+      <select v-model="ratingFilter" class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink sm:w-auto">
         <option value="">Todas las calificaciones</option>
         <option v-for="r in [5, 4, 3, 2, 1]" :key="r" :value="r">{{ r }} ★</option>
       </select>
@@ -136,7 +136,7 @@ function fmtDate(iso: string | null) {
     </p>
 
     <section v-else class="ui-card overflow-x-auto">
-      <table class="w-full text-left text-sm">
+      <table class="w-full min-w-[48rem] text-left text-sm">
         <thead>
           <tr class="border-b border-line text-[10px] uppercase tracking-wider text-muted">
             <th class="cursor-pointer px-4 py-3 select-none" @click="toggleSort('created_at')">

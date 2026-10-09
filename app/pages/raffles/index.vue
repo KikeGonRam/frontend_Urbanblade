@@ -21,7 +21,7 @@ interface Stats { total: number, reclamados: number, vigentes: number }
 
 const { apiFetch } = useApi()
 
-const { data: response, pending, error } = await useAsyncData(
+const { data: response, pending, error, refresh } = await useAsyncData(
   'raffles-list',
   () => apiFetch<{ data: RaffleRow[], stats: Stats }>('/raffles'),
   { lazy: true },
@@ -58,11 +58,11 @@ function statusOf(r: RaffleRow) {
     </section>
 
     <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando sorteos…" />
-    <BrandStatePanel v-else-if="error" mascot="bruno" state="error" tone="danger" title="No se pudo cargar el historial de sorteos" description="Inténtalo nuevamente en unos minutos." />
+    <BrandStatePanel v-else-if="error" mascot="bruno" state="error" tone="danger" title="No se pudo cargar el historial de sorteos" description="Inténtalo nuevamente en unos minutos." action-label="Reintentar" @action="refresh" />
     <BrandStatePanel v-else-if="!raffles.length" mascot="nava" state="empty" title="Todavía no hay resultados de sorteos" description="Los próximos resultados aparecerán aquí." />
 
     <section v-else class="ui-card overflow-x-auto">
-      <table class="w-full text-left text-sm">
+      <table class="w-full min-w-[42rem] text-left text-sm">
         <thead>
           <tr class="border-b border-line text-[10px] uppercase tracking-wider text-muted">
             <th class="px-4 py-3">Mes</th>

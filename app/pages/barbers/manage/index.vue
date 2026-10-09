@@ -217,7 +217,7 @@ async function submitForm() {
     />
 
     <section v-else class="ui-card overflow-x-auto">
-      <table class="w-full text-left text-sm">
+      <table class="w-full min-w-[52rem] text-left text-sm">
         <thead>
           <tr
             class="border-b border-line text-[10px] uppercase tracking-wider text-muted"
