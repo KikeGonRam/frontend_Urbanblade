@@ -655,17 +655,12 @@ onUnmounted(() => teardownStripe());
       <BookingWizard embedded :initial-barber="form.barber_id" @busy="bookingBusy = $event" @confirmed="refresh()" />
     </UiModal>
 
-    <div
+    <UiModal
       v-if="showForm && isEditing"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
-      @click.self="showForm = false"
+      :title="isEditing ? 'Reagendar cita' : 'Reservar cita'"
+      :busy="saving"
+      @close="showForm = false"
     >
-      <div
-        class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-line bg-card p-6"
-      >
-        <h2 class="mb-4 text-lg font-semibold text-ink">
-          {{ isEditing ? "Reagendar cita" : "Reservar cita" }}
-        </h2>
         <form class="space-y-3" @submit.prevent="submitForm">
           <div class="grid grid-cols-2 gap-3">
             <div>
@@ -775,16 +770,14 @@ onUnmounted(() => teardownStripe());
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </UiModal>
 
-    <div
+    <UiModal
       v-if="showPay"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
-      @click.self="!payProcessing && !payConfirming && closePay()"
+      title="Pagar con tarjeta"
+      :busy="payProcessing || payConfirming"
+      @close="closePay"
     >
-      <div class="w-full max-w-sm rounded-2xl border border-line bg-card p-6">
-        <h2 class="mb-1 text-lg font-semibold text-ink">Pagar con tarjeta</h2>
         <p class="mb-4 text-sm text-muted">
           {{ payingAppt?.service.nombre }} ·
           {{ payingAppt ? fmtDate(payingAppt.fecha) : "" }}
@@ -847,7 +840,6 @@ onUnmounted(() => teardownStripe());
             Cerrar
           </button>
         </template>
-      </div>
-    </div>
+    </UiModal>
   </div>
 </template>

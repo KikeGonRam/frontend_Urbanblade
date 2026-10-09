@@ -433,15 +433,12 @@ async function submitDeleteAccount() {
       </section>
 
       <!-- Modal de confirmación para eliminar cuenta -->
-      <div
+      <UiModal
         v-if="showDeleteModal"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-xs"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Confirmar eliminación de cuenta"
-        @click.self="showDeleteModal = false"
+        title="Confirmar eliminación de cuenta"
+        :busy="deleting"
+        @close="showDeleteModal = false"
       >
-        <div class="w-full max-w-md rounded-2xl border border-line bg-card p-6 shadow-2xl">
           <h3 class="text-lg font-bold text-red-400">¿Estás seguro de eliminar tu cuenta?</h3>
           <p class="mt-2 text-sm text-muted">
             <template v-if="viaGoogle">
@@ -489,8 +486,7 @@ async function submitDeleteAccount() {
               </button>
             </div>
           </form>
-        </div>
-      </div>
+      </UiModal>
     </template>
   </div>
 </template>

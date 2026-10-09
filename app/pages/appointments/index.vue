@@ -553,17 +553,12 @@ onBeforeUnmount(() => {
       </table>
     </section>
 
-    <div
+    <UiModal
       v-if="showForm"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
-      @click.self="showForm = false"
+      :title="editing ? 'Editar cita' : 'Nueva cita'"
+      :busy="saving"
+      @close="showForm = false"
     >
-      <div
-        class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-line bg-card p-6"
-      >
-        <h2 class="mb-4 text-lg font-semibold text-ink">
-          {{ editing ? "Editar cita" : "Nueva cita" }}
-        </h2>
         <form class="space-y-3" @submit.prevent="submitForm">
           <div>
             <label class="mb-1 block text-xs text-muted">Cliente</label>
@@ -708,7 +703,6 @@ onBeforeUnmount(() => {
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </UiModal>
   </div>
 </template>

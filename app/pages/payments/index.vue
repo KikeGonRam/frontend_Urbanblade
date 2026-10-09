@@ -747,15 +747,12 @@ onUnmounted(() => teardownStripe());
     />
 
     <!-- Nuevo Cobro -->
-    <div
+    <UiModal
       v-if="showCharge"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
-      @click.self="closeCharge"
+      title="Registro de Cobro"
+      :busy="saving"
+      @close="closeCharge"
     >
-      <div
-        class="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-line bg-card p-6"
-      >
-        <h2 class="mb-4 text-lg font-semibold text-ink">Registro de Cobro</h2>
 
         <p v-if="loadingChargeable" class="text-sm text-muted">
           Cargando citas por cobrar…
@@ -1039,7 +1036,6 @@ onUnmounted(() => teardownStripe());
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </UiModal>
   </div>
 </template>
