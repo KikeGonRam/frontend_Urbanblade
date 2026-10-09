@@ -167,7 +167,7 @@ async function openTicket(appt: Appointment) {
       </div>
     </header>
 
-    <section class="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+    <section class="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
       <div
         v-for="card in [{ k: 'total_period', l: 'En periodo' }, { k: 'completed_period', l: 'Completadas' }, { k: 'productivity', l: 'Productividad', s: '%' }, { k: 'income_total', l: 'Ingreso histórico', s: '$' }]"
         :key="card.k"
@@ -178,14 +178,14 @@ async function openTicket(appt: Appointment) {
       </div>
     </section>
 
-    <div class="mb-5 flex gap-3">
+    <div class="mb-5 flex flex-col gap-3 sm:flex-row">
       <label for="agenda-periodo" class="sr-only">Periodo</label>
-      <select id="agenda-periodo" v-model="period" class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
+      <select id="agenda-periodo" v-model="period" class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink sm:w-auto">
         <option value="day">Día</option>
         <option value="week">Semana</option>
       </select>
       <label for="agenda-estado" class="sr-only">Filtrar por estado</label>
-      <select id="agenda-estado" v-model="estado" class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
+      <select id="agenda-estado" v-model="estado" class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink sm:w-auto">
         <option value="">Todos los estados</option>
         <option v-for="(label, key) in labels" :key="key" :value="key">{{ label }}</option>
       </select>

@@ -166,6 +166,8 @@ function fecha(iso: string | null) {
       tone="danger"
       title="No se pudo cargar la ficha"
       description="Verifica que el cliente siga existiendo e inténtalo de nuevo."
+      action-label="Reintentar"
+      @action="refresh"
     />
 
     <template v-else-if="client">
@@ -204,7 +206,7 @@ function fecha(iso: string | null) {
       </header>
 
       <!-- Métricas reales, todas calculadas en el backend -->
-      <section class="grid grid-cols-2 gap-3 lg:grid-cols-5">
+      <section class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <div class="ui-card p-4">
           <p class="text-[10px] font-bold uppercase tracking-widest text-muted">Citas</p>
           <p class="mt-1 text-xl font-black text-ink">{{ client.totalAppointments }}</p>

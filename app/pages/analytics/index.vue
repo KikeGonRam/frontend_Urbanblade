@@ -223,7 +223,7 @@ const doughnutOptions = { responsive: true, maintainAspectRatio: false, plugins:
 
       <!-- Vista completa: administrador / recepcionista -->
       <template v-else>
-        <section v-if="response?.kpis.length" class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        <section v-if="response?.kpis.length" class="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
           <div v-for="kpi in response.kpis" :key="kpi.label" class="rounded-2xl border p-4" :class="TONE_CLASS[kpi.tone] ?? TONE_CLASS.gold">
             <p class="text-[10px] font-bold uppercase opacity-75">{{ kpi.label }}</p>
             <p class="mt-1 text-xl font-black">{{ kpi.value }}</p>
