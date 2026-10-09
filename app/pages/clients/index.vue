@@ -86,7 +86,16 @@ const {
 );
 
 const clients = computed(() => response.value?.data ?? []);
-const lastPage = computed(() => response.value?.last_page ?? 1);
+const pagination = computed(() => ({
+  current_page: response.value?.current_page ?? page.value,
+  last_page: response.value?.last_page ?? 1,
+  total: response.value?.total ?? 0,
+  per_page: response.value?.per_page ?? 15,
+}));
+
+watch([debouncedSearch, segment], () => {
+  page.value = 1;
+});
 
 function resetAndSearch() {
   page.value = 1;
@@ -378,30 +387,13 @@ function fmtDate(iso: string | null) {
       </table>
     </section>
 
-    <div
-      v-if="lastPage > 1"
-      class="mt-4 flex items-center justify-center gap-3"
-    >
-      <button
-        type="button"
-        class="rounded-lg border border-line px-3 py-1.5 text-sm text-ink disabled:opacity-40"
-        :disabled="page <= 1"
-        @click="page--"
-      >
-        ←
-      </button>
-      <span class="text-sm text-muted"
-        >Página {{ page }} de {{ lastPage }}</span
-      >
-      <button
-        type="button"
-        class="rounded-lg border border-line px-3 py-1.5 text-sm text-ink disabled:opacity-40"
-        :disabled="page >= lastPage"
-        @click="page++"
-      >
-        →
-      </button>
-    </div>
+    <UiPagination
+      v-model:current-page="page"
+      :last-page="pagination.last_page"
+      :total="pagination.total"
+      :per-page="pagination.per_page"
+      :busy="pending"
+    />
 
     <div
       v-if="showForm"

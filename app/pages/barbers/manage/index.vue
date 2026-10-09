@@ -35,6 +35,7 @@ const { apiFetch } = useApi();
 const search = ref("");
 const debouncedSearch = useDebounce(search, 350);
 const activo = ref("");
+const page = ref(1);
 
 const {
   data: response,
@@ -48,15 +49,23 @@ const {
       query: {
         q: search.value || undefined,
         activo: activo.value || undefined,
+        page: page.value,
+        per_page: 15,
       },
     }),
-  { watch: [debouncedSearch, activo], lazy: true },
+  { watch: [debouncedSearch, activo, page], lazy: true },
 );
 const barbers = computed(() => response.value?.data ?? []);
+const pagination = computed(() => response.value?.meta);
+
+watch([debouncedSearch, activo], () => {
+  page.value = 1;
+});
 
 function clearFilters() {
   search.value = "";
   activo.value = "";
+  page.value = 1;
 }
 
 // ── Editar ────────────────────────────────────────────────────────────────
@@ -177,6 +186,15 @@ async function submitForm() {
         Limpiar filtros
       </button>
     </section>
+
+    <UiPagination
+      v-if="pagination"
+      v-model:current-page="page"
+      :last-page="pagination.last_page"
+      :total="pagination.total"
+      :per-page="15"
+      :busy="pending"
+    />
 
     <div
       v-if="pending"

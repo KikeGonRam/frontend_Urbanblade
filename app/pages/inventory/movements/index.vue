@@ -53,6 +53,7 @@ const search = ref("");
 const debouncedSearch = useDebounce(search, 350);
 const tipoFilter = ref("");
 const productFilter = ref("");
+const page = ref(1);
 
 const {
   data: response,
@@ -64,6 +65,8 @@ const {
     q: search.value || undefined,
     tipo: tipoFilter.value || undefined,
     product_id: productFilter.value || undefined,
+    page: page.value,
+    per_page: 15,
   }),
   () =>
     apiFetch<MovementsResponse>("/inventory/movements", {
@@ -71,12 +74,19 @@ const {
         q: search.value || undefined,
         tipo: tipoFilter.value || undefined,
         product_id: productFilter.value || undefined,
+        page: page.value,
+        per_page: 15,
       },
     }),
-  { watch: [debouncedSearch, tipoFilter, productFilter], lazy: true },
+  { watch: [debouncedSearch, tipoFilter, productFilter, page], lazy: true },
 );
 const movements = computed(() => response.value?.data ?? []);
 const stats = computed(() => response.value?.meta.stats);
+const pagination = computed(() => response.value?.meta);
+
+watch([debouncedSearch, tipoFilter, productFilter], () => {
+  page.value = 1;
+});
 
 const { data: productsRes } = await useAsyncData(
   "inventory-movements-products",
@@ -99,6 +109,7 @@ function clearFilters() {
   search.value = "";
   tipoFilter.value = "";
   productFilter.value = "";
+  page.value = 1;
 }
 
 function fmtDateTime(iso: string | null) {
@@ -413,6 +424,15 @@ async function submitForm() {
         </tbody>
       </table>
     </section>
+
+    <UiPagination
+      v-if="pagination"
+      v-model:current-page="page"
+      :last-page="pagination.last_page"
+      :total="pagination.total"
+      :per-page="15"
+      :busy="pending"
+    />
 
     <div
       v-if="showForm"

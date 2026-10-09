@@ -54,6 +54,7 @@ const eventFilter = ref("");
 const causerFilter = ref("");
 const fechaDesde = ref("");
 const fechaHasta = ref("");
+const page = ref(1);
 
 const {
   data: response,
@@ -67,6 +68,8 @@ const {
     causer: causerFilter.value || undefined,
     fecha_desde: fechaDesde.value || undefined,
     fecha_hasta: fechaHasta.value || undefined,
+    page: page.value,
+    per_page: 15,
   }),
   () =>
     apiFetch<LogsResponse>("/logs", {
@@ -77,6 +80,8 @@ const {
         causer: causerFilter.value || undefined,
         fecha_desde: fechaDesde.value || undefined,
         fecha_hasta: fechaHasta.value || undefined,
+        page: page.value,
+        per_page: 15,
       },
     }),
   {
@@ -87,12 +92,14 @@ const {
       causerFilter,
       fechaDesde,
       fechaHasta,
+      page,
     ],
     lazy: true,
   },
 );
 
 const logs = computed(() => response.value?.data ?? []);
+const pagination = computed(() => response.value?.meta);
 const logNames = computed(() => response.value?.log_names ?? []);
 const events = computed(() => response.value?.events ?? []);
 const stats = computed<Stats>(
@@ -106,6 +113,13 @@ const stats = computed<Stats>(
     },
 );
 
+watch(
+  [debouncedSearch, logNameFilter, eventFilter, causerFilter, fechaDesde, fechaHasta],
+  () => {
+    page.value = 1;
+  },
+);
+
 function clearFilters() {
   search.value = "";
   logNameFilter.value = "";
@@ -113,6 +127,7 @@ function clearFilters() {
   causerFilter.value = "";
   fechaDesde.value = "";
   fechaHasta.value = "";
+  page.value = 1;
 }
 
 function fmtDate(iso: string | null) {
@@ -275,5 +290,14 @@ function fmtDate(iso: string | null) {
         </tbody>
       </table>
     </section>
+
+    <UiPagination
+      v-if="pagination"
+      v-model:current-page="page"
+      :last-page="pagination.last_page"
+      :total="pagination.total"
+      :per-page="15"
+      :busy="pending"
+    />
   </div>
 </template>

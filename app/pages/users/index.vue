@@ -36,6 +36,7 @@ const { user: currentUser } = useAuth();
 const search = ref("");
 const debouncedSearch = useDebounce(search, 350);
 const roleFilter = ref("");
+const page = ref(1);
 
 const {
   data: response,
@@ -49,16 +50,24 @@ const {
       query: {
         q: search.value || undefined,
         role: roleFilter.value || undefined,
+        page: page.value,
+        per_page: 15,
       },
     }),
-  { watch: [debouncedSearch, roleFilter], lazy: true },
+  { watch: [debouncedSearch, roleFilter, page], lazy: true },
 );
 const users = computed(() => response.value?.data ?? []);
 const roles = computed(() => response.value?.roles ?? []);
+const pagination = computed(() => response.value?.meta);
+
+watch([debouncedSearch, roleFilter], () => {
+  page.value = 1;
+});
 
 function clearFilters() {
   search.value = "";
   roleFilter.value = "";
+  page.value = 1;
 }
 
 // ── Crear / editar ───────────────────────────────────────────────────────
@@ -275,6 +284,15 @@ async function removeUser(user: UserRow) {
         </tbody>
       </table>
     </section>
+
+    <UiPagination
+      v-if="pagination"
+      v-model:current-page="page"
+      :last-page="pagination.last_page"
+      :total="pagination.total"
+      :per-page="15"
+      :busy="pending"
+    />
 
     <div
       v-if="showForm"

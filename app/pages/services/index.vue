@@ -31,6 +31,7 @@ const search = ref("");
 const debouncedSearch = useDebounce(search, 350);
 const categoria = ref("");
 const activo = ref("");
+const page = ref(1);
 
 const {
   data: response,
@@ -45,17 +46,25 @@ const {
         q: search.value || undefined,
         categoria: categoria.value || undefined,
         activo: activo.value || undefined,
+        page: page.value,
+        per_page: 15,
       },
     }),
-  { watch: [debouncedSearch, categoria, activo], lazy: true },
+  { watch: [debouncedSearch, categoria, activo, page], lazy: true },
 );
 const services = computed(() => response.value?.data ?? []);
 const categories = computed(() => response.value?.categories ?? []);
+const pagination = computed(() => response.value?.meta);
+
+watch([debouncedSearch, categoria, activo], () => {
+  page.value = 1;
+});
 
 function clearFilters() {
   search.value = "";
   categoria.value = "";
   activo.value = "";
+  page.value = 1;
 }
 
 function fmtMoney(n: number) {
@@ -223,6 +232,15 @@ async function removeService(service: ServiceRow) {
         Limpiar filtros
       </button>
     </section>
+
+    <UiPagination
+      v-if="pagination"
+      v-model:current-page="page"
+      :last-page="pagination.last_page"
+      :total="pagination.total"
+      :per-page="15"
+      :busy="pending"
+    />
 
     <div
       v-if="pending"

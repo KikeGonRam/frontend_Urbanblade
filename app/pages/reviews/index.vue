@@ -30,6 +30,7 @@ const barberFilter = ref('')
 const ratingFilter = ref('')
 const sort = ref('created_at')
 const dir = ref<'asc' | 'desc'>('desc')
+const page = ref(1)
 
 const { data: response, pending, error } = await useAsyncData(
   'reviews-list',
@@ -39,18 +40,26 @@ const { data: response, pending, error } = await useAsyncData(
       rating: ratingFilter.value || undefined,
       sort: sort.value,
       dir: dir.value,
+      page: page.value,
+      per_page: 15,
     },
   }),
-  { watch: [barberFilter, ratingFilter, sort, dir], lazy: true },
+  { watch: [barberFilter, ratingFilter, sort, dir, page], lazy: true },
 )
 
 const reviews = computed(() => response.value?.data ?? [])
+const pagination = computed(() => response.value?.meta)
 const barbers = computed(() => response.value?.barbers ?? [])
 const stats = computed<Stats>(() => response.value?.stats ?? { total: 0, promedio: 0, bajas: 0 })
+
+watch([barberFilter, ratingFilter, sort, dir], () => {
+  page.value = 1
+})
 
 function clearFilters() {
   barberFilter.value = ''
   ratingFilter.value = ''
+  page.value = 1
 }
 
 function toggleSort(column: string) {
@@ -84,6 +93,15 @@ function fmtDate(iso: string | null) {
       <div class="ui-card p-4"><p class="text-[10px] font-bold uppercase text-muted">Promedio</p><p class="mt-1 text-xl font-black text-gold">{{ stats.promedio }} ★</p></div>
       <div class="ui-card p-4"><p class="text-[10px] font-bold uppercase text-muted">Bajas (≤2★)</p><p class="mt-1 text-xl font-black text-red-400">{{ stats.bajas }}</p></div>
     </section>
+
+    <UiPagination
+      v-if="pagination"
+      v-model:current-page="page"
+      :last-page="pagination.last_page"
+      :total="pagination.total"
+      :per-page="15"
+      :busy="pending"
+    />
 
     <section class="mb-5 flex flex-wrap gap-3">
       <select v-model="barberFilter" class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">

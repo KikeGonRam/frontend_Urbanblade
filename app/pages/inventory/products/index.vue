@@ -58,6 +58,7 @@ const debouncedSearch = useDebounce(search, 350);
 const categoria = ref("");
 const tipo = ref("");
 const soloBajoStock = ref(false);
+const page = ref(1);
 
 const {
   data: response,
@@ -70,6 +71,8 @@ const {
     categoria: categoria.value || undefined,
     tipo: tipo.value || undefined,
     bajo_stock: soloBajoStock.value ? 1 : undefined,
+    page: page.value,
+    per_page: 15,
   }),
   () =>
     apiFetch<ProductsResponse>("/inventory/products", {
@@ -78,14 +81,21 @@ const {
         categoria: categoria.value || undefined,
         tipo: tipo.value || undefined,
         bajo_stock: soloBajoStock.value ? 1 : undefined,
+        page: page.value,
+        per_page: 15,
       },
     }),
-  { watch: [debouncedSearch, categoria, tipo, soloBajoStock], lazy: true },
+  { watch: [debouncedSearch, categoria, tipo, soloBajoStock, page], lazy: true },
 );
 const products = computed(() => response.value?.data ?? []);
 const stats = computed(() => response.value?.meta.stats);
 const categorias = computed(() => response.value?.meta.categorias ?? []);
 const tipos = computed(() => response.value?.meta.tipos ?? []);
+const pagination = computed(() => response.value?.meta);
+
+watch([debouncedSearch, categoria, tipo, soloBajoStock], () => {
+  page.value = 1;
+});
 
 const { data: lowStockRes, refresh: refreshLowStock } = await useAsyncData(
   "inventory-low-stock",
@@ -99,6 +109,7 @@ function clearFilters() {
   categoria.value = "";
   tipo.value = "";
   soloBajoStock.value = false;
+  page.value = 1;
 }
 
 function fmtMoney(n: number) {
@@ -490,6 +501,15 @@ async function removeProduct(product: ProductRow) {
         </tbody>
       </table>
     </section>
+
+    <UiPagination
+      v-if="pagination"
+      v-model:current-page="page"
+      :last-page="pagination.last_page"
+      :total="pagination.total"
+      :per-page="15"
+      :busy="pending"
+    />
 
     <!-- Modal Crear / Editar Producto -->
     <div
