@@ -70,7 +70,7 @@ export default defineNuxtConfig({
       // bloqueante que lee la cookie de forma síncrona.
       script: [
         {
-          innerHTML: `(function(){try{var m=document.cookie.match(/(?:^|; )ub_theme=([^;]+)/);var t=m?decodeURIComponent(m[1]):'noir';document.documentElement.setAttribute('data-theme',t);}catch(e){}})();`,
+          innerHTML: `(function(){try{var m=document.cookie.match(/(?:^|; )ub_theme=([^;]+)/);var t=m?decodeURIComponent(m[1]):'noir';var c={noir:'#0a0a0a',acero:'#111317',salon:'#0b1210',libreta:'#f3ede0'}[t]||'#0a0a0a';document.documentElement.setAttribute('data-theme',t);document.querySelectorAll('meta[name="theme-color"]').forEach(function(e){e.setAttribute('content',c)});document.querySelector('meta[name="color-scheme"]')?.setAttribute('content',t==='libreta'?'light':'dark');}catch(e){}})();`,
           tagPosition: 'head',
         },
       ],

@@ -8,6 +8,26 @@ export const THEME_LABELS: Record<ThemeName, string> = {
   libreta: 'Libreta de Barbero',
 }
 
+const THEME_CHROME_COLORS: Record<ThemeName, string> = {
+  noir: '#0a0a0a',
+  acero: '#111317',
+  salon: '#0b1210',
+  libreta: '#f3ede0',
+}
+
+function updateBrowserChrome(theme: ThemeName) {
+  if (!import.meta.client) return
+
+  const color = THEME_CHROME_COLORS[theme]
+  document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]').forEach((meta) => {
+    meta.setAttribute('content', color)
+  })
+  document.querySelector('meta[name="color-scheme"]')?.setAttribute(
+    'content',
+    theme === 'libreta' ? 'light' : 'dark',
+  )
+}
+
 /**
  * Cookie legible en cliente y servidor (no httpOnly) — permite que el script
  * inline en <head> (nuxt.config.ts) la lea de forma síncrona antes del
@@ -26,6 +46,7 @@ export function useTheme() {
     cookie.value = theme
     if (import.meta.client) {
       document.documentElement.setAttribute('data-theme', theme)
+      updateBrowserChrome(theme)
     }
   }
 

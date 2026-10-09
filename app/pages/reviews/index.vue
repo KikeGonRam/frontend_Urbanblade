@@ -127,6 +127,7 @@ function fmtDate(iso: string | null) {
       state="error"
       tone="danger"
       title="No se pudieron cargar las reseñas"
+      description="Inténtalo nuevamente en unos minutos."
       action-label="Reintentar"
       @action="refresh"
     />
