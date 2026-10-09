@@ -601,7 +601,7 @@ onBeforeUnmount(() => {
               </ul>
             </template>
           </div>
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label class="mb-1 block text-xs text-muted">Barbero</label>
               <select
@@ -629,7 +629,7 @@ onBeforeUnmount(() => {
               </select>
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label class="mb-1 block text-xs text-muted">Fecha</label>
               <input

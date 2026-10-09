@@ -129,7 +129,7 @@ async function submitCampaign() {
             <textarea id="campaign-body" v-model="form.cuerpo" rows="3" required maxlength="2000" :aria-invalid="!!fieldErrors.cuerpo" :aria-describedby="fieldErrors.cuerpo ? 'campaign-body-error' : undefined" :class="inputClass('cuerpo')" />
             <p v-if="fieldErrors.cuerpo" id="campaign-body-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.cuerpo[0] }}</p>
           </div>
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label for="campaign-cta-label" class="mb-1 block text-xs text-muted">Texto del botón (opcional)</label>
               <input id="campaign-cta-label" v-model="form.cta_label" type="text" maxlength="40" :aria-invalid="!!fieldErrors.cta_label" :aria-describedby="fieldErrors.cta_label ? 'campaign-cta-label-error' : undefined" :class="inputClass('cta_label')">

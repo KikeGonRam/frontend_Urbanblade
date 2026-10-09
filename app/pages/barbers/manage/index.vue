@@ -307,7 +307,7 @@ async function submitForm() {
         <h2 class="mb-4 text-lg font-semibold text-ink">Editar barbero</h2>
 
         <form class="space-y-4" @submit.prevent="submitForm">
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label
                 for="barber-name"

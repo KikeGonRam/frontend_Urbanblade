@@ -541,4 +541,10 @@ html[data-theme="libreta"] {
     .ub-mobile-drawer {
         padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
     }
+
+    @media (max-width: 640px) {
+        .ub-dashboard-content [class*='overflow-x-auto'] > table {
+            min-width: 42rem;
+        }
+    }
 }

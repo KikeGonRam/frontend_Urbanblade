@@ -160,7 +160,7 @@ async function deactivate(plan: Plan) {
             <label class="mb-1 block text-xs text-muted">Descripción (opcional)</label>
             <textarea v-model="form.descripcion" rows="2" class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink" />
           </div>
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label class="mb-1 block text-xs text-muted">Precio mensual (MXN)</label>
               <input v-model.number="form.precio_mensual" type="number" min="1" step="1" required class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
