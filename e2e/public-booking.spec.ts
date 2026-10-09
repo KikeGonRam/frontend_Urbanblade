@@ -69,6 +69,7 @@ test("la cuenta se pide solo al confirmar y conserva la selección", async ({
   // Sin sesión el botón no promete confirmar todavía.
   const cta = page.getByRole("button", { name: "Continuar y confirmar" });
   await expect(cta).toBeVisible();
+  await page.getByLabel(/Acepto el cargo por inasistencia/).check();
   await cta.click();
 
   // Va al login con la selección completa en ?redirect, para volver al mismo
@@ -117,6 +118,7 @@ test("un cliente con sesión confirma y recibe el código de su cita", async ({
       request.url().includes("/api/v1/appointments") &&
       request.method() === "POST",
   );
+  await page.getByLabel(/Acepto el cargo por inasistencia/).check();
   await page.getByRole("button", { name: "Confirmar cita" }).click();
 
   // El cuerpo es el que el backend espera de un cliente: sin client_id, que
@@ -151,6 +153,7 @@ test("un conflicto de horario muestra el motivo real del backend", async ({
   await page.goto("/reservar?servicio=s-1&barbero=b-1");
   await page.getByRole("button", { name: "Hoy" }).click();
   await page.getByRole("button", { name: "10:00" }).click();
+  await page.getByLabel(/Acepto el cargo por inasistencia/).check();
   await page.getByRole("button", { name: "Confirmar cita" }).click();
 
   // El motivo tiene que sobrevivir al regreso al paso 3: al liberarse la hora

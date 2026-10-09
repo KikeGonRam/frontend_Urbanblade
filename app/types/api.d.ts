@@ -289,7 +289,7 @@ export interface paths {
             query?: never;
             header?: never;
             path: {
-                /** @example architecto */
+                /** @example fxp9vtie */
                 appointment_code: string;
             };
             cookie?: never;
@@ -316,7 +316,7 @@ export interface paths {
             query?: never;
             header?: never;
             path: {
-                /** @example architecto */
+                /** @example fxp9vtie */
                 appointment_code: string;
                 /**
                  * @description Código público de la cita.
@@ -427,7 +427,7 @@ export interface paths {
             query?: never;
             header?: never;
             path: {
-                /** @example architecto */
+                /** @example fxp9vtie */
                 appointment_code: string;
                 /**
                  * @description Código público de la cita.
@@ -452,7 +452,7 @@ export interface paths {
             query?: never;
             header?: never;
             path: {
-                /** @example architecto */
+                /** @example fxp9vtie */
                 appointment_code: string;
                 /**
                  * @description Código público de la cita.
@@ -496,7 +496,7 @@ export interface paths {
             path: {
                 /**
                  * @description The ID of the payment.
-                 * @example architecto
+                 * @example 6aaa3af6d95ef709410e37b3
                  */
                 payment_id: string;
             };
@@ -519,7 +519,7 @@ export interface paths {
             path: {
                 /**
                  * @description The ID of the payment.
-                 * @example architecto
+                 * @example 6aaa3af6d95ef709410e37b3
                  */
                 payment_id: string;
             };
@@ -788,6 +788,65 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/appointments/{appointment_code}/extend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example fxp9vtie */
+                appointment_code: string;
+                /**
+                 * @description Código público de la cita.
+                 * @example jfb7ffye
+                 */
+                appointment: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Agregar tiempo al servicio en curso
+         * @description El barbero de la cita (o recepción/administración) agrega minutos a un servicio en proceso. Si el nuevo fin
+         *     choca con la siguiente cita responde 422 con `choca_con`; repetir con `forzar=true` extiende de todos modos y
+         *     avisa al siguiente cliente.
+         */
+        post: operations["agregarTiempoAlServicioEnCurso"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/appointments/{appointment_code}/ticket": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example fxp9vtie */
+                appointment_code: string;
+                /**
+                 * @description Código público de la cita.
+                 * @example jfb7ffye
+                 */
+                appointment: string;
+            };
+            cookie?: never;
+        };
+        /**
+         * Ticket de una cita completada
+         * @description Resumen del servicio y del pago (monto, propina, depósito aplicado, método) con el enlace temporal al
+         *     comprobante en PDF. Lo ve el cliente dueño de la cita, su barbero y el personal.
+         */
+        get: operations["ticketDeUnaCitaCompletada"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/orders": {
         parameters: {
             query?: never;
@@ -821,7 +880,7 @@ export interface paths {
             path: {
                 /**
                  * @description The ID of the order.
-                 * @example architecto
+                 * @example 6aaa3afed95ef709410e3803
                  */
                 order_id: string;
             };
@@ -874,7 +933,7 @@ export interface paths {
             path: {
                 /**
                  * @description The ID of the payment.
-                 * @example architecto
+                 * @example 6aaa3af6d95ef709410e37b3
                  */
                 payment_id: string;
             };
@@ -934,7 +993,7 @@ export interface paths {
             query?: never;
             header?: never;
             path: {
-                /** @example architecto */
+                /** @example fxp9vtie */
                 appointment_code: string;
                 /**
                  * @description Código público de la cita.
@@ -960,6 +1019,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/no-show-fees": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar cargos por inasistencia
+         * @description Cliente: los suyos (con el total adeudado). Recepción/administración: por estado (pendiente por defecto) y,
+         *     opcionalmente, de un cliente.
+         */
+        get: operations["listarCargosPorInasistencia"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/orders/{order_id}/deliver": {
         parameters: {
             query?: never;
@@ -967,7 +1047,7 @@ export interface paths {
             path: {
                 /**
                  * @description The ID of the order.
-                 * @example architecto
+                 * @example 6aaa3afed95ef709410e3803
                  */
                 order_id: string;
             };
@@ -990,7 +1070,7 @@ export interface paths {
             path: {
                 /**
                  * @description The ID of the order.
-                 * @example architecto
+                 * @example 6aaa3afed95ef709410e3803
                  */
                 order_id: string;
             };
@@ -1038,7 +1118,7 @@ export interface paths {
             path: {
                 /**
                  * @description The ID of the payment.
-                 * @example architecto
+                 * @example 6aaa3af6d95ef709410e37b3
                  */
                 payment_id: string;
             };
@@ -1064,7 +1144,7 @@ export interface paths {
             path: {
                 /**
                  * @description The ID of the payment.
-                 * @example architecto
+                 * @example 6aaa3af6d95ef709410e37b3
                  */
                 payment_id: string;
             };
@@ -1090,7 +1170,7 @@ export interface paths {
             path: {
                 /**
                  * @description The ID of the payment.
-                 * @example architecto
+                 * @example 6aaa3af6d95ef709410e37b3
                  */
                 payment_id: string;
             };
@@ -1101,6 +1181,52 @@ export interface paths {
         post?: never;
         /** Elimina un pago y su comprobante PDF asociado (si existe) del almacenamiento público. */
         delete: operations["eliminaUnPagoYSuComprobantePDFAsociadosiExisteDelAlmacenamientoPblico"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/no-show-fees/{fee_id}/pay": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description The ID of the fee.
+                 * @example architecto
+                 */
+                fee_id: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cobrar un cargo en sucursal */
+        post: operations["cobrarUnCargoEnSucursal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/no-show-fees/{fee_id}/waive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description The ID of the fee.
+                 * @example architecto
+                 */
+                fee_id: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Condonar un cargo (solo administración) */
+        post: operations["condonarUnCargosoloAdministracin"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -1131,7 +1257,7 @@ export interface paths {
             path: {
                 /**
                  * @description The ID of the servicePackage.
-                 * @example architecto
+                 * @example 6aaa3b1ad95ef709410e3983
                  */
                 servicePackage_id: string;
             };
@@ -1182,7 +1308,7 @@ export interface paths {
             path: {
                 /**
                  * @description The ID of the membershipPlan.
-                 * @example architecto
+                 * @example 6aaa3b16d95ef709410e3968
                  */
                 membershipPlan_id: string;
             };
@@ -1231,7 +1357,7 @@ export interface paths {
             path: {
                 /**
                  * @description The slug of the client.
-                 * @example architecto
+                 * @example luis-enrique-gonzalez-ramirez
                  */
                 client_slug: string;
             };
@@ -1271,7 +1397,7 @@ export interface paths {
             path: {
                 /**
                  * @description The slug of the service.
-                 * @example architecto
+                 * @example skin-fade
                  */
                 service_slug: string;
             };
@@ -1314,7 +1440,7 @@ export interface paths {
             path: {
                 /**
                  * @description The slug of the barber.
-                 * @example architecto
+                 * @example gonzalez-ramirez-luis-enrique
                  */
                 barber_slug: string;
             };
@@ -1354,7 +1480,7 @@ export interface paths {
             path: {
                 /**
                  * @description The ID of the user.
-                 * @example architecto
+                 * @example 6aa51b319ddeabe12709e9e2
                  */
                 user_id: string;
             };
@@ -1698,7 +1824,7 @@ export interface paths {
             path: {
                 /**
                  * @description The ID of the work.
-                 * @example architecto
+                 * @example 6aaa3b0dd95ef709410e382b
                  */
                 work_id: string;
             };
@@ -1721,7 +1847,7 @@ export interface paths {
             path: {
                 /**
                  * @description The ID of the work.
-                 * @example architecto
+                 * @example 6aaa3b0dd95ef709410e382b
                  */
                 work_id: string;
             };
@@ -1744,7 +1870,7 @@ export interface paths {
             path: {
                 /**
                  * @description The ID of the work.
-                 * @example architecto
+                 * @example 6aaa3b0dd95ef709410e382b
                  */
                 work_id: string;
             };
@@ -2061,7 +2187,7 @@ export interface paths {
             path: {
                 /**
                  * @description The slug of the barber.
-                 * @example architecto
+                 * @example gonzalez-ramirez-luis-enrique
                  */
                 barber_slug: string;
             };
@@ -2083,7 +2209,7 @@ export interface paths {
             path: {
                 /**
                  * @description The slug of the barber.
-                 * @example architecto
+                 * @example gonzalez-ramirez-luis-enrique
                  */
                 barber_slug: string;
             };
@@ -2105,7 +2231,7 @@ export interface paths {
             path: {
                 /**
                  * @description The slug of the barber.
-                 * @example architecto
+                 * @example gonzalez-ramirez-luis-enrique
                  */
                 barber_slug: string;
             };
@@ -2127,7 +2253,7 @@ export interface paths {
             path: {
                 /**
                  * @description The slug of the barber.
-                 * @example architecto
+                 * @example gonzalez-ramirez-luis-enrique
                  */
                 barber_slug: string;
             };
@@ -2181,7 +2307,7 @@ export interface paths {
             path: {
                 /**
                  * @description The slug of the client.
-                 * @example architecto
+                 * @example luis-enrique-gonzalez-ramirez
                  */
                 client_slug: string;
             };
@@ -2217,7 +2343,7 @@ export interface paths {
             query?: never;
             header?: never;
             path: {
-                /** @example architecto */
+                /** @example 6aaa3a4ad95ef709410e35c7 */
                 productId: string;
             };
             cookie?: never;
@@ -2236,7 +2362,7 @@ export interface paths {
             query?: never;
             header?: never;
             path: {
-                /** @example architecto */
+                /** @example 6aaa3a4ad95ef709410e35c7 */
                 productId: string;
             };
             cookie?: never;
@@ -2321,7 +2447,7 @@ export interface paths {
             path: {
                 /**
                  * @description The slug of the barber.
-                 * @example architecto
+                 * @example gonzalez-ramirez-luis-enrique
                  */
                 barber_slug: string;
             };
@@ -2343,7 +2469,7 @@ export interface paths {
             path: {
                 /**
                  * @description The slug of the barber.
-                 * @example architecto
+                 * @example gonzalez-ramirez-luis-enrique
                  */
                 barber_slug: string;
             };
@@ -2674,7 +2800,7 @@ export interface paths {
             query?: never;
             header?: never;
             path: {
-                /** @example architecto */
+                /** @example fxp9vtie */
                 appointment_code: string;
             };
             cookie?: never;
@@ -2694,7 +2820,7 @@ export interface paths {
             query?: never;
             header?: never;
             path: {
-                /** @example architecto */
+                /** @example fxp9vtie */
                 appointment_code: string;
             };
             cookie?: never;
@@ -2714,7 +2840,7 @@ export interface paths {
             query?: never;
             header?: never;
             path: {
-                /** @example architecto */
+                /** @example fxp9vtie */
                 appointment_code: string;
             };
             cookie?: never;
@@ -2807,7 +2933,7 @@ export interface paths {
             path: {
                 /**
                  * @description The ID of the product.
-                 * @example architecto
+                 * @example 6aaa3a4ad95ef709410e35c7
                  */
                 product_id: string;
             };
@@ -2829,7 +2955,7 @@ export interface paths {
             path: {
                 /**
                  * @description The ID of the product.
-                 * @example architecto
+                 * @example 6aaa3a4ad95ef709410e35c7
                  */
                 product_id: string;
             };
@@ -2918,7 +3044,7 @@ export interface paths {
             path: {
                 /**
                  * @description The ID of the waitlist.
-                 * @example architecto
+                 * @example 6aaa3ba8aff2bc58c30245ec
                  */
                 waitlist_id: string;
             };
@@ -3222,7 +3348,7 @@ export interface paths {
             path: {
                 /**
                  * @description The ID of the work.
-                 * @example architecto
+                 * @example 6aaa3b0dd95ef709410e382b
                  */
                 work_id: string;
             };
@@ -3889,6 +4015,11 @@ export interface operations {
                          *         "propina_sugerida": 25,
                          *         "has_payment": false,
                          *         "is_chargeable": true,
+                         *         "pago_resuelto": false,
+                         *         "puede_iniciar": false,
+                         *         "motivo_no_iniciar": "El pago de esta cita aún no está resuelto. Cóbrala en recepción o espera a que se verifique la transferencia antes de iniciar el servicio.",
+                         *         "fin_estimado": null,
+                         *         "minutos_extra": null,
                          *         "reminder_24h_sent": false,
                          *         "reminder_2h_sent": false,
                          *         "deposito_requerido": true,
@@ -3941,6 +4072,16 @@ export interface operations {
                             has_payment: boolean;
                             /** @example true */
                             is_chargeable: boolean;
+                            /** @example false */
+                            pago_resuelto: boolean;
+                            /** @example false */
+                            puede_iniciar: boolean;
+                            /** @example El pago de esta cita aún no está resuelto. Cóbrala en recepción o espera a que se verifique la transferencia antes de iniciar el servicio. */
+                            motivo_no_iniciar: string;
+                            /** @example null */
+                            fin_estimado: string | null;
+                            /** @example null */
+                            minutos_extra: string | null;
                             /** @example false */
                             reminder_24h_sent: boolean;
                             /** @example false */
@@ -3999,6 +4140,11 @@ export interface operations {
                          *         "propina_sugerida": 25,
                          *         "has_payment": false,
                          *         "is_chargeable": true,
+                         *         "pago_resuelto": false,
+                         *         "puede_iniciar": false,
+                         *         "motivo_no_iniciar": "El pago de esta cita aún no está resuelto. Cóbrala en recepción o espera a que se verifique la transferencia antes de iniciar el servicio.",
+                         *         "fin_estimado": null,
+                         *         "minutos_extra": null,
                          *         "reminder_24h_sent": false,
                          *         "reminder_2h_sent": false,
                          *         "deposito_requerido": true,
@@ -4051,6 +4197,16 @@ export interface operations {
                             has_payment: boolean;
                             /** @example true */
                             is_chargeable: boolean;
+                            /** @example false */
+                            pago_resuelto: boolean;
+                            /** @example false */
+                            puede_iniciar: boolean;
+                            /** @example El pago de esta cita aún no está resuelto. Cóbrala en recepción o espera a que se verifique la transferencia antes de iniciar el servicio. */
+                            motivo_no_iniciar: string;
+                            /** @example null */
+                            fin_estimado: string | null;
+                            /** @example null */
+                            minutos_extra: string | null;
                             /** @example false */
                             reminder_24h_sent: boolean;
                             /** @example false */
@@ -4123,6 +4279,16 @@ export interface operations {
                             precio_cobrado: number;
                             /** @example 25 */
                             propina_sugerida: number;
+                            /** @example false */
+                            pago_resuelto: boolean;
+                            /** @example false */
+                            puede_iniciar: boolean;
+                            /** @example El pago de esta cita aún no está resuelto. Cóbrala en recepción o espera a que se verifique la transferencia antes de iniciar el servicio. */
+                            motivo_no_iniciar: string;
+                            /** @example null */
+                            fin_estimado: string | null;
+                            /** @example null */
+                            minutos_extra: string | null;
                             /** @example false */
                             reminder_24h_sent: boolean;
                             /** @example false */
@@ -4246,6 +4412,11 @@ export interface operations {
                      */
                     pagar_ahora?: boolean | null;
                     /**
+                     * @description El cliente acepta el cargo por inasistencia (NoShowFeeService) en el último paso de la reserva.
+                     * @example false
+                     */
+                    acepta_cargo_inasistencia?: boolean | null;
+                    /**
                      * @description Requerido solo para Admin/Recepcionista. Id del cliente (ObjectId de Mongo, string).
                      * @example 6710a1b2c3d4e5f607182931
                      */
@@ -4286,6 +4457,16 @@ export interface operations {
                             precio_cobrado: number;
                             /** @example 25 */
                             propina_sugerida: number;
+                            /** @example null */
+                            pago_resuelto: string | null;
+                            /** @example null */
+                            puede_iniciar: string | null;
+                            /** @example null */
+                            motivo_no_iniciar: string | null;
+                            /** @example null */
+                            fin_estimado: string | null;
+                            /** @example null */
+                            minutos_extra: string | null;
                             /** @example false */
                             reminder_24h_sent: boolean;
                             /** @example false */
@@ -4440,7 +4621,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @example architecto */
+                /** @example fxp9vtie */
                 appointment_code: string;
             };
             cookie?: never;
@@ -4465,16 +4646,16 @@ export interface operations {
                     service_id: string;
                     /**
                      * @description El campo value no es una fecha válida. El campo value debe ser una fecha posterior o igual a <code>today</code>.
-                     * @example 2052-10-28
+                     * @example 2052-10-31
                      */
                     fecha: string;
                     /**
                      * @description Must be a valid date in the format <code>H:i</code>.
-                     * @example 01:06
+                     * @example 13:59
                      */
                     hora_inicio: string;
                     /**
-                     * @example cancelada
+                     * @example completada
                      * @enum {string}
                      */
                     estado: "pendiente" | "confirmada" | "en_proceso" | "completada" | "cancelada" | "no_asistio";
@@ -4493,7 +4674,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @example architecto */
+                /** @example fxp9vtie */
                 appointment_code: string;
             };
             cookie?: never;
@@ -4506,7 +4687,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @example architecto */
+                /** @example fxp9vtie */
                 appointment_code: string;
                 /**
                  * @description Código público de la cita.
@@ -4585,12 +4766,12 @@ export interface operations {
             content: {
                 "application/json": {
                     /**
-                     * @example day
+                     * @example week
                      * @enum {string}
                      */
                     period?: "day" | "week";
                     /**
-                     * @example confirmada
+                     * @example en_proceso
                      * @enum {string|null}
                      */
                     estado?: "pendiente" | "confirmada" | "en_proceso" | "completada" | "cancelada" | "no_asistio" | null;
@@ -4701,7 +4882,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @example architecto */
+                /** @example fxp9vtie */
                 appointment_code: string;
                 /**
                  * @description Código público de la cita.
@@ -4734,7 +4915,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @example architecto */
+                /** @example fxp9vtie */
                 appointment_code: string;
                 /**
                  * @description Código público de la cita.
@@ -4786,7 +4967,7 @@ export interface operations {
             path: {
                 /**
                  * @description The ID of the payment.
-                 * @example architecto
+                 * @example 6aaa3af6d95ef709410e37b3
                  */
                 payment_id: string;
             };
@@ -4802,7 +4983,7 @@ export interface operations {
             path: {
                 /**
                  * @description The ID of the payment.
-                 * @example architecto
+                 * @example 6aaa3af6d95ef709410e37b3
                  */
                 payment_id: string;
             };
@@ -4853,7 +5034,7 @@ export interface operations {
                     service_id: string;
                     /**
                      * @description El campo value no es una fecha válida. El campo value debe ser una fecha posterior o igual a <code>today</code>.
-                     * @example 2052-10-28
+                     * @example 2052-10-31
                      */
                     date: string;
                 };
@@ -4995,8 +5176,206 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @example [] */
-                        data?: unknown[];
+                        /**
+                         * @example [
+                         *       {
+                         *         "id": "6aaa3a46d95ef709410e35bc",
+                         *         "nombre": "Afeitado Clásico",
+                         *         "categoria": "Barba",
+                         *         "precio": 180,
+                         *         "duracion_min": 30,
+                         *         "descripcion": "Afeitado tradicional con navaja y toalla caliente.",
+                         *         "imagen": "http://localhost:8000/storage/services/OBSXla86DdParNhf0RnGAfg4HL2cdpCfcnQQnNkk.webp"
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a46d95ef709410e35bb",
+                         *         "nombre": "Arreglo de Barba",
+                         *         "categoria": "Barba",
+                         *         "precio": 100,
+                         *         "duracion_min": 15,
+                         *         "descripcion": "Recorte y perfilado rápido de barba.",
+                         *         "imagen": "http://localhost:8000/storage/services/YcC3ru4tjNMf4OkBKmzAT9TiQoSVS3NzvDDd85Tp.jpg"
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a46d95ef709410e35bd",
+                         *         "nombre": "Combo Corte + Barba",
+                         *         "categoria": "Combos",
+                         *         "precio": 320,
+                         *         "duracion_min": 60,
+                         *         "descripcion": "Paquete completo de corte y arreglo de barba.",
+                         *         "imagen": "http://localhost:8000/storage/services/dy5873ujL0jLV7lmPThhS0vsM4kC6BTcXh4ReftD.jpg"
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a47d95ef709410e35be",
+                         *         "nombre": "Combo Premium",
+                         *         "categoria": "Combos",
+                         *         "precio": 450,
+                         *         "duracion_min": 75,
+                         *         "descripcion": "Corte, barba, tratamiento capilar y toalla caliente.",
+                         *         "imagen": "http://localhost:8000/storage/services/Syot8UweGG8qNu47uzcNcBxtwa3o7A0ZzA4TA5bZ.jpg"
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a43d95ef709410e35b3",
+                         *         "nombre": "Corte Clásico",
+                         *         "categoria": "Cortes",
+                         *         "precio": 180,
+                         *         "duracion_min": 30,
+                         *         "descripcion": "Corte de cabello tradicional con tijera y máquina, acabado prolijo.",
+                         *         "imagen": "http://localhost:8000/storage/services/FdATpKjZg0K5RWA42p978vXgRig5q722RpSdc8bh.jpg"
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a45d95ef709410e35b9",
+                         *         "nombre": "Corte Infantil",
+                         *         "categoria": "Cortes",
+                         *         "precio": 150,
+                         *         "duracion_min": 25,
+                         *         "descripcion": "Corte para niños, ambiente relajado y paciente.",
+                         *         "imagen": "http://localhost:8000/storage/services/LSkeehcKQeM2Uu0UPkYqEfl45MoyMt6Ul9H0cVXs.jpg"
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a45d95ef709410e35b8",
+                         *         "nombre": "Corte Mohicano",
+                         *         "categoria": "Cortes",
+                         *         "precio": 260,
+                         *         "duracion_min": 45,
+                         *         "descripcion": "Cresta central marcada con laterales rapados.",
+                         *         "imagen": "http://localhost:8000/storage/services/j4JvHxOdgDjCB8455h4zpUjda3nIDJuZB2uHgLrT.jpg"
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a49d95ef709410e35c3",
+                         *         "nombre": "Corte a Navaja",
+                         *         "categoria": "Cortes",
+                         *         "precio": 260,
+                         *         "duracion_min": 40,
+                         *         "descripcion": "Corte completo trabajado enteramente a navaja.",
+                         *         "imagen": "http://localhost:8000/storage/services/vYPyy5B6SMEmorRv9fKiyPHPsmj4VLikZXpWvcgv.jpg"
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a45d95ef709410e35ba",
+                         *         "nombre": "Diseño de Barba",
+                         *         "categoria": "Barba",
+                         *         "precio": 150,
+                         *         "duracion_min": 25,
+                         *         "descripcion": "Perfilado y diseño de barba con navaja.",
+                         *         "imagen": "http://localhost:8000/storage/services/her9jzuzKKrSixaLq9yZuDgnrHp5xypfCHMEX87K.jpg"
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a48d95ef709410e35c2",
+                         *         "nombre": "Keratina Express",
+                         *         "categoria": "Tratamientos",
+                         *         "precio": 350,
+                         *         "duracion_min": 50,
+                         *         "descripcion": "Alisado ligero con keratina, brillo inmediato.",
+                         *         "imagen": "http://localhost:8000/storage/services/eFUUmGJD7PGLfYGqkz7T0QTsBBYr8WcBNpsft3iM.jpg"
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a48d95ef709410e35c1",
+                         *         "nombre": "Perfilado de Cejas",
+                         *         "categoria": "Tratamientos",
+                         *         "precio": 90,
+                         *         "duracion_min": 15,
+                         *         "descripcion": "Diseño y limpieza de cejas con navaja o pinza.",
+                         *         "imagen": "http://localhost:8000/storage/services/p0PTL1D81mmPq1pL1pqCWUK6gqIr34JH36HZ8bu5.webp"
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a44d95ef709410e35b7",
+                         *         "nombre": "Pompadour",
+                         *         "categoria": "Cortes",
+                         *         "precio": 240,
+                         *         "duracion_min": 45,
+                         *         "descripcion": "Corte con volumen frontal peinado hacia atrás.",
+                         *         "imagen": null
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a49d95ef709410e35c4",
+                         *         "nombre": "Rapado Total",
+                         *         "categoria": "Cortes",
+                         *         "precio": 130,
+                         *         "duracion_min": 20,
+                         *         "descripcion": "Rapado uniforme de toda la cabeza.",
+                         *         "imagen": null
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a4ad95ef709410e35c6",
+                         *         "nombre": "Retoque Express",
+                         *         "categoria": "Cortes",
+                         *         "precio": 120,
+                         *         "duracion_min": 15,
+                         *         "descripcion": "Retoque rápido de contornos entre cortes.",
+                         *         "imagen": null
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a44d95ef709410e35b5",
+                         *         "nombre": "Skin Fade",
+                         *         "categoria": "Cortes",
+                         *         "precio": 250,
+                         *         "duracion_min": 45,
+                         *         "descripcion": "Degradado a piel, look moderno y muy definido.",
+                         *         "imagen": null
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a4ad95ef709410e35c5",
+                         *         "nombre": "Spa Capilar",
+                         *         "categoria": "Tratamientos",
+                         *         "precio": 300,
+                         *         "duracion_min": 40,
+                         *         "descripcion": "Masaje, mascarilla y limpieza profunda del cabello.",
+                         *         "imagen": null
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a43d95ef709410e35b4",
+                         *         "nombre": "Taper Fade",
+                         *         "categoria": "Cortes",
+                         *         "precio": 220,
+                         *         "duracion_min": 40,
+                         *         "descripcion": "Degradado progresivo en los laterales con transición suave.",
+                         *         "imagen": null
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a47d95ef709410e35c0",
+                         *         "nombre": "Tinte / Color",
+                         *         "categoria": "Tratamientos",
+                         *         "precio": 380,
+                         *         "duracion_min": 60,
+                         *         "descripcion": "Coloración completa o mechas según preferencia.",
+                         *         "imagen": null
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a47d95ef709410e35bf",
+                         *         "nombre": "Tratamiento Capilar",
+                         *         "categoria": "Tratamientos",
+                         *         "precio": 280,
+                         *         "duracion_min": 35,
+                         *         "descripcion": "Hidratación y nutrición profunda del cuero cabelludo.",
+                         *         "imagen": null
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a44d95ef709410e35b6",
+                         *         "nombre": "Undercut",
+                         *         "categoria": "Cortes",
+                         *         "precio": 230,
+                         *         "duracion_min": 40,
+                         *         "descripcion": "Rapado en laterales con volumen conservado arriba.",
+                         *         "imagen": null
+                         *       }
+                         *     ]
+                         */
+                        data?: {
+                            /** @example 6aaa3a46d95ef709410e35bc */
+                            id?: string;
+                            /** @example Afeitado Clásico */
+                            nombre?: string;
+                            /** @example Barba */
+                            categoria?: string;
+                            /** @example 180 */
+                            precio?: number;
+                            /** @example 30 */
+                            duracion_min?: number;
+                            /** @example Afeitado tradicional con navaja y toalla caliente. */
+                            descripcion?: string;
+                            /** @example http://localhost:8000/storage/services/OBSXla86DdParNhf0RnGAfg4HL2cdpCfcnQQnNkk.webp */
+                            imagen?: string;
+                        }[];
                     };
                 };
             };
@@ -5017,8 +5396,54 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @example [] */
-                        data?: unknown[];
+                        /**
+                         * @example [
+                         *       {
+                         *         "id": "6aadd78765a6ba4bd80adfc2",
+                         *         "slug": "gonzalez-ramirez-luis-enrique",
+                         *         "user": {
+                         *           "id": "6aab96924c163e944d0b36d5",
+                         *           "name": "Gonzalez Ramirez Luis Enrique"
+                         *         },
+                         *         "especialidades": "",
+                         *         "descripcion": "Barbero profesional de UrbanBlade.",
+                         *         "foto": "https://urbanblade-staging-uploads-209479293733.s3.us-east-1.amazonaws.com/avatars/6aab96924c163e944d0b36d5/77335daf-1099-431b-adfc-44780e9aeab1.jpg",
+                         *         "activo": true,
+                         *         "avg_rating": 3,
+                         *         "total_reviews": 1,
+                         *         "citas_conmigo": null,
+                         *         "es_favorito": false
+                         *       }
+                         *     ]
+                         */
+                        data?: {
+                            /** @example 6aadd78765a6ba4bd80adfc2 */
+                            id?: string;
+                            /** @example gonzalez-ramirez-luis-enrique */
+                            slug?: string;
+                            user?: {
+                                /** @example 6aab96924c163e944d0b36d5 */
+                                id?: string;
+                                /** @example Gonzalez Ramirez Luis Enrique */
+                                name?: string;
+                            };
+                            /** @example  */
+                            especialidades?: string;
+                            /** @example Barbero profesional de UrbanBlade. */
+                            descripcion?: string;
+                            /** @example https://urbanblade-staging-uploads-209479293733.s3.us-east-1.amazonaws.com/avatars/6aab96924c163e944d0b36d5/77335daf-1099-431b-adfc-44780e9aeab1.jpg */
+                            foto?: string;
+                            /** @example true */
+                            activo?: boolean;
+                            /** @example 3 */
+                            avg_rating?: number;
+                            /** @example 1 */
+                            total_reviews?: number;
+                            /** @example null */
+                            citas_conmigo?: string | null;
+                            /** @example false */
+                            es_favorito?: boolean;
+                        }[];
                     };
                 };
             };
@@ -5039,8 +5464,260 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @example [] */
-                        data?: unknown[];
+                        /**
+                         * @example [
+                         *       {
+                         *         "id": "6aaa3a51d95ef709410e35d9",
+                         *         "nombre": "Aceite de Barba Premium",
+                         *         "categoria": "Barba",
+                         *         "descripcion": "Aceite de Barba Premium — producto profesional UrbanBlade.",
+                         *         "precio_venta": 200,
+                         *         "stock_actual": 4,
+                         *         "imagen": "http://localhost:8000/storage/products/ldHXKkwwr7h14r9EQ73jaaezDCfhwxUoT7LM7TMD.jpg"
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a4fd95ef709410e35d5",
+                         *         "nombre": "Acondicionador Hidratante",
+                         *         "categoria": "Cuidado Capilar",
+                         *         "descripcion": "Acondicionador Hidratante — producto profesional UrbanBlade.",
+                         *         "precio_venta": 160,
+                         *         "stock_actual": 29,
+                         *         "imagen": null
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a53d95ef709410e35df",
+                         *         "nombre": "Aftershave Refrescante",
+                         *         "categoria": "Afeitado",
+                         *         "descripcion": "Aftershave Refrescante — producto profesional UrbanBlade.",
+                         *         "precio_venta": 140,
+                         *         "stock_actual": 52,
+                         *         "imagen": null
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a4dd95ef709410e35cd",
+                         *         "nombre": "Arcilla Modeladora",
+                         *         "categoria": "Styling",
+                         *         "descripcion": "Arcilla Modeladora — producto profesional UrbanBlade.",
+                         *         "precio_venta": 160,
+                         *         "stock_actual": 57,
+                         *         "imagen": null
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a51d95ef709410e35db",
+                         *         "nombre": "Balsamo de Barba",
+                         *         "categoria": "Barba",
+                         *         "descripcion": "Balsamo de Barba — producto profesional UrbanBlade.",
+                         *         "precio_venta": 180,
+                         *         "stock_actual": 22,
+                         *         "imagen": null
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a56d95ef709410e35e9",
+                         *         "nombre": "Cepillo para Barba",
+                         *         "categoria": "Accesorios",
+                         *         "descripcion": "Cepillo para Barba — producto profesional UrbanBlade.",
+                         *         "precio_venta": 110,
+                         *         "stock_actual": 12,
+                         *         "imagen": null
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a4ad95ef709410e35c7",
+                         *         "nombre": "Cera Mate Fijacion Fuerte",
+                         *         "categoria": "Styling",
+                         *         "descripcion": "Cera Mate Fijacion Fuerte — producto profesional UrbanBlade.",
+                         *         "precio_venta": 150,
+                         *         "stock_actual": 25,
+                         *         "imagen": null
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a5ed95ef709410e35ff",
+                         *         "nombre": "Colonia UrbanBlade Signature",
+                         *         "categoria": "Fragancias",
+                         *         "descripcion": "Colonia UrbanBlade Signature — producto profesional UrbanBlade.",
+                         *         "precio_venta": 420,
+                         *         "stock_actual": 5,
+                         *         "imagen": null
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a54d95ef709410e35e1",
+                         *         "nombre": "Crema de Afeitar Clasica",
+                         *         "categoria": "Afeitado",
+                         *         "descripcion": "Crema de Afeitar Clasica — producto profesional UrbanBlade.",
+                         *         "precio_venta": 120,
+                         *         "stock_actual": 26,
+                         *         "imagen": null
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a4cd95ef709410e35cb",
+                         *         "nombre": "Gel Fijador Extra Fuerte",
+                         *         "categoria": "Styling",
+                         *         "descripcion": "Gel Fijador Extra Fuerte — producto profesional UrbanBlade.",
+                         *         "precio_venta": 110,
+                         *         "stock_actual": 8,
+                         *         "imagen": null
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a5dd95ef709410e35fb",
+                         *         "nombre": "Jabon de Barba Artesanal",
+                         *         "categoria": "Barba",
+                         *         "descripcion": "Jabon de Barba Artesanal — producto profesional UrbanBlade.",
+                         *         "precio_venta": 125,
+                         *         "stock_actual": 11,
+                         *         "imagen": null
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a52d95ef709410e35dd",
+                         *         "nombre": "Kit Aceite y Balsamo de Barba",
+                         *         "categoria": "Barba",
+                         *         "descripcion": "Kit Aceite y Balsamo de Barba — producto profesional UrbanBlade.",
+                         *         "precio_venta": 320,
+                         *         "stock_actual": 34,
+                         *         "imagen": null
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a54d95ef709410e35e3",
+                         *         "nombre": "Locion Post Afeitado",
+                         *         "categoria": "Afeitado",
+                         *         "descripcion": "Locion Post Afeitado — producto profesional UrbanBlade.",
+                         *         "precio_venta": 130,
+                         *         "stock_actual": 10,
+                         *         "imagen": null
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a50d95ef709410e35d7",
+                         *         "nombre": "Mascarilla Capilar Nutritiva",
+                         *         "categoria": "Cuidado Capilar",
+                         *         "descripcion": "Mascarilla Capilar Nutritiva — producto profesional UrbanBlade.",
+                         *         "precio_venta": 210,
+                         *         "stock_actual": 9,
+                         *         "imagen": null
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a55d95ef709410e35e5",
+                         *         "nombre": "Navajas de Afeitar (5 pzas)",
+                         *         "categoria": "Afeitado",
+                         *         "descripcion": "Navajas de Afeitar (5 pzas) — producto profesional UrbanBlade.",
+                         *         "precio_venta": 95,
+                         *         "stock_actual": 38,
+                         *         "imagen": null
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a55d95ef709410e35e7",
+                         *         "nombre": "Peine de Madera",
+                         *         "categoria": "Accesorios",
+                         *         "descripcion": "Peine de Madera — producto profesional UrbanBlade.",
+                         *         "precio_venta": 90,
+                         *         "stock_actual": 58,
+                         *         "imagen": null
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a4bd95ef709410e35c9",
+                         *         "nombre": "Pomada Brillante Clasica",
+                         *         "categoria": "Styling",
+                         *         "descripcion": "Pomada Brillante Clasica — producto profesional UrbanBlade.",
+                         *         "precio_venta": 140,
+                         *         "stock_actual": 19,
+                         *         "imagen": null
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a5cd95ef709410e35f9",
+                         *         "nombre": "Serum Brillo Instantaneo",
+                         *         "categoria": "Styling",
+                         *         "descripcion": "Serum Brillo Instantaneo — producto profesional UrbanBlade.",
+                         *         "precio_venta": 165,
+                         *         "stock_actual": 57,
+                         *         "imagen": null
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a5dd95ef709410e35fd",
+                         *         "nombre": "Set de Viaje Grooming",
+                         *         "categoria": "Accesorios",
+                         *         "descripcion": "Set de Viaje Grooming — producto profesional UrbanBlade.",
+                         *         "precio_venta": 350,
+                         *         "stock_actual": 29,
+                         *         "imagen": null
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a4ed95ef709410e35d1",
+                         *         "nombre": "Shampoo Anticaida",
+                         *         "categoria": "Cuidado Capilar",
+                         *         "descripcion": "Shampoo Anticaida — producto profesional UrbanBlade.",
+                         *         "precio_venta": 180,
+                         *         "stock_actual": 23,
+                         *         "imagen": null
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a4fd95ef709410e35d3",
+                         *         "nombre": "Shampoo Carbon Activado",
+                         *         "categoria": "Cuidado Capilar",
+                         *         "descripcion": "Shampoo Carbon Activado — producto profesional UrbanBlade.",
+                         *         "precio_venta": 170,
+                         *         "stock_actual": 38,
+                         *         "imagen": null
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a4dd95ef709410e35cf",
+                         *         "nombre": "Spray Fijador Profesional",
+                         *         "categoria": "Styling",
+                         *         "descripcion": "Spray Fijador Profesional — producto profesional UrbanBlade.",
+                         *         "precio_venta": 130,
+                         *         "stock_actual": 47,
+                         *         "imagen": null
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a5ad95ef709410e35f5",
+                         *         "nombre": "Talco Refrescante",
+                         *         "categoria": "Afeitado",
+                         *         "descripcion": "Talco Refrescante — producto profesional UrbanBlade.",
+                         *         "precio_venta": 95,
+                         *         "stock_actual": 40,
+                         *         "imagen": null
+                         *       },
+                         *       {
+                         *         "id": "6ab70e856688e1bd7b0103dd",
+                         *         "nombre": "Test",
+                         *         "categoria": "Test",
+                         *         "descripcion": "Etgdb",
+                         *         "precio_venta": 200,
+                         *         "stock_actual": 15,
+                         *         "imagen": "http://localhost:8000/storage/products/jJT13Q4rBMwzzX5MGnAiMy2OwLlqLWseWRKSyFWl.jpg"
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a57d95ef709410e35eb",
+                         *         "nombre": "Toalla Facial Premium",
+                         *         "categoria": "Accesorios",
+                         *         "descripcion": "Toalla Facial Premium — producto profesional UrbanBlade.",
+                         *         "precio_venta": 140,
+                         *         "stock_actual": 27,
+                         *         "imagen": null
+                         *       },
+                         *       {
+                         *         "id": "6aaa3a5bd95ef709410e35f7",
+                         *         "nombre": "Tonico Capilar Anticaspa",
+                         *         "categoria": "Cuidado Capilar",
+                         *         "descripcion": "Tonico Capilar Anticaspa — producto profesional UrbanBlade.",
+                         *         "precio_venta": 150,
+                         *         "stock_actual": 6,
+                         *         "imagen": null
+                         *       }
+                         *     ]
+                         */
+                        data?: {
+                            /** @example 6aaa3a51d95ef709410e35d9 */
+                            id?: string;
+                            /** @example Aceite de Barba Premium */
+                            nombre?: string;
+                            /** @example Barba */
+                            categoria?: string;
+                            /** @example Aceite de Barba Premium — producto profesional UrbanBlade. */
+                            descripcion?: string;
+                            /** @example 200 */
+                            precio_venta?: number;
+                            /** @example 4 */
+                            stock_actual?: number;
+                            /** @example http://localhost:8000/storage/products/ldHXKkwwr7h14r9EQ73jaaezDCfhwxUoT7LM7TMD.jpg */
+                            imagen?: string;
+                        }[];
                     };
                 };
             };
@@ -5068,7 +5745,7 @@ export interface operations {
                     service_id: string;
                     /**
                      * @description El campo value no es una fecha válida. El campo value debe ser una fecha posterior o igual a <code>today</code>.
-                     * @example 2052-10-28
+                     * @example 2052-10-31
                      */
                     date: string;
                 };
@@ -5117,14 +5794,504 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @example [] */
-                        data?: unknown[];
+                        /**
+                         * @example [
+                         *       {
+                         *         "id": "6ab535ef96a5df8c0a01f10e",
+                         *         "title": "test",
+                         *         "description": "Ejemplo",
+                         *         "work_date": "2026-09-24",
+                         *         "barber": {
+                         *           "id": "6aab96924c163e944d0b36d5",
+                         *           "name": "Gonzalez Ramirez Luis Enrique",
+                         *           "slug": "gonzalez-ramirez-luis-enrique",
+                         *           "foto": null
+                         *         },
+                         *         "images": [
+                         *           "http://localhost:8000/storage/portfolio/IGIDmfOJP4AnLGMBCAdmM6HZU0Xk2M95aWPdHxyv.jpg"
+                         *         ],
+                         *         "media": [
+                         *           {
+                         *             "url": "http://localhost:8000/storage/portfolio/IGIDmfOJP4AnLGMBCAdmM6HZU0Xk2M95aWPdHxyv.jpg",
+                         *             "type": "image"
+                         *           }
+                         *         ],
+                         *         "reactions_count": 2,
+                         *         "comments_count": 0,
+                         *         "saved_count": 0,
+                         *         "is_reacted": false,
+                         *         "is_saved": false,
+                         *         "comments": []
+                         *       },
+                         *       {
+                         *         "id": "6aaa3b11d95ef709410e3841",
+                         *         "title": "Degradado quirurgico",
+                         *         "description": "Transformando looks, un cliente a la vez.",
+                         *         "work_date": "2025-11-29",
+                         *         "barber": {
+                         *           "id": null,
+                         *           "name": null,
+                         *           "slug": null,
+                         *           "foto": null
+                         *         },
+                         *         "images": [
+                         *           "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=900&h=1100&auto=format&fit=crop&q=85",
+                         *           "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?w=900&h=1100&auto=format&fit=crop&q=85",
+                         *           "https://images.unsplash.com/photo-1534297635766-a262cdcb8ee4?w=900&h=1100&auto=format&fit=crop&q=85"
+                         *         ],
+                         *         "media": [
+                         *           {
+                         *             "url": "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=900&h=1100&auto=format&fit=crop&q=85",
+                         *             "type": "image"
+                         *           },
+                         *           {
+                         *             "url": "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?w=900&h=1100&auto=format&fit=crop&q=85",
+                         *             "type": "image"
+                         *           },
+                         *           {
+                         *             "url": "https://images.unsplash.com/photo-1534297635766-a262cdcb8ee4?w=900&h=1100&auto=format&fit=crop&q=85",
+                         *             "type": "image"
+                         *           }
+                         *         ],
+                         *         "reactions_count": 21,
+                         *         "comments_count": 3,
+                         *         "saved_count": 0,
+                         *         "is_reacted": false,
+                         *         "is_saved": false,
+                         *         "comments": [
+                         *           {
+                         *             "id": "6aaa3b12d95ef709410e3898",
+                         *             "comment": "Se ve buenisimo, recomendado al 100%.",
+                         *             "user": {
+                         *               "name": null
+                         *             },
+                         *             "created_at": "2026-09-16T00:45:38-06:00"
+                         *           },
+                         *           {
+                         *             "id": "6aaa3b12d95ef709410e3899",
+                         *             "comment": "Ya quiero mi cita para que me dejen asi.",
+                         *             "user": {
+                         *               "name": null
+                         *             },
+                         *             "created_at": "2026-09-16T00:45:38-06:00"
+                         *           },
+                         *           {
+                         *             "id": "6aaa3b12d95ef709410e3897",
+                         *             "comment": "Un artista con las tijeras.",
+                         *             "user": {
+                         *               "name": null
+                         *             },
+                         *             "created_at": "2026-09-16T00:45:38-06:00"
+                         *           }
+                         *         ]
+                         *       },
+                         *       {
+                         *         "id": "6aaa3b11d95ef709410e3840",
+                         *         "title": "Fade limpio de la semana",
+                         *         "description": "Cada corte cuenta una historia. Este es el resultado de hoy.",
+                         *         "work_date": "2026-06-25",
+                         *         "barber": {
+                         *           "id": null,
+                         *           "name": null,
+                         *           "slug": null,
+                         *           "foto": null
+                         *         },
+                         *         "images": [
+                         *           "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=900&h=1100&auto=format&fit=crop&q=85",
+                         *           "https://images.unsplash.com/photo-1605497787928-40e1c74e4e74?w=900&h=1100&auto=format&fit=crop&q=85"
+                         *         ],
+                         *         "media": [
+                         *           {
+                         *             "url": "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=900&h=1100&auto=format&fit=crop&q=85",
+                         *             "type": "image"
+                         *           },
+                         *           {
+                         *             "url": "https://images.unsplash.com/photo-1605497787928-40e1c74e4e74?w=900&h=1100&auto=format&fit=crop&q=85",
+                         *             "type": "image"
+                         *           }
+                         *         ],
+                         *         "reactions_count": 11,
+                         *         "comments_count": 3,
+                         *         "saved_count": 0,
+                         *         "is_reacted": false,
+                         *         "is_saved": false,
+                         *         "comments": [
+                         *           {
+                         *             "id": "6aaa3b12d95ef709410e3895",
+                         *             "comment": "Vengo desde hace años y nunca falla.",
+                         *             "user": {
+                         *               "name": null
+                         *             },
+                         *             "created_at": "2026-09-16T00:45:38-06:00"
+                         *           },
+                         *           {
+                         *             "id": "6aaa3b12d95ef709410e3896",
+                         *             "comment": "Vengo desde hace años y nunca falla.",
+                         *             "user": {
+                         *               "name": null
+                         *             },
+                         *             "created_at": "2026-09-16T00:45:38-06:00"
+                         *           },
+                         *           {
+                         *             "id": "6aaa3b12d95ef709410e3894",
+                         *             "comment": "Trabajo limpio y profesional.",
+                         *             "user": {
+                         *               "name": null
+                         *             },
+                         *             "created_at": "2026-09-16T00:45:38-06:00"
+                         *           }
+                         *         ]
+                         *       },
+                         *       {
+                         *         "id": "6aaa3b11d95ef709410e383f",
+                         *         "title": "Estilo moderno urbano",
+                         *         "description": "Transformando looks, un cliente a la vez.",
+                         *         "work_date": "2026-01-01",
+                         *         "barber": {
+                         *           "id": null,
+                         *           "name": null,
+                         *           "slug": null,
+                         *           "foto": null
+                         *         },
+                         *         "images": [
+                         *           "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=900&h=1100&auto=format&fit=crop&q=85"
+                         *         ],
+                         *         "media": [
+                         *           {
+                         *             "url": "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=900&h=1100&auto=format&fit=crop&q=85",
+                         *             "type": "image"
+                         *           }
+                         *         ],
+                         *         "reactions_count": 18,
+                         *         "comments_count": 1,
+                         *         "saved_count": 0,
+                         *         "is_reacted": false,
+                         *         "is_saved": false,
+                         *         "comments": [
+                         *           {
+                         *             "id": "6aaa3b12d95ef709410e3893",
+                         *             "comment": "Vengo desde hace años y nunca falla.",
+                         *             "user": {
+                         *               "name": null
+                         *             },
+                         *             "created_at": "2026-09-16T00:45:38-06:00"
+                         *           }
+                         *         ]
+                         *       },
+                         *       {
+                         *         "id": "6aaa3b11d95ef709410e383e",
+                         *         "title": "Degradado quirurgico",
+                         *         "description": "Cada corte cuenta una historia. Este es el resultado de hoy.",
+                         *         "work_date": "2026-08-21",
+                         *         "barber": {
+                         *           "id": null,
+                         *           "name": null,
+                         *           "slug": null,
+                         *           "foto": null
+                         *         },
+                         *         "images": [
+                         *           "https://images.unsplash.com/photo-1592647420148-bfcc177e2117?w=900&h=1100&auto=format&fit=crop&q=85",
+                         *           "https://images.unsplash.com/photo-1605497787928-40e1c74e4e74?w=900&h=1100&auto=format&fit=crop&q=85"
+                         *         ],
+                         *         "media": [
+                         *           {
+                         *             "url": "https://images.unsplash.com/photo-1592647420148-bfcc177e2117?w=900&h=1100&auto=format&fit=crop&q=85",
+                         *             "type": "image"
+                         *           },
+                         *           {
+                         *             "url": "https://images.unsplash.com/photo-1605497787928-40e1c74e4e74?w=900&h=1100&auto=format&fit=crop&q=85",
+                         *             "type": "image"
+                         *           }
+                         *         ],
+                         *         "reactions_count": 10,
+                         *         "comments_count": 3,
+                         *         "saved_count": 0,
+                         *         "is_reacted": false,
+                         *         "is_saved": false,
+                         *         "comments": [
+                         *           {
+                         *             "id": "6aaa3b12d95ef709410e3890",
+                         *             "comment": "Que nivel de detalle, impresionante.",
+                         *             "user": {
+                         *               "name": null
+                         *             },
+                         *             "created_at": "2026-09-16T00:45:38-06:00"
+                         *           },
+                         *           {
+                         *             "id": "6aaa3b12d95ef709410e3891",
+                         *             "comment": "Que precision en el degradado.",
+                         *             "user": {
+                         *               "name": null
+                         *             },
+                         *             "created_at": "2026-09-16T00:45:38-06:00"
+                         *           },
+                         *           {
+                         *             "id": "6aaa3b12d95ef709410e3892",
+                         *             "comment": "Que precision en el degradado.",
+                         *             "user": {
+                         *               "name": null
+                         *             },
+                         *             "created_at": "2026-09-16T00:45:38-06:00"
+                         *           }
+                         *         ]
+                         *       },
+                         *       {
+                         *         "id": "6aaa3b11d95ef709410e383d",
+                         *         "title": "Precision en cada linea",
+                         *         "description": "Cada corte cuenta una historia. Este es el resultado de hoy.",
+                         *         "work_date": "2025-07-24",
+                         *         "barber": {
+                         *           "id": null,
+                         *           "name": null,
+                         *           "slug": null,
+                         *           "foto": null
+                         *         },
+                         *         "images": [
+                         *           "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=900&h=1100&auto=format&fit=crop&q=85",
+                         *           "https://images.unsplash.com/photo-1592647420148-bfcc177e2117?w=900&h=1100&auto=format&fit=crop&q=85",
+                         *           "https://images.unsplash.com/photo-1592647420148-bfcc177e2117?w=900&h=1100&auto=format&fit=crop&q=85"
+                         *         ],
+                         *         "media": [
+                         *           {
+                         *             "url": "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=900&h=1100&auto=format&fit=crop&q=85",
+                         *             "type": "image"
+                         *           },
+                         *           {
+                         *             "url": "https://images.unsplash.com/photo-1592647420148-bfcc177e2117?w=900&h=1100&auto=format&fit=crop&q=85",
+                         *             "type": "image"
+                         *           },
+                         *           {
+                         *             "url": "https://images.unsplash.com/photo-1592647420148-bfcc177e2117?w=900&h=1100&auto=format&fit=crop&q=85",
+                         *             "type": "image"
+                         *           }
+                         *         ],
+                         *         "reactions_count": 20,
+                         *         "comments_count": 2,
+                         *         "saved_count": 0,
+                         *         "is_reacted": false,
+                         *         "is_saved": false,
+                         *         "comments": [
+                         *           {
+                         *             "id": "6aaa3b12d95ef709410e388f",
+                         *             "comment": "El mejor barbero de la zona, sin duda.",
+                         *             "user": {
+                         *               "name": null
+                         *             },
+                         *             "created_at": "2026-09-16T00:45:38-06:00"
+                         *           },
+                         *           {
+                         *             "id": "6aaa3b12d95ef709410e388e",
+                         *             "comment": "Que precision en el degradado.",
+                         *             "user": {
+                         *               "name": null
+                         *             },
+                         *             "created_at": "2026-09-16T00:45:38-06:00"
+                         *           }
+                         *         ]
+                         *       },
+                         *       {
+                         *         "id": "6aaa3b10d95ef709410e383c",
+                         *         "title": "Corte clasico con estilo",
+                         *         "description": "Trabajo minucioso, resultado impecable. Agenda tu cita.",
+                         *         "work_date": "2025-04-13",
+                         *         "barber": {
+                         *           "id": null,
+                         *           "name": null,
+                         *           "slug": null,
+                         *           "foto": null
+                         *         },
+                         *         "images": [
+                         *           "https://images.unsplash.com/photo-1592647420148-bfcc177e2117?w=900&h=1100&auto=format&fit=crop&q=85",
+                         *           "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?w=900&h=1100&auto=format&fit=crop&q=85",
+                         *           "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=900&h=1100&auto=format&fit=crop&q=85"
+                         *         ],
+                         *         "media": [
+                         *           {
+                         *             "url": "https://images.unsplash.com/photo-1592647420148-bfcc177e2117?w=900&h=1100&auto=format&fit=crop&q=85",
+                         *             "type": "image"
+                         *           },
+                         *           {
+                         *             "url": "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?w=900&h=1100&auto=format&fit=crop&q=85",
+                         *             "type": "image"
+                         *           },
+                         *           {
+                         *             "url": "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=900&h=1100&auto=format&fit=crop&q=85",
+                         *             "type": "image"
+                         *           }
+                         *         ],
+                         *         "reactions_count": 5,
+                         *         "comments_count": 0,
+                         *         "saved_count": 0,
+                         *         "is_reacted": false,
+                         *         "is_saved": false,
+                         *         "comments": []
+                         *       },
+                         *       {
+                         *         "id": "6aaa3b10d95ef709410e383b",
+                         *         "title": "Look renovado para el finde",
+                         *         "description": "Otro cliente satisfecho saliendo con estilo de UrbanBlade.",
+                         *         "work_date": "2025-12-02",
+                         *         "barber": {
+                         *           "id": null,
+                         *           "name": null,
+                         *           "slug": null,
+                         *           "foto": null
+                         *         },
+                         *         "images": [
+                         *           "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=900&h=1100&auto=format&fit=crop&q=85",
+                         *           "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=900&h=1100&auto=format&fit=crop&q=85",
+                         *           "https://images.unsplash.com/photo-1605497787928-40e1c74e4e74?w=900&h=1100&auto=format&fit=crop&q=85"
+                         *         ],
+                         *         "media": [
+                         *           {
+                         *             "url": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=900&h=1100&auto=format&fit=crop&q=85",
+                         *             "type": "image"
+                         *           },
+                         *           {
+                         *             "url": "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=900&h=1100&auto=format&fit=crop&q=85",
+                         *             "type": "image"
+                         *           },
+                         *           {
+                         *             "url": "https://images.unsplash.com/photo-1605497787928-40e1c74e4e74?w=900&h=1100&auto=format&fit=crop&q=85",
+                         *             "type": "image"
+                         *           }
+                         *         ],
+                         *         "reactions_count": 0,
+                         *         "comments_count": 0,
+                         *         "saved_count": 0,
+                         *         "is_reacted": false,
+                         *         "is_saved": false,
+                         *         "comments": []
+                         *       },
+                         *       {
+                         *         "id": "6aaa3b10d95ef709410e383a",
+                         *         "title": "Transformacion total",
+                         *         "description": "Trabajo minucioso, resultado impecable. Agenda tu cita.",
+                         *         "work_date": "2026-01-17",
+                         *         "barber": {
+                         *           "id": null,
+                         *           "name": null,
+                         *           "slug": null,
+                         *           "foto": null
+                         *         },
+                         *         "images": [
+                         *           "https://images.unsplash.com/photo-1592647420148-bfcc177e2117?w=900&h=1100&auto=format&fit=crop&q=85",
+                         *           "https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=900&h=1100&auto=format&fit=crop&q=85"
+                         *         ],
+                         *         "media": [
+                         *           {
+                         *             "url": "https://images.unsplash.com/photo-1592647420148-bfcc177e2117?w=900&h=1100&auto=format&fit=crop&q=85",
+                         *             "type": "image"
+                         *           },
+                         *           {
+                         *             "url": "https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=900&h=1100&auto=format&fit=crop&q=85",
+                         *             "type": "image"
+                         *           }
+                         *         ],
+                         *         "reactions_count": 20,
+                         *         "comments_count": 0,
+                         *         "saved_count": 0,
+                         *         "is_reacted": false,
+                         *         "is_saved": false,
+                         *         "comments": []
+                         *       },
+                         *       {
+                         *         "id": "6aaa3b10d95ef709410e3839",
+                         *         "title": "Trabajo de detalle",
+                         *         "description": null,
+                         *         "work_date": "2026-07-15",
+                         *         "barber": {
+                         *           "id": null,
+                         *           "name": null,
+                         *           "slug": null,
+                         *           "foto": null
+                         *         },
+                         *         "images": [
+                         *           "https://images.unsplash.com/photo-1534297635766-a262cdcb8ee4?w=900&h=1100&auto=format&fit=crop&q=85",
+                         *           "https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=900&h=1100&auto=format&fit=crop&q=85",
+                         *           "https://images.unsplash.com/photo-1592647420148-bfcc177e2117?w=900&h=1100&auto=format&fit=crop&q=85"
+                         *         ],
+                         *         "media": [
+                         *           {
+                         *             "url": "https://images.unsplash.com/photo-1534297635766-a262cdcb8ee4?w=900&h=1100&auto=format&fit=crop&q=85",
+                         *             "type": "image"
+                         *           },
+                         *           {
+                         *             "url": "https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=900&h=1100&auto=format&fit=crop&q=85",
+                         *             "type": "image"
+                         *           },
+                         *           {
+                         *             "url": "https://images.unsplash.com/photo-1592647420148-bfcc177e2117?w=900&h=1100&auto=format&fit=crop&q=85",
+                         *             "type": "image"
+                         *           }
+                         *         ],
+                         *         "reactions_count": 0,
+                         *         "comments_count": 0,
+                         *         "saved_count": 0,
+                         *         "is_reacted": false,
+                         *         "is_saved": false,
+                         *         "comments": []
+                         *       }
+                         *     ]
+                         */
+                        data?: {
+                            /** @example 6ab535ef96a5df8c0a01f10e */
+                            id?: string;
+                            /** @example test */
+                            title?: string;
+                            /** @example Ejemplo */
+                            description?: string;
+                            /** @example 2026-09-24 */
+                            work_date?: string;
+                            barber?: {
+                                /** @example 6aab96924c163e944d0b36d5 */
+                                id?: string;
+                                /** @example Gonzalez Ramirez Luis Enrique */
+                                name?: string;
+                                /** @example gonzalez-ramirez-luis-enrique */
+                                slug?: string;
+                                /** @example null */
+                                foto?: string | null;
+                            };
+                            /**
+                             * @example [
+                             *       "http://localhost:8000/storage/portfolio/IGIDmfOJP4AnLGMBCAdmM6HZU0Xk2M95aWPdHxyv.jpg"
+                             *     ]
+                             */
+                            images?: string[];
+                            /**
+                             * @example [
+                             *       {
+                             *         "url": "http://localhost:8000/storage/portfolio/IGIDmfOJP4AnLGMBCAdmM6HZU0Xk2M95aWPdHxyv.jpg",
+                             *         "type": "image"
+                             *       }
+                             *     ]
+                             */
+                            media?: {
+                                /** @example http://localhost:8000/storage/portfolio/IGIDmfOJP4AnLGMBCAdmM6HZU0Xk2M95aWPdHxyv.jpg */
+                                url?: string;
+                                /** @example image */
+                                type?: string;
+                            }[];
+                            /** @example 2 */
+                            reactions_count?: number;
+                            /** @example 0 */
+                            comments_count?: number;
+                            /** @example 0 */
+                            saved_count?: number;
+                            /** @example false */
+                            is_reacted?: boolean;
+                            /** @example false */
+                            is_saved?: boolean;
+                            /** @example [] */
+                            comments?: unknown[];
+                        }[];
                         meta?: {
                             /** @example 1 */
                             current_page?: number;
-                            /** @example 1 */
+                            /** @example 3 */
                             last_page?: number;
-                            /** @example 0 */
+                            /** @example 24 */
                             total?: number;
                         };
                     };
@@ -5169,6 +6336,69 @@ export interface operations {
             query?: never;
             header?: never;
             path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example No autorizado. */
+                        message?: string;
+                    };
+                };
+            };
+        };
+    };
+    agregarTiempoAlServicioEnCurso: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example fxp9vtie */
+                appointment_code: string;
+                /**
+                 * @description Código público de la cita.
+                 * @example jfb7ffye
+                 */
+                appointment: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /**
+                     * @description Minutos a agregar (10, 15, 20 o 30).
+                     * @example 10
+                     */
+                    minutos: number;
+                    /**
+                     * @description Extender aunque choque con la siguiente cita.
+                     * @example false
+                     */
+                    forzar?: boolean | null;
+                };
+            };
+        };
+        responses: never;
+    };
+    ticketDeUnaCitaCompletada: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example fxp9vtie */
+                appointment_code: string;
+                /**
+                 * @description Código público de la cita.
+                 * @example jfb7ffye
+                 */
+                appointment: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -5237,7 +6467,7 @@ export interface operations {
             path: {
                 /**
                  * @description The ID of the order.
-                 * @example architecto
+                 * @example 6aaa3afed95ef709410e3803
                  */
                 order_id: string;
             };
@@ -5289,7 +6519,7 @@ export interface operations {
                      */
                     monto: number;
                     /**
-                     * @example transferencia
+                     * @example efectivo
                      * @enum {string}
                      */
                     metodo_pago: "efectivo" | "tarjeta" | "transferencia";
@@ -5303,7 +6533,7 @@ export interface operations {
                      * @example 8
                      */
                     puntos_canjeados?: number | null;
-                    /** @example true */
+                    /** @example false */
                     usar_premio_rifa?: boolean | null;
                     /**
                      * @description Must match an existing stored value.
@@ -5332,7 +6562,7 @@ export interface operations {
             path: {
                 /**
                  * @description The ID of the payment.
-                 * @example architecto
+                 * @example 6aaa3af6d95ef709410e37b3
                  */
                 payment_id: string;
             };
@@ -5340,13 +6570,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            404: {
+            401: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        /** @example No query results for model [App\Models\Payment] architecto */
+                        /** @example No autorizado. */
                         message?: string;
                     };
                 };
@@ -5383,7 +6613,7 @@ export interface operations {
                      * @example 62
                      */
                     propina?: number | null;
-                    /** @example true */
+                    /** @example false */
                     guardar_tarjeta?: boolean | null;
                     /** @example false */
                     tarjeta_guardada?: boolean | null;
@@ -5397,7 +6627,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @example architecto */
+                /** @example fxp9vtie */
                 appointment_code: string;
                 /**
                  * @description Código público de la cita.
@@ -5425,6 +6655,39 @@ export interface operations {
         };
         responses: never;
     };
+    listarCargosPorInasistencia: {
+        parameters: {
+            query?: {
+                /**
+                 * @description pendiente|pagado|condonado (solo personal).
+                 * @example pendiente
+                 */
+                estado?: string;
+                /**
+                 * @description Filtra por cliente (solo personal).
+                 * @example architecto
+                 */
+                client_id?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example No autorizado. */
+                        message?: string;
+                    };
+                };
+            };
+        };
+    };
     marcaUnPedidoComoEntregadoYRegistraElMtodoDeCobrostaff: {
         parameters: {
             query?: never;
@@ -5432,7 +6695,7 @@ export interface operations {
             path: {
                 /**
                  * @description The ID of the order.
-                 * @example architecto
+                 * @example 6aaa3afed95ef709410e3803
                  */
                 order_id: string;
             };
@@ -5442,7 +6705,7 @@ export interface operations {
             content: {
                 "application/json": {
                     /**
-                     * @example tarjeta
+                     * @example transferencia
                      * @enum {string}
                      */
                     metodo_pago: "efectivo" | "tarjeta" | "transferencia";
@@ -5458,7 +6721,7 @@ export interface operations {
             path: {
                 /**
                  * @description The ID of the order.
-                 * @example architecto
+                 * @example 6aaa3afed95ef709410e3803
                  */
                 order_id: string;
             };
@@ -5466,13 +6729,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            404: {
+            401: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        /** @example No query results for model [App\Models\Order] architecto */
+                        /** @example No autorizado. */
                         message?: string;
                     };
                 };
@@ -5508,7 +6771,7 @@ export interface operations {
             path: {
                 /**
                  * @description The ID of the payment.
-                 * @example architecto
+                 * @example 6aaa3af6d95ef709410e37b3
                  */
                 payment_id: string;
             };
@@ -5524,7 +6787,7 @@ export interface operations {
             path: {
                 /**
                  * @description The ID of the payment.
-                 * @example architecto
+                 * @example 6aaa3af6d95ef709410e37b3
                  */
                 payment_id: string;
             };
@@ -5550,13 +6813,65 @@ export interface operations {
             path: {
                 /**
                  * @description The ID of the payment.
-                 * @example architecto
+                 * @example 6aaa3af6d95ef709410e37b3
                  */
                 payment_id: string;
             };
             cookie?: never;
         };
         requestBody?: never;
+        responses: never;
+    };
+    cobrarUnCargoEnSucursal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description The ID of the fee.
+                 * @example architecto
+                 */
+                fee_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /**
+                     * @description efectivo|transferencia.
+                     * @example efectivo
+                     */
+                    metodo: string;
+                };
+            };
+        };
+        responses: never;
+    };
+    condonarUnCargosoloAdministracin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description The ID of the fee.
+                 * @example architecto
+                 */
+                fee_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /**
+                     * @description Por qué se perdona el cargo.
+                     * @example Cliente con emergencia médica.
+                     */
+                    motivo: string;
+                };
+            };
+        };
         responses: never;
     };
     listaTodasLasPlantillasDePaquetes: {
@@ -5616,7 +6931,7 @@ export interface operations {
                      * @example 16
                      */
                     vigencia_dias?: number | null;
-                    /** @example false */
+                    /** @example true */
                     activo?: boolean | null;
                 };
             };
@@ -5630,7 +6945,7 @@ export interface operations {
             path: {
                 /**
                  * @description The ID of the servicePackage.
-                 * @example architecto
+                 * @example 6aaa3b1ad95ef709410e3983
                  */
                 servicePackage_id: string;
             };
@@ -5678,7 +6993,7 @@ export interface operations {
             path: {
                 /**
                  * @description The ID of the servicePackage.
-                 * @example architecto
+                 * @example 6aaa3b1ad95ef709410e3983
                  */
                 servicePackage_id: string;
             };
@@ -5739,7 +7054,7 @@ export interface operations {
                      * @example 16
                      */
                     descuento_pct: number;
-                    /** @example true */
+                    /** @example false */
                     activo?: boolean | null;
                 };
             };
@@ -5753,7 +7068,7 @@ export interface operations {
             path: {
                 /**
                  * @description The ID of the membershipPlan.
-                 * @example architecto
+                 * @example 6aaa3b16d95ef709410e3968
                  */
                 membershipPlan_id: string;
             };
@@ -5782,7 +7097,7 @@ export interface operations {
                      * @example 16
                      */
                     descuento_pct: number;
-                    /** @example true */
+                    /** @example false */
                     activo?: boolean | null;
                 };
             };
@@ -5796,7 +7111,7 @@ export interface operations {
             path: {
                 /**
                  * @description The ID of the membershipPlan.
-                 * @example architecto
+                 * @example 6aaa3b16d95ef709410e3968
                  */
                 membershipPlan_id: string;
             };
@@ -5859,16 +7174,16 @@ export interface operations {
                     telefono?: string | null;
                     /**
                      * @description El campo value no es una fecha válida.
-                     * @example 2026-10-05T01:06:05
+                     * @example 2026-10-08T13:59:36
                      */
                     fecha_nacimiento?: string | null;
-                    /** @example false */
+                    /** @example true */
                     pref_in_app?: boolean | null;
                     /** @example true */
                     pref_email?: boolean | null;
-                    /** @example true */
-                    pref_sms?: boolean | null;
                     /** @example false */
+                    pref_sms?: boolean | null;
+                    /** @example true */
                     pref_whatsapp?: boolean | null;
                 };
             };
@@ -5882,7 +7197,7 @@ export interface operations {
             path: {
                 /**
                  * @description The slug of the client.
-                 * @example architecto
+                 * @example luis-enrique-gonzalez-ramirez
                  */
                 client_slug: string;
             };
@@ -5908,10 +7223,10 @@ export interface operations {
                     telefono?: string | null;
                     /**
                      * @description El campo value no es una fecha válida.
-                     * @example 2026-10-05T01:06:05
+                     * @example 2026-10-08T13:59:36
                      */
                     fecha_nacimiento?: string | null;
-                    /** @example false */
+                    /** @example true */
                     pref_in_app?: boolean | null;
                     /** @example false */
                     pref_email?: boolean | null;
@@ -5931,7 +7246,7 @@ export interface operations {
             path: {
                 /**
                  * @description The slug of the client.
-                 * @example architecto
+                 * @example luis-enrique-gonzalez-ramirez
                  */
                 client_slug: string;
             };
@@ -6013,7 +7328,7 @@ export interface operations {
             path: {
                 /**
                  * @description The slug of the service.
-                 * @example architecto
+                 * @example skin-fade
                  */
                 service_slug: string;
             };
@@ -6049,7 +7364,7 @@ export interface operations {
                      * @example m
                      */
                     descripcion?: string | null;
-                    /** @example true */
+                    /** @example false */
                     activo?: boolean | null;
                 };
             };
@@ -6063,7 +7378,7 @@ export interface operations {
             path: {
                 /**
                  * @description The slug of the service.
-                 * @example architecto
+                 * @example skin-fade
                  */
                 service_slug: string;
             };
@@ -6101,7 +7416,7 @@ export interface operations {
             path: {
                 /**
                  * @description The slug of the barber.
-                 * @example architecto
+                 * @example gonzalez-ramirez-luis-enrique
                  */
                 barber_slug: string;
             };
@@ -6132,7 +7447,7 @@ export interface operations {
                     descripcion?: string | null;
                     /** @example null */
                     foto?: string;
-                    /** @example true */
+                    /** @example false */
                     activo?: boolean | null;
                     /**
                      * @description El campo value debe ser al menos 0. El campo value no debe ser mayor que 100.
@@ -6208,7 +7523,7 @@ export interface operations {
             path: {
                 /**
                  * @description The ID of the user.
-                 * @example architecto
+                 * @example 6aa51b319ddeabe12709e9e2
                  */
                 user_id: string;
             };
@@ -6249,7 +7564,7 @@ export interface operations {
             path: {
                 /**
                  * @description The ID of the user.
-                 * @example architecto
+                 * @example 6aa51b319ddeabe12709e9e2
                  */
                 user_id: string;
             };
@@ -6307,12 +7622,12 @@ export interface operations {
                     telefono?: string | null;
                     /**
                      * @description Must be a valid date in the format <code>H:i</code>.
-                     * @example 01:06
+                     * @example 13:59
                      */
                     horario_apertura?: string | null;
                     /**
                      * @description Must be a valid date in the format <code>H:i</code>. El campo value debe ser una fecha posterior a <code>horario_apertura</code>.
-                     * @example 2052-10-28
+                     * @example 2052-10-31
                      */
                     horario_cierre?: string | null;
                     /**
@@ -6335,38 +7650,43 @@ export interface operations {
                      */
                     deposito_no_show_porcentaje?: number | null;
                     /**
-                     * @description El campo value no debe tener más de 255 caracteres.
-                     * @example m
+                     * @description Cargo por inasistencia (NoShowFeeService): % del servicio; 0 lo desactiva. Opcional como los de arriba. El campo value debe ser al menos 0. El campo value no debe ser mayor que 100.
+                     * @example 17
                      */
-                    instagram?: string | null;
+                    comision_no_show_porcentaje?: number | null;
                     /**
                      * @description El campo value no debe tener más de 255 caracteres.
                      * @example i
                      */
-                    facebook?: string | null;
+                    instagram?: string | null;
                     /**
                      * @description El campo value no debe tener más de 255 caracteres.
                      * @example y
                      */
+                    facebook?: string | null;
+                    /**
+                     * @description El campo value no debe tener más de 255 caracteres.
+                     * @example v
+                     */
                     tiktok?: string | null;
                     /**
                      * @description El campo value no debe tener más de 18 caracteres.
-                     * @example vdljnikhwaykcmyu
+                     * @example dljnikhwaykcmyuw
                      */
                     clabe?: string | null;
                     /**
                      * @description El campo value no debe tener más de 100 caracteres.
-                     * @example w
+                     * @example p
                      */
                     banco?: string | null;
                     /**
                      * @description El campo value no debe tener más de 150 caracteres.
-                     * @example p
+                     * @example w
                      */
                     beneficiario?: string | null;
                     /**
                      * @description El campo value no debe tener más de 100 caracteres.
-                     * @example w
+                     * @example l
                      */
                     concepto?: string | null;
                 };
@@ -6439,13 +7759,13 @@ export interface operations {
                     /** @example architecto */
                     segmento: string;
                     /**
-                     * @example ahora
+                     * @example programar
                      * @enum {string}
                      */
                     modo: "ahora" | "programar";
                     /**
                      * @description This field is required when <code>modo</code> is <code>programar</code>. El campo value no es una fecha válida. El campo value debe ser una fecha posterior a <code>now</code>.
-                     * @example 2052-10-28
+                     * @example 2052-11-01
                      */
                     programada_para?: string | null;
                 };
@@ -6688,13 +8008,13 @@ export interface operations {
                 "application/json": {
                     /** @example false */
                     in_app?: boolean;
-                    /** @example false */
-                    email?: boolean;
                     /** @example true */
+                    email?: boolean;
+                    /** @example false */
                     sms?: boolean;
-                    /** @example false */
+                    /** @example true */
                     whatsapp?: boolean;
-                    /** @example false */
+                    /** @example true */
                     push?: boolean;
                     /** @example false */
                     promociones?: boolean;
@@ -6748,7 +8068,7 @@ export interface operations {
                         auth: string;
                     };
                     /**
-                     * @example aesgcm
+                     * @example aes128gcm
                      * @enum {string|null}
                      */
                     content_encoding?: "aesgcm" | "aes128gcm" | null;
@@ -6784,7 +8104,7 @@ export interface operations {
             path: {
                 /**
                  * @description The ID of the work.
-                 * @example architecto
+                 * @example 6aaa3b0dd95ef709410e382b
                  */
                 work_id: string;
             };
@@ -6800,7 +8120,7 @@ export interface operations {
             path: {
                 /**
                  * @description The ID of the work.
-                 * @example architecto
+                 * @example 6aaa3b0dd95ef709410e382b
                  */
                 work_id: string;
             };
@@ -6816,7 +8136,7 @@ export interface operations {
             path: {
                 /**
                  * @description The ID of the work.
-                 * @example architecto
+                 * @example 6aaa3b0dd95ef709410e382b
                  */
                 work_id: string;
             };
@@ -7222,7 +8542,7 @@ export interface operations {
             path: {
                 /**
                  * @description The slug of the barber.
-                 * @example architecto
+                 * @example gonzalez-ramirez-luis-enrique
                  */
                 barber_slug: string;
             };
@@ -7230,13 +8550,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            404: {
+            401: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        /** @example No query results for model [App\Models\Barber] architecto */
+                        /** @example No autorizado. */
                         message?: string;
                     };
                 };
@@ -7250,7 +8570,7 @@ export interface operations {
             path: {
                 /**
                  * @description The slug of the barber.
-                 * @example architecto
+                 * @example gonzalez-ramirez-luis-enrique
                  */
                 barber_slug: string;
             };
@@ -7266,7 +8586,7 @@ export interface operations {
                     especialidades?: string | null;
                     /** @example architecto */
                     descripcion?: string | null;
-                    /** @example true */
+                    /** @example false */
                     activo?: boolean;
                     /**
                      * @description El campo value debe ser al menos 0. El campo value no debe ser mayor que 100.
@@ -7285,7 +8605,7 @@ export interface operations {
             path: {
                 /**
                  * @description The slug of the barber.
-                 * @example architecto
+                 * @example gonzalez-ramirez-luis-enrique
                  */
                 barber_slug: string;
             };
@@ -7293,13 +8613,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            404: {
+            401: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        /** @example No query results for model [App\Models\Barber] architecto */
+                        /** @example No autorizado. */
                         message?: string;
                     };
                 };
@@ -7313,7 +8633,7 @@ export interface operations {
             path: {
                 /**
                  * @description The slug of the barber.
-                 * @example architecto
+                 * @example gonzalez-ramirez-luis-enrique
                  */
                 barber_slug: string;
             };
@@ -7321,13 +8641,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            404: {
+            401: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        /** @example No query results for model [App\Models\Barber] architecto */
+                        /** @example No autorizado. */
                         message?: string;
                     };
                 };
@@ -7341,7 +8661,7 @@ export interface operations {
             path: {
                 /**
                  * @description The slug of the barber.
-                 * @example architecto
+                 * @example gonzalez-ramirez-luis-enrique
                  */
                 barber_slug: string;
             };
@@ -7349,13 +8669,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            404: {
+            401: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        /** @example No query results for model [App\Models\Barber] architecto */
+                        /** @example No autorizado. */
                         message?: string;
                     };
                 };
@@ -7413,7 +8733,7 @@ export interface operations {
             path: {
                 /**
                  * @description The slug of the client.
-                 * @example architecto
+                 * @example luis-enrique-gonzalez-ramirez
                  */
                 client_slug: string;
             };
@@ -7421,13 +8741,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            404: {
+            401: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        /** @example No query results for model [App\Models\Client] architecto */
+                        /** @example No autorizado. */
                         message?: string;
                     };
                 };
@@ -7441,7 +8761,7 @@ export interface operations {
             path: {
                 /**
                  * @description The slug of the client.
-                 * @example architecto
+                 * @example luis-enrique-gonzalez-ramirez
                  */
                 client_slug: string;
             };
@@ -7482,7 +8802,7 @@ export interface operations {
             path: {
                 /**
                  * @description The slug of the client.
-                 * @example architecto
+                 * @example luis-enrique-gonzalez-ramirez
                  */
                 client_slug: string;
             };
@@ -7556,7 +8876,7 @@ export interface operations {
                     tipo?: string | null;
                     /** @example false */
                     activo?: boolean | null;
-                    /** @example false */
+                    /** @example true */
                     active?: boolean | null;
                 };
             };
@@ -7568,7 +8888,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @example architecto */
+                /** @example 6aaa3a4ad95ef709410e35c7 */
                 productId: string;
             };
             cookie?: never;
@@ -7593,7 +8913,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @example architecto */
+                /** @example 6aaa3a4ad95ef709410e35c7 */
                 productId: string;
             };
             cookie?: never;
@@ -7634,7 +8954,7 @@ export interface operations {
                     tipo?: string | null;
                     /** @example false */
                     activo?: boolean | null;
-                    /** @example true */
+                    /** @example false */
                     active?: boolean | null;
                 };
             };
@@ -7646,7 +8966,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @example architecto */
+                /** @example 6aaa3a4ad95ef709410e35c7 */
                 productId: string;
             };
             cookie?: never;
@@ -7659,7 +8979,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @example architecto */
+                /** @example 6aaa3a4ad95ef709410e35c7 */
                 productId: string;
             };
             cookie?: never;
@@ -7668,7 +8988,7 @@ export interface operations {
             content: {
                 "application/json": {
                     /**
-                     * @example entrada
+                     * @example salida
                      * @enum {string}
                      */
                     tipo: "entrada" | "salida";
@@ -7814,7 +9134,7 @@ export interface operations {
             path: {
                 /**
                  * @description The slug of the barber.
-                 * @example architecto
+                 * @example gonzalez-ramirez-luis-enrique
                  */
                 barber_slug: string;
             };
@@ -7850,7 +9170,7 @@ export interface operations {
             path: {
                 /**
                  * @description The slug of the barber.
-                 * @example architecto
+                 * @example gonzalez-ramirez-luis-enrique
                  */
                 barber_slug: string;
             };
@@ -7858,14 +9178,102 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            404: {
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        /** @example No query results for model [App\Models\Barber] architecto */
-                        message?: string;
+                        barber?: {
+                            /** @example 6aadd78765a6ba4bd80adfc2 */
+                            id?: string;
+                            /** @example gonzalez-ramirez-luis-enrique */
+                            slug?: string;
+                            /** @example Barbero profesional de UrbanBlade. */
+                            descripcion?: string;
+                            /** @example null */
+                            especialidades?: string | null;
+                            /** @example https://urbanblade-staging-uploads-209479293733.s3.us-east-1.amazonaws.com/avatars/6aab96924c163e944d0b36d5/77335daf-1099-431b-adfc-44780e9aeab1.jpg */
+                            foto?: string;
+                            user?: {
+                                /** @example 6aab96924c163e944d0b36d5 */
+                                id?: string;
+                                /** @example Gonzalez Ramirez Luis Enrique */
+                                name?: string;
+                            };
+                        };
+                        /**
+                         * @example [
+                         *       {
+                         *         "id": "6ab535ef96a5df8c0a01f10e",
+                         *         "title": "test",
+                         *         "description": "Ejemplo",
+                         *         "images": [
+                         *           "http://localhost:8000/storage/portfolio/IGIDmfOJP4AnLGMBCAdmM6HZU0Xk2M95aWPdHxyv.jpg"
+                         *         ]
+                         *       }
+                         *     ]
+                         */
+                        works?: {
+                            /** @example 6ab535ef96a5df8c0a01f10e */
+                            id?: string;
+                            /** @example test */
+                            title?: string;
+                            /** @example Ejemplo */
+                            description?: string;
+                            /**
+                             * @example [
+                             *       "http://localhost:8000/storage/portfolio/IGIDmfOJP4AnLGMBCAdmM6HZU0Xk2M95aWPdHxyv.jpg"
+                             *     ]
+                             */
+                            images?: string[];
+                        }[];
+                        /**
+                         * @example [
+                         *       {
+                         *         "id": "6ab88e5edcaf4f6afe0123d0",
+                         *         "rating": 3,
+                         *         "comment": "es malo",
+                         *         "created_at": "2026-09-26T21:32:46-06:00",
+                         *         "client": {
+                         *           "user": {
+                         *             "name": "Luis G."
+                         *           }
+                         *         },
+                         *         "service": "Combo Corte + Barba"
+                         *       }
+                         *     ]
+                         */
+                        reviews?: {
+                            /** @example 6ab88e5edcaf4f6afe0123d0 */
+                            id?: string;
+                            /** @example 3 */
+                            rating?: number;
+                            /** @example es malo */
+                            comment?: string;
+                            /** @example 2026-09-26T21:32:46-06:00 */
+                            created_at?: string;
+                            client?: {
+                                user?: {
+                                    /** @example Luis G. */
+                                    name?: string;
+                                };
+                            };
+                            /** @example Combo Corte + Barba */
+                            service?: string;
+                        }[];
+                        /** @example 3 */
+                        avg_rating?: number;
+                        /** @example 1 */
+                        total_reviews?: number;
+                        /** @example 1 */
+                        citas_completadas?: number;
+                        /** @example false */
+                        can_review?: boolean;
+                        /** @example false */
+                        already_reviewed?: boolean;
+                        /** @example [] */
+                        reviewable_services?: unknown[];
                     };
                 };
             };
@@ -7987,7 +9395,7 @@ export interface operations {
                      * @example n
                      */
                     response: string;
-                    /** @example false */
+                    /** @example true */
                     helpful: boolean;
                 };
             };
@@ -8195,7 +9603,7 @@ export interface operations {
                      */
                     token: string;
                     /**
-                     * @example expo
+                     * @example fcm
                      * @enum {string}
                      */
                     provider?: "expo" | "fcm";
@@ -8341,7 +9749,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @example architecto */
+                /** @example fxp9vtie */
                 appointment_code: string;
             };
             cookie?: never;
@@ -8354,7 +9762,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @example No query results for model [App\Models\Appointment] architecto */
+                        /** @example  */
                         message?: string;
                     };
                 };
@@ -8366,7 +9774,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @example architecto */
+                /** @example fxp9vtie */
                 appointment_code: string;
             };
             cookie?: never;
@@ -8379,7 +9787,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @example architecto */
+                /** @example fxp9vtie */
                 appointment_code: string;
             };
             cookie?: never;
@@ -8645,7 +10053,7 @@ export interface operations {
             path: {
                 /**
                  * @description The ID of the product.
-                 * @example architecto
+                 * @example 6aaa3a4ad95ef709410e35c7
                  */
                 product_id: string;
             };
@@ -8698,7 +10106,7 @@ export interface operations {
                     imagen?: string | null;
                     /** @example false */
                     active?: boolean | null;
-                    /** @example false */
+                    /** @example true */
                     activo?: boolean | null;
                 };
             };
@@ -8712,7 +10120,7 @@ export interface operations {
             path: {
                 /**
                  * @description The ID of the product.
-                 * @example architecto
+                 * @example 6aaa3a4ad95ef709410e35c7
                  */
                 product_id: string;
             };
@@ -8728,7 +10136,7 @@ export interface operations {
             path: {
                 /**
                  * @description The ID of the product.
-                 * @example architecto
+                 * @example 6aaa3a4ad95ef709410e35c7
                  */
                 product_id: string;
             };
@@ -8842,7 +10250,7 @@ export interface operations {
                     appointment_id?: string | null;
                     /**
                      * @description El campo value no es una fecha válida.
-                     * @example 2026-10-05T01:06:05
+                     * @example 2026-10-08T13:59:37
                      */
                     fecha?: string | null;
                 };
@@ -8909,7 +10317,7 @@ export interface operations {
             path: {
                 /**
                  * @description The ID of the waitlist.
-                 * @example architecto
+                 * @example 6aaa3ba8aff2bc58c30245ec
                  */
                 waitlist_id: string;
             };
@@ -9176,7 +10584,8 @@ export interface operations {
                          *         "brand": "visa",
                          *         "last4": "4242",
                          *         "exp_month": 12,
-                         *         "exp_year": 2032
+                         *         "exp_year": 2032,
+                         *         "holder": "LUIS GONZALEZ"
                          *       }
                          *     ]
                          */
@@ -9191,6 +10600,8 @@ export interface operations {
                             exp_month?: number;
                             /** @example 2032 */
                             exp_year?: number;
+                            /** @example LUIS GONZALEZ */
+                            holder?: string;
                         }[];
                     };
                 };
@@ -9442,7 +10853,7 @@ export interface operations {
             path: {
                 /**
                  * @description The ID of the work.
-                 * @example architecto
+                 * @example 6aaa3b0dd95ef709410e382b
                  */
                 work_id: string;
             };

@@ -47,6 +47,44 @@ const { apiFetch } = useApi();
 const { confirm } = useConfirm();
 const config = useRuntimeConfig();
 
+// Qué sigue en cada estado, en lenguaje claro (el cliente no ve los botones de la agenda del barbero).
+const ESTADO_AYUDA: Record<string, string> = {
+  pendiente: "Esperando que tu barbero apruebe la cita. Te avisamos en cuanto la confirme.",
+  confirmada: "Cita aprobada. Antes de que empiece el servicio debe estar pagada: con tarjeta aquí, o en recepción al llegar.",
+  en_proceso: "Tu servicio está en curso.",
+  no_asistio: "No registramos tu asistencia. Si hay un cargo pendiente, págalo en la barbería para volver a reservar.",
+};
+
+// Adeudo por inasistencia: mientras exista no se puede reservar (el backend lo rechaza con el monto).
+const { data: debt } = await useAsyncData(
+  "my-no-show-debt",
+  () =>
+    apiFetch<{ adeudo_total: number | null }>("/no-show-fees").catch(() => ({
+      adeudo_total: 0,
+    })),
+  { lazy: true },
+);
+const debtTotal = computed(() => Number(debt.value?.adeudo_total ?? 0));
+
+// Ticket del servicio terminado (comprobante + desglose), también llega por correo.
+const ticket = ref<ServiceTicket | null>(null);
+const ticketBusy = ref("");
+const ticketError = ref("");
+async function openTicket(appt: AppointmentRow) {
+  ticketBusy.value = appt.id;
+  ticketError.value = "";
+  try {
+    const res = await apiFetch<{ data: ServiceTicket }>(
+      `/appointments/${appt.code}/ticket`,
+    );
+    ticket.value = res.data;
+  } catch (err: unknown) {
+    ticketError.value = apiMessage(err, "Esta cita todavía no tiene ticket.");
+  } finally {
+    ticketBusy.value = "";
+  }
+}
+
 const {
   data: response,
   pending,
@@ -537,6 +575,17 @@ onUnmounted(() => teardownStripe());
     </p>
 
     <div v-else class="space-y-4">
+      <p
+        v-if="debtTotal > 0"
+        role="alert"
+        class="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-200"
+      >
+        Tienes un adeudo por inasistencia de <strong>{{ money(debtTotal) }}</strong>.
+        Págalo en la barbería (efectivo o transferencia) para volver a reservar.
+      </p>
+      <p v-if="ticketError" class="text-sm text-red-400" role="status">
+        {{ ticketError }}
+      </p>
       <div v-for="appt in appointments" :key="appt.id" class="ui-card p-5">
         <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
           <div>
@@ -555,10 +604,22 @@ onUnmounted(() => teardownStripe());
             >{{ ESTADO_LABEL[appt.estado] ?? appt.estado }}</span
           >
         </div>
+        <p v-if="ESTADO_AYUDA[appt.estado]" class="mb-2 text-xs text-muted">
+          {{ ESTADO_AYUDA[appt.estado] }}
+        </p>
         <p v-if="appt.notas" class="mb-3 text-sm text-muted">
           {{ appt.notas }}
         </p>
         <div class="flex flex-wrap gap-2">
+          <button
+            v-if="appt.estado === 'completada'"
+            type="button"
+            :disabled="ticketBusy === appt.id"
+            class="rounded-lg border border-emerald-500/30 px-3 py-1.5 text-xs font-semibold text-emerald-300 hover:bg-emerald-500/10 disabled:opacity-50"
+            @click="openTicket(appt)"
+          >
+            {{ ticketBusy === appt.id ? "Abriendo…" : "Ver ticket" }}
+          </button>
           <button
             v-if="canPay(appt) && stripeConfigured"
             type="button"
@@ -587,6 +648,8 @@ onUnmounted(() => teardownStripe());
         </div>
       </div>
     </div>
+
+    <UiServiceTicketModal v-if="ticket" :ticket="ticket" @close="ticket = null" />
 
     <UiModal v-if="showForm && !isEditing" title="Nueva cita" :busy="bookingBusy" @close="showForm = false">
       <BookingWizard embedded :initial-barber="form.barber_id" @busy="bookingBusy = $event" @confirmed="refresh()" />

@@ -73,6 +73,12 @@ export type ApiAppointment = Omit<
     | "propina_sugerida"
     | "deposito_monto"
     | "deposito_estado"
+    // Solo con valor en citas confirmadas (iniciar) o en proceso (fin estimado); null en el resto.
+    | "pago_resuelto"
+    | "puede_iniciar"
+    | "motivo_no_iniciar"
+    | "fin_estimado"
+    | "minutos_extra"
   >,
   "client" | "barber" | "service" | "has_payment" | "is_chargeable"
 > & {

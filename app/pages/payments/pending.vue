@@ -148,6 +148,9 @@ async function confirmReject(payment: PendingPayment) {
 
 <template>
   <div class="p-4 sm:p-6 lg:p-8">
+    <!-- Adeudos por inasistencia: se cobran en sucursal (o se condonan) desde la misma bandeja de recepción. -->
+    <PaymentsNoShowFeesPanel />
+
     <header
       class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
     >
