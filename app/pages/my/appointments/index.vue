@@ -559,10 +559,17 @@ onUnmounted(() => teardownStripe());
       </p>
     </section>
 
-    <p v-if="pending" class="text-sm text-muted">Cargando tus citas…</p>
-    <p v-else-if="error" class="text-sm text-red-400">
-      No se pudieron cargar tus citas.
-    </p>
+    <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando tus citas…" />
+    <BrandStatePanel
+      v-else-if="error"
+      mascot="bruno"
+      state="error"
+      tone="danger"
+      title="No se pudieron cargar tus citas"
+      description="Inténtalo nuevamente en unos minutos."
+      action-label="Reintentar"
+      @action="refresh"
+    />
     <p
       v-else-if="!appointments.length"
       class="rounded-2xl border border-dashed border-line p-12 text-center text-sm text-muted"
@@ -574,7 +581,7 @@ onUnmounted(() => teardownStripe());
       {{ cancelError }}
     </p>
 
-    <div v-else class="space-y-4">
+    <div v-if="!pending && !error && appointments.length" class="space-y-4">
       <p
         v-if="debtTotal > 0"
         role="alert"
@@ -662,7 +669,7 @@ onUnmounted(() => teardownStripe());
       @close="showForm = false"
     >
         <form class="space-y-3" @submit.prevent="submitForm">
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label class="mb-1 block text-xs text-muted">Barbero</label>
               <select
@@ -690,7 +697,7 @@ onUnmounted(() => teardownStripe());
               </select>
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label class="mb-1 block text-xs text-muted">Fecha</label>
               <input

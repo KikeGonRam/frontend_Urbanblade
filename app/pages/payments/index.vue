@@ -640,12 +640,19 @@ onUnmounted(() => teardownStripe());
       </button>
     </section>
 
-    <p v-if="pending" class="text-sm text-muted">Cargando pagos…</p>
-    <p v-else-if="error" class="text-sm text-red-400">
-      No se pudo cargar el historial de pagos.
-    </p>
+    <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando pagos…" />
+    <BrandStatePanel
+      v-else-if="error"
+      mascot="bruno"
+      state="error"
+      tone="danger"
+      title="No se pudo cargar el historial de pagos"
+      description="Inténtalo nuevamente en unos minutos."
+      action-label="Reintentar"
+      @action="refresh"
+    />
 
-    <section v-else class="ui-card overflow-x-auto">
+    <section v-if="!pending && !error" class="ui-card overflow-x-auto">
       <table class="w-full text-left text-sm">
         <thead>
           <tr
@@ -790,7 +797,7 @@ onUnmounted(() => teardownStripe());
           </div>
 
           <template v-if="selected">
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div>
                 <label class="mb-1 block text-xs text-muted"
                   >Monto del servicio</label

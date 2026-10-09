@@ -242,21 +242,19 @@ async function removeService(service: ServiceRow) {
       :busy="pending"
     />
 
-    <div
-      v-if="pending"
-      class="flex items-center gap-3 py-12 text-sm text-muted"
-    >
-      <div
-        class="h-5 w-5 animate-spin rounded-full border-2 border-gold border-t-transparent"
-      />
-      <span>Cargando servicios…</span>
-    </div>
+    <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando servicios…" />
+    <BrandStatePanel
+      v-else-if="error"
+      mascot="bruno"
+      state="error"
+      tone="danger"
+      title="No se pudo cargar el catálogo"
+      description="Inténtalo nuevamente en unos minutos."
+      action-label="Reintentar"
+      @action="refresh"
+    />
 
-    <p v-else-if="error" class="text-sm text-red-400">
-      No se pudo cargar el catálogo.
-    </p>
-
-    <section v-else class="ui-card overflow-x-auto">
+    <section v-if="!pending && !error" class="ui-card overflow-x-auto">
       <table class="w-full text-left text-sm">
         <thead>
           <tr
@@ -435,7 +433,7 @@ async function removeService(service: ServiceRow) {
             </p>
           </div>
 
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label
                 for="service-duracion"

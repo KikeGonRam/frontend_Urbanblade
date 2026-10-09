@@ -364,12 +364,19 @@ async function submitForm() {
       </button>
     </section>
 
-    <p v-if="pending" class="text-sm text-muted">Cargando movimientos…</p>
-    <p v-else-if="error" class="text-sm text-red-400">
-      No se pudo cargar el historial.
-    </p>
+    <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando movimientos…" />
+    <BrandStatePanel
+      v-else-if="error"
+      mascot="bruno"
+      state="error"
+      tone="danger"
+      title="No se pudo cargar el historial"
+      description="Inténtalo nuevamente en unos minutos."
+      action-label="Reintentar"
+      @action="refresh"
+    />
 
-    <section v-else class="ui-card overflow-x-auto">
+    <section v-if="!pending && !error" class="ui-card overflow-x-auto">
       <table class="w-full text-left text-sm">
         <thead>
           <tr
