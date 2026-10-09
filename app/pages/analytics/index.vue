@@ -103,7 +103,7 @@ const BAR_COLOR: Record<string, string> = {
 
 const { apiFetch } = useApi()
 
-const { data: response, pending, error } = await useAsyncData(
+const { data: response, pending, error, refresh } = await useAsyncData(
   'analytics', () => apiFetch<AnalyticsResponse>('/analytics'),
   { lazy: true },
 )
@@ -195,7 +195,15 @@ const doughnutOptions = { responsive: true, maintainAspectRatio: false, plugins:
     </section>
 
     <p v-if="pending" class="text-sm text-muted">Calculando análisis…</p>
-    <p v-else-if="error" class="text-sm text-red-400">No se pudo cargar el centro de análisis.</p>
+    <BrandStatePanel
+      v-else-if="error"
+      mascot="bruno"
+      state="error"
+      tone="danger"
+      title="No se pudo cargar el centro de análisis"
+      action-label="Reintentar"
+      @action="refresh"
+    />
     <p v-else-if="!allInsightsFlat.length" class="rounded-2xl border border-dashed border-line p-4 text-sm text-muted">
       No hay análisis históricos publicados para tu rol. No se muestran predicciones sin resultados disponibles; los indicadores operativos, cuando corresponden, se calculan por separado.
     </p>

@@ -193,7 +193,15 @@ async function openTicket(appt: Appointment) {
 
     <output v-if="message" class="mb-4 block text-sm text-gold">{{ message }}</output>
     <p v-if="pending" class="text-sm text-muted">Cargando agenda...</p>
-    <p v-else-if="error" class="text-sm text-red-400">No se pudo cargar la agenda.</p>
+    <BrandStatePanel
+      v-else-if="error"
+      mascot="bruno"
+      state="error"
+      tone="danger"
+      title="No se pudo cargar la agenda"
+      action-label="Reintentar"
+      @action="refresh"
+    />
 
     <section v-else class="space-y-3">
       <article v-for="appt in appointments" :key="appt.id" class="ui-card flex flex-col gap-4 p-5 sm:flex-row sm:items-center">
