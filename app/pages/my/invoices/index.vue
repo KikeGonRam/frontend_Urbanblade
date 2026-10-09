@@ -84,7 +84,7 @@ async function downloadReceipt(payment: PaymentRow) {
 
     <p v-if="downloadError" class="mb-3 text-sm text-red-400">{{ downloadError }}</p>
 
-    <section v-if="payments.length" class="ui-card overflow-x-auto">
+    <section v-if="!pending && !error && payments.length" class="ui-card overflow-x-auto">
       <table class="w-full text-left text-sm">
         <thead>
           <tr class="border-b border-line text-[10px] uppercase tracking-wider text-muted">

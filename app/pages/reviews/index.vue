@@ -88,7 +88,7 @@ function fmtDate(iso: string | null) {
       <p class="mt-1 text-sm text-muted">Calificaciones y comentarios de clientes sobre cada barbero.</p>
     </header>
 
-    <section v-if="!pending && !error" class="mb-6 grid grid-cols-3 gap-3">
+    <section v-if="!pending && !error" class="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
       <div class="ui-card p-4"><p class="text-[10px] font-bold uppercase text-muted">Total</p><p class="mt-1 text-xl font-black text-ink">{{ stats.total }}</p></div>
       <div class="ui-card p-4"><p class="text-[10px] font-bold uppercase text-muted">Promedio</p><p class="mt-1 text-xl font-black text-gold">{{ stats.promedio }} ★</p></div>
       <div class="ui-card p-4"><p class="text-[10px] font-bold uppercase text-muted">Bajas (≤2★)</p><p class="mt-1 text-xl font-black text-red-400">{{ stats.bajas }}</p></div>

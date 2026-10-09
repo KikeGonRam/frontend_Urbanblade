@@ -51,7 +51,7 @@ function statusOf(r: RaffleRow) {
       <p class="mt-1 text-sm text-muted">Ganadores mensuales del sorteo de lealtad y estado de sus premios.</p>
     </header>
 
-    <section v-if="!pending && !error" class="mb-6 grid grid-cols-3 gap-3 sm:w-fit">
+    <section v-if="!pending && !error" class="mb-6 grid grid-cols-1 gap-3 sm:w-fit sm:grid-cols-3">
       <div class="ui-card p-4"><p class="text-[10px] font-bold uppercase text-muted">Total</p><p class="mt-1 text-xl font-black text-ink">{{ stats.total }}</p></div>
       <div class="ui-card p-4"><p class="text-[10px] font-bold uppercase text-muted">Reclamados</p><p class="mt-1 text-xl font-black text-emerald-400">{{ stats.reclamados }}</p></div>
       <div class="ui-card p-4"><p class="text-[10px] font-bold uppercase text-muted">Vigentes</p><p class="mt-1 text-xl font-black text-gold">{{ stats.vigentes }}</p></div>

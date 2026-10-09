@@ -194,7 +194,7 @@ async function downloadReport(type: string, format: "excel" | "pdf") {
         <h2 class="mb-3 text-sm font-black uppercase tracking-wide text-ink">
           Ingresos
         </h2>
-        <div v-if="revenue" class="grid grid-cols-3 gap-3">
+        <div v-if="revenue" class="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <div>
             <p class="text-[10px] font-bold uppercase text-muted">Total</p>
             <p class="mt-1 text-lg font-black text-gold">
@@ -227,7 +227,7 @@ async function downloadReport(type: string, format: "excel" | "pdf") {
         <h2 class="mb-3 text-sm font-black uppercase tracking-wide text-ink">
           Citas
         </h2>
-        <div v-if="appt" class="grid grid-cols-3 gap-3">
+        <div v-if="appt" class="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <div>
             <p class="text-[10px] font-bold uppercase text-muted">Total</p>
             <p class="mt-1 text-lg font-black text-ink">
