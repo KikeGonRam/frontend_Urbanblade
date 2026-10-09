@@ -168,7 +168,15 @@ async function cancelEntry(entry: WaitlistEntry) {
         {{ isStaff ? "Demanda en lista de espera" : "Mis anotaciones" }}
       </h2>
       <p v-if="pending" class="text-sm text-muted">Cargando…</p>
-      <p v-else-if="error" class="text-sm text-red-400">No se pudo cargar la lista de espera.</p>
+      <BrandStatePanel
+        v-else-if="error"
+        mascot="bruno"
+        state="error"
+        tone="danger"
+        title="No se pudo cargar la lista de espera"
+        action-label="Reintentar"
+        @action="refresh"
+      />
       <p v-else-if="!entries.length" class="rounded-2xl border border-dashed border-line p-8 text-center text-sm text-muted">
         {{ isClient ? "No tienes anotaciones en lista de espera." : "No hay nadie en lista de espera." }}
       </p>

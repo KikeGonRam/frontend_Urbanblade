@@ -26,7 +26,7 @@ interface BarberRow {
 
 const { apiFetch } = useApi()
 
-const { data: response, pending, error } = await useAsyncData(
+const { data: response, pending, error, refresh } = await useAsyncData(
   'public-barbers-catalog',
   () => apiFetch<{ data: BarberRow[] }>('/barbers'),
 )
@@ -51,7 +51,15 @@ function initials(name?: string | null) {
     </header>
 
     <p v-if="pending" class="py-20 text-center text-muted">Cargando maestros…</p>
-    <p v-else-if="error" class="py-20 text-center text-sm text-red-400">No se pudo cargar el equipo.</p>
+    <BrandStatePanel
+      v-else-if="error"
+      mascot="bruno"
+      state="error"
+      tone="danger"
+      title="No se pudo cargar el equipo"
+      action-label="Reintentar"
+      @action="refresh"
+    />
     <p v-else-if="!barbers.length" class="py-20 text-center text-muted">Nuestros maestros se están preparando...</p>
 
     <div v-else class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
