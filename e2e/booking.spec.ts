@@ -57,9 +57,13 @@ test("un cliente puede reservar su propia cita", async ({ page }) => {
       request.url().includes("/api/v1/appointments") &&
       request.method() === "POST",
   );
+  // El cliente debe aceptar el cargo por inasistencia para poder confirmar.
+  await expect(page.getByRole("button", { name: "Confirmar cita" })).toBeDisabled();
+  await page.getByLabel(/Acepto el cargo por inasistencia/).check();
   await page.getByRole("button", { name: "Confirmar cita" }).click();
 
   const body = (await created).postDataJSON();
+  expect(body.acepta_cargo_inasistencia).toBe(true);
   expect(body.barber_id).toBe("b-1");
   expect(body.service_id).toBe("s-1");
   expect(body.hora_inicio).toBe("10:00");
@@ -112,6 +116,7 @@ test("un choque de horario muestra el motivo real del backend", async ({
   await page.getByRole("button", { name: /Corte clásico/ }).click();
   await page.getByRole("button", { name: "Hoy" }).click();
   await page.getByRole("button", { name: "10:00" }).click();
+  await page.getByLabel(/Acepto el cargo por inasistencia/).check();
   await page.getByRole("button", { name: "Confirmar cita" }).click();
 
   await expect(

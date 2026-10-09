@@ -398,6 +398,8 @@ watch(saving, value => emit('busy', value))
 const submitError = ref('')
 const confirmedCode = ref('')
 const productsWarning = ref('')
+// El cliente acepta el cargo por inasistencia en el último paso (el backend guarda cuándo lo aceptó).
+const acceptsNoShowFee = ref(false)
 
 function currentUrl() {
   const q = new URLSearchParams({
@@ -420,6 +422,11 @@ async function confirm() {
     // Única puerta de sesión del flujo, y solo al final: la selección viaja
     // en ?redirect para volver exactamente a este punto.
     await navigateTo(`/login?redirect=${encodeURIComponent(currentUrl())}`)
+
+    return
+  }
+  if (!acceptsNoShowFee.value) {
+    submitError.value = 'Para reservar acepta el cargo por inasistencia.'
 
     return
   }
@@ -449,6 +456,7 @@ async function confirm() {
           : undefined,
         propina_sugerida: tipAmount.value > 0 ? tipAmount.value : undefined,
         pagar_ahora: payChoice.value !== 'despues' || undefined,
+        acepta_cargo_inasistencia: acceptsNoShowFee.value || undefined,
       },
     })
     const code = res.data?.code ?? ''
@@ -955,9 +963,17 @@ function prettyDate(iso: string) {
           </div>
 
           <template v-else>
+            <label class="mt-5 flex items-start gap-3 rounded-xl border border-line p-3 text-xs leading-5 text-muted">
+              <input v-model="acceptsNoShowFee" type="checkbox" class="mt-1 h-4 w-4 shrink-0 accent-[var(--color-gold,#d4af37)]">
+              <span>
+                Acepto el <strong class="text-ink">cargo por inasistencia</strong>: si no llego a mi cita sin cancelar a tiempo,
+                se cobra un porcentaje del servicio a mi tarjeta guardada o queda como adeudo que debo pagar en la
+                barbería para volver a reservar.
+              </span>
+            </label>
             <button
-              type="button" class="ui-btn mt-5 w-full py-4 text-[12px] tracking-[0.15em]"
-              :disabled="saving || paymentConfirming || slotsPending || slotsFailed || !time || !selectedService || !selectedBarber"
+              type="button" class="ui-btn mt-3 w-full py-4 text-[12px] tracking-[0.15em]"
+              :disabled="saving || paymentConfirming || slotsPending || slotsFailed || !time || !selectedService || !selectedBarber || !acceptsNoShowFee"
               @click="confirm"
             >
               {{ paymentConfirming ? 'Procesando pago…' : saving ? 'Confirmando…' : isAuthenticated ? 'Confirmar cita' : 'Continuar y confirmar' }}

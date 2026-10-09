@@ -494,7 +494,15 @@ onBeforeUnmount(() => {
                   :key="destino"
                   type="button"
                   class="min-h-9 rounded-lg border border-gold/30 px-3 py-1 text-xs font-bold text-gold transition-colors hover:bg-gold/10 disabled:opacity-50"
-                  :disabled="statusPending === `${appt.id}:${destino}`"
+                  :disabled="
+                    statusPending === `${appt.id}:${destino}` ||
+                    (destino === 'en_proceso' && appt.puede_iniciar === false)
+                  "
+                  :title="
+                    destino === 'en_proceso' && appt.puede_iniciar === false
+                      ? (appt.motivo_no_iniciar ?? '')
+                      : ''
+                  "
                   @click="changeStatus(appt, destino)"
                 >
                   {{
@@ -526,6 +534,14 @@ onBeforeUnmount(() => {
                   Cancelar
                 </button>
               </div>
+              <!-- Por qué no se puede iniciar todavía: falta cobrar (efectivo/tarjeta), verificar la
+                   transferencia o aún no es la hora. Cobrar se hace con el botón de arriba. -->
+              <p
+                v-if="appt.estado === 'confirmada' && appt.puede_iniciar === false && appt.motivo_no_iniciar"
+                class="mt-1 text-right text-[11px] text-amber-300"
+              >
+                {{ appt.motivo_no_iniciar }}
+              </p>
             </td>
           </tr>
           <tr v-if="!appointments.length">
