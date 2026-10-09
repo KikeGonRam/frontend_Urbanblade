@@ -29,7 +29,7 @@ interface FeedResponse { data: WorkRow[], meta: FeedMeta }
 const { apiFetch } = useApi()
 
 const pageSize = 12
-const { data, pending, error } = await useAsyncData(
+const { data, pending, error, refresh } = await useAsyncData(
   'social-feed',
   () => apiFetch<FeedResponse>('/social/feed', { query: { page: 1, per_page: pageSize } }),
   { lazy: true },
@@ -132,7 +132,16 @@ async function submitComment(work: WorkRow) {
     </header>
 
     <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando inspiración…" />
-    <BrandStatePanel v-else-if="error" mascot="bruno" state="error" tone="danger" title="No se pudo cargar el muro" description="Inténtalo nuevamente en unos minutos." />
+    <BrandStatePanel
+      v-else-if="error"
+      mascot="bruno"
+      state="error"
+      tone="danger"
+      title="No se pudo cargar el muro"
+      description="Inténtalo nuevamente en unos minutos."
+      action-label="Reintentar"
+      @action="refresh"
+    />
     <BrandStatePanel v-else-if="!works.length" mascot="nava" state="empty" title="Todavía no hay trabajos publicados" description="Los nuevos estilos del equipo aparecerán aquí." />
 
     <div v-else class="space-y-6">
