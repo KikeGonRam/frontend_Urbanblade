@@ -249,12 +249,19 @@ async function downloadReceipt(order: OrderRow) {
       </button>
     </section>
 
-    <p v-if="pending" class="text-sm text-muted">Cargando pedidos…</p>
-    <p v-else-if="error" class="text-sm text-red-400">
-      No se pudo cargar la bandeja de pedidos.
-    </p>
+    <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando pedidos…" />
+    <BrandStatePanel
+      v-else-if="error"
+      mascot="bruno"
+      state="error"
+      tone="danger"
+      title="No se pudo cargar la bandeja de pedidos"
+      description="Inténtalo nuevamente en unos minutos."
+      action-label="Reintentar"
+      @action="refresh"
+    />
 
-    <section v-else class="ui-card overflow-x-auto">
+    <section v-if="!pending && !error" class="ui-card overflow-x-auto">
       <table class="w-full text-left text-sm">
         <thead>
           <tr
