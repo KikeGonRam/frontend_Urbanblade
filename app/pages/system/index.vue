@@ -68,7 +68,15 @@ function fmtDate(iso: string | null) {
     </header>
 
     <p v-if="pending && !data" class="text-sm text-muted">Cargando…</p>
-    <p v-else-if="error" class="text-sm text-red-400">No se pudo cargar el estado del servidor.</p>
+    <BrandStatePanel
+      v-else-if="error"
+      mascot="bruno"
+      state="error"
+      tone="danger"
+      title="No se pudo cargar el estado del servidor"
+      action-label="Reintentar"
+      @action="refresh"
+    />
 
     <template v-else-if="data">
       <section class="overflow-hidden rounded-2xl border p-5 sm:p-6" :class="health.surface" aria-live="polite">

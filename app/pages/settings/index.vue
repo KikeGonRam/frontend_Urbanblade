@@ -149,7 +149,15 @@ async function toggleMaintenance() {
     </header>
 
     <p v-if="pending" class="text-sm text-muted">Cargando configuración…</p>
-    <p v-else-if="error" class="text-sm text-red-400">No se pudo cargar la configuración.</p>
+    <BrandStatePanel
+      v-else-if="error"
+      mascot="bruno"
+      state="error"
+      tone="danger"
+      title="No se pudo cargar la configuración"
+      action-label="Reintentar"
+      @action="refresh"
+    />
 
     <form v-else class="grid max-w-3xl grid-cols-1 gap-6" @submit.prevent="submitForm">
       <section class="ui-card p-5">

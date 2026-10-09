@@ -172,7 +172,15 @@ async function submitCampaign() {
       <section>
         <h2 class="mb-3 text-sm font-black uppercase tracking-wide text-ink">Últimas campañas</h2>
         <p v-if="pending" class="text-sm text-muted">Cargando…</p>
-        <p v-else-if="error" class="text-sm text-red-400">No se pudieron cargar las campañas.</p>
+        <BrandStatePanel
+          v-else-if="error"
+          mascot="bruno"
+          state="error"
+          tone="danger"
+          title="No se pudieron cargar las campañas"
+          action-label="Reintentar"
+          @action="refresh"
+        />
         <p v-else-if="!campaigns.length" class="rounded-2xl border border-dashed border-line p-12 text-center text-sm text-muted">
           Todavía no se ha enviado ninguna campaña.
         </p>
