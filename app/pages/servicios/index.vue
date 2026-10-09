@@ -26,7 +26,7 @@ interface ServiceRow {
 const { isAuthenticated } = useAuth()
 const { apiFetch } = useApi()
 
-const { data: response, pending, error } = await useAsyncData(
+const { data: response, pending, error, refresh } = await useAsyncData(
   'public-services-catalog',
   () => apiFetch<{ data: ServiceRow[] }>('/services'),
 )
@@ -73,7 +73,16 @@ function currency(n: number) {
     </div>
 
     <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando catálogo…" />
-    <BrandStatePanel v-else-if="error" mascot="bruno" state="error" tone="danger" title="No se pudo cargar el catálogo" description="Inténtalo nuevamente en unos minutos." />
+    <BrandStatePanel
+      v-else-if="error"
+      mascot="bruno"
+      state="error"
+      tone="danger"
+      title="No se pudo cargar el catálogo"
+      description="Inténtalo nuevamente en unos minutos."
+      action-label="Reintentar"
+      @action="refresh"
+    />
     <BrandStatePanel v-else-if="!filtered.length" mascot="nava" state="empty" title="No hay servicios disponibles" description="Vuelve pronto para conocer nuestros próximos servicios." />
 
     <div v-else class="grid grid-cols-1 gap-6 md:grid-cols-3">

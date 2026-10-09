@@ -20,7 +20,7 @@ interface BarberRow {
 
 const { apiFetch } = useApi()
 
-const { data: response, pending, error } = await useAsyncData(
+const { data: response, pending, error, refresh } = await useAsyncData(
   'barbers-catalog',
   () => apiFetch<{ data: BarberRow[] }>('/barbers'),
   { lazy: true },
@@ -37,7 +37,16 @@ const barbers = computed(() => response.value?.data ?? [])
     </header>
 
     <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando barberos…" />
-    <BrandStatePanel v-else-if="error" mascot="bruno" state="error" tone="danger" title="No se pudo cargar el catálogo" description="Inténtalo nuevamente en unos minutos." />
+    <BrandStatePanel
+      v-else-if="error"
+      mascot="bruno"
+      state="error"
+      tone="danger"
+      title="No se pudo cargar el catálogo"
+      description="Inténtalo nuevamente en unos minutos."
+      action-label="Reintentar"
+      @action="refresh"
+    />
     <BrandStatePanel v-else-if="!barbers.length" mascot="nava" state="empty" title="Aún no hay barberos activos" description="El equipo aparecerá aquí cuando esté disponible." />
 
     <div v-else class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">

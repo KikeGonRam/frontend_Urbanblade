@@ -206,9 +206,15 @@ async function submitForm() {
       <span>Cargando barberos…</span>
     </div>
 
-    <p v-else-if="error" class="text-sm text-red-400">
-      No se pudo cargar la lista de barberos.
-    </p>
+    <BrandStatePanel
+      v-else-if="error"
+      mascot="bruno"
+      state="error"
+      tone="danger"
+      title="No se pudo cargar la lista de barberos"
+      action-label="Reintentar"
+      @action="refresh"
+    />
 
     <section v-else class="ui-card overflow-x-auto">
       <table class="w-full text-left text-sm">

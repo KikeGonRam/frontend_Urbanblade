@@ -87,7 +87,15 @@ async function submitReview() {
     </NuxtLink>
 
     <p v-if="pending" class="text-sm text-muted">Cargando perfil…</p>
-    <p v-else-if="error || !barber" class="text-sm text-red-400">No se pudo cargar este barbero.</p>
+    <BrandStatePanel
+      v-else-if="error || !barber"
+      mascot="bruno"
+      state="error"
+      tone="danger"
+      title="No se pudo cargar este barbero"
+      action-label="Reintentar"
+      @action="refresh"
+    />
 
     <template v-else>
       <header class="mb-8 flex flex-col items-start gap-4 sm:flex-row sm:items-center">

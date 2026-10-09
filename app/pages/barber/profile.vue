@@ -126,7 +126,15 @@ async function save() {
       <span>Cargando perfil…</span>
     </div>
 
-    <p v-else-if="error" class="text-sm text-danger">No se pudo cargar tu perfil.</p>
+    <BrandStatePanel
+      v-else-if="error"
+      mascot="bruno"
+      state="error"
+      tone="danger"
+      title="No se pudo cargar tu perfil"
+      action-label="Reintentar"
+      @action="refresh"
+    />
 
     <div v-else-if="data" class="space-y-6">
       <section class="grid grid-cols-2 gap-3 xl:grid-cols-4" aria-label="Tus números">

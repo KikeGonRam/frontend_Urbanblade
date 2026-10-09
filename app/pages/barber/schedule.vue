@@ -20,7 +20,7 @@ const names: Record<string, string> = {
 const order = Object.keys(names)
 const { apiFetch } = useApi()
 
-const { data, pending, error } = await useAsyncData<{ schedules: Day[] }>(
+const { data, pending, error, refresh } = await useAsyncData<{ schedules: Day[] }>(
   'barber-schedule',
   () => apiFetch('/barber/schedule'),
   { lazy: true },
@@ -95,7 +95,15 @@ async function save() {
       <span>Cargando horario…</span>
     </div>
 
-    <p v-else-if="error" class="text-sm text-red-400">No se pudo cargar tu horario.</p>
+    <BrandStatePanel
+      v-else-if="error"
+      mascot="bruno"
+      state="error"
+      tone="danger"
+      title="No se pudo cargar tu horario"
+      action-label="Reintentar"
+      @action="refresh"
+    />
 
     <form v-else class="max-w-3xl space-y-4" @submit.prevent="save">
       <article
