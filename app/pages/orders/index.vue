@@ -54,6 +54,7 @@ const { confirm } = useConfirm();
 const estadoFilter = ref("");
 const search = ref("");
 const debouncedSearch = useDebounce(search, 350);
+const page = ref(1);
 
 const {
   data: response,
@@ -67,16 +68,23 @@ const {
       query: {
         estado: estadoFilter.value || undefined,
         q: search.value || undefined,
+        page: page.value,
+        per_page: 15,
       },
     }),
-  { watch: [estadoFilter, debouncedSearch], lazy: true },
+  { watch: [estadoFilter, debouncedSearch, page], lazy: true },
 );
 const orders = computed(() => response.value?.data ?? []);
 const stats = computed(() => response.value?.meta.stats);
+const pagination = computed(() => response.value?.meta);
 
 function fmtMoney(n: number) {
   return `$${Number(n ?? 0).toFixed(2)}`;
 }
+
+watch([estadoFilter, debouncedSearch], () => {
+  page.value = 1;
+});
 
 function fmtDate(iso: string | null) {
   if (!iso) return "—";
@@ -334,6 +342,15 @@ async function downloadReceipt(order: OrderRow) {
         </tbody>
       </table>
     </section>
+
+    <UiPagination
+      v-if="pagination"
+      v-model:current-page="page"
+      :last-page="pagination.last_page"
+      :total="pagination.total"
+      :per-page="15"
+      :busy="pending"
+    />
 
     <div
       v-if="delivering"

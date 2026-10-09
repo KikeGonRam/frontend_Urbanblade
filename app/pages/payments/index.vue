@@ -104,6 +104,7 @@ const metodoFilter = ref("");
 const barberoFilter = ref("");
 const fechaDesde = ref("");
 const fechaHasta = ref("");
+const page = ref(1);
 
 const {
   data: response,
@@ -117,6 +118,8 @@ const {
     barbero_id: barberoFilter.value || undefined,
     fecha_desde: fechaDesde.value || undefined,
     fecha_hasta: fechaHasta.value || undefined,
+    page: page.value,
+    per_page: 15,
   }),
   () =>
     apiFetch<PaymentsResponse>("/payments", {
@@ -126,6 +129,8 @@ const {
         barbero_id: barberoFilter.value || undefined,
         fecha_desde: fechaDesde.value || undefined,
         fecha_hasta: fechaHasta.value || undefined,
+        page: page.value,
+        per_page: 15,
       },
     }),
   {
@@ -135,6 +140,7 @@ const {
       barberoFilter,
       fechaDesde,
       fechaHasta,
+      page,
     ],
     lazy: true,
   },
@@ -143,6 +149,7 @@ const {
 const payments = computed(() => response.value?.data ?? []);
 const stats = computed(() => response.value?.meta.stats);
 const pendingCount = computed(() => response.value?.meta.pending_count ?? 0);
+const pagination = computed(() => response.value?.meta);
 
 function clearFilters() {
   search.value = "";
@@ -150,7 +157,12 @@ function clearFilters() {
   barberoFilter.value = "";
   fechaDesde.value = "";
   fechaHasta.value = "";
+  page.value = 1;
 }
+
+watch([debouncedSearch, metodoFilter, barberoFilter, fechaDesde, fechaHasta], () => {
+  page.value = 1;
+});
 
 const { data: barbersRes } = await useAsyncData(
   "payments-barbers",
@@ -724,6 +736,15 @@ onUnmounted(() => teardownStripe());
         </tbody>
       </table>
     </section>
+
+    <UiPagination
+      v-if="pagination"
+      v-model:current-page="page"
+      :last-page="pagination.last_page"
+      :total="pagination.total"
+      :per-page="15"
+      :busy="pending"
+    />
 
     <!-- Nuevo Cobro -->
     <div
