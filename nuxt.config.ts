@@ -53,6 +53,15 @@ export default defineNuxtConfig({
       // Toda la interfaz esta en espanol, asi que el idioma es constante.
       htmlAttrs: { lang: 'es' },
       link: [{ rel: 'icon', type: 'image/svg+xml', href: '/images/urbanblade-mark.svg' }],
+      meta: [
+        {
+          name: 'viewport',
+          content: 'width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content',
+        },
+        { name: 'theme-color', media: '(prefers-color-scheme: dark)', content: '#0a0a0a' },
+        { name: 'theme-color', media: '(prefers-color-scheme: light)', content: '#f7f3ea' },
+        { name: 'color-scheme', content: 'dark light' },
+      ],
       // Aplica el tema guardado en cookie ANTES de pintar, para evitar el
       // flash de tema incorrecto (FOUC) — equivalente a que barber lo
       // renderice en servidor via data-theme en <html> (ver

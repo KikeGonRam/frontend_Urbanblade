@@ -5,6 +5,35 @@
 
 @config '../../../tailwind.config.ts';
 
+@layer base {
+    html {
+        -webkit-tap-highlight-color: transparent;
+        -webkit-text-size-adjust: 100%;
+        overscroll-behavior: none;
+    }
+
+    body {
+        overscroll-behavior: none;
+    }
+
+    button,
+    a,
+    [role='button'] {
+        touch-action: manipulation;
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
+    }
+
+    @media (pointer: coarse) {
+        input,
+        textarea,
+        select {
+            font-size: 16px;
+        }
+    }
+}
+
 /* Valores por defecto de Tailwind 3 que la v4 cambió: el borde sin color
    explícito era gray-200 (ahora currentColor) y los botones mostraban la
    mano (ahora cursor por defecto). Se conservan para no alterar la UI. */
@@ -496,4 +525,20 @@ html[data-theme="libreta"] {
     .ui-input { border: 1px solid var(--line); border-radius: .75rem; background-color: var(--bg-main); color: var(--ink); padding: .625rem .875rem; font-size: .875rem; line-height: 1.4; transition: border-color 160ms ease, box-shadow 160ms ease; }
     .ui-input::placeholder { color: var(--muted); }
     .ui-input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgb(var(--gold-rgb) / .15); }
+}
+
+@layer components {
+    .ub-mobile-topbar {
+        padding-top: env(safe-area-inset-top, 0px);
+        height: calc(3.5rem + env(safe-area-inset-top, 0px));
+    }
+
+    .ub-mobile-bottomnav {
+        height: calc(4rem + env(safe-area-inset-bottom, 0px));
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    .ub-mobile-drawer {
+        padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+    }
 }
