@@ -61,7 +61,7 @@ async function onSubmit() {
 </script>
 
 <template>
-  <AuthShell mascot="nava-panther.png" mascot-name="Nava">
+  <AuthShell mascot="nava-panther.webp" mascot-name="Nava">
     <h1 class="mb-1 text-center text-lg font-black uppercase tracking-widest text-white">
       Bienvenido <span class="font-serif text-base italic normal-case text-gold">de nuevo</span>
     </h1>

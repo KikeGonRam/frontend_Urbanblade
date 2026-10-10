@@ -28,7 +28,7 @@ async function onSubmit() {
 </script>
 
 <template>
-  <AuthShell mascot="bruno-raven.png" mascot-name="Bruno">
+  <AuthShell mascot="bruno-raven.webp" mascot-name="Bruno">
     <h1 class="mb-1 text-center text-lg font-black uppercase tracking-widest text-white">
       Recuperar <span class="font-serif text-base italic normal-case text-gold">acceso</span>
     </h1>

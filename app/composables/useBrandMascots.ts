@@ -13,7 +13,7 @@ interface MascotDefinition {
 export const MASCOTS: Record<MascotId, MascotDefinition> = {
   nava: {
     name: 'Nava',
-    image: '/images/mascots/nava-panther.png',
+    image: '/images/mascots/nava-panther.webp',
     role: 'Guía de experiencia',
     motto: 'Siempre hay una ruta con estilo.',
     story: 'Nava creció entre barrios donde una barbería era punto de encuentro. Aprendió a leer el ambiente, orientar sin imponer y convertir cada desvío en una nueva oportunidad. Representa exploración, cercanía y confianza.',
@@ -24,7 +24,7 @@ export const MASCOTS: Record<MascotId, MascotDefinition> = {
   },
   bladebot: {
     name: 'Bladebot',
-    image: '/images/mascots/bladebot.png',
+    image: '/images/mascots/bladebot.webp',
     role: 'Asistente de precisión',
     motto: 'Orden, precisión y una cálida bienvenida.',
     story: 'Bladebot nació en el taller digital de UrbanBlade para coordinar cada detalle sin perder el trato humano. Organiza, recuerda y acompaña. Representa tecnología útil, eficiencia y servicio.',
@@ -36,7 +36,7 @@ export const MASCOTS: Record<MascotId, MascotDefinition> = {
   },
   bruno: {
     name: 'Bruno',
-    image: '/images/mascots/bruno-raven.png',
+    image: '/images/mascots/bruno-raven.webp',
     role: 'Guardián del conocimiento',
     motto: 'Observar, comprender y resolver.',
     story: 'Bruno ha recorrido cada rincón de la operación y guarda las historias que hacen crecer al equipo. Cuando algo falla, estudia las pistas antes de actuar. Representa análisis, memoria y criterio.',

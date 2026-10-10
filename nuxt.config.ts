@@ -94,6 +94,13 @@ export default defineNuxtConfig({
         'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
       },
     },
+    // Los archivos de public/images no llevan hash en el nombre, así que Nitro no les pone
+    // Cache-Control (solo ETag) y el navegador revalida o vuelve a bajarlos en cada visita.
+    '/images/**': {
+      headers: {
+        'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800',
+      },
+    },
     '/dashboard/**': { ssr: false },
     '/appointments': { ssr: false },
     '/appointments/**': { ssr: false },

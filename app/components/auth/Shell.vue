@@ -76,7 +76,7 @@ onBeforeUnmount(() => {
 
         <figure ref="mascotEl" class="auth-shell__mascot auth-shell__reveal" style="--d: .4s">
           <span class="auth-shell__mascot-halo" aria-hidden="true" />
-          <img :src="`/images/mascots/${mascot}`" :alt="`${mascotName}, mascota de UrbanBlade`" draggable="false">
+          <img :src="`/images/mascots/${mascot}`" :alt="`${mascotName}, mascota de UrbanBlade`" width="480" height="720" decoding="async" draggable="false">
           <figcaption>{{ mascotName }} está aquí para ayudarte</figcaption>
         </figure>
       </section>

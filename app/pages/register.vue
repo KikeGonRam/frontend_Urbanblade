@@ -64,7 +64,7 @@ async function onSubmit() {
 </script>
 
 <template>
-  <AuthShell mascot="bladebot.png" mascot-name="Bladebot">
+  <AuthShell mascot="bladebot.webp" mascot-name="Bladebot">
     <h1 class="mb-1 text-center text-lg font-black uppercase tracking-widest text-white">
       Únete a la <span class="font-serif text-base italic normal-case text-gold">élite</span>
     </h1>
