@@ -45,6 +45,7 @@ onBeforeUnmount(() => {
       aria-modal="true"
       aria-labelledby="confirm-modal-title"
       @cancel.prevent="handleCancel"
+      @keydown.esc.prevent="handleCancel"
       @click="$event.target === dialog && handleCancel()"
     >
       <div class="p-6">

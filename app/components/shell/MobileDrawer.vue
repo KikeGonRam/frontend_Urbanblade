@@ -75,7 +75,14 @@ async function onLogout() {
     enter-active-class="transition-opacity duration-200" enter-from-class="opacity-0" enter-to-class="opacity-100"
     leave-active-class="transition-opacity duration-150" leave-from-class="opacity-100" leave-to-class="opacity-0"
   >
-    <div v-if="drawerOpen" class="fixed inset-0 z-40 bg-black/50 md:hidden" @click="closeDrawer" />
+    <button
+      v-if="drawerOpen"
+      type="button"
+      tabindex="-1"
+      aria-hidden="true"
+      class="fixed inset-0 z-40 bg-black/50 md:hidden"
+      @click="closeDrawer"
+    />
   </Transition>
 
   <Transition
