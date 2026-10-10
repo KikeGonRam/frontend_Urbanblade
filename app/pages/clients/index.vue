@@ -300,15 +300,22 @@ function fmtDate(iso: string | null) {
       </button>
     </section>
 
-    <p v-if="pending" class="text-sm text-muted">Cargando clientes…</p>
-    <p v-else-if="error" class="text-sm text-red-400">
-      No se pudo cargar la lista de clientes.
-    </p>
+    <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando clientes…" />
+    <BrandStatePanel
+      v-else-if="error"
+      mascot="bruno"
+      state="error"
+      tone="danger"
+      title="No se pudo cargar la lista de clientes"
+      description="Inténtalo nuevamente en unos minutos."
+      action-label="Reintentar"
+      @action="refresh"
+    />
     <p v-if="actionError" role="alert" class="mb-4 text-sm text-red-400">
       {{ actionError }}
     </p>
 
-    <section v-else class="ui-card overflow-x-auto">
+    <section v-if="!pending && !error" class="ui-card overflow-x-auto">
       <table class="w-full text-left text-sm">
         <thead>
           <tr

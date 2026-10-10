@@ -126,10 +126,18 @@ async function save() {
       <span>Cargando perfil…</span>
     </div>
 
-    <p v-else-if="error" class="text-sm text-danger">No se pudo cargar tu perfil.</p>
+    <BrandStatePanel
+      v-else-if="error"
+      mascot="bruno"
+      state="error"
+      tone="danger"
+      title="No se pudo cargar tu perfil"
+      action-label="Reintentar"
+      @action="refresh"
+    />
 
     <div v-else-if="data" class="space-y-6">
-      <section class="grid grid-cols-2 gap-3 xl:grid-cols-4" aria-label="Tus números">
+      <section class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="Tus números">
         <UiStatCard v-for="k in kpis" :key="k.label" :label="k.label" :value="k.value" :hint="k.hint" />
       </section>
 

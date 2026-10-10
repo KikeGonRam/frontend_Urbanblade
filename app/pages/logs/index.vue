@@ -60,6 +60,7 @@ const {
   data: response,
   pending,
   error,
+  refresh,
 } = await useAsyncData(
   buildDataKey("logs-list", {
     q: search.value || undefined,
@@ -239,10 +240,17 @@ function fmtDate(iso: string | null) {
       </button>
     </section>
 
-    <p v-if="pending" class="text-sm text-muted">Cargando…</p>
-    <p v-else-if="error" class="text-sm text-red-400">
-      No se pudo cargar el historial.
-    </p>
+    <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando historial…" />
+    <BrandStatePanel
+      v-else-if="error"
+      mascot="bruno"
+      state="error"
+      tone="danger"
+      title="No se pudo cargar el historial"
+      description="Inténtalo nuevamente en unos minutos."
+      action-label="Reintentar"
+      @action="refresh"
+    />
     <p
       v-else-if="!logs.length"
       class="rounded-2xl border border-dashed border-line p-12 text-center text-sm text-muted"
@@ -250,7 +258,7 @@ function fmtDate(iso: string | null) {
       Sin registros que mostrar.
     </p>
 
-    <section v-else class="ui-card overflow-x-auto">
+    <section v-if="!pending && !error && logs.length" class="ui-card overflow-x-auto">
       <table class="w-full text-left text-sm">
         <thead>
           <tr

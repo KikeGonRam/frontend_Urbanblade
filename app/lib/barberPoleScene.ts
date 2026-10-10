@@ -48,6 +48,9 @@ export function createBarberPoleScene(host: HTMLElement): BarberPoleScene {
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2))
   renderer.setClearColor(0x000000, 0)
+  renderer.outputColorSpace = THREE.SRGBColorSpace
+  renderer.toneMapping = THREE.ACESFilmicToneMapping
+  renderer.toneMappingExposure = 1.15
   renderer.domElement.style.display = 'block'
   host.appendChild(renderer.domElement)
 
@@ -75,6 +78,20 @@ export function createBarberPoleScene(host: HTMLElement): BarberPoleScene {
   const pole = new THREE.Group()
   scene.add(pole)
 
+  // A restrained product-display base gives the pole a visual anchor instead
+  // of leaving it floating in the hero.
+  const platform = new THREE.Group()
+  platform.position.y = -2.12
+  scene.add(platform)
+  const platformGeometry = new THREE.CylinderGeometry(1.05, 1.18, 0.18, 64)
+  const platformMaterial = new THREE.MeshStandardMaterial({ roughness: 0.28, metalness: 0.82 })
+  platform.add(new THREE.Mesh(platformGeometry, platformMaterial))
+  const platformRingGeometry = new THREE.TorusGeometry(0.9, 0.025, 10, 64)
+  const platformRing = new THREE.Mesh(platformRingGeometry, platformMaterial)
+  platformRing.rotation.x = Math.PI / 2
+  platformRing.position.y = 0.1
+  platform.add(platformRing)
+
   const tubeGeometry = new THREE.CylinderGeometry(0.5, 0.5, 3.4, 48, 1, true)
   const tubeMaterial = new THREE.MeshStandardMaterial({ map: stripes, roughness: 0.35, metalness: 0.05 })
   pole.add(new THREE.Mesh(tubeGeometry, tubeMaterial))
@@ -89,6 +106,12 @@ export function createBarberPoleScene(host: HTMLElement): BarberPoleScene {
   const ringGeometry = new THREE.TorusGeometry(0.62, 0.05, 12, 48)
   const domeGeometry = new THREE.SphereGeometry(0.5, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2)
   const knobGeometry = new THREE.SphereGeometry(0.14, 16, 12)
+  const haloGeometry = new THREE.TorusGeometry(0.78, 0.018, 10, 64)
+  const haloMaterial = new THREE.MeshBasicMaterial({ color: 0xd4af37, transparent: true, opacity: 0.42 })
+  const halo = new THREE.Mesh(haloGeometry, haloMaterial)
+  halo.position.set(0, 0.15, -0.35)
+  halo.rotation.x = Math.PI / 2
+  scene.add(halo)
   const parts: Array<[THREE.BufferGeometry, number]> = [
     [capGeometry, 1.86], [capGeometry, -1.86], [domeGeometry, 2.02], [knobGeometry, 2.6],
   ]
@@ -109,6 +132,7 @@ export function createBarberPoleScene(host: HTMLElement): BarberPoleScene {
     stripes.needsUpdate = true
     const gold = new THREE.Color(cssVar('--gold', '#d4af37'))
     metal.color.copy(gold)
+    haloMaterial.color.copy(gold)
     rim.color.copy(gold)
   }
   applyTheme()
@@ -157,6 +181,8 @@ export function createBarberPoleScene(host: HTMLElement): BarberPoleScene {
     pole.rotation.x += (tilt.y - pole.rotation.x) * 0.04
     pole.rotation.z = 0.08 + Math.sin(time * 0.5) * 0.02
     pole.position.y = Math.sin(time * 0.8) * 0.06
+    halo.rotation.z -= delta * 0.12
+    halo.material.opacity = 0.3 + Math.sin(time * 0.8) * 0.08
     renderer.render(scene, camera)
   }
   function start() {
@@ -185,8 +211,8 @@ export function createBarberPoleScene(host: HTMLElement): BarberPoleScene {
     viewObserver.disconnect()
     window.removeEventListener('pointermove', onPointerMove)
     document.removeEventListener('visibilitychange', onVisibility)
-    for (const geometry of [tubeGeometry, glassGeometry, capGeometry, ringGeometry, domeGeometry, knobGeometry]) geometry.dispose()
-    for (const material of [tubeMaterial, glassMaterial, metal]) material.dispose()
+    for (const geometry of [tubeGeometry, glassGeometry, capGeometry, ringGeometry, domeGeometry, knobGeometry, platformGeometry, platformRingGeometry, haloGeometry]) geometry.dispose()
+    for (const material of [tubeMaterial, glassMaterial, metal, platformMaterial, haloMaterial]) material.dispose()
     stripes.dispose()
     renderer.dispose()
     renderer.domElement.remove()

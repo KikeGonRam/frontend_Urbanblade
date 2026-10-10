@@ -35,9 +35,16 @@ const fullName = computed(() => user.value?.name ?? "");
 <template>
   <div class="p-4 sm:p-6 lg:p-8">
     <p v-if="pending" class="text-sm text-muted">Cargando dashboard…</p>
-    <p v-else-if="error" class="text-sm text-red-400">
-      No se pudo cargar el dashboard. Intenta recargar.
-    </p>
+    <BrandStatePanel
+      v-else-if="error"
+      mascot="bruno"
+      state="error"
+      tone="danger"
+      title="No se pudo cargar el dashboard"
+      description="Inténtalo nuevamente para recuperar tus indicadores."
+      action-label="Reintentar"
+      @action="refresh"
+    />
 
     <LazyDashboardRecepcion
       v-else-if="dashboard?.role === 'recepcionista'"

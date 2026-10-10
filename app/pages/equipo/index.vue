@@ -6,6 +6,8 @@
  * diferencia de /barbers (que exige sesión para el flujo de reserva dentro
  * de la app), esta página es para visitantes que aún no se registran.
  */
+import { publicImageUrl } from '~/utils/publicImage'
+
 definePageMeta({ layout: 'public' })
 
 useSeoMeta({
@@ -26,7 +28,7 @@ interface BarberRow {
 
 const { apiFetch } = useApi()
 
-const { data: response, pending, error } = await useAsyncData(
+const { data: response, pending, error, refresh } = await useAsyncData(
   'public-barbers-catalog',
   () => apiFetch<{ data: BarberRow[] }>('/barbers'),
 )
@@ -51,7 +53,15 @@ function initials(name?: string | null) {
     </header>
 
     <p v-if="pending" class="py-20 text-center text-muted">Cargando maestros…</p>
-    <p v-else-if="error" class="py-20 text-center text-sm text-red-400">No se pudo cargar el equipo.</p>
+    <BrandStatePanel
+      v-else-if="error"
+      mascot="bruno"
+      state="error"
+      tone="danger"
+      title="No se pudo cargar el equipo"
+      action-label="Reintentar"
+      @action="refresh"
+    />
     <p v-else-if="!barbers.length" class="py-20 text-center text-muted">Nuestros maestros se están preparando...</p>
 
     <div v-else class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
@@ -61,8 +71,8 @@ function initials(name?: string | null) {
       >
         <div class="relative aspect-[3/4] overflow-hidden rounded-3xl border border-line bg-card">
           <img
-            v-if="barber.foto" :src="barber.foto" loading="lazy" :alt="`Foto de ${barber.user?.name}`"
-            class="h-full w-full object-cover grayscale transition-all duration-700 group-hover:scale-110 group-hover:grayscale-0"
+            v-if="barber.foto" :src="publicImageUrl(barber.foto, 1800) ?? undefined" :srcset="`${publicImageUrl(barber.foto, 900) ?? ''} 900w, ${publicImageUrl(barber.foto, 1800) ?? ''} 1800w`" sizes="(min-width: 1024px) 25vw, 100vw" loading="lazy" :alt="`Foto de ${barber.user?.name}`"
+            class="h-full w-full object-cover object-center grayscale transition-[transform,filter] duration-500 group-hover:scale-105 group-hover:grayscale-0"
           >
           <div v-else class="flex h-full w-full items-center justify-center bg-gradient-to-br from-gold/10 via-card to-main">
             <span class="text-4xl font-black uppercase tracking-tighter text-gold/50">{{ initials(barber.user?.name) }}</span>

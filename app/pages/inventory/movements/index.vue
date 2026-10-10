@@ -150,6 +150,8 @@ const form = reactive({
   tipo: "salida",
   cantidad: 1,
   motivo: "",
+  appointment_id: "",
+  fecha: "",
 });
 const formError = ref("");
 const fieldErrors = ref<Record<string, string[]>>({});
@@ -160,6 +162,8 @@ function openCreate() {
   form.tipo = "salida";
   form.cantidad = 1;
   form.motivo = "";
+  form.appointment_id = "";
+  form.fecha = "";
   formError.value = "";
   fieldErrors.value = {};
   showForm.value = true;
@@ -169,17 +173,6 @@ function closeForm() {
   if (saving.value) return;
   showForm.value = false;
 }
-
-function onFormKeydown(event: KeyboardEvent) {
-  if (event.key === "Escape") closeForm();
-}
-
-onMounted(() => {
-  if (import.meta.client) window.addEventListener("keydown", onFormKeydown);
-});
-onUnmounted(() => {
-  if (import.meta.client) window.removeEventListener("keydown", onFormKeydown);
-});
 
 async function submitForm() {
   saving.value = true;
@@ -193,6 +186,8 @@ async function submitForm() {
         tipo: form.tipo,
         cantidad: form.cantidad,
         motivo: form.motivo || undefined,
+        appointment_id: form.appointment_id || undefined,
+        fecha: form.fecha || undefined,
       },
     });
     showForm.value = false;
@@ -364,12 +359,19 @@ async function submitForm() {
       </button>
     </section>
 
-    <p v-if="pending" class="text-sm text-muted">Cargando movimientos…</p>
-    <p v-else-if="error" class="text-sm text-red-400">
-      No se pudo cargar el historial.
-    </p>
+    <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando movimientos…" />
+    <BrandStatePanel
+      v-else-if="error"
+      mascot="bruno"
+      state="error"
+      tone="danger"
+      title="No se pudo cargar el historial"
+      description="Inténtalo nuevamente en unos minutos."
+      action-label="Reintentar"
+      @action="refresh"
+    />
 
-    <section v-else class="ui-card overflow-x-auto">
+    <section v-if="!pending && !error" class="ui-card overflow-x-auto">
       <table class="w-full text-left text-sm">
         <thead>
           <tr
@@ -434,21 +436,11 @@ async function submitForm() {
       :busy="pending"
     />
 
-    <div
-      v-if="showForm"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="movement-form-title"
-      @click.self="closeForm"
-    >
-      <div class="w-full max-w-md rounded-2xl border border-line bg-card p-6">
-        <h2
-          id="movement-form-title"
-          class="mb-4 text-lg font-semibold text-ink"
-        >
-          Nuevo movimiento
-        </h2>
+    <UiModal v-if="showForm" title="Nuevo movimiento" :busy="saving" @close="closeForm">
+      <div class="mb-6 rounded-xl border border-gold/20 bg-gold/5 p-4">
+        <p class="text-[10px] font-black uppercase tracking-[0.2em] text-gold">Control de inventario</p>
+        <p class="mt-1 text-sm leading-relaxed text-muted">Registra una entrada o salida con los datos que admite el sistema.</p>
+      </div>
         <form class="space-y-3" @submit.prevent="submitForm">
           <div>
             <label for="movement-product" class="mb-1 block text-xs text-muted"
@@ -463,7 +455,7 @@ async function submitForm() {
                 fieldErrors.product_id ? 'movement-product-error' : undefined
               "
               :class="[
-                'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink',
+                'ui-input w-full',
                 fieldErrors.product_id ? 'border-red-500/60' : 'border-line',
               ]"
             >
@@ -492,7 +484,7 @@ async function submitForm() {
                 fieldErrors.tipo ? 'movement-type-error' : undefined
               "
               :class="[
-                'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink',
+                'ui-input w-full',
                 fieldErrors.tipo ? 'border-red-500/60' : 'border-line',
               ]"
             >
@@ -527,7 +519,7 @@ async function submitForm() {
                 fieldErrors.cantidad ? 'movement-quantity-error' : undefined
               "
               :class="[
-                'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink',
+                'ui-input w-full',
                 fieldErrors.cantidad ? 'border-red-500/60' : 'border-line',
               ]"
             >
@@ -553,7 +545,7 @@ async function submitForm() {
                 fieldErrors.motivo ? 'movement-reason-error' : undefined
               "
               :class="[
-                'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink',
+                'ui-input w-full',
                 fieldErrors.motivo ? 'border-red-500/60' : 'border-line',
               ]"
             >
@@ -565,28 +557,41 @@ async function submitForm() {
               {{ fieldErrors.motivo[0] }}
             </p>
           </div>
+          <div class="grid gap-3 sm:grid-cols-2">
+            <div>
+              <label for="movement-appointment" class="mb-1 block text-xs text-muted">Cita asociada (opcional)</label>
+              <input id="movement-appointment" v-model="form.appointment_id" type="text" placeholder="ID de la cita" :aria-invalid="!!fieldErrors.appointment_id" :class="['ui-input w-full', fieldErrors.appointment_id ? 'border-red-500/60' : '']">
+              <p class="mt-1 text-[10px] text-muted">Úsalo si corresponde al consumo de una cita.</p>
+              <p v-if="fieldErrors.appointment_id" class="mt-1 text-xs text-red-400">{{ fieldErrors.appointment_id[0] }}</p>
+            </div>
+            <div>
+              <label for="movement-date" class="mb-1 block text-xs text-muted">Fecha del movimiento (opcional)</label>
+              <input id="movement-date" v-model="form.fecha" type="date" :aria-invalid="!!fieldErrors.fecha" :class="['ui-input w-full', fieldErrors.fecha ? 'border-red-500/60' : '']">
+              <p class="mt-1 text-[10px] text-muted">Vacío = fecha actual.</p>
+              <p v-if="fieldErrors.fecha" class="mt-1 text-xs text-red-400">{{ fieldErrors.fecha[0] }}</p>
+            </div>
+          </div>
           <p v-if="formError" role="alert" class="text-sm text-red-400">
             {{ formError }}
           </p>
-          <div class="mt-5 flex gap-3">
+          <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row">
             <button
               type="submit"
               :disabled="saving || !form.product_id"
-              class="flex-1 rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-black hover:bg-gold-dim disabled:opacity-50"
+              class="ui-btn flex-1 justify-center py-3 text-xs tracking-[0.15em]"
             >
               {{ saving ? "Guardando…" : "Registrar" }}
             </button>
             <button
               type="button"
               :disabled="saving"
-              class="rounded-lg border border-line px-4 py-2 text-sm text-muted hover:text-ink disabled:opacity-50"
+              class="ui-btn-secondary justify-center px-4 py-3 text-xs disabled:opacity-50"
               @click="closeForm"
             >
               Cancelar
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </UiModal>
   </div>
 </template>

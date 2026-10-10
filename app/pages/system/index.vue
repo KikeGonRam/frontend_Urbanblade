@@ -68,7 +68,15 @@ function fmtDate(iso: string | null) {
     </header>
 
     <p v-if="pending && !data" class="text-sm text-muted">Cargando…</p>
-    <p v-else-if="error" class="text-sm text-red-400">No se pudo cargar el estado del servidor.</p>
+    <BrandStatePanel
+      v-else-if="error"
+      mascot="bruno"
+      state="error"
+      tone="danger"
+      title="No se pudo cargar el estado del servidor"
+      action-label="Reintentar"
+      @action="refresh"
+    />
 
     <template v-else-if="data">
       <section class="overflow-hidden rounded-2xl border p-5 sm:p-6" :class="health.surface" aria-live="polite">
@@ -83,7 +91,7 @@ function fmtDate(iso: string | null) {
 
       <SystemMap3D :nodes="mapNodes" />
 
-      <section class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <section class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div class="rounded-2xl border border-ink/[0.06] bg-card p-4"><p class="text-[9px] font-black uppercase tracking-widest text-ink/50">Entorno</p><p class="mt-1 text-lg font-black text-ink">{{ data.app.env }}</p></div>
         <div class="rounded-2xl border border-ink/[0.06] bg-card p-4"><p class="text-[9px] font-black uppercase tracking-widest text-ink/50">Laravel</p><p class="mt-1 text-lg font-black text-ink">{{ data.app.laravel_version }}</p></div>
         <div class="rounded-2xl border border-ink/[0.06] bg-card p-4"><p class="text-[9px] font-black uppercase tracking-widest text-ink/50">PHP</p><p class="mt-1 text-lg font-black text-ink">{{ data.app.php_version }}</p></div>

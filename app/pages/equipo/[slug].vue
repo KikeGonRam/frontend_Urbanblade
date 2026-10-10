@@ -8,6 +8,8 @@
  * GET barbers/{barber} salió de mobile.auth el 2026-09-09), pero sin
  * middleware ni layout de dashboard: cualquier visitante puede entrar aquí.
  */
+import { publicImageUrl } from '~/utils/publicImage'
+
 definePageMeta({ layout: 'public' })
 
 interface Work { id: string, title: string | null, description: string | null, images: string[] }
@@ -46,6 +48,8 @@ useSeoMeta({
 const barber = computed(() => response.value?.barber ?? null)
 const works = computed(() => response.value?.works ?? [])
 const reviews = computed(() => response.value?.reviews ?? [])
+const brokenWorkImages = reactive<Record<string, boolean>>({})
+const specialties = computed(() => (barber.value?.especialidades ?? '').split(',').map(item => item.trim()).filter(Boolean))
 const isClient = computed(() => hasRole('cliente'))
 const canReview = computed(() => isClient.value && (response.value?.can_review ?? false))
 
@@ -89,60 +93,97 @@ async function submitReview() {
 </script>
 
 <template>
-  <div class="mx-auto max-w-5xl px-4 py-16 sm:px-6 lg:px-8">
-    <NuxtLink to="/equipo" class="mb-8 inline-block text-xs font-bold uppercase tracking-widest text-muted hover:text-gold">
-      ← Nuestro Equipo
+  <div class="relative overflow-hidden">
+    <div class="pointer-events-none absolute -top-56 left-1/2 h-[34rem] w-[34rem] -translate-x-1/2 rounded-full bg-gold/8 blur-[120px]" />
+    <div class="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-16 lg:px-8">
+    <NuxtLink to="/equipo" class="mb-8 inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.25em] text-muted transition-colors hover:text-gold">
+      <span aria-hidden="true">←</span> Nuestro equipo
     </NuxtLink>
 
-    <p v-if="pending" class="text-sm text-muted">Cargando perfil…</p>
-    <p v-else-if="error || !barber" class="text-sm text-red-400">No se pudo cargar este barbero.</p>
+    <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando perfil…" />
+    <BrandStatePanel
+      v-else-if="error || !barber"
+      mascot="bruno"
+      state="error"
+      tone="danger"
+      title="No se pudo cargar este barbero"
+      description="Inténtalo nuevamente en unos minutos."
+      action-label="Reintentar"
+      @action="refresh"
+    />
 
     <template v-else>
-      <header class="mb-10 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+      <header class="relative mb-14 overflow-hidden rounded-[2rem] border border-line bg-panel p-6 shadow-[0_30px_100px_rgba(0,0,0,0.28)] sm:p-10">
+        <div class="absolute inset-y-0 right-0 hidden w-1/2 bg-[radial-gradient(circle_at_70%_35%,rgba(212,175,55,0.16),transparent_58%)] sm:block" />
+        <div class="relative z-10 flex flex-col gap-8 md:flex-row md:items-center">
+          <div class="relative shrink-0">
         <img
-          v-if="barber.foto" :src="barber.foto" :alt="barber.user?.name ?? 'Barbero'"
-          class="h-20 w-20 rounded-full object-cover"
+          v-if="barber.foto" :src="publicImageUrl(barber.foto, 1200) ?? undefined" :alt="barber.user?.name ?? 'Barbero'"
+          class="h-28 w-28 rounded-[1.5rem] border border-gold/30 object-cover shadow-[0_12px_35px_rgba(0,0,0,0.35)] sm:h-36 sm:w-36"
         >
-        <div v-else class="flex h-20 w-20 items-center justify-center rounded-full bg-gold/10 text-2xl font-black text-gold">
+        <div v-else class="flex h-28 w-28 items-center justify-center rounded-[1.5rem] bg-gold/10 text-4xl font-black text-gold sm:h-36 sm:w-36">
           {{ (barber.user?.name ?? '?').charAt(0) }}
         </div>
-        <div>
-          <h1 class="text-2xl font-semibold text-ink">{{ barber.user?.name ?? 'Barbero' }}</h1>
-          <p v-if="barber.especialidades" class="text-sm font-bold uppercase tracking-wide text-gold">{{ barber.especialidades }}</p>
-          <p class="mt-1 text-sm text-muted">
-            <span v-if="response?.avg_rating">★ {{ response.avg_rating }} ({{ response.total_reviews }} reseñas)</span>
-            <span v-else>Sin reseñas aún</span>
-            · {{ response?.citas_completadas ?? 0 }} citas completadas
-          </p>
+          <span class="absolute -bottom-3 left-4 rounded-full border border-gold/30 bg-main px-3 py-1 text-[9px] font-black uppercase tracking-widest text-gold">UrbanBlade</span>
+          </div>
+          <div class="min-w-0">
+            <p class="mb-3 text-[10px] font-black uppercase tracking-[0.35em] text-gold">Maestro barbero</p>
+            <h1 class="max-w-2xl text-3xl font-black uppercase leading-[0.95] tracking-tight text-ink sm:text-5xl">{{ barber.user?.name ?? 'Barbero' }}</h1>
+            <div v-if="specialties.length" class="mt-5 flex flex-wrap gap-2">
+              <span v-for="specialty in specialties" :key="specialty" class="rounded-full border border-gold/20 bg-gold/8 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-gold">{{ specialty }}</span>
+            </div>
+            <p class="mt-5 max-w-xl text-sm leading-relaxed text-muted">{{ barber.descripcion || 'Especialista en crear una experiencia de grooming precisa, personal y a tu medida.' }}</p>
+          </div>
+          <NuxtLink :to="`/reservar?barbero=${barber.id}`" class="ui-btn shrink-0 px-6 py-3 text-[11px] tracking-[0.16em] md:ml-auto">
+            Reservar cita <span aria-hidden="true">→</span>
+          </NuxtLink>
         </div>
-
-        <!-- Antes mandaba a /register sin sesión: el visitante que llegaba a
-             esta ficha desde redes chocaba con un muro de registro. Ahora
-             entra a /reservar con este barbero ya elegido, y la cuenta solo
-             se pide al confirmar. -->
-        <NuxtLink
-          :to="`/reservar?barbero=${barber.id}`"
-          class="rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-black hover:bg-gold-dim sm:ml-auto"
-        >
-          Reservar cita
-        </NuxtLink>
+        <div class="relative z-10 mt-10 grid grid-cols-3 divide-x divide-line border-t border-line pt-6">
+          <div class="px-3 text-center first:pl-0"><p class="text-xl font-black text-ink">{{ response?.citas_completadas ?? 0 }}</p><p class="mt-1 text-[9px] font-black uppercase tracking-widest text-muted">Citas completadas</p></div>
+          <div class="px-3 text-center"><p class="text-xl font-black text-ink">{{ response?.total_reviews ?? 0 }}</p><p class="mt-1 text-[9px] font-black uppercase tracking-widest text-muted">Reseñas</p></div>
+          <div class="px-3 text-center last:pr-0"><p class="text-xl font-black text-gold">{{ response?.avg_rating ? `★ ${response.avg_rating}` : '—' }}</p><p class="mt-1 text-[9px] font-black uppercase tracking-widest text-muted">Calificación</p></div>
+        </div>
       </header>
 
-      <p v-if="barber.descripcion" class="mb-10 max-w-2xl text-sm text-muted">{{ barber.descripcion }}</p>
-
-      <section class="mb-10">
-        <h2 class="mb-3 text-lg font-semibold text-ink">Portafolio</h2>
-        <p v-if="!works.length" class="text-sm text-muted">Todavía no ha publicado trabajos.</p>
-        <div v-else class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-          <div v-for="work in works" :key="work.id" class="ui-card overflow-hidden">
-            <img v-if="work.images[0]" :src="work.images[0]" :alt="work.title ?? 'Trabajo'" class="aspect-square w-full object-cover">
-            <p v-if="work.title" class="p-2 text-xs font-bold text-ink">{{ work.title }}</p>
+      <section class="mb-16">
+        <div class="mb-6 flex items-end justify-between gap-4">
+          <div>
+            <p class="mb-2 text-[10px] font-black uppercase tracking-[0.3em] text-gold">Trabajo seleccionado</p>
+            <h2 class="text-2xl font-black uppercase tracking-tight text-ink">Portafolio <span class="text-gold">del maestro</span></h2>
           </div>
+          <span v-if="works.length" class="text-xs text-muted">{{ works.length }} {{ works.length === 1 ? 'trabajo' : 'trabajos' }}</span>
+        </div>
+        <p v-if="!works.length" class="ui-card p-8 text-sm text-muted">Todavía no ha publicado trabajos.</p>
+        <div v-else class="grid grid-cols-2 gap-4 sm:grid-cols-3">
+          <article v-for="(work, index) in works" :key="work.id" class="group relative overflow-hidden rounded-2xl border border-line bg-card shadow-[0_16px_40px_rgba(0,0,0,0.2)]" :class="{ 'sm:col-span-2 sm:row-span-2': index === 0 }">
+            <div class="aspect-square h-full min-h-40">
+              <img
+                v-if="work.images[0] && !brokenWorkImages[work.id]"
+                :src="publicImageUrl(work.images[0], 1800) ?? undefined"
+                :alt="work.title ?? 'Trabajo de barbería'"
+                loading="lazy"
+                decoding="async"
+                class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                @error="brokenWorkImages[work.id] = true"
+              >
+              <div v-else class="flex h-full w-full flex-col items-center justify-center gap-3 bg-gradient-to-br from-gold/10 via-card to-main p-5 text-center">
+                <svg class="h-8 w-8 text-gold/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.4" d="m3 16 5-5 4 4 3-3 6 6M15 8h.01M5 20h14a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1Z" /></svg>
+                <span class="text-[10px] font-black uppercase tracking-widest text-muted">Imagen no disponible</span>
+              </div>
+            </div>
+            <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-4 pt-12">
+              <p class="text-sm font-bold text-white">{{ work.title || 'Trabajo de barbería' }}</p>
+              <p v-if="work.description" class="mt-1 line-clamp-2 text-xs text-white/70">{{ work.description }}</p>
+            </div>
+          </article>
         </div>
       </section>
 
       <section>
-        <h2 class="mb-3 text-lg font-semibold text-ink">Reseñas</h2>
+        <div class="mb-6">
+          <p class="mb-2 text-[10px] font-black uppercase tracking-[0.3em] text-gold">Experiencias reales</p>
+          <h2 class="text-2xl font-black uppercase tracking-tight text-ink">Lo que dicen sus <span class="text-gold">clientes</span></h2>
+        </div>
 
         <div v-if="canReview" class="ui-card mb-5 p-5">
           <p v-if="submitted" class="text-sm text-emerald-400">¡Gracias por tu reseña!</p>
@@ -208,5 +249,6 @@ async function submitReview() {
         </div>
       </section>
     </template>
+    </div>
   </div>
 </template>

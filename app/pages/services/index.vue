@@ -242,21 +242,19 @@ async function removeService(service: ServiceRow) {
       :busy="pending"
     />
 
-    <div
-      v-if="pending"
-      class="flex items-center gap-3 py-12 text-sm text-muted"
-    >
-      <div
-        class="h-5 w-5 animate-spin rounded-full border-2 border-gold border-t-transparent"
-      />
-      <span>Cargando servicios…</span>
-    </div>
+    <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando servicios…" />
+    <BrandStatePanel
+      v-else-if="error"
+      mascot="bruno"
+      state="error"
+      tone="danger"
+      title="No se pudo cargar el catálogo"
+      description="Inténtalo nuevamente en unos minutos."
+      action-label="Reintentar"
+      @action="refresh"
+    />
 
-    <p v-else-if="error" class="text-sm text-red-400">
-      No se pudo cargar el catálogo.
-    </p>
-
-    <section v-else class="ui-card overflow-x-auto">
+    <section v-if="!pending && !error" class="ui-card overflow-x-auto">
       <table class="w-full text-left text-sm">
         <thead>
           <tr
@@ -364,15 +362,26 @@ async function removeService(service: ServiceRow) {
       <div
         class="ub-sheet__panel"
       >
-        <h2 class="mb-4 text-lg font-semibold text-ink">
-          {{ editing ? "Editar servicio" : "Nuevo servicio" }}
-        </h2>
+        <div class="mb-6 flex items-start justify-between gap-4">
+          <div>
+            <p class="ub-form-kicker">Catálogo comercial</p>
+            <h2 class="mt-2 text-2xl font-black text-ink">
+              {{ editing ? "Editar servicio" : "Nuevo servicio" }}
+            </h2>
+            <p class="mt-2 ub-form-help">Define cómo se mostrará, cuánto dura y qué precio tendrá al reservar.</p>
+          </div>
+          <span class="rounded-full border border-gold/25 bg-gold/10 px-2 py-1 text-[9px] font-black uppercase tracking-wider text-gold">
+            {{ editing ? "Edición" : "Nuevo" }}
+          </span>
+        </div>
 
         <form class="space-y-4" @submit.prevent="submitForm">
+          <div class="ub-form-section space-y-4">
+            <p class="ub-form-section__title">Información del servicio</p>
           <div>
             <label
               for="service-nombre"
-              class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted"
+              class="ub-form-label"
               >Nombre del servicio</label
             >
             <input
@@ -383,7 +392,7 @@ async function removeService(service: ServiceRow) {
               maxlength="120"
               placeholder="Ej. Corte Clásico + Barba"
               :class="[
-                'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-none',
+                'ui-input w-full',
                 fieldErrors.nombre
                   ? 'border-red-500/60 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
                   : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]',
@@ -397,7 +406,7 @@ async function removeService(service: ServiceRow) {
           <div>
             <label
               for="service-categoria"
-              class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted"
+              class="ub-form-label"
               >Categoría</label
             >
             <input
@@ -409,7 +418,7 @@ async function removeService(service: ServiceRow) {
               list="service-categories-list"
               placeholder="Ej. Cortes, Barba, Tratamientos…"
               :class="[
-                'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-none',
+                'ui-input w-full',
                 fieldErrors.categoria
                   ? 'border-red-500/60 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
                   : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]',
@@ -434,12 +443,15 @@ async function removeService(service: ServiceRow) {
               {{ fieldErrors.categoria[0] }}
             </p>
           </div>
+          </div>
 
-          <div class="grid grid-cols-2 gap-3">
+          <div class="ub-form-section space-y-4">
+            <p class="ub-form-section__title">Precio y duración</p>
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label
                 for="service-duracion"
-                class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted"
+                class="ub-form-label"
                 >Duración (min)</label
               >
               <input
@@ -450,7 +462,7 @@ async function removeService(service: ServiceRow) {
                 max="600"
                 required
                 :class="[
-                  'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-none',
+                  'ui-input w-full',
                   fieldErrors.duracion_min
                     ? 'border-red-500/60 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
                     : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]',
@@ -466,7 +478,7 @@ async function removeService(service: ServiceRow) {
             <div>
               <label
                 for="service-precio"
-                class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted"
+                class="ub-form-label"
                 >Precio ($ MXN)</label
               >
               <input
@@ -477,7 +489,7 @@ async function removeService(service: ServiceRow) {
                 min="0"
                 required
                 :class="[
-                  'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-none',
+                  'ui-input w-full',
                   fieldErrors.precio
                     ? 'border-red-500/60 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
                     : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]',
@@ -488,7 +500,10 @@ async function removeService(service: ServiceRow) {
               </p>
             </div>
           </div>
+          </div>
 
+          <div class="ub-form-section space-y-4">
+            <p class="ub-form-section__title">Presentación</p>
           <UiImageUpload
             id="service-imagen"
             v-model="form.imagenFile"
@@ -500,7 +515,7 @@ async function removeService(service: ServiceRow) {
           <div>
             <label
               for="service-descripcion"
-              class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted"
+              class="ub-form-label"
               >Descripción del servicio (opcional)</label
             >
             <textarea
@@ -509,7 +524,7 @@ async function removeService(service: ServiceRow) {
               rows="3"
               maxlength="2000"
               placeholder="Detalla qué incluye el corte o servicio…"
-              class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]"
+              class="ui-input w-full"
             />
           </div>
 
@@ -518,6 +533,7 @@ async function removeService(service: ServiceRow) {
             label="Activo"
             description="Disponible para reserva por clientes"
           />
+          </div>
 
           <p v-if="formError" class="text-xs text-red-400">{{ formError }}</p>
 

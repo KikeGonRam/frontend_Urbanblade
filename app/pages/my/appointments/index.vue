@@ -559,10 +559,17 @@ onUnmounted(() => teardownStripe());
       </p>
     </section>
 
-    <p v-if="pending" class="text-sm text-muted">Cargando tus citas…</p>
-    <p v-else-if="error" class="text-sm text-red-400">
-      No se pudieron cargar tus citas.
-    </p>
+    <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando tus citas…" />
+    <BrandStatePanel
+      v-else-if="error"
+      mascot="bruno"
+      state="error"
+      tone="danger"
+      title="No se pudieron cargar tus citas"
+      description="Inténtalo nuevamente en unos minutos."
+      action-label="Reintentar"
+      @action="refresh"
+    />
     <p
       v-else-if="!appointments.length"
       class="rounded-2xl border border-dashed border-line p-12 text-center text-sm text-muted"
@@ -574,7 +581,7 @@ onUnmounted(() => teardownStripe());
       {{ cancelError }}
     </p>
 
-    <div v-else class="space-y-4">
+    <div v-if="!pending && !error && appointments.length" class="space-y-4">
       <p
         v-if="debtTotal > 0"
         role="alert"
@@ -655,19 +662,14 @@ onUnmounted(() => teardownStripe());
       <BookingWizard embedded :initial-barber="form.barber_id" @busy="bookingBusy = $event" @confirmed="refresh()" />
     </UiModal>
 
-    <div
+    <UiModal
       v-if="showForm && isEditing"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
-      @click.self="showForm = false"
+      :title="isEditing ? 'Reagendar cita' : 'Reservar cita'"
+      :busy="saving"
+      @close="showForm = false"
     >
-      <div
-        class="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-line bg-card p-6"
-      >
-        <h2 class="mb-4 text-lg font-semibold text-ink">
-          {{ isEditing ? "Reagendar cita" : "Reservar cita" }}
-        </h2>
         <form class="space-y-3" @submit.prevent="submitForm">
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label class="mb-1 block text-xs text-muted">Barbero</label>
               <select
@@ -695,7 +697,7 @@ onUnmounted(() => teardownStripe());
               </select>
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label class="mb-1 block text-xs text-muted">Fecha</label>
               <input
@@ -775,16 +777,14 @@ onUnmounted(() => teardownStripe());
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </UiModal>
 
-    <div
+    <UiModal
       v-if="showPay"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
-      @click.self="!payProcessing && !payConfirming && closePay()"
+      title="Pagar con tarjeta"
+      :busy="payProcessing || payConfirming"
+      @close="closePay"
     >
-      <div class="w-full max-w-sm rounded-2xl border border-line bg-card p-6">
-        <h2 class="mb-1 text-lg font-semibold text-ink">Pagar con tarjeta</h2>
         <p class="mb-4 text-sm text-muted">
           {{ payingAppt?.service.nombre }} ·
           {{ payingAppt ? fmtDate(payingAppt.fecha) : "" }}
@@ -847,7 +847,6 @@ onUnmounted(() => teardownStripe());
             Cerrar
           </button>
         </template>
-      </div>
-    </div>
+    </UiModal>
   </div>
 </template>

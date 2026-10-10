@@ -23,16 +23,52 @@ interface WorkRow {
   is_saved: boolean
   comments: CommentPreview[]
 }
-interface FeedResponse { data: WorkRow[], meta: { current_page: number, last_page: number, total: number } }
+interface FeedMeta { current_page: number, last_page: number, total: number, per_page?: number }
+interface FeedResponse { data: WorkRow[], meta: FeedMeta }
 
 const { apiFetch } = useApi()
 
-const { data, pending, error } = await useAsyncData('social-feed', () => apiFetch<FeedResponse>('/social/feed'), { lazy: true })
+const pageSize = 12
+const { data, pending, error, refresh } = await useAsyncData(
+  'social-feed',
+  () => apiFetch<FeedResponse>('/social/feed', { query: { page: 1, per_page: pageSize } }),
+  { lazy: true },
+)
 const works = ref<WorkRow[]>([])
-watchEffect(() => { works.value = data.value?.data ?? [] })
+const feedMeta = ref<FeedMeta>({ current_page: 1, last_page: 1, total: 0, per_page: pageSize })
+const loadingMore = ref(false)
+const loadMoreError = ref('')
+const hasMore = computed(() => feedMeta.value.current_page < feedMeta.value.last_page)
+
+watchEffect(() => {
+  if (!data.value) return
+  works.value = data.value.data
+  feedMeta.value = data.value.meta
+})
 
 const commentDrafts = reactive<Record<string, string>>({})
 const commentSending = reactive<Record<string, boolean>>({})
+
+async function loadMore() {
+  if (loadingMore.value || !hasMore.value) return
+
+  loadingMore.value = true
+  loadMoreError.value = ''
+  const nextPage = feedMeta.value.current_page + 1
+
+  try {
+    const response = await apiFetch<FeedResponse>('/social/feed', {
+      query: { page: nextPage, per_page: pageSize },
+    })
+    const existingIds = new Set(works.value.map(work => work.id))
+    works.value = [...works.value, ...response.data.filter(work => !existingIds.has(work.id))]
+    feedMeta.value = response.meta
+  } catch {
+    loadMoreError.value = 'No se pudo cargar más inspiración. Inténtalo de nuevo.'
+  } finally {
+    loadingMore.value = false
+  }
+}
 
 function fmtDate(iso: string | null) {
   if (!iso) return '—'
@@ -96,7 +132,16 @@ async function submitComment(work: WorkRow) {
     </header>
 
     <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando inspiración…" />
-    <BrandStatePanel v-else-if="error" mascot="bruno" state="error" tone="danger" title="No se pudo cargar el muro" description="Inténtalo nuevamente en unos minutos." />
+    <BrandStatePanel
+      v-else-if="error"
+      mascot="bruno"
+      state="error"
+      tone="danger"
+      title="No se pudo cargar el muro"
+      description="Inténtalo nuevamente en unos minutos."
+      action-label="Reintentar"
+      @action="refresh"
+    />
     <BrandStatePanel v-else-if="!works.length" mascot="nava" state="empty" title="Todavía no hay trabajos publicados" description="Los nuevos estilos del equipo aparecerán aquí." />
 
     <div v-else class="space-y-6">
@@ -167,6 +212,24 @@ async function submitComment(work: WorkRow) {
           </form>
         </div>
       </article>
+
+      <div v-if="hasMore || loadingMore || loadMoreError" class="flex flex-col items-center gap-3 pt-1">
+        <p v-if="loadMoreError" class="text-center text-sm text-red-400" role="alert">
+          {{ loadMoreError }}
+        </p>
+        <button
+          v-if="hasMore || loadMoreError"
+          type="button"
+          class="min-h-11 rounded-lg border border-line px-5 py-2 text-sm font-semibold text-ink transition-colors hover:border-gold hover:bg-gold/10 disabled:cursor-wait disabled:opacity-60"
+          :disabled="loadingMore"
+          @click="loadMore"
+        >
+          {{ loadingMore ? 'Cargando…' : 'Cargar más inspiración' }}
+        </button>
+        <p class="text-xs text-muted" aria-live="polite">
+          Mostrando {{ works.length }} de {{ feedMeta.total }} trabajos
+        </p>
+      </div>
     </div>
   </div>
 </template>

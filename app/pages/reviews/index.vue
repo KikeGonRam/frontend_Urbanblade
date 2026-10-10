@@ -32,7 +32,7 @@ const sort = ref('created_at')
 const dir = ref<'asc' | 'desc'>('desc')
 const page = ref(1)
 
-const { data: response, pending, error } = await useAsyncData(
+const { data: response, pending, error, refresh } = await useAsyncData(
   'reviews-list',
   () => apiFetch<ReviewsResponse>('/reviews', {
     query: {
@@ -88,7 +88,7 @@ function fmtDate(iso: string | null) {
       <p class="mt-1 text-sm text-muted">Calificaciones y comentarios de clientes sobre cada barbero.</p>
     </header>
 
-    <section v-if="!pending && !error" class="mb-6 grid grid-cols-3 gap-3">
+    <section v-if="!pending && !error" class="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
       <div class="ui-card p-4"><p class="text-[10px] font-bold uppercase text-muted">Total</p><p class="mt-1 text-xl font-black text-ink">{{ stats.total }}</p></div>
       <div class="ui-card p-4"><p class="text-[10px] font-bold uppercase text-muted">Promedio</p><p class="mt-1 text-xl font-black text-gold">{{ stats.promedio }} ★</p></div>
       <div class="ui-card p-4"><p class="text-[10px] font-bold uppercase text-muted">Bajas (≤2★)</p><p class="mt-1 text-xl font-black text-red-400">{{ stats.bajas }}</p></div>
@@ -103,12 +103,12 @@ function fmtDate(iso: string | null) {
       :busy="pending"
     />
 
-    <section class="mb-5 flex flex-wrap gap-3">
-      <select v-model="barberFilter" class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
+    <section class="mb-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+      <select v-model="barberFilter" class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink sm:w-auto">
         <option value="">Todos los barberos</option>
         <option v-for="b in barbers" :key="b.id" :value="b.id">{{ b.name }}</option>
       </select>
-      <select v-model="ratingFilter" class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
+      <select v-model="ratingFilter" class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink sm:w-auto">
         <option value="">Todas las calificaciones</option>
         <option v-for="r in [5, 4, 3, 2, 1]" :key="r" :value="r">{{ r }} ★</option>
       </select>
@@ -121,13 +121,22 @@ function fmtDate(iso: string | null) {
     </section>
 
     <p v-if="pending" class="text-sm text-muted">Cargando…</p>
-    <p v-else-if="error" class="text-sm text-red-400">No se pudieron cargar las reseñas.</p>
+    <BrandStatePanel
+      v-else-if="error"
+      mascot="bruno"
+      state="error"
+      tone="danger"
+      title="No se pudieron cargar las reseñas"
+      description="Inténtalo nuevamente en unos minutos."
+      action-label="Reintentar"
+      @action="refresh"
+    />
     <p v-else-if="!reviews.length" class="rounded-2xl border border-dashed border-line p-12 text-center text-sm text-muted">
       Sin reseñas que mostrar.
     </p>
 
     <section v-else class="ui-card overflow-x-auto">
-      <table class="w-full text-left text-sm">
+      <table class="w-full min-w-[48rem] text-left text-sm">
         <thead>
           <tr class="border-b border-line text-[10px] uppercase tracking-wider text-muted">
             <th class="cursor-pointer px-4 py-3 select-none" @click="toggleSort('created_at')">

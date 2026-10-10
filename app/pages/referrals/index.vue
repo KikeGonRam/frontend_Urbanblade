@@ -30,7 +30,7 @@ const ESTADO_CLASS: Record<string, string> = {
 
 const { apiFetch } = useApi();
 
-const { data: response, pending, error } = await useAsyncData(
+const { data: response, pending, error, refresh } = await useAsyncData(
   "referrals-mine",
   () => apiFetch<{ data: MineResponse }>("/referrals/mine"),
 );
@@ -94,7 +94,15 @@ async function submitLink() {
     </header>
 
     <p v-if="pending" class="text-sm text-muted">Cargando…</p>
-    <p v-else-if="error" class="text-sm text-red-400">No se pudo cargar tu información de referidos.</p>
+    <BrandStatePanel
+      v-else-if="error"
+      mascot="bruno"
+      state="error"
+      tone="danger"
+      title="No se pudo cargar tu información de referidos"
+      action-label="Reintentar"
+      @action="refresh"
+    />
 
     <div v-else-if="data" class="grid grid-cols-1 gap-6 lg:grid-cols-2">
       <section class="ui-card p-6 text-center">

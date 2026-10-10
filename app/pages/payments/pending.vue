@@ -175,7 +175,7 @@ async function confirmReject(payment: PendingPayment) {
     </p>
 
     <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando comprobantes…" />
-    <BrandStatePanel v-else-if="error" mascot="bruno" state="error" tone="danger" title="No se pudieron cargar los comprobantes" description="Inténtalo nuevamente en unos minutos." />
+    <BrandStatePanel v-else-if="error" mascot="bruno" state="error" tone="danger" title="No se pudieron cargar los comprobantes" description="Inténtalo nuevamente en unos minutos." action-label="Reintentar" @action="refresh" />
 
     <BrandStatePanel v-else-if="!payments.length" mascot="nava" state="empty" title="No hay comprobantes pendientes" description="Los comprobantes que necesiten revisión aparecerán aquí." />
 

@@ -640,12 +640,19 @@ onUnmounted(() => teardownStripe());
       </button>
     </section>
 
-    <p v-if="pending" class="text-sm text-muted">Cargando pagos…</p>
-    <p v-else-if="error" class="text-sm text-red-400">
-      No se pudo cargar el historial de pagos.
-    </p>
+    <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando pagos…" />
+    <BrandStatePanel
+      v-else-if="error"
+      mascot="bruno"
+      state="error"
+      tone="danger"
+      title="No se pudo cargar el historial de pagos"
+      description="Inténtalo nuevamente en unos minutos."
+      action-label="Reintentar"
+      @action="refresh"
+    />
 
-    <section v-else class="ui-card overflow-x-auto">
+    <section v-if="!pending && !error" class="ui-card overflow-x-auto">
       <table class="w-full text-left text-sm">
         <thead>
           <tr
@@ -747,21 +754,23 @@ onUnmounted(() => teardownStripe());
     />
 
     <!-- Nuevo Cobro -->
-    <div
+    <UiModal
       v-if="showCharge"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
-      @click.self="closeCharge"
+      title="Registro de Cobro"
+      :busy="saving"
+      @close="closeCharge"
     >
-      <div
-        class="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-line bg-card p-6"
-      >
-        <h2 class="mb-4 text-lg font-semibold text-ink">Registro de Cobro</h2>
 
-        <p v-if="loadingChargeable" class="text-sm text-muted">
-          Cargando citas por cobrar…
-        </p>
+        <div v-if="loadingChargeable" class="flex items-center gap-3 rounded-xl border border-line bg-main/50 p-4 text-sm text-muted">
+          <span class="h-4 w-4 animate-spin rounded-full border-2 border-gold border-t-transparent" aria-hidden="true" />
+          <span>Cargando citas por cobrar…</span>
+        </div>
 
         <form v-else class="space-y-4" @submit.prevent="submitCharge">
+          <div v-if="!chargeableAppointments.length" class="rounded-xl border border-dashed border-line bg-main/40 p-6 text-center">
+            <p class="text-sm font-bold text-ink">No hay citas listas para cobrar</p>
+            <p class="mt-1 text-xs leading-relaxed text-muted">Las citas aprobadas y pendientes de pago aparecerán aquí cuando estén disponibles.</p>
+          </div>
           <div>
             <label class="mb-1 block text-xs text-muted"
               >Seleccionar cita pendiente de cobro</label
@@ -769,7 +778,7 @@ onUnmounted(() => teardownStripe());
             <select
               v-model="form.appointmentId"
               required
-              class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
+              class="ui-input w-full"
               @change="selectAppointment"
             >
               <option value="" disabled>
@@ -783,17 +792,10 @@ onUnmounted(() => teardownStripe());
                 {{ a.fecha }} — {{ a.client_name }} ({{ a.service_name }})
               </option>
             </select>
-            <p
-              v-if="!chargeableAppointments.length"
-              class="mt-2 text-xs text-muted"
-            >
-              No hay citas cobrables (aprobadas por el barbero y sin pago) en
-              este momento.
-            </p>
           </div>
 
           <template v-if="selected">
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div>
                 <label class="mb-1 block text-xs text-muted"
                   >Monto del servicio</label
@@ -812,7 +814,7 @@ onUnmounted(() => teardownStripe());
                   type="number"
                   step="0.01"
                   min="0"
-                  class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
+                  class="ui-input w-full"
                 >
               </div>
             </div>
@@ -849,7 +851,7 @@ onUnmounted(() => teardownStripe());
                 v-model="form.codigoGiftCard"
                 type="text"
                 placeholder="Ej. A1B2C3D4"
-                class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm uppercase text-ink"
+                class="ui-input w-full uppercase"
               >
               <p class="mt-1 text-[9px] italic text-muted">
                 Se aplica al total antes de cobrar el resto por
@@ -905,7 +907,7 @@ onUnmounted(() => teardownStripe());
                   step="1"
                   min="0"
                   :max="preview.maxPuntosCanjeables"
-                  class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
+                  class="ui-input w-full"
                 >
                 <p class="mt-1 text-[9px] italic text-muted">
                   1 punto = $1 MXN. Tope: 50% del total con descuento de nivel,
@@ -1039,7 +1041,6 @@ onUnmounted(() => teardownStripe());
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </UiModal>
   </div>
 </template>

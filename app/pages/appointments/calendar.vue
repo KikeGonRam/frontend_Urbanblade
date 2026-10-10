@@ -238,7 +238,7 @@ function onEventClick(info: EventClickArg) {
           >
           <select
             v-model="selectedBarber"
-            class="min-w-[180px] rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
+            class="w-full min-w-0 rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink sm:w-auto sm:min-w-[180px]"
             @change="refetchEvents"
           >
             <option value="">Todos los barberos</option>

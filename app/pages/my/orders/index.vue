@@ -87,13 +87,21 @@ async function cancelOrder(order: OrderRow) {
     </p>
 
     <p v-if="pending" class="text-sm text-muted">Cargando pedidos…</p>
-    <p v-else-if="error" class="text-sm text-red-400">No se pudieron cargar tus pedidos.</p>
+    <BrandStatePanel
+      v-else-if="error"
+      mascot="bruno"
+      state="error"
+      tone="danger"
+      title="No se pudieron cargar tus pedidos"
+      action-label="Reintentar"
+      @action="refresh"
+    />
     <p v-if="actionError" role="alert" class="mb-4 text-sm text-red-400">{{ actionError }}</p>
-    <p v-else-if="!orders.length" class="rounded-2xl border border-dashed border-line p-12 text-center text-sm text-muted">
+    <p v-if="!pending && !error && !orders.length" class="rounded-2xl border border-dashed border-line p-12 text-center text-sm text-muted">
       Todavía no tienes pedidos.
     </p>
 
-    <div v-else class="space-y-4">
+    <div v-if="!pending && !error && orders.length" class="space-y-4">
       <div v-for="order in orders" :key="order.id" class="ui-card p-5">
         <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
           <div>

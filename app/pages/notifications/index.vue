@@ -145,7 +145,15 @@ function fmtDate(iso: string | null) {
     </header>
 
     <p v-if="pending" class="text-sm text-muted">Cargando notificaciones…</p>
-    <p v-else-if="error" class="text-sm text-red-400">No se pudieron cargar tus notificaciones.</p>
+    <BrandStatePanel
+      v-else-if="error"
+      mascot="bruno"
+      state="error"
+      tone="danger"
+      title="No se pudieron cargar tus notificaciones"
+      action-label="Reintentar"
+      @action="refresh"
+    />
     <p v-else-if="!notifications.length" class="rounded-2xl border border-dashed border-line p-12 text-center text-sm text-muted">
       No tienes notificaciones todavía.
     </p>

@@ -56,7 +56,7 @@ function goTo(page: number) {
     <div class="flex items-center justify-center gap-1">
       <button
         type="button"
-        class="inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg border border-line px-2 text-sm text-ink transition-colors hover:bg-gold/10 disabled:cursor-not-allowed disabled:opacity-40"
+        class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg border border-line px-2 text-sm text-ink transition-colors hover:bg-gold/10 active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-40"
         :disabled="currentPage <= 1 || busy"
         aria-label="Página anterior"
         @click="goTo(currentPage - 1)"
@@ -68,7 +68,7 @@ function goTo(page: number) {
         v-for="page in pageNumbers"
         :key="page"
         type="button"
-        class="inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg border px-2 text-sm transition-colors"
+        class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg border px-2 text-sm transition-colors active:scale-[.98]"
         :class="
           page === currentPage
             ? 'border-gold bg-gold/15 font-bold text-ink'
@@ -84,7 +84,7 @@ function goTo(page: number) {
 
       <button
         type="button"
-        class="inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg border border-line px-2 text-sm text-ink transition-colors hover:bg-gold/10 disabled:cursor-not-allowed disabled:opacity-40"
+        class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg border border-line px-2 text-sm text-ink transition-colors hover:bg-gold/10 active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-40"
         :disabled="currentPage >= lastPage || busy"
         aria-label="Página siguiente"
         @click="goTo(currentPage + 1)"

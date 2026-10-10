@@ -129,7 +129,7 @@ async function submitCampaign() {
             <textarea id="campaign-body" v-model="form.cuerpo" rows="3" required maxlength="2000" :aria-invalid="!!fieldErrors.cuerpo" :aria-describedby="fieldErrors.cuerpo ? 'campaign-body-error' : undefined" :class="inputClass('cuerpo')" />
             <p v-if="fieldErrors.cuerpo" id="campaign-body-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.cuerpo[0] }}</p>
           </div>
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label for="campaign-cta-label" class="mb-1 block text-xs text-muted">Texto del botón (opcional)</label>
               <input id="campaign-cta-label" v-model="form.cta_label" type="text" maxlength="40" :aria-invalid="!!fieldErrors.cta_label" :aria-describedby="fieldErrors.cta_label ? 'campaign-cta-label-error' : undefined" :class="inputClass('cta_label')">
@@ -172,7 +172,15 @@ async function submitCampaign() {
       <section>
         <h2 class="mb-3 text-sm font-black uppercase tracking-wide text-ink">Últimas campañas</h2>
         <p v-if="pending" class="text-sm text-muted">Cargando…</p>
-        <p v-else-if="error" class="text-sm text-red-400">No se pudieron cargar las campañas.</p>
+        <BrandStatePanel
+          v-else-if="error"
+          mascot="bruno"
+          state="error"
+          tone="danger"
+          title="No se pudieron cargar las campañas"
+          action-label="Reintentar"
+          @action="refresh"
+        />
         <p v-else-if="!campaigns.length" class="rounded-2xl border border-dashed border-line p-12 text-center text-sm text-muted">
           Todavía no se ha enviado ninguna campaña.
         </p>

@@ -221,7 +221,7 @@ test("formulario de citas de staff ofrece sugerencias de disponibilidad sin bloq
   await page.goto("/appointments");
   await page.getByRole("button", { name: "+ Nueva Cita" }).click();
 
-  const modal = page.locator("div.fixed");
+  const modal = page.getByRole("dialog", { name: "Nueva cita" });
   await modal.locator("select").first().selectOption("b-1");
   await modal.locator("select").nth(1).selectOption("s-1");
   await modal.locator('input[type="date"]').fill("2026-09-10");

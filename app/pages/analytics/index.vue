@@ -103,7 +103,7 @@ const BAR_COLOR: Record<string, string> = {
 
 const { apiFetch } = useApi()
 
-const { data: response, pending, error } = await useAsyncData(
+const { data: response, pending, error, refresh } = await useAsyncData(
   'analytics', () => apiFetch<AnalyticsResponse>('/analytics'),
   { lazy: true },
 )
@@ -195,7 +195,15 @@ const doughnutOptions = { responsive: true, maintainAspectRatio: false, plugins:
     </section>
 
     <p v-if="pending" class="text-sm text-muted">Calculando análisis…</p>
-    <p v-else-if="error" class="text-sm text-red-400">No se pudo cargar el centro de análisis.</p>
+    <BrandStatePanel
+      v-else-if="error"
+      mascot="bruno"
+      state="error"
+      tone="danger"
+      title="No se pudo cargar el centro de análisis"
+      action-label="Reintentar"
+      @action="refresh"
+    />
     <p v-else-if="!allInsightsFlat.length" class="rounded-2xl border border-dashed border-line p-4 text-sm text-muted">
       No hay análisis históricos publicados para tu rol. No se muestran predicciones sin resultados disponibles; los indicadores operativos, cuando corresponden, se calculan por separado.
     </p>
@@ -215,7 +223,7 @@ const doughnutOptions = { responsive: true, maintainAspectRatio: false, plugins:
 
       <!-- Vista completa: administrador / recepcionista -->
       <template v-else>
-        <section v-if="response?.kpis.length" class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        <section v-if="response?.kpis.length" class="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
           <div v-for="kpi in response.kpis" :key="kpi.label" class="rounded-2xl border p-4" :class="TONE_CLASS[kpi.tone] ?? TONE_CLASS.gold">
             <p class="text-[10px] font-bold uppercase opacity-75">{{ kpi.label }}</p>
             <p class="mt-1 text-xl font-black">{{ kpi.value }}</p>

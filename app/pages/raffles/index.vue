@@ -21,7 +21,7 @@ interface Stats { total: number, reclamados: number, vigentes: number }
 
 const { apiFetch } = useApi()
 
-const { data: response, pending, error } = await useAsyncData(
+const { data: response, pending, error, refresh } = await useAsyncData(
   'raffles-list',
   () => apiFetch<{ data: RaffleRow[], stats: Stats }>('/raffles'),
   { lazy: true },
@@ -51,18 +51,18 @@ function statusOf(r: RaffleRow) {
       <p class="mt-1 text-sm text-muted">Ganadores mensuales del sorteo de lealtad y estado de sus premios.</p>
     </header>
 
-    <section v-if="!pending && !error" class="mb-6 grid grid-cols-3 gap-3 sm:w-fit">
+    <section v-if="!pending && !error" class="mb-6 grid grid-cols-1 gap-3 sm:w-fit sm:grid-cols-3">
       <div class="ui-card p-4"><p class="text-[10px] font-bold uppercase text-muted">Total</p><p class="mt-1 text-xl font-black text-ink">{{ stats.total }}</p></div>
       <div class="ui-card p-4"><p class="text-[10px] font-bold uppercase text-muted">Reclamados</p><p class="mt-1 text-xl font-black text-emerald-400">{{ stats.reclamados }}</p></div>
       <div class="ui-card p-4"><p class="text-[10px] font-bold uppercase text-muted">Vigentes</p><p class="mt-1 text-xl font-black text-gold">{{ stats.vigentes }}</p></div>
     </section>
 
     <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando sorteos…" />
-    <BrandStatePanel v-else-if="error" mascot="bruno" state="error" tone="danger" title="No se pudo cargar el historial de sorteos" description="Inténtalo nuevamente en unos minutos." />
+    <BrandStatePanel v-else-if="error" mascot="bruno" state="error" tone="danger" title="No se pudo cargar el historial de sorteos" description="Inténtalo nuevamente en unos minutos." action-label="Reintentar" @action="refresh" />
     <BrandStatePanel v-else-if="!raffles.length" mascot="nava" state="empty" title="Todavía no hay resultados de sorteos" description="Los próximos resultados aparecerán aquí." />
 
     <section v-else class="ui-card overflow-x-auto">
-      <table class="w-full text-left text-sm">
+      <table class="w-full min-w-[42rem] text-left text-sm">
         <thead>
           <tr class="border-b border-line text-[10px] uppercase tracking-wider text-muted">
             <th class="px-4 py-3">Mes</th>

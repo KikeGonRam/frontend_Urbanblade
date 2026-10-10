@@ -20,7 +20,7 @@ const METODO_LABEL: Record<string, string> = { efectivo: 'Efectivo', tarjeta: 'T
 
 const { apiFetch } = useApi()
 
-const { data: response, pending, error } = await useAsyncData(
+const { data: response, pending, error, refresh } = await useAsyncData(
   'my-invoices',
   () => apiFetch<{ data: PaymentRow[], meta: { total_pagado: number, total_citas: number } }>('/payments'),
   { lazy: true },
@@ -69,14 +69,22 @@ async function downloadReceipt(payment: PaymentRow) {
     </section>
 
     <p v-if="pending" class="text-sm text-muted">Cargando tus facturas…</p>
-    <p v-else-if="error" class="text-sm text-red-400">No se pudieron cargar tus facturas.</p>
+    <BrandStatePanel
+      v-else-if="error"
+      mascot="bruno"
+      state="error"
+      tone="danger"
+      title="No se pudieron cargar tus facturas"
+      action-label="Reintentar"
+      @action="refresh"
+    />
     <p v-else-if="!payments.length" class="rounded-2xl border border-dashed border-line p-12 text-center text-sm text-muted">
       Todavía no tienes pagos registrados.
     </p>
 
     <p v-if="downloadError" class="mb-3 text-sm text-red-400">{{ downloadError }}</p>
 
-    <section v-if="payments.length" class="ui-card overflow-x-auto">
+    <section v-if="!pending && !error && payments.length" class="ui-card overflow-x-auto">
       <table class="w-full text-left text-sm">
         <thead>
           <tr class="border-b border-line text-[10px] uppercase tracking-wider text-muted">

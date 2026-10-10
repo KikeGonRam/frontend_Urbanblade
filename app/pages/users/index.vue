@@ -212,15 +212,22 @@ async function removeUser(user: UserRow) {
       </button>
     </section>
 
-    <p v-if="pending" class="text-sm text-muted">Cargando usuarios…</p>
-    <p v-else-if="error" class="text-sm text-red-400">
-      No se pudo cargar la lista de usuarios.
-    </p>
+    <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando usuarios…" />
+    <BrandStatePanel
+      v-else-if="error"
+      mascot="bruno"
+      state="error"
+      tone="danger"
+      title="No se pudo cargar la lista de usuarios"
+      description="Inténtalo nuevamente en unos minutos."
+      action-label="Reintentar"
+      @action="refresh"
+    />
     <p v-if="actionError" role="alert" class="mb-4 text-sm text-red-400">
       {{ actionError }}
     </p>
 
-    <section v-else class="ui-card overflow-x-auto">
+    <section v-if="!pending && !error" class="ui-card overflow-x-auto">
       <table class="w-full text-left text-sm">
         <thead>
           <tr
@@ -303,12 +310,23 @@ async function removeUser(user: UserRow) {
       @click.self="!saving && (showForm = false)"
     >
       <div class="ub-sheet__panel">
-        <h2 id="user-form-title" class="mb-4 text-lg font-semibold text-ink">
-          {{ editing ? "Editar usuario" : "Nuevo usuario" }}
-        </h2>
-        <form class="space-y-3" @submit.prevent="submitForm">
+        <div class="mb-6 flex items-start justify-between gap-4">
           <div>
-            <label for="user-name" class="mb-1 block text-xs text-muted"
+            <p class="ub-form-kicker">Cuentas de acceso</p>
+            <h2 id="user-form-title" class="mt-2 text-2xl font-black text-ink">
+              {{ editing ? "Editar usuario" : "Nuevo usuario" }}
+            </h2>
+            <p class="mt-2 ub-form-help">Configura la identidad, el nivel de acceso y las credenciales de esta cuenta.</p>
+          </div>
+          <span class="rounded-full border border-gold/25 bg-gold/10 px-2 py-1 text-[9px] font-black uppercase tracking-wider text-gold">
+            {{ editing ? "Edición" : "Alta" }}
+          </span>
+        </div>
+        <form class="space-y-3" @submit.prevent="submitForm">
+          <div class="ub-form-section space-y-4">
+            <p class="ub-form-section__title">Identidad</p>
+          <div>
+            <label for="user-name" class="ub-form-label"
               >Nombre</label
             >
             <input
@@ -321,7 +339,7 @@ async function removeUser(user: UserRow) {
                 fieldErrors.name ? 'user-name-error' : undefined
               "
               :class="[
-                'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink',
+                'ui-input w-full',
                 fieldErrors.name ? 'border-red-500/60' : 'border-line',
               ]"
             >
@@ -334,7 +352,7 @@ async function removeUser(user: UserRow) {
             </p>
           </div>
           <div>
-            <label for="user-email" class="mb-1 block text-xs text-muted"
+            <label for="user-email" class="ub-form-label"
               >Email</label
             >
             <input
@@ -347,7 +365,7 @@ async function removeUser(user: UserRow) {
                 fieldErrors.email ? 'user-email-error' : undefined
               "
               :class="[
-                'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink',
+                'ui-input w-full',
                 fieldErrors.email ? 'border-red-500/60' : 'border-line',
               ]"
             >
@@ -359,8 +377,11 @@ async function removeUser(user: UserRow) {
               {{ fieldErrors.email[0] }}
             </p>
           </div>
+          </div>
+          <div class="ub-form-section space-y-4">
+            <p class="ub-form-section__title">Permisos</p>
           <div>
-            <label for="user-role" class="mb-1 block text-xs text-muted"
+            <label for="user-role" class="ub-form-label"
               >Rol</label
             >
             <select
@@ -372,7 +393,7 @@ async function removeUser(user: UserRow) {
                 fieldErrors.role ? 'user-role-error' : undefined
               "
               :class="[
-                'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink',
+                'ui-input w-full',
                 fieldErrors.role ? 'border-red-500/60' : 'border-line',
               ]"
             >
@@ -388,8 +409,14 @@ async function removeUser(user: UserRow) {
               {{ fieldErrors.role[0] }}
             </p>
           </div>
+          </div>
+          <div class="ub-form-section space-y-4">
+            <div>
+              <p class="ub-form-section__title">Seguridad</p>
+              <p class="mt-1 ub-form-help">{{ editing ? "Déjala vacía para conservar la contraseña actual." : "Usa al menos 8 caracteres y confirma la contraseña." }}</p>
+            </div>
           <div>
-            <label for="user-password" class="mb-1 block text-xs text-muted">{{
+            <label for="user-password" class="ub-form-label">{{
               editing ? "Nueva contraseña (opcional)" : "Contraseña"
             }}</label>
             <input
@@ -404,7 +431,7 @@ async function removeUser(user: UserRow) {
                 fieldErrors.password ? 'user-password-error' : undefined
               "
               :class="[
-                'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink',
+                'ui-input w-full',
                 fieldErrors.password ? 'border-red-500/60' : 'border-line',
               ]"
             >
@@ -416,17 +443,17 @@ async function removeUser(user: UserRow) {
               {{ fieldErrors.password[0] }}
             </p>
           </div>
-          <div v-if="form.password">
+          <div v-if="!editing || form.password">
             <label
               for="user-password-confirmation"
-              class="mb-1 block text-xs text-muted"
+              class="ub-form-label"
               >Confirmar contraseña</label
             >
             <input
               id="user-password-confirmation"
               v-model="form.password_confirmation"
               type="password"
-              :required="!!form.password"
+              :required="!editing || !!form.password"
               minlength="8"
               autocomplete="new-password"
               :aria-invalid="!!fieldErrors.password_confirmation"
@@ -436,7 +463,7 @@ async function removeUser(user: UserRow) {
                   : undefined
               "
               :class="[
-                'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink',
+                'ui-input w-full',
                 fieldErrors.password_confirmation
                   ? 'border-red-500/60'
                   : 'border-line',
@@ -449,6 +476,7 @@ async function removeUser(user: UserRow) {
             >
               {{ fieldErrors.password_confirmation[0] }}
             </p>
+          </div>
           </div>
           <p v-if="formError" class="text-sm text-red-400">{{ formError }}</p>
           <div class="mt-5 flex gap-3">
