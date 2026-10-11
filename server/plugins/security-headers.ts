@@ -21,6 +21,8 @@ import { randomBytes } from 'node:crypto'
  * Google Tag Manager (GTM-K4RR96BB): su loader lleva nonce, pero el gtm.js y los scripts que este
  * inyecta no, así que se permite el host www.googletagmanager.com en script-src (sin
  * 'unsafe-inline'), y los de medición (Google Analytics) en img-src y connect-src.
+ * El contenedor también publica Microsoft Clarity: scripts.clarity.ms en script-src, *.clarity.ms en
+ * img-src y connect-src, y blob: en worker-src (Clarity comprime sus datos en un worker).
  */
 function originOf(url: string): string {
   try {
@@ -45,17 +47,17 @@ export default defineNitroPlugin((nitroApp) => {
   const csp = (nonce: string | undefined) => [
     "default-src 'self'",
     // Sin nonce (respuestas que no son HTML) no se permite ningún script en línea.
-    `script-src 'self' ${nonce ? `'nonce-${nonce}'` : ''} https://js.stripe.com https://*.js.stripe.com https://www.googletagmanager.com`.replace(/\s+/g, ' '),
+    `script-src 'self' ${nonce ? `'nonce-${nonce}'` : ''} https://js.stripe.com https://*.js.stripe.com https://www.googletagmanager.com https://scripts.clarity.ms`.replace(/\s+/g, ' '),
     "script-src-attr 'none'",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' data: https://fonts.gstatic.com",
     // Antes `https:` (cualquier sitio; hallazgo MEDIO de OWASP ZAP, T052). Ahora solo los orígenes
     // reales: subidas en S3, archivos viejos servidos por la API, fotos de Google, Unsplash y Stripe.
-    `img-src 'self' data: blob: ${api} ${S3} https://*.googleusercontent.com https://images.unsplash.com https://*.stripe.com https://www.googletagmanager.com https://*.google-analytics.com`.replace(/\s+/g, ' '),
+    `img-src 'self' data: blob: ${api} ${S3} https://*.googleusercontent.com https://images.unsplash.com https://*.stripe.com https://www.googletagmanager.com https://*.google-analytics.com https://*.clarity.ms`.replace(/\s+/g, ' '),
     `media-src 'self' blob: ${api} ${S3}`.replace(/\s+/g, ' '),
-    `connect-src 'self' ${api} https://api.stripe.com https://*.stripe.com https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com`.trim(),
+    `connect-src 'self' ${api} https://api.stripe.com https://*.stripe.com https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com https://*.clarity.ms`.trim(),
     'frame-src https://js.stripe.com https://*.js.stripe.com https://hooks.stripe.com https://www.google.com https://www.googletagmanager.com',
-    "worker-src 'self'",
+    "worker-src 'self' blob:",
     "object-src 'none'",
     "base-uri 'self'",
     `form-action 'self' ${api}`.trim(),
