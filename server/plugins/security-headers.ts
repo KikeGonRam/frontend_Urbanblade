@@ -17,6 +17,13 @@ import { randomBytes } from 'node:crypto'
  * de Nuxt, y el script del tema de nuxt.config → app.head.script); un script inyectado sin ese
  * nonce no se ejecuta. Los estilos siguen con 'unsafe-inline' porque Vue usa atributos style.
  * Ninguna página se prerenderiza, así que el nonce siempre es por petición.
+ *
+ * Google Tag Manager (GTM-K4RR96BB): su loader lleva nonce, pero el gtm.js y los scripts que este
+ * inyecta no, así que se permite el host www.googletagmanager.com en script-src (sin
+ * 'unsafe-inline'), y los de medición (Google Analytics) en img-src y connect-src.
+ * El contenedor también publica Microsoft Clarity: scripts.clarity.ms en script-src, *.clarity.ms en
+ * img-src y connect-src, c.bing.com en img-src (sincronización de cookies de Clarity) y blob: en
+ * worker-src (Clarity comprime sus datos en un worker).
  */
 function originOf(url: string): string {
   try {
@@ -28,6 +35,8 @@ function originOf(url: string): string {
 
 /** Buckets de subidas (staging y producción) en S3, con y sin región en el host. */
 const S3 = 'https://*.s3.amazonaws.com https://*.s3.us-east-1.amazonaws.com'
+
+const GTM_NOSCRIPT = '<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-K4RR96BB" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>'
 
 /** Pone el nonce en cada <script> que no lo tenga. */
 function withNonce(chunks: string[], nonce: string): string[] {
@@ -41,22 +50,29 @@ export default defineNitroPlugin((nitroApp) => {
   const csp = (nonce: string | undefined) => [
     "default-src 'self'",
     // Sin nonce (respuestas que no son HTML) no se permite ningún script en línea.
-    `script-src 'self' ${nonce ? `'nonce-${nonce}'` : ''} https://js.stripe.com https://*.js.stripe.com`.replace(/\s+/g, ' '),
+    `script-src 'self' ${nonce ? `'nonce-${nonce}'` : ''} https://js.stripe.com https://*.js.stripe.com https://www.googletagmanager.com https://scripts.clarity.ms`.replace(/\s+/g, ' '),
     "script-src-attr 'none'",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' data: https://fonts.gstatic.com",
     // Antes `https:` (cualquier sitio; hallazgo MEDIO de OWASP ZAP, T052). Ahora solo los orígenes
     // reales: subidas en S3, archivos viejos servidos por la API, fotos de Google, Unsplash y Stripe.
-    `img-src 'self' data: blob: ${api} ${S3} https://*.googleusercontent.com https://images.unsplash.com https://*.stripe.com`.replace(/\s+/g, ' '),
+    `img-src 'self' data: blob: ${api} ${S3} https://*.googleusercontent.com https://images.unsplash.com https://*.stripe.com https://www.googletagmanager.com https://*.google-analytics.com https://*.clarity.ms https://c.bing.com`.replace(/\s+/g, ' '),
     `media-src 'self' blob: ${api} ${S3}`.replace(/\s+/g, ' '),
-    `connect-src 'self' ${api} https://api.stripe.com https://*.stripe.com`.trim(),
-    'frame-src https://js.stripe.com https://*.js.stripe.com https://hooks.stripe.com https://www.google.com',
-    "worker-src 'self'",
+    `connect-src 'self' ${api} https://api.stripe.com https://*.stripe.com https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com https://*.clarity.ms`.trim(),
+    'frame-src https://js.stripe.com https://*.js.stripe.com https://hooks.stripe.com https://www.google.com https://www.googletagmanager.com',
+    "worker-src 'self' blob:",
     "object-src 'none'",
     "base-uri 'self'",
     `form-action 'self' ${api}`.trim(),
     "frame-ancestors 'self'",
   ].join('; ')
+
+  // GTM (noscript): se inyecta aquí y no con app.head.noscript ni antes de #__nuxt, porque en ambos
+  // casos Vue reporta "Hydration completed but contains mismatches". Al final del body (donde GTM
+  // lo admite) no afecta a la hidratación, y solo lo usan navegadores sin JavaScript.
+  nitroApp.hooks.hook('render:html', (html) => {
+    html.bodyAppend.push(GTM_NOSCRIPT)
+  })
 
   nitroApp.hooks.hook('render:html', (html, { event }) => {
     if (!production) return
