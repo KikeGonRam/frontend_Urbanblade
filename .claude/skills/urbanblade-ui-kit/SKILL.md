@@ -164,3 +164,11 @@ un patrón ARIA de tabs que no implementan. La burbuja de Bladebot se oculta en
 Cuenta, Reservar y Mis citas cuando está cerrada; el acceso explícito desde
 el sidebar o el teclado permanece. Sus sugerencias usan la prioridad de
 `userExperience`, igual que Inicio, Android y API. Sin cambio de contratos.
+
+### Recuperación de reserva (12-oct-2026, TT32 / HT-12)
+
+El asistente usa `isClientExperience` también en la reserva pública. Horarios con
+error ofrecen `BrandStatePanel` y Reintentar horarios sin perder servicio/barbero.
+Confirmar requiere una hora presente en la respuesta de disponibilidad, además
+de las validaciones del servidor. Durante registro/pago no se cambia de paso.
+El resumen indica Total estimado; payloads y cálculo final del backend se mantienen.
