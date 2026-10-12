@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { isClientExperience } from '../utils/userExperience';
 definePageMeta({ middleware: "auth", layout: "dashboard" });
 
 interface ProfileResponse {
@@ -87,7 +88,7 @@ const isAdministrator = computed(
   () => user.value?.roles?.includes("administrador") ?? false,
 );
 const isClient = computed(
-  () => user.value?.roles?.includes("cliente") ?? false,
+  () => isClientExperience(user.value?.roles),
 );
 const isBarber = computed(
   () => user.value?.roles?.includes("barbero") ?? false,
@@ -452,15 +453,29 @@ async function submitDeleteAccount() {
       </div>
     </header>
 
+    <UiActionLinks
+      v-if="isClient"
+      class="mb-5"
+      title="Tu actividad"
+      :items="[
+        { label: 'Mis facturas', description: 'Comprobantes de tus citas y compras.', to: '/my/invoices' },
+        { label: 'Mis pedidos', description: 'Compras de la tienda.', to: '/my/orders' },
+        { label: 'Membresía', description: 'Tu plan y sus beneficios.', to: '/membership' },
+        { label: 'Paquetes', description: 'Servicios y usos disponibles.', to: '/packages' },
+        { label: 'Tarjetas regalo', description: 'Consulta tus tarjetas y su saldo.', to: '/gift-cards' },
+        { label: 'Referidos', description: 'Tu código para invitar.', to: '/referrals' },
+        { label: 'Lista de espera', description: 'Tus solicitudes de horario.', to: '/waitlist' },
+      ]"
+    />
     <nav class="profile-tabs" aria-label="Secciones del perfil">
       <button
         v-if="isBarber"
         type="button"
         :class="['profile-tab', activeSection === 'public' ? 'is-active' : '']"
-        :aria-selected="activeSection === 'public'"
+        :aria-pressed="activeSection === 'public'"
         @click="activeSection = 'public'"
       >
-        <span class="profile-tab__icon">✦</span>
+        <span class="profile-tab__icon" aria-hidden="true">✦</span>
         <span
           ><strong>Perfil público</strong
           ><small>Tu ficha de barbero</small></span
@@ -472,10 +487,10 @@ async function submitDeleteAccount() {
           'profile-tab',
           activeSection === 'personal' ? 'is-active' : '',
         ]"
-        :aria-selected="activeSection === 'personal'"
+        :aria-pressed="activeSection === 'personal'"
         @click="activeSection = 'personal'"
       >
-        <span class="profile-tab__icon">◎</span>
+        <span class="profile-tab__icon" aria-hidden="true">◎</span>
         <span
           ><strong>Información</strong><small>Datos de tu cuenta</small></span
         >
@@ -486,10 +501,10 @@ async function submitDeleteAccount() {
           'profile-tab',
           activeSection === 'security' ? 'is-active' : '',
         ]"
-        :aria-selected="activeSection === 'security'"
+        :aria-pressed="activeSection === 'security'"
         @click="activeSection = 'security'"
       >
-        <span class="profile-tab__icon">⌁</span>
+        <span class="profile-tab__icon" aria-hidden="true">⌁</span>
         <span
           ><strong>Seguridad</strong><small>Contraseña y acceso</small></span
         >
@@ -500,10 +515,10 @@ async function submitDeleteAccount() {
           'profile-tab profile-tab--danger',
           activeSection === 'danger' ? 'is-active' : '',
         ]"
-        :aria-selected="activeSection === 'danger'"
+        :aria-pressed="activeSection === 'danger'"
         @click="activeSection = 'danger'"
       >
-        <span class="profile-tab__icon">!</span>
+        <span class="profile-tab__icon" aria-hidden="true">!</span>
         <span><strong>Cuenta</strong><small>Zona de peligro</small></span>
       </button>
     </nav>

@@ -1,7 +1,10 @@
 <script setup lang="ts">
+import { isClientExperience } from '../../utils/userExperience'
 const route = useRoute()
 const { primaryItems } = useNavigation()
 const { drawerOpen } = useShellState()
+const { user } = useAuth()
+const clientExperience = computed(() => isClientExperience(user.value?.roles))
 
 function isActive(to: string) {
   return route.path === to || route.path.startsWith(`${to}/`)
@@ -37,6 +40,7 @@ function isActive(to: string) {
     </template>
 
     <button
+      v-if="!clientExperience"
       type="button"
       class="ub-mobile-nav-item flex flex-1 flex-col items-center justify-center gap-0.5 text-[11px]"
       :class="drawerOpen ? 'is-active text-gold' : 'text-muted'"

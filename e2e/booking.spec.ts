@@ -32,6 +32,82 @@ async function mockCreate(page: Page, status: number, body: unknown) {
   });
 }
 
+test("un fallo de horarios permite reintentar sin perder servicio y barbero", async ({ page }) => {
+  await asLoggedInClient(page);
+  let attempts = 0;
+  let unavailable = true;
+  await page.route("**/api/v1/availability/slots*", route => {
+    attempts++;
+    return route.fulfill({
+      status: unavailable ? 503 : 200,
+      contentType: "application/json",
+      body: JSON.stringify(unavailable ? { message: "No disponible" } : { slots: [{ time: "11:30", label: "11:30" }] }),
+    });
+  });
+  await page.goto("/my/reservar", { waitUntil: "domcontentloaded" });
+  await page.getByRole("button", { name: /Corte clásico/ }).click();
+  await page.getByRole("button", { name: /^Nava Panther/ }).click();
+  await page.getByRole("button", { name: "Hoy" }).click();
+  await expect(page.getByRole("heading", { name: "No se pudieron cargar los horarios" })).toBeVisible();
+  const failedAttempts = attempts;
+  unavailable = false;
+  await page.getByRole("button", { name: "Reintentar horarios" }).click();
+  await page.getByRole("button", { name: "11:30", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "4. Confirma tu cita" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Confirmar cita" })).toBeDisabled();
+  expect(attempts).toBeGreaterThan(failedAttempts);
+});
+
+test("un fallo al actualizar adeudo conserva el importe hasta la confirmación del servidor", async ({ page }) => {
+  await asLoggedInClient(page);
+  let failed = false;
+  let total: number | null = 75;
+  await page.route("**/api/v1/no-show-fees*", route => route.fulfill({
+    status: failed ? 503 : 200,
+    contentType: "application/json",
+    body: JSON.stringify(failed ? { message: "No disponible" } : { adeudo_total: total }),
+  }));
+  await page.goto("/my/appointments", { waitUntil: "domcontentloaded" });
+  const debtNotice = page.getByRole("alert").filter({ hasText: "Tienes un adeudo por inasistencia" });
+  await page.getByRole("button", { name: "Actualizar", exact: true }).click();
+  await expect(debtNotice).toContainText("75");
+  await expect(page.getByRole("button", { name: "Actualizar", exact: true })).toBeEnabled();
+  failed = true;
+  await page.getByRole("button", { name: "Actualizar", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "No pudimos comprobar tu adeudo" })).toBeVisible();
+  await expect(debtNotice).toContainText("75");
+  failed = false;
+  total = null;
+  await page.getByRole("button", { name: "Reintentar adeudo" }).click();
+  await expect(debtNotice).toContainText("75");
+  await expect(page.getByRole("heading", { name: "No pudimos comprobar tu adeudo" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Actualizar", exact: true })).toBeEnabled();
+  total = 0;
+  await page.getByRole("button", { name: "Reintentar adeudo" }).click();
+  await expect(debtNotice).toBeHidden();
+  await expect(page.getByRole("heading", { name: "No pudimos comprobar tu adeudo" })).toBeHidden();
+  await page.setViewportSize({ width: 320, height: 812 });
+  const header = page.locator("header").filter({ hasText: "Reservar nueva cita" });
+  for (const theme of ["noir", "acero", "salon", "libreta"]) {
+    await page.evaluate(value => {
+      document.documentElement.dataset.theme = value;
+      document.documentElement.style.fontSize = "200%";
+    }, theme);
+    const controlsFit = await header.locator("button, a").evaluateAll(controls => controls.every(control => {
+      const bounds = control.getBoundingClientRect();
+      return bounds.height >= 48 && bounds.left >= 0 && bounds.right <= window.innerWidth
+        && control.scrollWidth <= control.clientWidth;
+    }));
+    expect(controlsFit, `${theme} / Mis citas / 320 px / texto 200%`).toBe(true);
+  }
+  const refresh = page.getByRole("button", { name: "Actualizar", exact: true });
+  await refresh.focus();
+  await refresh.press("Tab");
+  await page.keyboard.press("Shift+Tab");
+  await expect(refresh).toBeFocused();
+  expect(await refresh.evaluate(button => getComputedStyle(button).outlineWidth)).toBe("2px");
+});
+
 test("un cliente puede reservar su propia cita", async ({ page }) => {
   await asLoggedInClient(page);
   await mockCreate(page, 201, {
@@ -39,7 +115,7 @@ test("un cliente puede reservar su propia cita", async ({ page }) => {
     data: { code: "UB-1001" },
   });
 
-  await page.goto("/my/appointments");
+  await page.goto("/my/appointments", { waitUntil: "domcontentloaded" });
   await page.getByRole("button", { name: "Reservar nueva cita" }).click();
   await expect(
     page.getByRole("heading", { name: "Reserva tu cita" }),
@@ -79,7 +155,7 @@ test("reservar desde la ficha del barbero salta directo al horario", async ({
 }) => {
   await asLoggedInClient(page);
 
-  await page.goto("/barbers/nava-panther");
+  await page.goto("/barbers/nava-panther", { waitUntil: "domcontentloaded" });
   await page.getByRole("link", { name: /Reservar con/ }).click();
 
   await expect(page).toHaveURL(/\/my\/appointments\?barber=b-1$/);
@@ -108,7 +184,7 @@ test("un choque de horario muestra el motivo real del backend", async ({
     message: "El barbero ya tiene una cita en ese horario.",
   });
 
-  await page.goto("/my/appointments?barber=b-1");
+  await page.goto("/my/appointments?barber=b-1", { waitUntil: "domcontentloaded" });
   await expect(
     page.getByRole("heading", { name: "Reserva tu cita" }),
   ).toBeVisible();
@@ -146,7 +222,7 @@ test("las horas ofrecidas salen de la disponibilidad del backend", async ({
     }),
   );
 
-  await page.goto("/my/appointments?barber=b-1");
+  await page.goto("/my/appointments?barber=b-1", { waitUntil: "domcontentloaded" });
   await page.getByRole("button", { name: /Corte clásico/ }).click();
   await page.getByRole("button", { name: "Hoy" }).click();
 
@@ -169,7 +245,7 @@ test("un día sin huecos lo dice en vez de dejar elegir cualquier hora", async (
     }),
   );
 
-  await page.goto("/my/appointments?barber=b-1");
+  await page.goto("/my/appointments?barber=b-1", { waitUntil: "domcontentloaded" });
   await page.getByRole("button", { name: /Corte clásico/ }).click();
   await page.getByRole("button", { name: "Hoy" }).click();
 
@@ -218,7 +294,7 @@ test("formulario de citas de staff ofrece sugerencias de disponibilidad sin bloq
     }),
   );
 
-  await page.goto("/appointments");
+  await page.goto("/appointments", { waitUntil: "domcontentloaded" });
   await page.getByRole("button", { name: "+ Nueva Cita" }).click();
 
   const modal = page.getByRole("dialog", { name: "Nueva cita" });

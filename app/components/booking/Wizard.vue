@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { loadStripe, type Stripe, type StripeCardElement, type StripeElements } from '@stripe/stripe-js'
 import type { ChoiceOption } from '~/types/choice'
+import { isClientExperience } from '~/utils/userExperience'
 
 const props = withDefaults(defineProps<{ initialBarber?: string, embedded?: boolean }>(), { initialBarber: '', embedded: false })
 const emit = defineEmits<{ confirmed: [code: string], busy: [value: boolean] }>()
@@ -45,7 +46,7 @@ interface Barbershop {
 }
 
 const { apiFetch } = useApi()
-const { isAuthenticated, hasRole, user, fetchMe } = useAuth()
+const { isAuthenticated, user, fetchMe } = useAuth()
 const runtimeConfig = useRuntimeConfig()
 const route = useRoute()
 
@@ -335,7 +336,7 @@ watch([serviceId, barberId, date], () => {
 })
 
 async function joinWaitlist() {
-  if (joiningWaitlist.value || !barberId.value || !serviceId.value || !date.value) return
+  if (!canBookHere.value || joiningWaitlist.value || !barberId.value || !serviceId.value || !date.value) return
 
   if (!isAuthenticated.value) {
     await navigateTo(`/login?redirect=${encodeURIComponent(currentUrl())}`)
@@ -383,6 +384,7 @@ function pickBarber(id: string) {
   time.value = ''
 }
 function goToStep(target: number) {
+  if (saving.value || paymentConfirming.value) return
   // Revisar un paso no destruye el borrador. Cambiar la selección invalida la hora.
   activeStep.value = target
 }
@@ -391,7 +393,8 @@ function goToStep(target: number) {
 // El backend solo deja reservar para sí mismo al rol cliente; admin y
 // recepción necesitan client_id (lo hacen desde /appointments) y un barbero
 // recibe 403. Se detecta antes de enviar para no mostrar un error críptico.
-const canBookHere = computed(() => !isAuthenticated.value || hasRole('cliente'))
+const canBookHere = computed(() => !isAuthenticated.value || isClientExperience(user.value?.roles))
+const validSlot = computed(() => !slotsPending.value && !slotsFailed.value && !!time.value && slots.value.some(slot => slot.time === time.value))
 
 const saving = ref(false)
 watch(saving, value => emit('busy', value))
@@ -416,7 +419,7 @@ const paymentWarning = ref('')
 const paymentConfirming = ref(false)
 
 async function confirm() {
-  if (saving.value || slotsPending.value || !selectedService.value || !selectedBarber.value || !time.value) return
+  if (saving.value || !canBookHere.value || !validSlot.value || !selectedService.value || !selectedBarber.value) return
   submitError.value = ''
   if (!isAuthenticated.value) {
     // Única puerta de sesión del flujo, y solo al final: la selección viaja
@@ -623,7 +626,7 @@ function prettyDate(iso: string) {
             :class="i === step
               ? 'border-gold/40 bg-gold/10 text-gold'
               : i < step ? 'border-line text-ink hover:border-gold/30' : 'border-line text-muted'"
-            :disabled="saving || (i > 0 && !selectedService) || (i > 1 && !selectedBarber) || (i > 2 && (!date || !time))"
+            :disabled="saving || paymentConfirming || (i > 0 && !selectedService) || (i > 1 && !selectedBarber) || (i > 2 && (!date || !time))"
             :aria-current="i === step ? 'step' : undefined"
             @click="goToStep(i)"
           >
@@ -776,6 +779,7 @@ function prettyDate(iso: string) {
         <BrandStatePanel
           v-else-if="slotsFailed" mascot="bruno" state="error" tone="danger"
           title="No se pudieron cargar los horarios" description="Revisa tu conexión e inténtalo nuevamente."
+          action-label="Reintentar horarios" @action="loadSlots"
         />
         <template v-else-if="!slots.length">
           <BrandStatePanel
@@ -829,6 +833,12 @@ function prettyDate(iso: string) {
 
       <!-- Paso 4: confirmar -->
       <section v-if="step === 3" aria-labelledby="paso-confirmar">
+        <BrandStatePanel
+          v-if="!validSlot" class="mb-4" mascot="bruno" state="error"
+          title="Revisa el horario antes de continuar"
+          description="La reserva necesita un horario disponible confirmado por el servidor."
+          action-label="Revisar horario" @action="goToStep(2)"
+        />
         <h2 id="paso-confirmar" class="mb-4 text-sm font-black uppercase tracking-widest text-ink">
           4. Confirma tu cita
         </h2>
@@ -862,7 +872,7 @@ function prettyDate(iso: string) {
               <dd class="text-right text-ink">{{ currency(tipAmount) }}</dd>
             </div>
             <div class="flex items-start justify-between gap-4 border-t border-line pt-3">
-              <dt class="font-black uppercase tracking-widest text-ink">Total</dt>
+              <dt class="font-black uppercase tracking-widest text-ink">Total estimado</dt>
               <dd class="text-right text-lg font-black text-gold">{{ currency(grandTotal) }}</dd>
             </div>
           </dl>
@@ -973,7 +983,7 @@ function prettyDate(iso: string) {
             </label>
             <button
               type="button" class="ui-btn mt-3 w-full py-4 text-[12px] tracking-[0.15em]"
-              :disabled="saving || paymentConfirming || slotsPending || slotsFailed || !time || !selectedService || !selectedBarber || !acceptsNoShowFee"
+              :disabled="saving || paymentConfirming || !validSlot || !selectedService || !selectedBarber || !acceptsNoShowFee"
               @click="confirm"
             >
               {{ paymentConfirming ? 'Procesando pago…' : saving ? 'Confirmando…' : isAuthenticated ? 'Confirmar cita' : 'Continuar y confirmar' }}

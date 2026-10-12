@@ -148,3 +148,35 @@ npx playwright test          # usa build de producción; si el build local pasa 
 - Prueba E2E del componente (teclado + valor enviado) cuando cambia un flujo con API.
 - Capturas en los 4 temas y a 375 px de ancho del lugar cambiado.
 - Mensaje de commit en español; la IA no hace commit ni push.
+
+## Experiencia compartida con móvil y API (12-oct-2026)
+
+app/utils/userExperience.ts selecciona administrador, recepción, barbero, ingeniero y cliente en ese orden. Cuenta y navegación reutilizan esta regla; el middleware cliente evita mezclar autoservicio con la experiencia de personal. El cliente usa Inicio / Reservar / Mis citas / Cuenta. /my/reservar reutiliza BookingWizard dentro del shell, sin otro asistente. Los avisos de pago reutilizan clientAppointmentHint y pago_resuelto de Laravel; una cita confirmada no declara deuda ni liquidación. Ver barber/docs/PLAN_CONTRATO_API.md, sección Experiencia por rol sincronizada.
+
+UiActionLinks: enlaces de actividad/descubrimiento con título, descripción y destino; reutilizado en Inicio y Cuenta del cliente. Usa tokens del kit, foco visible y mínimo 48 px. Al quitar Más de las cuatro pestañas, conservar los accesos secundarios en Cuenta e Inicio.
+
+### Cuenta y ayuda sin superposiciones (12-oct-2026, TT32 / HT-12)
+
+Las secciones de Cuenta comparten etiquetas completas, distribución `auto-fit`,
+objetivo táctil de 48 px y foco visible. A 400 px o menos el icono se apila sobre
+la etiqueta. Los botones comunican selección con `aria-pressed`, sin anunciar
+un patrón ARIA de tabs que no implementan. La burbuja de Bladebot se oculta en
+Cuenta, Reservar y Mis citas cuando está cerrada; el acceso explícito desde
+el sidebar o el teclado permanece. Sus sugerencias usan la prioridad de
+`userExperience`, igual que Inicio, Android y API. Sin cambio de contratos.
+
+### Recuperación de reserva (12-oct-2026, TT32 / HT-12)
+
+El asistente usa `isClientExperience` también en la reserva pública. Horarios con
+error ofrecen `BrandStatePanel` y Reintentar horarios sin perder servicio/barbero.
+Confirmar requiere una hora presente en la respuesta de disponibilidad, además
+de las validaciones del servidor. Durante registro/pago no se cambia de paso.
+El resumen indica Total estimado; payloads y cálculo final del backend se mantienen.
+
+### Adeudo confirmado y recuperación (12-oct-2026, TT32 / HT-12)
+
+Mis citas conserva el último adeudo recibido correctamente si una consulta falla
+o no entrega adeudo_total. Un error nunca confirma un total cero. Usar
+BrandStatePanel con reintento y el botón Actualizar; mostrar el importe conocido
+aunque la lista de citas esté vacía. Android aplica el mismo criterio y Laravel
+mantiene la autorización y el importe. No cambiar payloads ni efectuar pagos.
