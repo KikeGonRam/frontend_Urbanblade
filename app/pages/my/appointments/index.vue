@@ -45,6 +45,7 @@ const ESTADO_CLASS: Record<string, string> = {
 };
 
 const { apiFetch } = useApi();
+const { user } = useAuth();
 const { confirm } = useConfirm();
 const config = useRuntimeConfig();
 
@@ -52,15 +53,19 @@ const config = useRuntimeConfig();
 // clientAppointmentHint usa pago_resuelto de Laravel, igual que Android.
 
 // Adeudo por inasistencia: mientras exista no se puede reservar (el backend lo rechaza con el monto).
-const { data: debt } = await useAsyncData(
-  "my-no-show-debt",
+const { data: debt, error: debtError, pending: debtPending, refresh: refreshDebt } = await useAsyncData(
+  computed(() => `my-no-show-debt:${user.value?.id ?? 'guest'}`),
   () =>
-    apiFetch<{ adeudo_total: number | null }>("/no-show-fees").catch(() => ({
-      adeudo_total: 0,
-    })),
+    apiFetch<{ adeudo_total: number | null }>("/no-show-fees"),
   { lazy: true },
 );
-const debtTotal = computed(() => Number(debt.value?.adeudo_total ?? 0));
+const confirmedDebt = ref<number | null>(null);
+watch(() => user.value?.id, () => { confirmedDebt.value = null; });
+watch(() => debt.value?.adeudo_total, total => {
+  if (total != null) confirmedDebt.value = total;
+}, { immediate: true });
+const debtTotal = computed(() => Number(confirmedDebt.value ?? 0));
+const debtUnavailable = computed(() => !debtPending.value && (!!debtError.value || debt.value?.adeudo_total == null));
 
 // Ticket del servicio terminado (comprobante + desglose), también llega por correo.
 const ticket = ref<ServiceTicket | null>(null);
@@ -106,6 +111,10 @@ const next = computed(() => response.value?.next ?? null);
 const policyHours = computed(
   () => response.value?.cancellation_policy_hours ?? 24,
 );
+
+async function refreshAgenda() {
+  await Promise.all([refresh(), refreshDebt()]);
+}
 
 interface Barber {
   id: string;
@@ -497,16 +506,22 @@ onUnmounted(() => teardownStripe());
           Puedes reagendar o cancelar hasta {{ policyHours }} horas antes.
         </p>
       </div>
-      <div class="flex items-center gap-2">
+      <div class="flex flex-wrap items-center gap-2">
+        <button
+          type="button" class="ui-btn-secondary min-h-[48px] px-4 py-2 text-sm"
+          :disabled="pending || debtPending" @click="refreshAgenda"
+        >
+          {{ pending || debtPending ? 'Actualizando…' : 'Actualizar' }}
+        </button>
         <NuxtLink
           to="/barbers"
-          class="rounded-lg border border-line px-4 py-2 text-sm font-semibold text-muted hover:text-ink"
+          class="ui-btn-secondary min-h-[48px] px-4 py-2 text-sm"
         >
           Ver barberos
         </NuxtLink>
         <button
           type="button"
-          class="rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-black hover:bg-gold-dim"
+          class="ui-btn min-h-[48px] px-4 py-2 text-sm"
           @click="openCreate()"
         >
           Reservar nueva cita
@@ -577,15 +592,21 @@ onUnmounted(() => teardownStripe());
       {{ cancelError }}
     </p>
 
+    <BrandStatePanel
+      v-if="debtUnavailable" class="mb-4" mascot="bruno" state="error"
+      title="No pudimos comprobar tu adeudo"
+      description="Usa el reintento para consultar el importe vigente. Se conserva el último dato recibido correctamente."
+      action-label="Reintentar adeudo" @action="refreshDebt"
+    />
+    <p
+      v-if="debtTotal > 0" role="alert"
+      class="mb-4 rounded-xl border border-line bg-card p-4 text-sm text-ink"
+    >
+      Tienes un adeudo por inasistencia de <strong>{{ money(debtTotal) }}</strong>.
+      Págalo en la barbería (efectivo o transferencia) para volver a reservar.
+    </p>
+
     <div v-if="!pending && !error && appointments.length" class="space-y-4">
-      <p
-        v-if="debtTotal > 0"
-        role="alert"
-        class="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-200"
-      >
-        Tienes un adeudo por inasistencia de <strong>{{ money(debtTotal) }}</strong>.
-        Págalo en la barbería (efectivo o transferencia) para volver a reservar.
-      </p>
       <output v-if="ticketError" class="block text-sm text-red-400">
         {{ ticketError }}
       </output>

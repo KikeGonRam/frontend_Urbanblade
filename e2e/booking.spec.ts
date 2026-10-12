@@ -58,6 +58,56 @@ test("un fallo de horarios permite reintentar sin perder servicio y barbero", as
   expect(attempts).toBeGreaterThan(failedAttempts);
 });
 
+test("un fallo al actualizar adeudo conserva el importe hasta la confirmación del servidor", async ({ page }) => {
+  await asLoggedInClient(page);
+  let failed = false;
+  let total: number | null = 75;
+  await page.route("**/api/v1/no-show-fees*", route => route.fulfill({
+    status: failed ? 503 : 200,
+    contentType: "application/json",
+    body: JSON.stringify(failed ? { message: "No disponible" } : { adeudo_total: total }),
+  }));
+  await page.goto("/my/appointments", { waitUntil: "domcontentloaded" });
+  const debtNotice = page.getByRole("alert").filter({ hasText: "Tienes un adeudo por inasistencia" });
+  await page.getByRole("button", { name: "Actualizar", exact: true }).click();
+  await expect(debtNotice).toContainText("75");
+  await expect(page.getByRole("button", { name: "Actualizar", exact: true })).toBeEnabled();
+  failed = true;
+  await page.getByRole("button", { name: "Actualizar", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "No pudimos comprobar tu adeudo" })).toBeVisible();
+  await expect(debtNotice).toContainText("75");
+  failed = false;
+  total = null;
+  await page.getByRole("button", { name: "Reintentar adeudo" }).click();
+  await expect(debtNotice).toContainText("75");
+  await expect(page.getByRole("heading", { name: "No pudimos comprobar tu adeudo" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Actualizar", exact: true })).toBeEnabled();
+  total = 0;
+  await page.getByRole("button", { name: "Reintentar adeudo" }).click();
+  await expect(debtNotice).toBeHidden();
+  await expect(page.getByRole("heading", { name: "No pudimos comprobar tu adeudo" })).toBeHidden();
+  await page.setViewportSize({ width: 320, height: 812 });
+  const header = page.locator("header").filter({ hasText: "Reservar nueva cita" });
+  for (const theme of ["noir", "acero", "salon", "libreta"]) {
+    await page.evaluate(value => {
+      document.documentElement.dataset.theme = value;
+      document.documentElement.style.fontSize = "200%";
+    }, theme);
+    const controlsFit = await header.locator("button, a").evaluateAll(controls => controls.every(control => {
+      const bounds = control.getBoundingClientRect();
+      return bounds.height >= 48 && bounds.left >= 0 && bounds.right <= window.innerWidth
+        && control.scrollWidth <= control.clientWidth;
+    }));
+    expect(controlsFit, `${theme} / Mis citas / 320 px / texto 200%`).toBe(true);
+  }
+  const refresh = page.getByRole("button", { name: "Actualizar", exact: true });
+  await refresh.focus();
+  await refresh.press("Tab");
+  await page.keyboard.press("Shift+Tab");
+  await expect(refresh).toBeFocused();
+  expect(await refresh.evaluate(button => getComputedStyle(button).outlineWidth)).toBe("2px");
+});
+
 test("un cliente puede reservar su propia cita", async ({ page }) => {
   await asLoggedInClient(page);
   await mockCreate(page, 201, {

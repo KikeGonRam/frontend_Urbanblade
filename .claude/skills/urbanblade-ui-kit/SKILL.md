@@ -172,3 +172,11 @@ error ofrecen `BrandStatePanel` y Reintentar horarios sin perder servicio/barber
 Confirmar requiere una hora presente en la respuesta de disponibilidad, además
 de las validaciones del servidor. Durante registro/pago no se cambia de paso.
 El resumen indica Total estimado; payloads y cálculo final del backend se mantienen.
+
+### Adeudo confirmado y recuperación (12-oct-2026, TT32 / HT-12)
+
+Mis citas conserva el último adeudo recibido correctamente si una consulta falla
+o no entrega adeudo_total. Un error nunca confirma un total cero. Usar
+BrandStatePanel con reintento y el botón Actualizar; mostrar el importe conocido
+aunque la lista de citas esté vacía. Android aplica el mismo criterio y Laravel
+mantiene la autorización y el importe. No cambiar payloads ni efectuar pagos.
