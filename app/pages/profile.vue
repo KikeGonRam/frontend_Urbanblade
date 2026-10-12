@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { isClientExperience } from '../utils/userExperience';
 definePageMeta({ middleware: "auth", layout: "dashboard" });
 
 interface ProfileResponse {
@@ -87,7 +88,7 @@ const isAdministrator = computed(
   () => user.value?.roles?.includes("administrador") ?? false,
 );
 const isClient = computed(
-  () => user.value?.roles?.includes("cliente") ?? false,
+  () => isClientExperience(user.value?.roles),
 );
 const isBarber = computed(
   () => user.value?.roles?.includes("barbero") ?? false,
@@ -452,6 +453,20 @@ async function submitDeleteAccount() {
       </div>
     </header>
 
+    <UiActionLinks
+      v-if="isClient"
+      class="mb-5"
+      title="Tu actividad"
+      :items="[
+        { label: 'Mis facturas', description: 'Comprobantes de tus citas y compras.', to: '/my/invoices' },
+        { label: 'Mis pedidos', description: 'Compras de la tienda.', to: '/my/orders' },
+        { label: 'Membresía', description: 'Tu plan y sus beneficios.', to: '/membership' },
+        { label: 'Paquetes', description: 'Servicios y usos disponibles.', to: '/packages' },
+        { label: 'Tarjetas regalo', description: 'Consulta tus tarjetas y su saldo.', to: '/gift-cards' },
+        { label: 'Referidos', description: 'Tu código para invitar.', to: '/referrals' },
+        { label: 'Lista de espera', description: 'Tus solicitudes de horario.', to: '/waitlist' },
+      ]"
+    />
     <nav class="profile-tabs" aria-label="Secciones del perfil">
       <button
         v-if="isBarber"

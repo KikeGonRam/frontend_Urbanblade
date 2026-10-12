@@ -148,3 +148,9 @@ npx playwright test          # usa build de producción; si el build local pasa 
 - Prueba E2E del componente (teclado + valor enviado) cuando cambia un flujo con API.
 - Capturas en los 4 temas y a 375 px de ancho del lugar cambiado.
 - Mensaje de commit en español; la IA no hace commit ni push.
+
+## Experiencia compartida con móvil y API (12-oct-2026)
+
+app/utils/userExperience.ts selecciona administrador, recepción, barbero, ingeniero y cliente en ese orden. Cuenta y navegación reutilizan esta regla; el middleware cliente evita mezclar autoservicio con la experiencia de personal. El cliente usa Inicio / Reservar / Mis citas / Cuenta. /my/reservar reutiliza BookingWizard dentro del shell, sin otro asistente. Los avisos de pago reutilizan clientAppointmentHint y pago_resuelto de Laravel; una cita confirmada no declara deuda ni liquidación. Ver barber/docs/PLAN_CONTRATO_API.md, sección Experiencia por rol sincronizada.
+
+UiActionLinks: enlaces de actividad/descubrimiento con título, descripción y destino; reutilizado en Inicio y Cuenta del cliente. Usa tokens del kit, foco visible y mínimo 48 px. Al quitar Más de las cuatro pestañas, conservar los accesos secundarios en Cuenta e Inicio.

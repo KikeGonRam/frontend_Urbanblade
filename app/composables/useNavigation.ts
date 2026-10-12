@@ -1,3 +1,5 @@
+import { isClientExperience, primaryRole } from '../utils/userExperience'
+
 export interface NavItem {
   label: string
   to: string
@@ -66,6 +68,8 @@ const IMPLEMENTED_PATHS = new Set([
   '/campaigns', '/raffles', '/logs', '/settings', '/reports', '/analytics',
   '/social/feed', '/reviews', '/system', '/notifications', '/gift-cards', '/packages',
   '/membership', '/admin/membership-plans', '/referrals', '/waitlist',
+  '/profile',
+  '/my/reservar',
 ])
 
 function item(label: string, to: string, icon: string, primary = false, badge: number | null = null): NavItem {
@@ -86,8 +90,8 @@ export function useNavigation() {
   const isAdmin = computed(() => hasRole('administrador'))
   const isReception = computed(() => hasRole('recepcionista'))
   const isBarber = computed(() => hasRole('barbero'))
-  const isClient = computed(() => hasRole('cliente'))
-  const isEngineer = computed(() => hasRole('ingeniero'))
+  const isClient = computed(() => isClientExperience(user.value?.roles))
+  const isEngineer = computed(() => primaryRole(user.value?.roles) === 'ingeniero')
 
   const sections = computed<NavSection[]>(() => {
     if (!user.value) return []
@@ -99,7 +103,7 @@ export function useNavigation() {
       title: 'Principal',
       collapsible: false,
       items: [
-        item('Dashboard', '/dashboard', 'dashboard', true),
+        item('Inicio', '/dashboard', 'dashboard', true),
         // El muro es editorial/operativo. Ingeniero ve telemetría agregada
         // cuando exista, nunca publicaciones ni acciones del feed.
         ...(isEngineer.value ? [] : [item('Muro Inspiración', '/social/feed', 'wall')]),
@@ -208,14 +212,14 @@ export function useNavigation() {
         items: [
           item('Mis Citas', '/my/appointments', 'my_appointments', true),
           item('Tienda', '/store', 'products'),
-          item('Carrito', '/cart', 'cart', true),
+          item('Carrito', '/cart', 'cart'),
           item('Mis Pedidos', '/my/orders', 'orders'),
           item('Gift Cards', '/gift-cards', 'gift_cards'),
           item('Paquetes', '/packages', 'packages'),
           item('Membresía', '/membership', 'membership'),
           item('Referidos', '/referrals', 'referrals'),
           item('Lista de Espera', '/waitlist', 'waitlist'),
-          item('Nuestros Barberos', '/barbers', 'barbers_client', true),
+          item('Nuestros Barberos', '/barbers', 'barbers_client'),
           item('Mis Facturas', '/my/invoices', 'invoices'),
           item('Recomendado para ti', '/analytics', 'analytics'),
         ],
@@ -225,9 +229,15 @@ export function useNavigation() {
     return out
   })
 
-  const primaryItems = computed<NavItem[]>(() =>
-    sections.value.flatMap((s) => s.items.filter((i) => i.primary)).slice(0, 4),
-  )
+  const primaryItems = computed<NavItem[]>(() => {
+    if (isClient.value) return [
+      item('Inicio', '/dashboard', 'dashboard', true),
+      item('Reservar', '/my/reservar', 'barbers_client', true),
+      item('Mis citas', '/my/appointments', 'my_appointments', true),
+      item('Cuenta', '/profile', 'profile', true),
+    ]
+    return sections.value.flatMap(s => s.items.filter(i => i.primary)).slice(0, 4)
+  })
 
   return { sections, primaryItems }
 }

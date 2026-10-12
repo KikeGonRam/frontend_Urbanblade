@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { clientAppointmentHint } from '../../../utils/clientAppointmentHint';
 /*
  * Fase 9.8 — "Mis Citas" del cliente, puerto de Client\ClientAppointmentController
  * (web): historial propio con stats/próxima cita, reagendar (bloqueado si la
@@ -48,12 +49,7 @@ const { confirm } = useConfirm();
 const config = useRuntimeConfig();
 
 // Qué sigue en cada estado, en lenguaje claro (el cliente no ve los botones de la agenda del barbero).
-const ESTADO_AYUDA: Record<string, string> = {
-  pendiente: "Esperando que tu barbero apruebe la cita. Te avisamos en cuanto la confirme.",
-  confirmada: "Cita aprobada. Antes de que empiece el servicio debe estar pagada: con tarjeta aquí, o en recepción al llegar.",
-  en_proceso: "Tu servicio está en curso.",
-  no_asistio: "No registramos tu asistencia. Si hay un cargo pendiente, págalo en la barbería para volver a reservar.",
-};
+// clientAppointmentHint usa pago_resuelto de Laravel, igual que Android.
 
 // Adeudo por inasistencia: mientras exista no se puede reservar (el backend lo rechaza con el monto).
 const { data: debt } = await useAsyncData(
@@ -611,8 +607,8 @@ onUnmounted(() => teardownStripe());
             >{{ ESTADO_LABEL[appt.estado] ?? appt.estado }}</span
           >
         </div>
-        <p v-if="ESTADO_AYUDA[appt.estado]" class="mb-2 text-xs text-muted">
-          {{ ESTADO_AYUDA[appt.estado] }}
+        <p v-if="clientAppointmentHint(appt.estado, appt.pago_resuelto)" class="mb-2 text-xs text-muted">
+          {{ clientAppointmentHint(appt.estado, appt.pago_resuelto) }}
         </p>
         <p v-if="appt.notas" class="mb-3 text-sm text-muted">
           {{ appt.notas }}

@@ -187,7 +187,7 @@ const visitChartOptions = {
         Hola, <span class="font-semibold text-ink">{{ firstName }}</span>. Aquí están tu próxima cita, tus puntos y tus beneficios.
       </p>
       <nav class="flex flex-wrap gap-2" aria-label="Accesos rápidos">
-        <NuxtLink to="/my/appointments" class="ui-btn min-h-10 px-4 text-sm">Reservar</NuxtLink>
+        <NuxtLink to="/my/reservar" class="ui-btn min-h-10 px-4 text-sm">Reservar</NuxtLink>
         <NuxtLink
           v-for="a in [{ label: 'Mis citas', to: '/my/appointments' }, { label: 'Barberos', to: '/barbers' }, { label: 'Tienda', to: '/store' }]"
           :key="a.label"
@@ -237,7 +237,7 @@ const visitChartOptions = {
             <h3 class="text-lg font-semibold text-ink">No tienes citas próximas</h3>
             <p class="mt-1 text-sm text-muted">Reserva tu siguiente visita y mantén tu estilo.</p>
           </div>
-          <NuxtLink to="/my/appointments" class="ui-btn min-h-10 shrink-0 px-5 text-sm">Reservar</NuxtLink>
+          <NuxtLink to="/my/reservar" class="ui-btn min-h-10 shrink-0 px-5 text-sm">Reservar</NuxtLink>
         </div>
       </article>
 
@@ -372,6 +372,16 @@ const visitChartOptions = {
       </div>
     </section>
 
+    <UiActionLinks
+      class="mt-5"
+      title="Descubre"
+      :items="[
+        { label: 'Muro de Inspiración', description: 'Cortes y trabajos del equipo.', to: '/social/feed' },
+        { label: 'Tienda', description: 'Productos UrbanBlade.', to: '/store' },
+        { label: 'Carrito', description: 'Revisa tus productos antes de pedir.', to: '/cart' },
+        { label: 'Barberos', description: 'Conoce al equipo.', to: '/barbers' },
+      ]"
+    />
     <DashboardAnalyticsInsights :insights="data.sparkHighlights ?? []" titulo="Tus oportunidades" />
   </div>
 </template>

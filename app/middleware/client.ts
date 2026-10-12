@@ -3,14 +3,16 @@
  * (Fase 9.4), equivalente cliente de 'admin'/'staff' para esas otras
  * secciones. Mismo criterio: fetchMe() si la ruta se abre directo.
  */
+import { isClientExperience } from '../utils/userExperience'
+
 export default defineNuxtRouteMiddleware(async () => {
-  const { user, hasRole, fetchMe } = useAuth()
+  const { user, fetchMe } = useAuth()
 
   if (!user.value) {
     await fetchMe()
   }
 
-  if (!hasRole('cliente')) {
+  if (!isClientExperience(user.value?.roles)) {
     return navigateTo('/dashboard')
   }
 })
