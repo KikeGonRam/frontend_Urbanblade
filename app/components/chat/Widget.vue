@@ -9,9 +9,12 @@
  * otros widgets de asistencia ya establecidos (ver useChatbot.ts).
  */
 import type { ChatMessage } from '~/composables/useChatbot'
+import { primaryRole } from '~/utils/userExperience'
 
 const { messages, typing, loadHistory, sendMessage, retry, sendFeedback, clearHistory } = useChatbot()
-const { user, hasRole } = useAuth()
+const { user } = useAuth()
+const route = useRoute()
+const showLauncher = computed(() => !['/profile', '/my/reservar', '/my/appointments'].some(path => route.path === path || route.path.startsWith(`${path}/`)))
 
 const open = ref(false)
 const input = ref('')
@@ -21,19 +24,20 @@ const inputBox = ref<HTMLTextAreaElement | null>(null)
 
 const quickChips = computed(() => {
   if (!user.value) {
-    return ['¿Cómo agendar una cita?', '¿Cuáles son los precios?', '¿Dónde están ubicados?', '¿Qué métodos de pago aceptan?']
+    return ['¿Cómo reservar una cita?', '¿Cuáles son los precios?', '¿Dónde están ubicados?', '¿Qué métodos de pago aceptan?']
   }
-  if (hasRole('cliente')) {
+  const role = primaryRole(user.value.roles)
+  if (role === 'cliente') {
     return ['¿Cuál es mi próxima cita?', '¿Cuántos puntos tengo?', '¿Cuáles son los servicios?', '¿Cómo cancelo mi cita?']
   }
-  if (hasRole('administrador')) {
+  if (role === 'administrador') {
     return ['¿Cuánto se facturó hoy?', '¿Cuáles son los barberos activos?', '¿Cómo gestionar usuarios?']
   }
-  if (hasRole('barbero')) {
+  if (role === 'barbero') {
     return ['¿Cómo subo trabajos al muro?', '¿Cuáles son mis citas de hoy?']
   }
 
-  return ['¿Qué servicios ofrecen?', '¿Cómo agendar una cita?']
+  return ['¿Qué servicios ofrecen?', '¿Cómo reservar una cita?']
 })
 
 function fmtTime(iso: string) {
@@ -99,6 +103,7 @@ onUnmounted(() => { document.removeEventListener('keydown', handleKeydown); wind
 <template>
   <div>
     <button
+      v-if="showLauncher || open"
       type="button"
       class="fixed bottom-20 right-4 z-[200] flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-gold to-gold/70 text-black shadow-[0_8px_32px_rgba(212,175,55,0.4)] transition-all duration-300 hover:scale-110 active:scale-95 md:bottom-6 md:right-6 md:h-14 md:w-14"
       title="Asistente Virtual"

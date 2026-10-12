@@ -472,10 +472,10 @@ async function submitDeleteAccount() {
         v-if="isBarber"
         type="button"
         :class="['profile-tab', activeSection === 'public' ? 'is-active' : '']"
-        :aria-selected="activeSection === 'public'"
+        :aria-pressed="activeSection === 'public'"
         @click="activeSection = 'public'"
       >
-        <span class="profile-tab__icon">✦</span>
+        <span class="profile-tab__icon" aria-hidden="true">✦</span>
         <span
           ><strong>Perfil público</strong
           ><small>Tu ficha de barbero</small></span
@@ -487,10 +487,10 @@ async function submitDeleteAccount() {
           'profile-tab',
           activeSection === 'personal' ? 'is-active' : '',
         ]"
-        :aria-selected="activeSection === 'personal'"
+        :aria-pressed="activeSection === 'personal'"
         @click="activeSection = 'personal'"
       >
-        <span class="profile-tab__icon">◎</span>
+        <span class="profile-tab__icon" aria-hidden="true">◎</span>
         <span
           ><strong>Información</strong><small>Datos de tu cuenta</small></span
         >
@@ -501,10 +501,10 @@ async function submitDeleteAccount() {
           'profile-tab',
           activeSection === 'security' ? 'is-active' : '',
         ]"
-        :aria-selected="activeSection === 'security'"
+        :aria-pressed="activeSection === 'security'"
         @click="activeSection = 'security'"
       >
-        <span class="profile-tab__icon">⌁</span>
+        <span class="profile-tab__icon" aria-hidden="true">⌁</span>
         <span
           ><strong>Seguridad</strong><small>Contraseña y acceso</small></span
         >
@@ -515,10 +515,10 @@ async function submitDeleteAccount() {
           'profile-tab profile-tab--danger',
           activeSection === 'danger' ? 'is-active' : '',
         ]"
-        :aria-selected="activeSection === 'danger'"
+        :aria-pressed="activeSection === 'danger'"
         @click="activeSection = 'danger'"
       >
-        <span class="profile-tab__icon">!</span>
+        <span class="profile-tab__icon" aria-hidden="true">!</span>
         <span><strong>Cuenta</strong><small>Zona de peligro</small></span>
       </button>
     </nav>

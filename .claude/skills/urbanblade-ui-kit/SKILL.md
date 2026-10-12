@@ -154,3 +154,13 @@ npx playwright test          # usa build de producción; si el build local pasa 
 app/utils/userExperience.ts selecciona administrador, recepción, barbero, ingeniero y cliente en ese orden. Cuenta y navegación reutilizan esta regla; el middleware cliente evita mezclar autoservicio con la experiencia de personal. El cliente usa Inicio / Reservar / Mis citas / Cuenta. /my/reservar reutiliza BookingWizard dentro del shell, sin otro asistente. Los avisos de pago reutilizan clientAppointmentHint y pago_resuelto de Laravel; una cita confirmada no declara deuda ni liquidación. Ver barber/docs/PLAN_CONTRATO_API.md, sección Experiencia por rol sincronizada.
 
 UiActionLinks: enlaces de actividad/descubrimiento con título, descripción y destino; reutilizado en Inicio y Cuenta del cliente. Usa tokens del kit, foco visible y mínimo 48 px. Al quitar Más de las cuatro pestañas, conservar los accesos secundarios en Cuenta e Inicio.
+
+### Cuenta y ayuda sin superposiciones (12-oct-2026, TT32 / HT-12)
+
+Las secciones de Cuenta comparten etiquetas completas, distribución `auto-fit`,
+objetivo táctil de 48 px y foco visible. A 400 px o menos el icono se apila sobre
+la etiqueta. Los botones comunican selección con `aria-pressed`, sin anunciar
+un patrón ARIA de tabs que no implementan. La burbuja de Bladebot se oculta en
+Cuenta, Reservar y Mis citas cuando está cerrada; el acceso explícito desde
+el sidebar o el teclado permanece. Sus sugerencias usan la prioridad de
+`userExperience`, igual que Inicio, Android y API. Sin cambio de contratos.
