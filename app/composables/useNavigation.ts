@@ -65,7 +65,7 @@ const IMPLEMENTED_PATHS = new Set([
   '/my/appointments', '/barbers', '/my/invoices',
   '/campaigns', '/raffles', '/logs', '/settings', '/reports', '/analytics',
   '/social/feed', '/reviews', '/system', '/notifications', '/gift-cards', '/packages',
-  '/membership', '/admin/membership-plans', '/referrals', '/waitlist',
+  '/membership', '/admin/membership-plans', '/admin/moderacion', '/referrals', '/waitlist',
 ])
 
 function item(label: string, to: string, icon: string, primary = false, badge: number | null = null): NavItem {
@@ -136,6 +136,7 @@ export function useNavigation() {
           item('Barberos', '/barbers/manage', 'barbers'),
           item('Planes de Membresía', '/admin/membership-plans', 'membership'),
           item('Reseñas', '/reviews', 'reviews'),
+          item('Moderación del muro', '/admin/moderacion', 'reviews'),
           item('Usuarios', '/users', 'users'),
           item('Servicios', '/services', 'services'),
           item('Productos', '/inventory/products', 'products'),
