@@ -702,3 +702,26 @@ html[data-theme="libreta"] {
         }
     }
 }
+
+/* ── Modo corporativo: administración, recepción e ingeniería ────────────────────────────────
+   Carcasa plana y densa para quien trabaja con datos todo el día: sidebar y barra superior pegadas
+   a los bordes, sin sombras ni degradados, esquinas pequeñas y cifras tabulares. Cliente y barbero
+   conservan la carcasa amable. Va fuera de @layer a propósito: tiene que ganarle a las utilidades
+   de Tailwind (rounded-2xl, etc.). */
+.ub-dashboard-shell[data-ui='data'] .ub-rise { animation: none; }
+.ub-dashboard-shell[data-ui='data'] table { font-variant-numeric: tabular-nums; }
+.ub-dashboard-shell[data-ui='data'] tbody tr { transition: background-color .12s ease; }
+.ub-dashboard-shell[data-ui='data'] tbody tr:hover { background: rgb(var(--ink-rgb) / .035); }
+.ub-dashboard-shell[data-ui='data'] .ub-dashboard-content .rounded-3xl,
+.ub-dashboard-shell[data-ui='data'] .ub-dashboard-content .rounded-2xl { border-radius: .625rem; }
+.ub-dashboard-shell[data-ui='data'] .ub-sidebar__helper { display: none; }
+@media (min-width: 768px) {
+    .ub-dashboard-shell[data-ui='data'] { gap: 0; padding: 0; }
+    .ub-dashboard-shell[data-ui='data'] .ub-sidebar { border-width: 0 1px 0 0; border-radius: 0; box-shadow: none; background: var(--panel); }
+    .ub-dashboard-shell[data-ui='data'] .ub-desktop-topbar { min-height: 56px; border-width: 0 0 1px 0; border-radius: 0; padding: .5rem 1.25rem; box-shadow: none; background: var(--bg-card); }
+    .ub-dashboard-shell[data-ui='data'] .ub-dashboard-content { margin-top: 0; border-radius: 0; }
+    .ub-dashboard-shell[data-ui='data'] .ub-sidebar__item { min-height: 38px; border-radius: .5rem; font-size: .78rem; }
+    .ub-dashboard-shell[data-ui='data'] .ub-sidebar__item:hover { transform: none; }
+    .ub-dashboard-shell[data-ui='data'] .ub-topbar-search { border-radius: .5rem; }
+    .ub-dashboard-shell[data-ui='data'] .ub-topbar-button, .ub-dashboard-shell[data-ui='data'] .ub-theme-switcher select { border-radius: .5rem; }
+}

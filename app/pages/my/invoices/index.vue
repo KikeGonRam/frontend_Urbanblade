@@ -6,7 +6,7 @@
  */
 definePageMeta({ middleware: ['auth', 'client'], layout: 'dashboard' })
 
-useSeoMeta({ title: 'Mis facturas — UrbanBlade', robots: 'noindex' })
+useSeoMeta({ title: 'Mis recibos — UrbanBlade', robots: 'noindex' })
 
 interface PaymentRow {
   id: string
@@ -60,22 +60,22 @@ async function downloadReceipt(payment: PaymentRow) {
 <template>
   <div class="p-4 sm:p-6 lg:p-8">
     <header class="mb-5">
-      <h1 class="mt-1 text-2xl font-semibold text-ink">Mis <span class="text-gold">Facturas</span></h1>
+      <h1 class="mt-1 text-2xl font-semibold text-ink">Mis <span class="text-gold">Recibos</span></h1>
       <p class="mt-1 text-sm text-muted">Historial de pagos de tus citas.</p>
     </header>
 
     <section v-if="!pending && !error" class="mb-6 grid grid-cols-2 gap-3 sm:w-fit sm:grid-cols-2">
       <div class="ui-card p-4"><p class="text-[11px] font-bold uppercase text-muted">Total pagado</p><p class="mt-1 text-xl font-black text-gold">{{ fmtMoney(meta.total_pagado) }}</p></div>
-      <div class="ui-card p-4"><p class="text-[11px] font-bold uppercase text-muted">Citas facturadas</p><p class="mt-1 text-xl font-black text-ink">{{ meta.total_citas }}</p></div>
+      <div class="ui-card p-4"><p class="text-[11px] font-bold uppercase text-muted">Citas con recibo</p><p class="mt-1 text-xl font-black text-ink">{{ meta.total_citas }}</p></div>
     </section>
 
-    <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando tus facturas…" />
+    <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando tus recibos…" />
     <BrandStatePanel
       v-else-if="error"
       mascot="bruno"
       state="error"
       tone="danger"
-      title="No se pudieron cargar tus facturas"
+      title="No se pudieron cargar tus recibos"
       action-label="Reintentar"
       @action="refresh"
     />
