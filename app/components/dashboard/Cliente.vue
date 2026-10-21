@@ -76,16 +76,15 @@ const safeProgress = computed(() =>
 const summaryCards = computed(() => {
   const k = props.data.kpis;
   const completion = Number(k.completion_rate ?? 0);
-  const cancellation = Number(k.cancellation_rate ?? 0);
 
   return [
     { label: "Visitas", value: fmtInt(k.total_appointments), hint: `${fmtInt(k.completed_appointments)} completadas`, progress: null },
     { label: "Asistencia", value: `${completion.toFixed(0)}%`, hint: "Citas a las que llegaste", progress: completion },
     {
-      label: "Cancelaciones",
-      value: `${cancellation.toFixed(0)}%`,
-      hint: cancellation <= 20 ? "Dentro de lo normal" : "Cancela con tiempo para no perder beneficios",
-      progress: cancellation,
+      label: "Tu barbero",
+      value: k.favorite_barber && k.favorite_barber !== "—" ? k.favorite_barber.split(" ")[0] : "—",
+      hint: k.favorite_barber && k.favorite_barber !== "—" ? "Con quien más reservas" : "Aún no tienes uno favorito",
+      progress: null,
     },
     {
       label: "Puntos",
@@ -115,12 +114,12 @@ const benefits = computed(() => {
     },
     {
       active: isRegularOrAbove,
-      label: isRegularOrAbove ? "Reserva prio." : "Requiere Regular",
+      label: isRegularOrAbove ? "Reserva prioritaria" : "Requiere Regular",
       icon: "M13 10V3L4 14h7v7l9-11h-7z",
     },
     {
       active: nivel === "leyenda",
-      label: nivel === "leyenda" ? "Prod. gratis/mes" : "Requiere Leyenda",
+      label: nivel === "leyenda" ? "Producto gratis al mes" : "Requiere Leyenda",
       icon: "M20 12v10H4V12M22 7H2v5h20V7zM12 22V7m0 0a2 2 0 10-4 0m4 0a2 2 0 114 0",
     },
   ];
@@ -189,7 +188,7 @@ const visitChartOptions = {
       <nav class="flex flex-wrap gap-2" aria-label="Accesos rápidos">
         <NuxtLink to="/my/appointments" class="ui-btn min-h-10 px-4 text-sm">Reservar</NuxtLink>
         <NuxtLink
-          v-for="a in [{ label: 'Mis citas', to: '/my/appointments' }, { label: 'Barberos', to: '/barbers' }, { label: 'Tienda', to: '/store' }]"
+          v-for="a in [{ label: 'Barberos', to: '/barbers' }, { label: 'Tienda', to: '/store' }, { label: 'Beneficios', to: '/membership' }]"
           :key="a.label"
           :to="a.to"
           class="inline-flex min-h-10 items-center rounded-xl border border-line px-4 text-sm font-semibold text-ink transition-colors hover:border-gold/40"
@@ -353,6 +352,18 @@ const visitChartOptions = {
               </li>
             </ul>
           </div>
+
+          <nav class="grid grid-cols-2 gap-2" aria-label="Tus beneficios y compras">
+            <NuxtLink
+              v-for="l in [{ label: 'Membresía', to: '/membership' }, { label: 'Paquetes', to: '/packages' }, { label: 'Gift Cards', to: '/gift-cards' }, { label: 'Referidos', to: '/referrals' }]"
+              :key="l.to"
+              :to="l.to"
+              class="flex min-h-11 items-center justify-between rounded-xl border border-line px-3 text-sm font-semibold text-ink transition-colors hover:border-gold/40"
+            >
+              {{ l.label }}
+              <span class="text-gold" aria-hidden="true">→</span>
+            </NuxtLink>
+          </nav>
 
           <div
             v-if="data.loyalty.wonRaffle"
