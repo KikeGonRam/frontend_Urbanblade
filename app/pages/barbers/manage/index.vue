@@ -10,6 +10,8 @@
  * confirmado en UserApiTest) -- este controlador no expone POST.
  */
 definePageMeta({ middleware: ["auth", "admin"], layout: "dashboard" });
+useSeoMeta({ title: 'Barberos — UrbanBlade', robots: 'noindex' })
+
 
 interface BarberRow {
   id: string;
@@ -220,7 +222,7 @@ async function submitForm() {
       <table class="w-full min-w-[52rem] text-left text-sm">
         <thead>
           <tr
-            class="border-b border-line text-[10px] uppercase tracking-wider text-muted"
+            class="border-b border-line text-[11px] uppercase tracking-wider text-muted"
           >
             <th class="px-4 py-3">Barbero</th>
             <th class="px-4 py-3">Especialidades</th>
@@ -263,10 +265,10 @@ async function submitForm() {
             </td>
             <td class="px-4 py-3 text-center">
               <span
-                class="rounded-full border px-2 py-0.5 text-[9px] font-black uppercase"
+                class="rounded-full border px-2 py-0.5 text-[11px] font-black uppercase"
                 :class="
                   barber.activo
-                    ? 'border-emerald-500/25 bg-emerald-500/10 text-emerald-300'
+                    ? 'border-success/25 bg-success/10 text-success'
                     : 'border-line bg-ink/5 text-muted'
                 "
               >
@@ -323,11 +325,11 @@ async function submitForm() {
                 :class="[
                   'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-none',
                   fieldErrors.name
-                    ? 'border-red-500/60 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
+                    ? 'border-danger/60 focus:border-danger focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
                     : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]',
                 ]"
               >
-              <p v-if="fieldErrors.name" class="mt-1 text-xs text-red-400">
+              <p v-if="fieldErrors.name" class="mt-1 text-xs text-danger">
                 {{ fieldErrors.name[0] }}
               </p>
             </div>
@@ -346,11 +348,11 @@ async function submitForm() {
                 :class="[
                   'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-none',
                   fieldErrors.email
-                    ? 'border-red-500/60 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
+                    ? 'border-danger/60 focus:border-danger focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
                     : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]',
                 ]"
               >
-              <p v-if="fieldErrors.email" class="mt-1 text-xs text-red-400">
+              <p v-if="fieldErrors.email" class="mt-1 text-xs text-danger">
                 {{ fieldErrors.email[0] }}
               </p>
             </div>
@@ -371,11 +373,11 @@ async function submitForm() {
               :class="[
                 'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-none',
                 fieldErrors.especialidades
-                  ? 'border-red-500/60 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
+                  ? 'border-danger/60 focus:border-danger focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
                   : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]',
               ]"
             >
-            <p v-if="fieldErrors.especialidades" class="mt-1 text-xs text-red-400">
+            <p v-if="fieldErrors.especialidades" class="mt-1 text-xs text-danger">
               {{ fieldErrors.especialidades[0] }}
             </p>
           </div>
@@ -427,7 +429,7 @@ async function submitForm() {
             description="Visible en el catálogo público"
           />
 
-          <p v-if="formError" class="text-xs text-red-400">{{ formError }}</p>
+          <p v-if="formError" class="text-xs text-danger">{{ formError }}</p>
 
           <div class="mt-6 flex justify-end gap-3 pt-2">
             <button

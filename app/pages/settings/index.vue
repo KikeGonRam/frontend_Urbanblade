@@ -7,6 +7,8 @@
  */
 definePageMeta({ middleware: ['auth', 'admin'], layout: 'dashboard' })
 
+useSeoMeta({ title: 'Configuración — UrbanBlade', robots: 'noindex' })
+
 interface SettingData {
   id: string
   nombre: string
@@ -77,7 +79,7 @@ const fieldErrors = ref<Record<string, string[]>>({})
 
 const inputClass = (field: string) => [
   'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink',
-  fieldErrors.value[field] ? 'border-red-500/60' : 'border-line',
+  fieldErrors.value[field] ? 'border-danger/60' : 'border-line',
 ]
 
 async function submitForm() {
@@ -141,7 +143,7 @@ async function toggleMaintenance() {
       <button
         v-if="!pending" type="button" :disabled="togglingMaintenance"
         class="rounded-lg border px-4 py-2 text-sm font-semibold disabled:opacity-50"
-        :class="maintenanceMode ? 'border-red-500/30 bg-red-500/10 text-red-400' : 'border-line text-muted hover:text-ink'"
+        :class="maintenanceMode ? 'border-danger/30 bg-danger/10 text-danger' : 'border-line text-muted hover:text-ink'"
         @click="toggleMaintenance"
       >
         {{ maintenanceMode ? 'Desactivar mantenimiento' : 'Activar modo mantenimiento' }}
@@ -166,35 +168,35 @@ async function toggleMaintenance() {
           <div>
             <label for="setting-name" class="mb-1 block text-xs text-muted">Nombre</label>
             <input id="setting-name" v-model="form.nombre" type="text" required maxlength="255" :aria-invalid="!!fieldErrors.nombre" :aria-describedby="fieldErrors.nombre ? 'setting-name-error' : undefined" :class="inputClass('nombre')">
-            <p v-if="fieldErrors.nombre" id="setting-name-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.nombre[0] }}</p>
+            <p v-if="fieldErrors.nombre" id="setting-name-error" class="mt-1 text-xs text-danger">{{ fieldErrors.nombre[0] }}</p>
           </div>
           <div>
             <label for="setting-address" class="mb-1 block text-xs text-muted">Dirección</label>
             <input id="setting-address" v-model="form.direccion" type="text" maxlength="255" :aria-invalid="!!fieldErrors.direccion" :aria-describedby="fieldErrors.direccion ? 'setting-address-error' : undefined" :class="inputClass('direccion')">
-            <p v-if="fieldErrors.direccion" id="setting-address-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.direccion[0] }}</p>
+            <p v-if="fieldErrors.direccion" id="setting-address-error" class="mt-1 text-xs text-danger">{{ fieldErrors.direccion[0] }}</p>
           </div>
           <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label for="setting-phone" class="mb-1 block text-xs text-muted">Teléfono</label>
               <input id="setting-phone" v-model="form.telefono" type="text" maxlength="30" :aria-invalid="!!fieldErrors.telefono" :aria-describedby="fieldErrors.telefono ? 'setting-phone-error' : undefined" :class="inputClass('telefono')">
-              <p v-if="fieldErrors.telefono" id="setting-phone-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.telefono[0] }}</p>
+              <p v-if="fieldErrors.telefono" id="setting-phone-error" class="mt-1 text-xs text-danger">{{ fieldErrors.telefono[0] }}</p>
             </div>
             <div>
               <label for="setting-cancellation" class="mb-1 block text-xs text-muted">Política de cancelación (horas)</label>
               <input id="setting-cancellation" v-model.number="form.politica_cancelacion" type="number" min="1" max="168" required :aria-invalid="!!fieldErrors.politica_cancelacion" :aria-describedby="fieldErrors.politica_cancelacion ? 'setting-cancellation-error' : undefined" :class="inputClass('politica_cancelacion')">
-              <p v-if="fieldErrors.politica_cancelacion" id="setting-cancellation-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.politica_cancelacion[0] }}</p>
+              <p v-if="fieldErrors.politica_cancelacion" id="setting-cancellation-error" class="mt-1 text-xs text-danger">{{ fieldErrors.politica_cancelacion[0] }}</p>
             </div>
           </div>
           <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label for="setting-opening" class="mb-1 block text-xs text-muted">Horario apertura</label>
               <input id="setting-opening" v-model="form.horario_apertura" type="time" :aria-invalid="!!fieldErrors.horario_apertura" :aria-describedby="fieldErrors.horario_apertura ? 'setting-opening-error' : undefined" :class="inputClass('horario_apertura')">
-              <p v-if="fieldErrors.horario_apertura" id="setting-opening-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.horario_apertura[0] }}</p>
+              <p v-if="fieldErrors.horario_apertura" id="setting-opening-error" class="mt-1 text-xs text-danger">{{ fieldErrors.horario_apertura[0] }}</p>
             </div>
             <div>
               <label for="setting-closing" class="mb-1 block text-xs text-muted">Horario cierre</label>
               <input id="setting-closing" v-model="form.horario_cierre" type="time" :aria-invalid="!!fieldErrors.horario_cierre" :aria-describedby="fieldErrors.horario_cierre ? 'setting-closing-error' : undefined" :class="inputClass('horario_cierre')">
-              <p v-if="fieldErrors.horario_cierre" id="setting-closing-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.horario_cierre[0] }}</p>
+              <p v-if="fieldErrors.horario_cierre" id="setting-closing-error" class="mt-1 text-xs text-danger">{{ fieldErrors.horario_cierre[0] }}</p>
             </div>
           </div>
         </div>
@@ -206,17 +208,17 @@ async function toggleMaintenance() {
           <div>
             <label for="setting-instagram" class="mb-1 block text-xs text-muted">Instagram</label>
             <input id="setting-instagram" v-model="form.instagram" type="text" maxlength="255" :aria-invalid="!!fieldErrors.instagram" :aria-describedby="fieldErrors.instagram ? 'setting-instagram-error' : undefined" :class="inputClass('instagram')">
-            <p v-if="fieldErrors.instagram" id="setting-instagram-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.instagram[0] }}</p>
+            <p v-if="fieldErrors.instagram" id="setting-instagram-error" class="mt-1 text-xs text-danger">{{ fieldErrors.instagram[0] }}</p>
           </div>
           <div>
             <label for="setting-facebook" class="mb-1 block text-xs text-muted">Facebook</label>
             <input id="setting-facebook" v-model="form.facebook" type="text" maxlength="255" :aria-invalid="!!fieldErrors.facebook" :aria-describedby="fieldErrors.facebook ? 'setting-facebook-error' : undefined" :class="inputClass('facebook')">
-            <p v-if="fieldErrors.facebook" id="setting-facebook-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.facebook[0] }}</p>
+            <p v-if="fieldErrors.facebook" id="setting-facebook-error" class="mt-1 text-xs text-danger">{{ fieldErrors.facebook[0] }}</p>
           </div>
           <div>
             <label for="setting-tiktok" class="mb-1 block text-xs text-muted">TikTok</label>
             <input id="setting-tiktok" v-model="form.tiktok" type="text" maxlength="255" :aria-invalid="!!fieldErrors.tiktok" :aria-describedby="fieldErrors.tiktok ? 'setting-tiktok-error' : undefined" :class="inputClass('tiktok')">
-            <p v-if="fieldErrors.tiktok" id="setting-tiktok-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.tiktok[0] }}</p>
+            <p v-if="fieldErrors.tiktok" id="setting-tiktok-error" class="mt-1 text-xs text-danger">{{ fieldErrors.tiktok[0] }}</p>
           </div>
         </div>
       </section>
@@ -227,28 +229,28 @@ async function toggleMaintenance() {
           <div>
             <label for="setting-clabe" class="mb-1 block text-xs text-muted">CLABE</label>
             <input id="setting-clabe" v-model="form.clabe" type="text" maxlength="18" :aria-invalid="!!fieldErrors.clabe" :aria-describedby="fieldErrors.clabe ? 'setting-clabe-error' : undefined" :class="inputClass('clabe')">
-            <p v-if="fieldErrors.clabe" id="setting-clabe-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.clabe[0] }}</p>
+            <p v-if="fieldErrors.clabe" id="setting-clabe-error" class="mt-1 text-xs text-danger">{{ fieldErrors.clabe[0] }}</p>
           </div>
           <div>
             <label for="setting-bank" class="mb-1 block text-xs text-muted">Banco</label>
             <input id="setting-bank" v-model="form.banco" type="text" maxlength="100" :aria-invalid="!!fieldErrors.banco" :aria-describedby="fieldErrors.banco ? 'setting-bank-error' : undefined" :class="inputClass('banco')">
-            <p v-if="fieldErrors.banco" id="setting-bank-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.banco[0] }}</p>
+            <p v-if="fieldErrors.banco" id="setting-bank-error" class="mt-1 text-xs text-danger">{{ fieldErrors.banco[0] }}</p>
           </div>
           <div>
             <label for="setting-beneficiary" class="mb-1 block text-xs text-muted">Beneficiario</label>
             <input id="setting-beneficiary" v-model="form.beneficiario" type="text" maxlength="150" :aria-invalid="!!fieldErrors.beneficiario" :aria-describedby="fieldErrors.beneficiario ? 'setting-beneficiary-error' : undefined" :class="inputClass('beneficiario')">
-            <p v-if="fieldErrors.beneficiario" id="setting-beneficiary-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.beneficiario[0] }}</p>
+            <p v-if="fieldErrors.beneficiario" id="setting-beneficiary-error" class="mt-1 text-xs text-danger">{{ fieldErrors.beneficiario[0] }}</p>
           </div>
           <div>
             <label for="setting-concept" class="mb-1 block text-xs text-muted">Concepto</label>
             <input id="setting-concept" v-model="form.concepto" type="text" maxlength="100" :aria-invalid="!!fieldErrors.concepto" :aria-describedby="fieldErrors.concepto ? 'setting-concept-error' : undefined" :class="inputClass('concepto')">
-            <p v-if="fieldErrors.concepto" id="setting-concept-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.concepto[0] }}</p>
+            <p v-if="fieldErrors.concepto" id="setting-concept-error" class="mt-1 text-xs text-danger">{{ fieldErrors.concepto[0] }}</p>
           </div>
         </div>
       </section>
 
-      <p v-if="saveError" role="alert" class="text-sm text-red-400">{{ saveError }}</p>
-      <p v-if="saveSuccess" role="status" class="text-sm text-emerald-400">{{ saveSuccess }}</p>
+      <p v-if="saveError" role="alert" class="text-sm text-danger">{{ saveError }}</p>
+      <p v-if="saveSuccess" role="status" class="text-sm text-success">{{ saveSuccess }}</p>
       <button type="submit" :disabled="saving" class="w-fit rounded-lg bg-gold px-6 py-2 text-sm font-semibold text-black hover:bg-gold-dim disabled:opacity-50">
         {{ saving ? 'Guardando…' : 'Guardar cambios' }}
       </button>
@@ -264,7 +266,7 @@ async function toggleMaintenance() {
       >
         {{ downloadingBackup ? 'Generando respaldo…' : 'Descargar respaldo' }}
       </button>
-      <p v-if="backupError" role="alert" class="mt-2 text-sm text-red-400">{{ backupError }}</p>
+      <p v-if="backupError" role="alert" class="mt-2 text-sm text-danger">{{ backupError }}</p>
     </section>
   </div>
 </template>

@@ -9,6 +9,8 @@ import { buildSystemNodes, type SystemStatus } from '~/utils/systemMap'
 
 definePageMeta({ middleware: ['auth', 'engineer'], layout: 'dashboard' })
 
+useSeoMeta({ title: 'Estado del servidor — UrbanBlade', robots: 'noindex' })
+
 const { apiFetch } = useApi()
 
 const { data, pending, error, refresh } = await useAsyncData(
@@ -21,10 +23,10 @@ const { data, pending, error, refresh } = await useAsyncData(
 const mapNodes = computed(() => (data.value ? buildSystemNodes(data.value) : []))
 
 const STATUS_CLASS: Record<string, string> = {
-  up: 'border-emerald-500/25 bg-emerald-500/10 text-emerald-300',
-  down: 'border-red-500/25 bg-red-500/10 text-red-400',
-  success: 'border-emerald-500/25 bg-emerald-500/10 text-emerald-300',
-  failed: 'border-red-500/25 bg-red-500/10 text-red-400',
+  up: 'border-success/25 bg-success/10 text-success',
+  down: 'border-danger/25 bg-danger/10 text-danger',
+  success: 'border-success/25 bg-success/10 text-success',
+  failed: 'border-danger/25 bg-danger/10 text-danger',
   unknown: 'border-line bg-panel text-muted',
 }
 const STATUS_LABEL: Record<string, string> = {
@@ -38,10 +40,10 @@ const health = computed(() => {
   const failedJobs = data.value.queue.failed ?? 0
   const failedTasks = data.value.scheduled_tasks.filter(task => task.status === 'failed').length
 
-  if (unavailable) return { label: 'Servicio crítico', detail: 'Hay una dependencia de infraestructura sin respuesta.', dot: 'bg-red-400', surface: 'border-red-500/25 bg-red-500/[0.05]' }
-  if (failedJobs > 0 || failedTasks > 0) return { label: 'Requiere atención', detail: `${failedJobs} jobs y ${failedTasks} tareas requieren revisión.`, dot: 'bg-amber-300', surface: 'border-amber-500/25 bg-amber-500/[0.05]' }
+  if (unavailable) return { label: 'Servicio crítico', detail: 'Hay una dependencia de infraestructura sin respuesta.', dot: 'bg-red-400', surface: 'border-danger/25 bg-red-500/[0.05]' }
+  if (failedJobs > 0 || failedTasks > 0) return { label: 'Requiere atención', detail: `${failedJobs} jobs y ${failedTasks} tareas requieren revisión.`, dot: 'bg-amber-300', surface: 'border-warning/25 bg-amber-500/[0.05]' }
 
-  return { label: 'Entorno estable', detail: 'Las dependencias y las últimas tareas reportan estado saludable.', dot: 'bg-emerald-300', surface: 'border-emerald-500/25 bg-emerald-500/[0.05]' }
+  return { label: 'Entorno estable', detail: 'Las dependencias y las últimas tareas reportan estado saludable.', dot: 'bg-emerald-300', surface: 'border-success/25 bg-emerald-500/[0.05]' }
 })
 
 function fmtDate(iso: string | null) {
@@ -83,54 +85,54 @@ function fmtDate(iso: string | null) {
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div class="flex items-start gap-3">
             <span class="mt-1 flex h-3 w-3 shrink-0 rounded-full" :class="health.dot" />
-            <div><p class="text-[10px] font-black uppercase tracking-[0.2em] text-ink/45">Resumen de monitor</p><h2 class="mt-1 text-xl font-black text-ink">{{ health.label }}</h2><p class="mt-1 text-sm text-muted">{{ health.detail }}</p></div>
+            <div><p class="text-[11px] font-black uppercase tracking-[0.2em] text-ink/45">Resumen de monitor</p><h2 class="mt-1 text-xl font-black text-ink">{{ health.label }}</h2><p class="mt-1 text-sm text-muted">{{ health.detail }}</p></div>
           </div>
-          <div class="flex flex-wrap gap-2"><NuxtLink to="/dashboard" class="rounded-xl border border-line bg-card px-3 py-2 text-[10px] font-black uppercase tracking-widest text-muted transition hover:border-gold/40 hover:text-gold">Módulos</NuxtLink><NuxtLink to="/reports" class="rounded-xl border border-line bg-card px-3 py-2 text-[10px] font-black uppercase tracking-widest text-muted transition hover:border-gold/40 hover:text-gold">Reportes</NuxtLink><NuxtLink to="/logs" class="rounded-xl border border-line bg-card px-3 py-2 text-[10px] font-black uppercase tracking-widest text-muted transition hover:border-gold/40 hover:text-gold">Logs</NuxtLink></div>
+          <div class="flex flex-wrap gap-2"><NuxtLink to="/dashboard" class="rounded-xl border border-line bg-card px-3 py-2 text-[11px] font-black uppercase tracking-widest text-muted transition hover:border-gold/40 hover:text-gold">Módulos</NuxtLink><NuxtLink to="/reports" class="rounded-xl border border-line bg-card px-3 py-2 text-[11px] font-black uppercase tracking-widest text-muted transition hover:border-gold/40 hover:text-gold">Reportes</NuxtLink><NuxtLink to="/logs" class="rounded-xl border border-line bg-card px-3 py-2 text-[11px] font-black uppercase tracking-widest text-muted transition hover:border-gold/40 hover:text-gold">Logs</NuxtLink></div>
         </div>
       </section>
 
       <SystemMap3D :nodes="mapNodes" />
 
       <section class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <div class="rounded-2xl border border-ink/[0.06] bg-card p-4"><p class="text-[9px] font-black uppercase tracking-widest text-ink/50">Entorno</p><p class="mt-1 text-lg font-black text-ink">{{ data.app.env }}</p></div>
-        <div class="rounded-2xl border border-ink/[0.06] bg-card p-4"><p class="text-[9px] font-black uppercase tracking-widest text-ink/50">Laravel</p><p class="mt-1 text-lg font-black text-ink">{{ data.app.laravel_version }}</p></div>
-        <div class="rounded-2xl border border-ink/[0.06] bg-card p-4"><p class="text-[9px] font-black uppercase tracking-widest text-ink/50">PHP</p><p class="mt-1 text-lg font-black text-ink">{{ data.app.php_version }}</p></div>
-        <div class="rounded-2xl border border-ink/[0.06] bg-card p-4"><p class="text-[9px] font-black uppercase tracking-widest text-ink/50">Cola</p><p class="mt-1 text-lg font-black text-ink">{{ data.queue.connection }}</p></div>
+        <div class="rounded-2xl border border-ink/[0.06] bg-card p-4"><p class="text-[11px] font-black uppercase tracking-widest text-ink/50">Entorno</p><p class="mt-1 text-lg font-black text-ink">{{ data.app.env }}</p></div>
+        <div class="rounded-2xl border border-ink/[0.06] bg-card p-4"><p class="text-[11px] font-black uppercase tracking-widest text-ink/50">Laravel</p><p class="mt-1 text-lg font-black text-ink">{{ data.app.laravel_version }}</p></div>
+        <div class="rounded-2xl border border-ink/[0.06] bg-card p-4"><p class="text-[11px] font-black uppercase tracking-widest text-ink/50">PHP</p><p class="mt-1 text-lg font-black text-ink">{{ data.app.php_version }}</p></div>
+        <div class="rounded-2xl border border-ink/[0.06] bg-card p-4"><p class="text-[11px] font-black uppercase tracking-widest text-ink/50">Cola</p><p class="mt-1 text-lg font-black text-ink">{{ data.queue.connection }}</p></div>
       </section>
 
       <section class="mb-5 grid grid-cols-1 gap-5 lg:grid-cols-3">
         <div class="rounded-2xl border border-ink/[0.06] bg-card p-5">
           <div class="flex items-center justify-between">
-            <p class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/50">MongoDB</p>
+            <p class="text-[11px] font-black uppercase tracking-[0.25em] text-ink/50">MongoDB</p>
             <span class="relative flex h-3 w-3">
               <span v-if="data.database.status === 'up'" class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
               <span class="relative inline-flex h-3 w-3 rounded-full" :class="data.database.status === 'up' ? 'bg-emerald-400' : 'bg-red-500'" />
             </span>
           </div>
-          <p class="mt-3 text-xl font-black" :class="data.database.status === 'up' ? 'text-emerald-400' : 'text-red-400'">{{ STATUS_LABEL[data.database.status] }}</p>
+          <p class="mt-3 text-xl font-black" :class="data.database.status === 'up' ? 'text-success' : 'text-danger'">{{ STATUS_LABEL[data.database.status] }}</p>
           <p v-if="data.database.latency_ms !== null" class="mt-1 text-xs text-ink/45">{{ data.database.latency_ms }} ms de latencia</p>
-          <p v-if="data.database.error" class="mt-2 text-xs text-red-400">{{ data.database.error }}</p>
+          <p v-if="data.database.error" class="mt-2 text-xs text-danger">{{ data.database.error }}</p>
         </div>
 
         <div class="rounded-2xl border border-ink/[0.06] bg-card p-5">
           <div class="flex items-center justify-between">
-            <p class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/50">Redis</p>
+            <p class="text-[11px] font-black uppercase tracking-[0.25em] text-ink/50">Redis</p>
             <span class="relative flex h-3 w-3">
               <span v-if="data.redis.status === 'up'" class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
               <span class="relative inline-flex h-3 w-3 rounded-full" :class="data.redis.status === 'up' ? 'bg-emerald-400' : data.redis.status === 'no_usado' ? 'bg-ink/30' : 'bg-red-500'" />
             </span>
           </div>
-          <p class="mt-3 text-xl font-black" :class="data.redis.status === 'up' ? 'text-emerald-400' : data.redis.status === 'no_usado' ? 'text-ink/50' : 'text-red-400'">{{ STATUS_LABEL[data.redis.status] }}</p>
+          <p class="mt-3 text-xl font-black" :class="data.redis.status === 'up' ? 'text-success' : data.redis.status === 'no_usado' ? 'text-ink/50' : 'text-danger'">{{ STATUS_LABEL[data.redis.status] }}</p>
           <p v-if="data.redis.latency_ms !== null" class="mt-1 text-xs text-ink/45">{{ data.redis.latency_ms }} ms de latencia</p>
-          <p v-if="data.redis.error" class="mt-2 text-xs text-red-400">{{ data.redis.error }}</p>
+          <p v-if="data.redis.error" class="mt-2 text-xs text-danger">{{ data.redis.error }}</p>
         </div>
 
         <div class="rounded-2xl border border-ink/[0.06] bg-card p-5">
-          <p class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/50">Jobs en cola</p>
+          <p class="text-[11px] font-black uppercase tracking-[0.25em] text-ink/50">Jobs en cola</p>
           <div class="mt-3 flex items-center gap-5">
-            <div><p class="text-2xl font-black leading-none text-ink">{{ data.queue.pending ?? '—' }}</p><p class="mt-1 text-[9px] font-black uppercase text-ink/40">Pendientes</p></div>
+            <div><p class="text-2xl font-black leading-none text-ink">{{ data.queue.pending ?? '—' }}</p><p class="mt-1 text-[11px] font-black uppercase text-ink/40">Pendientes</p></div>
             <div class="h-8 w-px bg-ink/[0.08]" />
-            <div><p class="text-2xl font-black leading-none" :class="(data.queue.failed ?? 0) > 0 ? 'text-red-400' : 'text-ink'">{{ data.queue.failed ?? '—' }}</p><p class="mt-1 text-[9px] font-black uppercase text-ink/40">Fallidos</p></div>
+            <div><p class="text-2xl font-black leading-none" :class="(data.queue.failed ?? 0) > 0 ? 'text-danger' : 'text-ink'">{{ data.queue.failed ?? '—' }}</p><p class="mt-1 text-[11px] font-black uppercase text-ink/40">Fallidos</p></div>
           </div>
         </div>
       </section>
@@ -141,7 +143,7 @@ function fmtDate(iso: string | null) {
         </div>
         <table class="w-full text-left text-sm">
           <thead>
-            <tr class="border-b border-line text-[10px] uppercase tracking-wider text-muted">
+            <tr class="border-b border-line text-[11px] uppercase tracking-wider text-muted">
               <th class="px-4 py-3">Tarea</th>
               <th class="px-4 py-3">Frecuencia</th>
               <th class="px-4 py-3">Última corrida</th>
@@ -155,7 +157,7 @@ function fmtDate(iso: string | null) {
               <td class="px-4 py-3 font-mono text-xs text-muted">{{ task.expression }}</td>
               <td class="px-4 py-3 whitespace-nowrap text-muted">{{ fmtDate(task.ran_at) }}</td>
               <td class="px-4 py-3">
-                <span class="rounded-full border px-2 py-0.5 text-[10px] font-black" :class="STATUS_CLASS[task.status]">{{ STATUS_LABEL[task.status] }}</span>
+                <span class="rounded-full border px-2 py-0.5 text-[11px] font-black" :class="STATUS_CLASS[task.status]">{{ STATUS_LABEL[task.status] }}</span>
               </td>
               <td class="px-4 py-3 text-muted">{{ task.runtime_ms !== null ? `${task.runtime_ms} ms` : '—' }}</td>
             </tr>
