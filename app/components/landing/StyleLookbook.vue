@@ -73,7 +73,7 @@ const money = (n: number) => `$${Math.round(n).toLocaleString('es-MX')}`
         </Transition>
       </div>
 
-      <ul class="grid max-h-[460px] content-start gap-3 overflow-y-auto pr-1" role="tablist" aria-label="Estilos">
+      <ul class="look-list grid max-h-[460px] content-start gap-3 overflow-y-auto" role="tablist" aria-label="Estilos">
         <li v-for="s in visible" :key="s.id">
           <button
             type="button" role="tab" :aria-selected="selected.id === s.id"
@@ -98,6 +98,14 @@ const money = (n: number) => `$${Math.round(n).toLocaleString('es-MX')}`
 </template>
 
 <style scoped>
+/* Lista con scroll sin barra visible; el degradado inferior indica que hay más. */
+.look-list {
+  scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 3rem), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 3rem), transparent);
+  padding-bottom: 2rem;
+}
+.look-list::-webkit-scrollbar { display: none; }
 .look-fade-enter-active, .look-fade-leave-active { transition: opacity .3s ease, transform .3s ease; }
 .look-fade-enter-from { opacity: 0; transform: scale(1.03); }
 .look-fade-leave-to { opacity: 0; }
