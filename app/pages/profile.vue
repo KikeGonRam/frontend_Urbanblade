@@ -1,6 +1,8 @@
 <script setup lang="ts">
 definePageMeta({ middleware: "auth", layout: "dashboard" });
 
+useSeoMeta({ title: 'Mi perfil — UrbanBlade', robots: 'noindex' })
+
 interface ProfileResponse {
   user: {
     id: string;
@@ -585,7 +587,7 @@ async function submitDeleteAccount() {
           <p
             v-if="barberFieldErrors.foto"
             id="barber-foto-error"
-            class="mt-1 text-xs text-red-400"
+            class="mt-1 text-xs text-danger"
           >
             {{ barberFieldErrors.foto[0] }}
           </p>
@@ -609,7 +611,7 @@ async function submitDeleteAccount() {
             :class="[
               'ui-input w-full',
               barberFieldErrors.especialidades
-                ? 'border-red-500/60 focus:border-red-500'
+                ? 'border-danger/60 focus:border-danger'
                 : '',
             ]"
           >
@@ -620,7 +622,7 @@ async function submitDeleteAccount() {
           <p
             v-if="barberFieldErrors.especialidades"
             id="barber-especialidades-error"
-            class="mt-1 text-xs text-red-400"
+            class="mt-1 text-xs text-danger"
           >
             {{ barberFieldErrors.especialidades[0] }}
           </p>
@@ -645,7 +647,7 @@ async function submitDeleteAccount() {
             :class="[
               'ui-input w-full resize-y',
               barberFieldErrors.descripcion
-                ? 'border-red-500/60 focus:border-red-500'
+                ? 'border-danger/60 focus:border-danger'
                 : '',
             ]"
           />
@@ -653,7 +655,7 @@ async function submitDeleteAccount() {
             <span
               v-if="barberFieldErrors.descripcion"
               id="barber-descripcion-error"
-              class="text-red-400"
+              class="text-danger"
               >{{ barberFieldErrors.descripcion[0] }}</span
             >
             <span class="ml-auto tabular-nums"
@@ -665,14 +667,14 @@ async function submitDeleteAccount() {
         <p
           v-if="barberMessage"
           role="status"
-          class="text-sm font-medium text-emerald-400"
+          class="text-sm font-medium text-success"
         >
           {{ barberMessage }}
         </p>
         <p
           v-if="barberError"
           role="alert"
-          class="text-sm font-medium text-red-400"
+          class="text-sm font-medium text-danger"
         >
           {{ barberError }}
         </p>
@@ -727,7 +729,7 @@ async function submitDeleteAccount() {
             "
             :class="[
               'ui-input w-full',
-              fieldErrors.name ? 'border-red-500/60 focus:border-red-500' : '',
+              fieldErrors.name ? 'border-danger/60 focus:border-danger' : '',
             ]"
           >
           <p id="profile-name-help" class="ub-form-help">
@@ -736,7 +738,7 @@ async function submitDeleteAccount() {
           <p
             v-if="fieldErrors.name"
             id="profile-name-error"
-            class="mt-1 text-xs text-red-400"
+            class="mt-1 text-xs text-danger"
           >
             {{ fieldErrors.name[0] }}
           </p>
@@ -758,7 +760,7 @@ async function submitDeleteAccount() {
             "
             :class="[
               'ui-input w-full',
-              fieldErrors.email ? 'border-red-500/60 focus:border-red-500' : '',
+              fieldErrors.email ? 'border-danger/60 focus:border-danger' : '',
             ]"
           >
           <p id="profile-email-help" class="ub-form-help">
@@ -767,7 +769,7 @@ async function submitDeleteAccount() {
           <p
             v-if="fieldErrors.email"
             id="profile-email-error"
-            class="mt-1 text-xs text-red-400"
+            class="mt-1 text-xs text-danger"
           >
             {{ fieldErrors.email[0] }}
           </p>
@@ -797,7 +799,7 @@ async function submitDeleteAccount() {
                   :class="[
                     'ui-input w-full',
                     fieldErrors.telefono
-                      ? 'border-red-500/60 focus:border-red-500'
+                      ? 'border-danger/60 focus:border-danger'
                       : '',
                   ]"
                 >
@@ -808,7 +810,7 @@ async function submitDeleteAccount() {
                 <p
                   v-if="fieldErrors.telefono"
                   id="profile-phone-error"
-                  class="mt-1 text-xs text-red-400"
+                  class="mt-1 text-xs text-danger"
                 >
                   {{ fieldErrors.telefono[0] }}
                 </p>
@@ -831,14 +833,14 @@ async function submitDeleteAccount() {
                   :class="[
                     'ui-input w-full',
                     fieldErrors.fecha_nacimiento
-                      ? 'border-red-500/60 focus:border-red-500'
+                      ? 'border-danger/60 focus:border-danger'
                       : '',
                   ]"
                 >
                 <p
                   v-if="fieldErrors.fecha_nacimiento"
                   id="profile-birthday-error"
-                  class="mt-1 text-xs text-red-400"
+                  class="mt-1 text-xs text-danger"
                 >
                   {{ fieldErrors.fecha_nacimiento[0] }}
                 </p>
@@ -860,7 +862,7 @@ async function submitDeleteAccount() {
                   :class="[
                     'ui-input w-full',
                     fieldErrors.sexo
-                      ? 'border-red-500/60 focus:border-red-500'
+                      ? 'border-danger/60 focus:border-danger'
                       : '',
                   ]"
                 >
@@ -872,7 +874,7 @@ async function submitDeleteAccount() {
                 <p
                   v-if="fieldErrors.sexo"
                   id="profile-sex-error"
-                  class="mt-1 text-xs text-red-400"
+                  class="mt-1 text-xs text-danger"
                 >
                   {{ fieldErrors.sexo[0] }}
                 </p>
@@ -892,14 +894,14 @@ async function submitDeleteAccount() {
         <p
           v-if="message"
           role="status"
-          class="text-sm font-medium text-emerald-400"
+          class="text-sm font-medium text-success"
         >
           {{ message }}
         </p>
         <p
           v-if="errorMessage"
           role="alert"
-          class="text-sm font-medium text-red-400"
+          class="text-sm font-medium text-danger"
         >
           {{ errorMessage }}
         </p>
@@ -953,7 +955,7 @@ async function submitDeleteAccount() {
           <p
             v-if="passwordFieldErrors.current_password"
             id="current-password-error"
-            class="mt-1 text-xs text-red-400"
+            class="mt-1 text-xs text-danger"
           >
             {{ passwordFieldErrors.current_password[0] }}
           </p>
@@ -980,7 +982,7 @@ async function submitDeleteAccount() {
             <p
               v-if="passwordFieldErrors.password"
               id="new-password-error"
-              class="mt-1 text-xs text-red-400"
+              class="mt-1 text-xs text-danger"
             >
               {{ passwordFieldErrors.password[0] }}
             </p>
@@ -1007,7 +1009,7 @@ async function submitDeleteAccount() {
             <p
               v-if="passwordMismatch || passwordFieldErrors.password_confirmation"
               id="new-password-confirmation-error"
-              class="mt-1 text-xs text-red-400"
+              class="mt-1 text-xs text-danger"
             >
               {{
                 passwordFieldErrors.password_confirmation?.[0] ??
@@ -1020,14 +1022,14 @@ async function submitDeleteAccount() {
         <p
           v-if="passwordMessage"
           role="status"
-          class="text-sm font-medium text-emerald-400"
+          class="text-sm font-medium text-success"
         >
           {{ passwordMessage }}
         </p>
         <p
           v-if="passwordErrorMessage"
           role="alert"
-          class="text-sm font-medium text-red-400"
+          class="text-sm font-medium text-danger"
         >
           {{ passwordErrorMessage }}
         </p>
@@ -1048,10 +1050,10 @@ async function submitDeleteAccount() {
       <!-- 4. Zona de peligro: Eliminar Cuenta -->
       <section
         v-if="activeSection === 'danger'"
-        class="profile-panel rounded-2xl border border-red-500/25 bg-red-500/5 p-5 sm:p-7"
+        class="profile-panel rounded-2xl border border-danger/25 bg-danger/5 p-5 sm:p-7"
       >
-        <p class="ub-form-kicker text-red-400">Cuenta</p>
-        <h2 class="mt-2 text-xl font-black text-red-400">Zona de peligro</h2>
+        <p class="ub-form-kicker text-danger">Cuenta</p>
+        <h2 class="mt-2 text-xl font-black text-danger">Zona de peligro</h2>
         <p class="mt-1 ub-form-help max-w-prose">
           Al eliminar tu cuenta se revocarán todos tus accesos y tu perfil
           quedará deshabilitado permanentemente.
@@ -1059,7 +1061,7 @@ async function submitDeleteAccount() {
 
         <div
           v-if="isAdministrator"
-          class="mt-4 rounded-lg border border-amber-500/25 bg-amber-500/10 p-3 text-xs text-amber-300"
+          class="mt-4 rounded-lg border border-warning/25 bg-warning/10 p-3 text-xs text-warning"
         >
           Como administrador, no puedes eliminar tu propia cuenta desde el
           perfil. Debe realizarse desde la gestión global de usuarios.
@@ -1067,7 +1069,7 @@ async function submitDeleteAccount() {
         <div v-else class="mt-4">
           <button
             type="button"
-            class="rounded-lg border border-red-500/30 px-4 py-2 text-sm font-semibold text-red-400 hover:bg-red-500/10"
+            class="rounded-lg border border-danger/30 px-4 py-2 text-sm font-semibold text-danger hover:bg-danger/10"
             @click="openDeleteModal"
           >
             Eliminar mi cuenta
@@ -1082,7 +1084,7 @@ async function submitDeleteAccount() {
         :busy="deleting"
         @close="showDeleteModal = false"
       >
-        <h3 class="text-lg font-bold text-red-400">
+        <h3 class="text-lg font-bold text-danger">
           ¿Estás seguro de eliminar tu cuenta?
         </h3>
         <p class="mt-2 text-sm text-muted">
@@ -1113,11 +1115,11 @@ async function submitDeleteAccount() {
               required
               autocomplete="off"
               :placeholder="viaGoogle ? 'ELIMINAR' : 'Ingresa tu contraseña'"
-              class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-red-500 focus:outline-none focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]"
+              class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-danger focus:outline-none focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]"
             >
           </div>
 
-          <p v-if="deleteError" class="text-xs text-red-400">
+          <p v-if="deleteError" class="text-xs text-danger">
             {{ deleteError }}
           </p>
 

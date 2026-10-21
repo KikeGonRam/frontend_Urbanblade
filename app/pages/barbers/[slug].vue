@@ -148,7 +148,7 @@ async function submitReview() {
         <h2 class="mb-3 text-lg font-semibold text-ink">Reseñas</h2>
 
         <div v-if="canReview" class="ui-card mb-5 p-5">
-          <p v-if="submitted" class="text-sm text-emerald-400">¡Gracias por tu reseña!</p>
+          <p v-if="submitted" class="text-sm text-success">¡Gracias por tu reseña!</p>
           <form v-else class="space-y-3" @submit.prevent="submitReview">
             <div>
               <label class="mb-1 block text-xs text-muted">Calificación</label>
@@ -160,7 +160,7 @@ async function submitReview() {
               <label class="mb-1 block text-xs text-muted">Comentario (opcional)</label>
               <textarea v-model="comment" rows="2" maxlength="500" class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink" />
             </div>
-            <p v-if="submitError" class="text-sm text-red-400">{{ submitError }}</p>
+            <p v-if="submitError" class="text-sm text-danger">{{ submitError }}</p>
             <button type="submit" :disabled="submitting" class="rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-black hover:bg-gold-dim disabled:opacity-50">
               {{ submitting ? 'Enviando…' : 'Enviar reseña' }}
             </button>

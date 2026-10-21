@@ -23,7 +23,7 @@ const emit = defineEmits<{ action: [] }>()
     aria-live="polite"
   >
     <BrandMascot :mascot="mascot" :state="state" size="sm" class="mx-auto" />
-    <h2 class="mt-2 text-sm font-black" :class="tone === 'danger' ? 'text-red-400' : 'text-ink'">
+    <h2 class="mt-2 text-sm font-black" :class="tone === 'danger' ? 'text-danger' : 'text-ink'">
       {{ title }}
     </h2>
     <p v-if="description" class="mx-auto mt-1 max-w-md text-xs leading-5 text-muted">

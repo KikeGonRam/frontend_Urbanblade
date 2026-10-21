@@ -8,6 +8,8 @@
  */
 definePageMeta({ middleware: ['auth'], layout: 'dashboard' })
 
+useSeoMeta({ title: 'Muro Inspiración — UrbanBlade', robots: 'noindex' })
+
 interface Media { url: string, type: 'image' | 'video' }
 interface CommentPreview { id: string, comment: string, user: { name: string | null }, created_at: string | null }
 interface WorkRow {
@@ -214,7 +216,7 @@ async function submitComment(work: WorkRow) {
       </article>
 
       <div v-if="hasMore || loadingMore || loadMoreError" class="flex flex-col items-center gap-3 pt-1">
-        <p v-if="loadMoreError" class="text-center text-sm text-red-400" role="alert">
+        <p v-if="loadMoreError" class="text-center text-sm text-danger" role="alert">
           {{ loadMoreError }}
         </p>
         <button

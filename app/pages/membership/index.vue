@@ -19,6 +19,8 @@ import {
 
 definePageMeta({ middleware: ["auth", "client"], layout: "dashboard" });
 
+useSeoMeta({ title: 'Membresía — UrbanBlade', robots: 'noindex' })
+
 interface Plan {
   id: string;
   nombre: string;
@@ -42,9 +44,9 @@ const ESTADO_LABEL: Record<string, string> = {
   cancelada: "Cancelada",
 };
 const ESTADO_CLASS: Record<string, string> = {
-  pendiente: "border-amber-500/25 bg-amber-500/10 text-amber-300",
-  activa: "border-emerald-500/25 bg-emerald-500/10 text-emerald-300",
-  pago_fallido: "border-red-500/25 bg-red-500/10 text-red-400",
+  pendiente: "border-warning/25 bg-warning/10 text-warning",
+  activa: "border-success/25 bg-success/10 text-success",
+  pago_fallido: "border-danger/25 bg-danger/10 text-danger",
   cancelada: "border-ink/15 bg-ink/5 text-ink/50",
 };
 
@@ -249,10 +251,10 @@ async function cancelMembership() {
       </p>
       <p class="mt-1 text-sm text-ink/80">{{ membership.plan.descuento_pct }}% de descuento en cada servicio</p>
 
-      <p v-if="membership.estado === 'pago_fallido'" class="mt-4 rounded-xl border border-red-500/25 bg-red-500/10 p-3 text-xs text-red-300">
+      <p v-if="membership.estado === 'pago_fallido'" class="mt-4 rounded-xl border border-danger/25 bg-danger/10 p-3 text-xs text-danger">
         Tu último cobro falló. Stripe reintentará automáticamente; si sigue fallando, actualiza tu método de pago con tu banco.
       </p>
-      <p v-else-if="membership.estado === 'pendiente'" class="mt-4 rounded-xl border border-amber-500/25 bg-amber-500/10 p-3 text-xs text-amber-300">
+      <p v-else-if="membership.estado === 'pendiente'" class="mt-4 rounded-xl border border-warning/25 bg-warning/10 p-3 text-xs text-warning">
         Confirmando tu primer pago…
       </p>
 
@@ -263,7 +265,7 @@ async function cancelMembership() {
         Próxima renovación: {{ fmtDate(membership.periodo_actual_fin) }}
       </p>
 
-      <p v-if="cancelError" role="alert" class="mt-3 text-sm text-red-400">{{ cancelError }}</p>
+      <p v-if="cancelError" role="alert" class="mt-3 text-sm text-danger">{{ cancelError }}</p>
 
       <button
         v-if="membership.estado !== 'pendiente' && !membership.cancelar_al_finalizar"
@@ -315,7 +317,7 @@ async function cancelMembership() {
           </p>
         </template>
         <template v-else-if="subscribeSucceeded">
-          <p class="rounded-xl border border-emerald-500/25 bg-emerald-500/10 p-5 text-center text-sm text-emerald-300">
+          <p class="rounded-xl border border-success/25 bg-success/10 p-5 text-center text-sm text-success">
             Pago confirmado. Actualiza la página en unos momentos si todavía no ves tu membresía activa.
           </p>
         </template>
@@ -324,7 +326,7 @@ async function cancelMembership() {
             {{ fmtMoney(subscribing.precio_mensual) }}<span class="text-sm text-muted">/mes</span>
           </p>
           <div ref="cardElementRef" class="rounded-lg border border-line bg-main px-3 py-3" />
-          <p v-if="subscribeError" role="alert" class="text-sm text-red-400">{{ subscribeError }}</p>
+          <p v-if="subscribeError" role="alert" class="text-sm text-danger">{{ subscribeError }}</p>
           <button type="submit" class="ui-btn w-full justify-center" :disabled="subscribeProcessing">
             {{ subscribeProcessing ? "Procesando…" : "Contratar y pagar el primer mes" }}
           </button>

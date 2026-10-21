@@ -6,6 +6,8 @@
  */
 definePageMeta({ middleware: ['auth', 'client'], layout: 'dashboard' })
 
+useSeoMeta({ title: 'Mis facturas — UrbanBlade', robots: 'noindex' })
+
 interface PaymentRow {
   id: string
   monto: number
@@ -82,7 +84,7 @@ async function downloadReceipt(payment: PaymentRow) {
       Todavía no tienes pagos registrados.
     </p>
 
-    <p v-if="downloadError" class="mb-3 text-sm text-red-400">{{ downloadError }}</p>
+    <p v-if="downloadError" class="mb-3 text-sm text-danger">{{ downloadError }}</p>
 
     <section v-if="!pending && !error && payments.length" class="ui-card overflow-x-auto">
       <table class="w-full text-left text-sm">

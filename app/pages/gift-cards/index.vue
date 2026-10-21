@@ -21,6 +21,8 @@ import {
 
 definePageMeta({ middleware: ["auth"], layout: "dashboard" });
 
+useSeoMeta({ title: 'Gift cards — UrbanBlade', robots: 'noindex' })
+
 interface MyGiftCard {
   code: string;
   saldo: number;
@@ -36,10 +38,10 @@ const ESTADO_LABEL: Record<string, string> = {
   cancelada: "Cancelada",
 };
 const ESTADO_CLASS: Record<string, string> = {
-  activa: "border-emerald-500/25 bg-emerald-500/10 text-emerald-300",
+  activa: "border-success/25 bg-success/10 text-success",
   agotada: "border-ink/15 bg-ink/5 text-ink/50",
-  expirada: "border-amber-500/25 bg-amber-500/10 text-amber-300",
-  cancelada: "border-red-500/25 bg-red-500/10 text-red-400",
+  expirada: "border-warning/25 bg-warning/10 text-warning",
+  cancelada: "border-danger/25 bg-danger/10 text-danger",
 };
 
 const { apiFetch } = useApi();
@@ -254,13 +256,13 @@ async function lookupBalance() {
           Monto entre {{ fmtMoney(MONTO_MIN) }} y {{ fmtMoney(MONTO_MAX) }}.
         </p>
 
-        <div v-if="!stripeConfigured" class="rounded-xl border border-amber-500/25 bg-amber-500/10 p-4 text-sm text-amber-300">
+        <div v-if="!stripeConfigured" class="rounded-xl border border-warning/25 bg-warning/10 p-4 text-sm text-warning">
           El cobro con tarjeta no está disponible en este momento.
         </div>
 
         <template v-else-if="revealedCode">
-          <div class="rounded-xl border border-emerald-500/25 bg-emerald-500/10 p-5 text-center">
-            <p class="text-[10px] font-black uppercase tracking-widest text-emerald-300">
+          <div class="rounded-xl border border-success/25 bg-success/10 p-5 text-center">
+            <p class="text-[10px] font-black uppercase tracking-widest text-success">
               ¡Tarjeta creada!
             </p>
             <p class="mt-2 font-mono text-2xl font-black tracking-widest text-ink">
@@ -280,7 +282,7 @@ async function lookupBalance() {
         </template>
 
         <template v-else-if="buySucceeded">
-          <div class="rounded-xl border border-emerald-500/25 bg-emerald-500/10 p-5 text-center text-sm text-emerald-300">
+          <div class="rounded-xl border border-success/25 bg-success/10 p-5 text-center text-sm text-success">
             Pago confirmado. Si la compra fue para regalar, el código llegará
             al correo indicado.
           </div>
@@ -319,7 +321,7 @@ async function lookupBalance() {
             <label class="mb-1 block text-xs text-muted">Tarjeta</label>
             <div ref="cardElementRef" class="rounded-lg border border-line bg-main px-3 py-3" />
           </div>
-          <p v-if="buyError" role="alert" class="text-sm text-red-400">{{ buyError }}</p>
+          <p v-if="buyError" role="alert" class="text-sm text-danger">{{ buyError }}</p>
           <button
             type="submit"
             class="ui-btn w-full justify-center"
@@ -349,7 +351,7 @@ async function lookupBalance() {
           </button>
         </form>
 
-        <p v-if="lookupError" role="alert" class="mt-3 text-sm text-red-400">{{ lookupError }}</p>
+        <p v-if="lookupError" role="alert" class="mt-3 text-sm text-danger">{{ lookupError }}</p>
 
         <div v-if="lookupResult" class="mt-4 rounded-xl border border-line bg-ink/[0.03] p-4">
           <div class="flex items-center justify-between">

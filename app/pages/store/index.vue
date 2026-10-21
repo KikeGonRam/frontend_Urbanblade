@@ -9,6 +9,8 @@
  */
 definePageMeta({ middleware: ["auth", "client"], layout: "dashboard" });
 
+useSeoMeta({ title: 'Tienda — UrbanBlade', robots: 'noindex' })
+
 interface StoreProduct {
   id: string;
   nombre: string;

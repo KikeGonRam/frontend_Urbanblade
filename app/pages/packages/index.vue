@@ -15,6 +15,8 @@ import {
 
 definePageMeta({ middleware: ["auth"], layout: "dashboard" });
 
+useSeoMeta({ title: 'Paquetes — UrbanBlade', robots: 'noindex' })
+
 interface CatalogPackage {
   id: string;
   nombre: string;
@@ -43,9 +45,9 @@ const ESTADO_LABEL: Record<string, string> = {
   expirado: "Expirado",
 };
 const ESTADO_CLASS: Record<string, string> = {
-  activo: "border-emerald-500/25 bg-emerald-500/10 text-emerald-300",
+  activo: "border-success/25 bg-success/10 text-success",
   agotado: "border-ink/15 bg-ink/5 text-ink/50",
-  expirado: "border-amber-500/25 bg-amber-500/10 text-amber-300",
+  expirado: "border-warning/25 bg-warning/10 text-warning",
 };
 
 const { apiFetch } = useApi();
@@ -284,14 +286,14 @@ async function waitForPackageToAppear() {
           </p>
         </template>
         <template v-else-if="buySucceeded">
-          <p class="rounded-xl border border-emerald-500/25 bg-emerald-500/10 p-5 text-center text-sm text-emerald-300">
+          <p class="rounded-xl border border-success/25 bg-success/10 p-5 text-center text-sm text-success">
             Pago confirmado. Actualiza la página en unos momentos si todavía no ves tu paquete.
           </p>
         </template>
         <form v-else class="space-y-4" @submit.prevent="buyWithCard">
           <p class="text-2xl font-black text-gold">{{ fmtMoney(buying.precio) }}</p>
           <div ref="cardElementRef" class="rounded-lg border border-line bg-main px-3 py-3" />
-          <p v-if="buyError" role="alert" class="text-sm text-red-400">{{ buyError }}</p>
+          <p v-if="buyError" role="alert" class="text-sm text-danger">{{ buyError }}</p>
           <button type="submit" class="ui-btn w-full justify-center" :disabled="buyProcessing">
             {{ buyProcessing ? "Procesando…" : `Comprar por ${fmtMoney(buying.precio)}` }}
           </button>
