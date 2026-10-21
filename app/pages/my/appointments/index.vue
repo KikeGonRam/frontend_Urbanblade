@@ -495,7 +495,6 @@ onUnmounted(() => teardownStripe());
       class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
     >
       <div>
-        <p class="text-sm uppercase tracking-widest text-muted">UrbanBlade</p>
         <h1 class="mt-1 text-2xl font-semibold text-ink">
           Mis <span class="text-gold">Citas</span>
         </h1>
@@ -504,12 +503,6 @@ onUnmounted(() => teardownStripe());
         </p>
       </div>
       <div class="flex items-center gap-2">
-        <NuxtLink
-          to="/barbers"
-          class="rounded-lg border border-line px-4 py-2 text-sm font-semibold text-muted hover:text-ink"
-        >
-          Ver barberos
-        </NuxtLink>
         <button
           type="button"
           class="rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-black hover:bg-gold-dim"
@@ -520,31 +513,25 @@ onUnmounted(() => teardownStripe());
       </div>
     </header>
 
-    <section
-      v-if="!pending && !error"
-      class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4"
+    <!-- Resumen en una sola línea y solo si ya hay citas: cuatro tarjetas con ceros no dicen nada. -->
+    <ul
+      v-if="!pending && !error && stats.total > 0"
+      class="mb-5 flex flex-wrap gap-2"
+      aria-label="Resumen de tus citas"
     >
-      <div class="ui-card p-4">
-        <p class="text-[11px] font-bold uppercase text-muted">Total</p>
-        <p class="mt-1 text-xl font-black text-ink">{{ stats.total }}</p>
-      </div>
-      <div class="ui-card p-4">
-        <p class="text-[11px] font-bold uppercase text-muted">Próximas</p>
-        <p class="mt-1 text-xl font-black text-gold">{{ stats.proximas }}</p>
-      </div>
-      <div class="ui-card p-4">
-        <p class="text-[11px] font-bold uppercase text-muted">Completadas</p>
-        <p class="mt-1 text-xl font-black text-success">
-          {{ stats.completadas }}
-        </p>
-      </div>
-      <div class="ui-card p-4">
-        <p class="text-[11px] font-bold uppercase text-muted">Canceladas</p>
-        <p class="mt-1 text-xl font-black text-danger">
-          {{ stats.canceladas }}
-        </p>
-      </div>
-    </section>
+      <li class="rounded-full border border-line bg-card px-3.5 py-1.5 text-sm text-muted">
+        <span class="font-black text-ink">{{ stats.total }}</span> en total
+      </li>
+      <li class="rounded-full border border-line bg-card px-3.5 py-1.5 text-sm text-muted">
+        <span class="font-black text-gold">{{ stats.proximas }}</span> próximas
+      </li>
+      <li class="rounded-full border border-line bg-card px-3.5 py-1.5 text-sm text-muted">
+        <span class="font-black text-success">{{ stats.completadas }}</span> completadas
+      </li>
+      <li v-if="stats.canceladas > 0" class="rounded-full border border-line bg-card px-3.5 py-1.5 text-sm text-muted">
+        <span class="font-black text-danger">{{ stats.canceladas }}</span> canceladas
+      </li>
+    </ul>
 
     <section
       v-if="next"
@@ -572,12 +559,13 @@ onUnmounted(() => teardownStripe());
       action-label="Reintentar"
       @action="refresh"
     />
-    <p
+    <BrandStatePanel
       v-else-if="!appointments.length"
-      class="rounded-2xl border border-dashed border-line p-12 text-center text-sm text-muted"
-    >
-      Todavía no tienes citas.
-    </p>
+      mascot="nava"
+      state="empty"
+      title="Aún no tienes citas"
+      description="Reserva tu primera visita con el botón de arriba y aquí verás su estado, la hora y cómo reagendarla."
+    />
 
     <p v-if="cancelError" class="mb-3 text-sm text-danger">
       {{ cancelError }}

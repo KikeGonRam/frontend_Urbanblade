@@ -185,17 +185,8 @@ const visitChartOptions = {
       <p class="text-sm text-muted">
         Hola, <span class="font-semibold text-ink">{{ firstName }}</span>. Aquí están tu próxima cita, tus puntos y tus beneficios.
       </p>
-      <nav class="flex flex-wrap gap-2" aria-label="Accesos rápidos">
-        <NuxtLink to="/my/appointments" class="ui-btn min-h-10 px-4 text-sm">Reservar</NuxtLink>
-        <NuxtLink
-          v-for="a in [{ label: 'Barberos', to: '/barbers' }, { label: 'Tienda', to: '/store' }, { label: 'Beneficios', to: '/membership' }]"
-          :key="a.label"
-          :to="a.to"
-          class="inline-flex min-h-10 items-center rounded-xl border border-line px-4 text-sm font-semibold text-ink transition-colors hover:border-gold/40"
-        >
-          {{ a.label }}
-        </NuxtLink>
-      </nav>
+      <!-- Una sola acción principal: Barberos, Tienda y Beneficios ya están en el menú lateral. -->
+      <NuxtLink to="/my/appointments" class="ui-btn min-h-10 shrink-0 px-5 text-sm">Reservar cita</NuxtLink>
     </section>
 
     <section class="grid grid-cols-1 gap-4 xl:grid-cols-12">

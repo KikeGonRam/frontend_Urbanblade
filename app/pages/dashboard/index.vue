@@ -78,7 +78,6 @@ const fullName = computed(() => user.value?.name ?? "");
 
     <section v-else-if="dashboard" class="ui-card-premium p-5">
       <header class="mb-4">
-        <p class="text-sm uppercase tracking-widest text-muted">UrbanBlade</p>
         <h1 class="mt-1 text-2xl font-semibold text-ink">Dashboard</h1>
       </header>
       <p class="text-sm text-muted">

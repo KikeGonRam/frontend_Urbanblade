@@ -106,7 +106,6 @@ function fmtDate(iso: string | null) {
   <div class="space-y-5 p-4 sm:p-6 lg:p-8">
     <header class="flex flex-wrap items-center justify-between gap-3">
       <div>
-        <p class="text-sm uppercase tracking-widest text-muted">UrbanBlade</p>
         <h1 class="mt-1 text-2xl font-semibold text-ink">Estado del <span class="text-gold">Servidor</span></h1>
         <p class="mt-1 text-sm text-muted">Conectividad, cola y tareas programadas — solo lectura.</p>
       </div>

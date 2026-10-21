@@ -112,7 +112,6 @@ async function submitCampaign() {
 <template>
   <div class="p-4 sm:p-6 lg:p-8">
     <header class="mb-6">
-      <p class="text-sm uppercase tracking-widest text-muted">UrbanBlade</p>
       <h1 class="mt-1 text-2xl font-semibold text-ink">Campañas de <span class="text-gold">Marketing</span></h1>
       <p class="mt-1 text-sm text-muted">Envía promociones a un segmento de clientes por nivel de lealtad, ahora o programadas.</p>
     </header>

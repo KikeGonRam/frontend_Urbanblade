@@ -160,7 +160,6 @@ function fmtDate(iso: string | null) {
 <template>
   <div class="p-4 sm:p-6 lg:p-8">
     <header class="mb-6">
-      <p class="text-sm uppercase tracking-widest text-muted">UrbanBlade</p>
       <h1 class="mt-1 text-2xl font-semibold text-ink">
         Auditoría / <span class="text-gold">Logs</span>
       </h1>
