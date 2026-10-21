@@ -123,9 +123,9 @@ const incomeData = computed(() => ({
       type: "bar" as const,
       label: "Ingresos",
       data: props.data.incomeChart.values ?? [],
-      // La semana en curso en oro pleno; las anteriores más tenues.
-      backgroundColor: (props.data.incomeChart.values ?? []).map((_, i, all) =>
-        goldRgba(i === all.length - 1 ? 0.95 : 0.4),
+      // La semana en curso en oro; las anteriores en verde si subieron contra la semana previa y en rojo si bajaron.
+      backgroundColor: (props.data.incomeChart.values ?? []).map((v, i, all) =>
+        i === all.length - 1 ? chartColor(0, 0.95) : i === 0 || v >= all[i - 1]! ? chartColor(2, 0.8) : chartColor(4, 0.8),
       ),
       hoverBackgroundColor: goldRgba(1),
       borderRadius: 6,
@@ -504,7 +504,7 @@ onMounted(async () => {
       <UiChartCard
         class="lg:col-span-3"
         title="Ingresos por semana"
-        subtitle="Últimas 8 semanas · la línea punteada es el promedio móvil de 3 semanas"
+        subtitle="Últimas 8 semanas · verde subió, rojo bajó, dorado es la actual · línea: promedio móvil"
         height="h-80"
         :empty="!hasIncome"
         empty-text="Todavía no hay ingresos registrados."
