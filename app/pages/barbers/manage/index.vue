@@ -219,16 +219,16 @@ async function submitForm() {
     />
 
     <section v-else class="ui-card overflow-x-auto">
-      <table class="w-full min-w-[52rem] text-left text-sm">
+      <table aria-label="Barberos" class="w-full min-w-[52rem] text-left text-sm">
         <thead>
           <tr
             class="border-b border-line text-[11px] uppercase tracking-wider text-muted"
           >
-            <th class="px-4 py-3">Barbero</th>
-            <th class="px-4 py-3">Especialidades</th>
-            <th class="px-4 py-3 text-center">Comisión</th>
-            <th class="px-4 py-3 text-center">Estado</th>
-            <th class="px-4 py-3 text-right">Acciones</th>
+            <th scope="col" class="px-4 py-3">Barbero</th>
+            <th scope="col" class="px-4 py-3">Especialidades</th>
+            <th scope="col" class="px-4 py-3 text-center">Comisión</th>
+            <th scope="col" class="px-4 py-3 text-center">Estado</th>
+            <th scope="col" class="px-4 py-3 text-right">Acciones</th>
           </tr>
         </thead>
         <tbody>

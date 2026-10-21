@@ -64,14 +64,14 @@ function statusOf(r: RaffleRow) {
     <BrandStatePanel v-else-if="!raffles.length" mascot="nava" state="empty" title="Todavía no hay resultados de sorteos" description="Los próximos resultados aparecerán aquí." />
 
     <section v-else class="ui-card overflow-x-auto">
-      <table class="w-full min-w-[42rem] text-left text-sm">
+      <table aria-label="Sorteos" class="w-full min-w-[42rem] text-left text-sm">
         <thead>
           <tr class="border-b border-line text-[11px] uppercase tracking-wider text-muted">
-            <th class="px-4 py-3">Mes</th>
-            <th class="px-4 py-3">Ganador</th>
-            <th class="px-4 py-3">Nivel</th>
-            <th class="px-4 py-3">Premio</th>
-            <th class="px-4 py-3 text-right">Estado</th>
+            <th scope="col" class="px-4 py-3">Mes</th>
+            <th scope="col" class="px-4 py-3">Ganador</th>
+            <th scope="col" class="px-4 py-3">Nivel</th>
+            <th scope="col" class="px-4 py-3">Premio</th>
+            <th scope="col" class="px-4 py-3 text-right">Estado</th>
           </tr>
         </thead>
         <tbody>

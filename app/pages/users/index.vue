@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { CsvColumn } from "~/composables/useCsvExport";
 /*
  * Fase 9.6 — gestión de usuarios del sistema (cuentas de acceso, no
  * clientes), admin-only. Api/User/UserController ya estaba completo desde
@@ -30,6 +31,12 @@ const ROLE_LABEL: Record<string, string> = {
   barbero: "Barbero",
   cliente: "Cliente",
 };
+
+const exportColumns: CsvColumn<UserRow>[] = [
+  { header: "Nombre", value: (u) => u.name },
+  { header: "Correo", value: (u) => u.email },
+  { header: "Rol", value: (u) => u.roles.map((r) => ROLE_LABEL[r] ?? r).join(" / ") },
+];
 
 const { apiFetch } = useApi();
 const { confirm } = useConfirm();
@@ -187,6 +194,14 @@ async function removeUser(user: UserRow) {
         + Nuevo Usuario
       </button>
     </header>
+    <div class="mb-3">
+      <UiExportCsvButton
+        endpoint="/users"
+        :query="{ q: search || undefined, role: roleFilter || undefined }"
+        :columns="exportColumns"
+        filename="usuarios"
+      />
+    </div>
 
     <section class="mb-5 flex flex-wrap items-center gap-3">
       <input
@@ -230,15 +245,15 @@ async function removeUser(user: UserRow) {
     </p>
 
     <section v-if="!pending && !error" class="ui-card overflow-x-auto">
-      <table class="w-full text-left text-sm">
+      <table aria-label="Usuarios" class="w-full text-left text-sm">
         <thead>
           <tr
             class="border-b border-line text-[11px] uppercase tracking-wider text-muted"
           >
-            <th class="px-4 py-3">Usuario</th>
-            <th class="px-4 py-3">Email</th>
-            <th class="px-4 py-3 text-center">Rol</th>
-            <th class="px-4 py-3 text-right">Acciones</th>
+            <th scope="col" class="px-4 py-3">Usuario</th>
+            <th scope="col" class="px-4 py-3">Email</th>
+            <th scope="col" class="px-4 py-3 text-center">Rol</th>
+            <th scope="col" class="px-4 py-3 text-right">Acciones</th>
           </tr>
         </thead>
         <tbody>

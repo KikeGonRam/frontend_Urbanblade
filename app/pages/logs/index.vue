@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { CsvColumn } from "~/composables/useCsvExport";
 /*
  * Fase 9.9 — Auditoría/logs de actividad, puerto de Log\ActivityLogController
  * (web). Api\Log\LogController ya existía pero solo tenía q + log_name; se
@@ -46,6 +47,16 @@ const EVENT_CLASS: Record<string, string> = {
   updated: "border-warning/25 bg-warning/10 text-warning",
   deleted: "border-danger/25 bg-danger/10 text-danger",
 };
+
+const exportColumns: CsvColumn<LogRow>[] = [
+  { header: "Fecha", value: (l) => l.created_at },
+  { header: "Módulo", value: (l) => l.log_name },
+  { header: "Evento", value: (l) => l.event },
+  { header: "Descripción", value: (l) => l.description },
+  { header: "Usuario", value: (l) => l.causer?.name },
+  { header: "Correo", value: (l) => l.causer?.email },
+  { header: "Entidad", value: (l) => l.subject_type },
+];
 
 const { apiFetch } = useApi();
 
@@ -155,6 +166,14 @@ function fmtDate(iso: string | null) {
       </h1>
       <p class="mt-1 text-sm text-muted">Historial de actividad del sistema.</p>
     </header>
+    <div class="mb-3">
+      <UiExportCsvButton
+        endpoint="/logs"
+        :query="{ q: search || undefined, log_name: logNameFilter || undefined, event: eventFilter || undefined, causer: causerFilter || undefined, fecha_desde: fechaDesde || undefined, fecha_hasta: fechaHasta || undefined }"
+        :columns="exportColumns"
+        filename="auditoria"
+      />
+    </div>
 
     <section
       v-if="!pending && !error"
@@ -261,16 +280,16 @@ function fmtDate(iso: string | null) {
     </p>
 
     <section v-if="!pending && !error && logs.length" class="ui-card overflow-x-auto">
-      <table class="w-full text-left text-sm">
+      <table aria-label="Registro de auditoría" class="w-full text-left text-sm">
         <thead>
           <tr
             class="border-b border-line text-[11px] uppercase tracking-wider text-muted"
           >
-            <th class="px-4 py-3">Fecha</th>
-            <th class="px-4 py-3">Categoría</th>
-            <th class="px-4 py-3">Evento</th>
-            <th class="px-4 py-3">Descripción</th>
-            <th class="px-4 py-3">Usuario</th>
+            <th scope="col" class="px-4 py-3">Fecha</th>
+            <th scope="col" class="px-4 py-3">Categoría</th>
+            <th scope="col" class="px-4 py-3">Evento</th>
+            <th scope="col" class="px-4 py-3">Descripción</th>
+            <th scope="col" class="px-4 py-3">Usuario</th>
           </tr>
         </thead>
         <tbody>

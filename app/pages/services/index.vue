@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { CsvColumn } from "~/composables/useCsvExport";
 /*
  * Fase 9.5 — catálogo de servicios, gestión admin. Api/Service/
  * ServiceManagementController maneja el CRUD completo bajo /services/manage.
@@ -25,6 +26,15 @@ interface ServicesResponse {
   meta: { current_page: number; last_page: number; total: number };
   categories: string[];
 }
+
+const exportColumns: CsvColumn<ServiceRow>[] = [
+  { header: "Servicio", value: (s) => s.nombre },
+  { header: "Categoría", value: (s) => s.categoria },
+  { header: "Precio", value: (s) => s.precio },
+  { header: "Duración (min)", value: (s) => s.duracion_min },
+  { header: "Activo", value: (s) => s.activo },
+  { header: "Descripción", value: (s) => s.descripcion },
+];
 
 const { apiFetch } = useApi();
 const { confirm } = useConfirm();
@@ -202,6 +212,14 @@ async function removeService(service: ServiceRow) {
         + Nuevo Servicio
       </button>
     </header>
+    <div class="mb-3">
+      <UiExportCsvButton
+        endpoint="/services/manage"
+        :query="{ q: search || undefined, categoria: categoria || undefined, activo: activo || undefined }"
+        :columns="exportColumns"
+        filename="servicios"
+      />
+    </div>
 
     <section class="mb-5 flex flex-wrap items-center gap-3">
       <input
@@ -257,17 +275,17 @@ async function removeService(service: ServiceRow) {
     />
 
     <section v-if="!pending && !error" class="ui-card overflow-x-auto">
-      <table class="w-full text-left text-sm">
+      <table aria-label="Servicios" class="w-full text-left text-sm">
         <thead>
           <tr
             class="border-b border-line text-[11px] uppercase tracking-wider text-muted"
           >
-            <th class="px-4 py-3">Servicio</th>
-            <th class="px-4 py-3">Categoría</th>
-            <th class="px-4 py-3">Duración</th>
-            <th class="px-4 py-3 text-right">Precio</th>
-            <th class="px-4 py-3 text-center">Estado</th>
-            <th class="px-4 py-3 text-right">Acciones</th>
+            <th scope="col" class="px-4 py-3">Servicio</th>
+            <th scope="col" class="px-4 py-3">Categoría</th>
+            <th scope="col" class="px-4 py-3">Duración</th>
+            <th scope="col" class="px-4 py-3 text-right">Precio</th>
+            <th scope="col" class="px-4 py-3 text-center">Estado</th>
+            <th scope="col" class="px-4 py-3 text-right">Acciones</th>
           </tr>
         </thead>
         <tbody>

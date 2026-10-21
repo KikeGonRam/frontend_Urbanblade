@@ -387,14 +387,14 @@ async function downloadReport(type: string, format: "excel" | "pdf") {
         Sin citas completadas en este periodo.
       </p>
       <div v-else-if="commissions" class="overflow-x-auto">
-        <table class="w-full text-sm">
+        <table aria-label="Comisiones de barberos" class="w-full text-sm">
           <thead>
             <tr class="text-left text-[11px] font-bold uppercase text-muted">
-              <th class="pb-2">Barbero</th>
-              <th class="pb-2 text-right">Citas</th>
-              <th class="pb-2 text-right">Generado</th>
-              <th class="pb-2 text-right">%</th>
-              <th class="pb-2 text-right">Comisión</th>
+              <th scope="col" class="pb-2">Barbero</th>
+              <th scope="col" class="pb-2 text-right">Citas</th>
+              <th scope="col" class="pb-2 text-right">Generado</th>
+              <th scope="col" class="pb-2 text-right">%</th>
+              <th scope="col" class="pb-2 text-right">Comisión</th>
             </tr>
           </thead>
           <tbody>

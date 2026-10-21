@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { CsvColumn } from "~/composables/useCsvExport";
 /*
  * Fase 9.5 — gestión de inventario y productos, panel admin.
  * Api/Inventory/ProductController maneja el CRUD completo bajo
@@ -51,6 +52,17 @@ interface ProductsResponse {
     tipos: string[];
   };
 }
+
+const exportColumns: CsvColumn<ProductRow>[] = [
+  { header: "Producto", value: (p) => p.nombre },
+  { header: "Categoría", value: (p) => p.categoria },
+  { header: "Tipo", value: (p) => p.tipo },
+  { header: "Precio de compra", value: (p) => p.precio_compra },
+  { header: "Precio de venta", value: (p) => p.precio_venta },
+  { header: "Stock actual", value: (p) => p.stock_actual },
+  { header: "Stock mínimo", value: (p) => p.stock_minimo },
+  { header: "Activo", value: (p) => p.activo ?? true },
+];
 
 const { apiFetch } = useApi();
 const { confirm } = useConfirm();
@@ -280,6 +292,14 @@ async function removeProduct(product: ProductRow) {
         </button>
       </div>
     </header>
+    <div class="mb-3">
+      <UiExportCsvButton
+        endpoint="/inventory/products"
+        :query="{ q: search || undefined, categoria: categoria || undefined, tipo: tipo || undefined, bajo_stock: soloBajoStock ? 1 : undefined }"
+        :columns="exportColumns"
+        filename="productos"
+      />
+    </div>
 
     <div
       v-if="actionNotice"
@@ -418,17 +438,17 @@ async function removeProduct(product: ProductRow) {
 
     <!-- Tabla de productos -->
     <section v-if="!pending && !error" class="ui-card overflow-x-auto">
-      <table class="w-full text-left text-sm">
+      <table aria-label="Productos" class="w-full text-left text-sm">
         <thead>
           <tr
             class="border-b border-line text-[11px] uppercase tracking-wider text-muted"
           >
-            <th class="px-4 py-3">Producto</th>
-            <th class="px-4 py-3">Categoría</th>
-            <th class="px-4 py-3 text-right">Precio</th>
-            <th class="px-4 py-3 text-center">Stock</th>
-            <th class="px-4 py-3 text-center">Tipo</th>
-            <th class="px-4 py-3 text-right">Acciones</th>
+            <th scope="col" class="px-4 py-3">Producto</th>
+            <th scope="col" class="px-4 py-3">Categoría</th>
+            <th scope="col" class="px-4 py-3 text-right">Precio</th>
+            <th scope="col" class="px-4 py-3 text-center">Stock</th>
+            <th scope="col" class="px-4 py-3 text-center">Tipo</th>
+            <th scope="col" class="px-4 py-3 text-right">Acciones</th>
           </tr>
         </thead>
         <tbody>
