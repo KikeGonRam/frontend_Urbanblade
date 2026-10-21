@@ -102,7 +102,7 @@ export function useNavigation() {
         item('Dashboard', '/dashboard', 'dashboard', true),
         // El muro es editorial/operativo. Ingeniero ve telemetría agregada
         // cuando exista, nunca publicaciones ni acciones del feed.
-        ...(isEngineer.value ? [] : [item('Muro Inspiración', '/social/feed', 'wall')]),
+        ...(isEngineer.value ? [] : [item('Muro Inspiración', '/social/feed', 'wall', isClient.value)]),
         item('Notificaciones', '/notifications', 'notifications'),
       ],
     })
@@ -202,22 +202,37 @@ export function useNavigation() {
     }
 
     if (isClient.value) {
+      // Antes eran 12 enlaces en una sola lista. Se agrupan por lo que el cliente quiere hacer.
       out.push({
-        key: 'mi-cuenta',
-        title: 'Mi Cuenta',
+        key: 'cliente-reservar',
+        title: 'Reservar',
         collapsible: true,
         items: [
           item('Mis Citas', '/my/appointments', 'my_appointments', true),
-          item('Tienda', '/store', 'products'),
-          item('Carrito', '/cart', 'cart', true),
-          item('Mis Pedidos', '/my/orders', 'orders'),
-          item('Gift Cards', '/gift-cards', 'gift_cards'),
-          item('Paquetes', '/packages', 'packages'),
-          item('Membresía', '/membership', 'membership'),
-          item('Referidos', '/referrals', 'referrals'),
+          item('Nuestros Barberos', '/barbers', 'barbers_client'),
           item('Lista de Espera', '/waitlist', 'waitlist'),
-          item('Nuestros Barberos', '/barbers', 'barbers_client', true),
+        ],
+      })
+      out.push({
+        key: 'cliente-tienda',
+        title: 'Tienda',
+        collapsible: true,
+        items: [
+          item('Tienda', '/store', 'products', true),
+          item('Carrito', '/cart', 'cart'),
+          item('Mis Pedidos', '/my/orders', 'orders'),
           item('Mis Facturas', '/my/invoices', 'invoices'),
+        ],
+      })
+      out.push({
+        key: 'cliente-beneficios',
+        title: 'Beneficios',
+        collapsible: true,
+        items: [
+          item('Membresía', '/membership', 'membership'),
+          item('Paquetes', '/packages', 'packages'),
+          item('Gift Cards', '/gift-cards', 'gift_cards'),
+          item('Referidos', '/referrals', 'referrals'),
           item('Recomendado para ti', '/analytics', 'analytics'),
         ],
       })
