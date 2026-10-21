@@ -54,16 +54,15 @@ const { data: servicesData, pending: servicesPending } = await useAsyncData<{ da
   () => apiFetch('/services'),
   { server: false },
 )
-const services = computed(() => (servicesData.value?.data ?? []).slice(0, 6))
-// Fotos que no cargan (URL rota o archivo borrado) muestran el ícono en lugar del alt roto.
-const brokenImages = reactive<Record<string, boolean>>({})
+const servicesAll = computed(() => servicesData.value?.data ?? [])
 
 const { data: barbersData, pending: barbersPending } = await useAsyncData<{ data: BarberRow[] }>(
   'landing-barbers',
   () => apiFetch('/barbers'),
   { server: false },
 )
-const barbers = computed(() => (barbersData.value?.data ?? []).slice(0, 4))
+const barbersAll = computed(() => barbersData.value?.data ?? [])
+const barbers = computed(() => barbersAll.value.slice(0, 4))
 const publicStats = computed(() => {
   const allBarbers = barbersData.value?.data ?? []
   const allServices = servicesData.value?.data ?? []
@@ -81,12 +80,19 @@ const publicStats = computed(() => {
   }
 })
 
+const statItems = computed(() => {
+  const st = publicStats.value
+  const items: { value: string | number, suffix: string, label: string }[] = []
+  if (st.barbers > 0) items.push({ value: st.barbers, suffix: '', label: st.barbers === 1 ? 'Maestro activo' : 'Maestros activos' })
+  if (st.services > 0) items.push({ value: st.services, suffix: '', label: 'Servicios disponibles' })
+  if (st.reviews > 0) items.push({ value: st.reviews, suffix: '', label: st.reviews === 1 ? 'Reseña publicada' : 'Reseñas publicadas' })
+  if (st.rating !== '—') items.push({ value: st.rating, suffix: '★', label: 'Calificación del equipo' })
+  return items
+})
+
 function initials(name?: string | null) {
   if (!name) return '?'
   return name.trim().split(/\s+/).slice(0, 2).map(p => p[0]?.toUpperCase() ?? '').join('')
-}
-function currency(n: number) {
-  return `$${Math.round(n).toLocaleString('es-MX')}`
 }
 
 const steps = [
@@ -155,6 +161,7 @@ const mapAddress = computed(() => shop.value?.direccion ?? '')
 
 let scrollHandler: (() => void) | undefined
 let parallaxHandler: (() => void) | undefined
+let pointerHandler: ((e: PointerEvent) => void) | undefined
 let revealObserver: IntersectionObserver | undefined
 let reducedMotion = false
 
@@ -206,6 +213,16 @@ onMounted(() => {
   scrollHandler = () => { scrolled.value = window.scrollY > 50 }
   window.addEventListener('scroll', scrollHandler, { passive: true })
 
+  const hero = document.querySelector<HTMLElement>('#inicio')
+  if (hero && !reducedMotion && window.matchMedia('(pointer: fine)').matches) {
+    pointerHandler = (e: PointerEvent) => {
+      const r = hero.getBoundingClientRect()
+      hero.style.setProperty('--mx', `${e.clientX - r.left}px`)
+      hero.style.setProperty('--my', `${e.clientY - r.top}px`)
+    }
+    hero.addEventListener('pointermove', pointerHandler, { passive: true })
+  }
+
   const heroBg = document.querySelector<HTMLElement>('.hero-bg')
   if (heroBg) {
     parallaxHandler = () => { heroBg.style.transform = `translateY(${window.scrollY * 0.22}px)` }
@@ -216,6 +233,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   if (scrollHandler) window.removeEventListener('scroll', scrollHandler)
   if (parallaxHandler) window.removeEventListener('scroll', parallaxHandler)
+  if (pointerHandler) document.querySelector('#inicio')?.removeEventListener('pointermove', pointerHandler as EventListener)
   revealObserver?.disconnect()
 })
 </script>
@@ -282,6 +300,7 @@ onBeforeUnmount(() => {
         <div class="hero-photo absolute inset-0" />
       </div>
       <div class="hero-scrim absolute inset-0 z-[1]" />
+      <div class="hero-spot pointer-events-none absolute inset-0 z-[1]" aria-hidden="true" />
 
       <div class="pointer-events-none absolute inset-0 z-[2] overflow-hidden">
         <span class="absolute left-[14%] top-[18%] h-1.5 w-1.5 animate-ping rounded-full bg-gold/40" style="animation-duration:3.2s" />
@@ -303,9 +322,10 @@ onBeforeUnmount(() => {
         </div>
 
         <h1 class="font-black uppercase leading-[0.88] tracking-tighter text-ink" style="font-size: clamp(3.5rem, 11vw, 9rem);">
-          LA <span class="text-gradient-gold">EXCELENCIA</span>
+          <span class="hero-word mr-[0.22em]" style="--i:0">LA</span>
+          <span class="hero-word text-gradient-gold" style="--i:1">EXCELENCIA</span>
         </h1>
-        <p class="ui-title-serif lowercase opacity-90" style="font-size: clamp(2.5rem, 7vw, 6.5rem);">
+        <p class="ui-title-serif hero-word lowercase opacity-90" style="--i:3; font-size: clamp(2.5rem, 7vw, 6.5rem);">
           en cada detalle
         </p>
 
@@ -313,7 +333,9 @@ onBeforeUnmount(() => {
           Elevamos el concepto de barbería a un estudio de arte. Un espacio diseñado para el hombre que exige perfección y confort.
         </p>
 
-        <div class="mt-12 flex flex-col items-center justify-center gap-5 sm:flex-row">
+        <LandingQuickBook v-if="servicesAll.length" :services="servicesAll" :barbers="barbersAll" />
+
+        <div class="mt-8 flex flex-col items-center justify-center gap-5 sm:flex-row">
           <NuxtLink :to="isAuthenticated ? '/dashboard' : '/register'" class="ui-btn w-full px-12 py-5 text-[13px] tracking-[0.15em] shadow-[0_0_50px_rgba(212,175,55,0.18)] sm:w-auto">
             Agendar Cita Premium
             <svg class="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
@@ -330,26 +352,14 @@ onBeforeUnmount(() => {
       </div>
     </header>
 
-    <!-- STATS -->
-    <section class="relative overflow-hidden border-y border-line bg-panel py-16">
+    <!-- STATS: solo se muestran las cifras que tienen dato real -->
+    <section v-if="statItems.length" class="relative overflow-hidden border-y border-line bg-panel py-16">
       <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold/20 to-transparent" />
       <div class="mx-auto max-w-7xl px-4">
-        <div class="grid grid-cols-2 gap-8 md:grid-cols-4">
-          <div v-reveal class="reveal text-center">
-            <p class="text-4xl font-black text-ink">{{ publicStats.barbers }}<span class="text-gold">+</span></p>
-            <p class="mt-2 text-[10px] font-black uppercase tracking-widest text-muted">Maestros activos</p>
-          </div>
-          <div v-reveal class="reveal text-center" style="transition-delay:100ms">
-            <p class="text-4xl font-black text-ink">{{ publicStats.services }}<span class="text-gold">+</span></p>
-            <p class="mt-2 text-[10px] font-black uppercase tracking-widest text-muted">Servicios disponibles</p>
-          </div>
-          <div v-reveal class="reveal text-center" style="transition-delay:200ms">
-            <p class="text-4xl font-black text-ink">{{ publicStats.reviews }}<span class="text-gold">+</span></p>
-            <p class="mt-2 text-[10px] font-black uppercase tracking-widest text-muted">Reseñas publicadas</p>
-          </div>
-          <div v-reveal class="reveal text-center" style="transition-delay:300ms">
-            <p class="text-4xl font-black text-ink">{{ publicStats.rating }}<span v-if="publicStats.rating !== '—'" class="text-gold">★</span></p>
-            <p class="mt-2 text-[10px] font-black uppercase tracking-widest text-muted">Calificación del equipo</p>
+        <div class="flex flex-wrap justify-center gap-x-16 gap-y-8">
+          <div v-for="(stat, i) in statItems" :key="stat.label" v-reveal class="reveal min-w-[140px] text-center" :style="{ transitionDelay: `${i * 100}ms` }">
+            <p class="text-4xl font-black text-ink">{{ stat.value }}<span class="text-gold">{{ stat.suffix }}</span></p>
+            <p class="mt-2 text-[10px] font-black uppercase tracking-widest text-muted">{{ stat.label }}</p>
           </div>
         </div>
       </div>
@@ -364,56 +374,16 @@ onBeforeUnmount(() => {
             Nuestros Servicios
             <span class="inline-block h-px w-8 bg-gold" />
           </p>
-          <h2 class="text-4xl font-black uppercase tracking-tight text-ink">Catálogo <span class="text-gold">Signature</span></h2>
-          <p class="mx-auto mt-4 max-w-md text-sm leading-relaxed text-muted">Maestría artesanal aplicada a cada uno de nuestros tratamientos exclusivos.</p>
+          <h2 class="text-4xl font-black uppercase tracking-tight text-ink">Elige tu <span class="text-gold">estilo</span></h2>
+          <p class="mx-auto mt-4 max-w-md text-sm leading-relaxed text-muted">Pasa el cursor o toca un servicio para verlo en grande y reservarlo en un paso.</p>
           <div class="line-grow mx-auto mt-6 h-0.5 w-16 rounded-full bg-gradient-to-r from-gold to-gold-dim shadow-[0_0_12px_rgba(212,175,55,0.5)]" />
         </div>
 
         <ClientOnly>
         <p v-if="servicesPending" class="py-20 text-center italic text-muted">Cargando catálogo premium…</p>
-        <p v-else-if="!services.length" class="py-20 text-center italic text-muted">El catálogo estará disponible muy pronto.</p>
-        <div v-else class="grid grid-cols-1 gap-6 md:grid-cols-3">
-          <article
-            v-for="(service, i) in services" :key="service.id"
-            v-reveal
-            class="ui-card-premium reveal group overflow-hidden hover:border-gold/40"
-            :style="{ transitionDelay: `${i * 100}ms` }"
-          >
-            <!-- Foto del servicio (la que sube el administrador); sin foto, el ícono de siempre. -->
-            <div class="relative aspect-[16/10] overflow-hidden bg-gradient-to-br from-gold/10 via-card to-main">
-              <img
-                v-if="service.imagen && !brokenImages[service.id]"
-                :src="publicImageUrl(service.imagen, 1800) ?? undefined"
-                :alt="service.nombre"
-                :srcset="`${publicImageUrl(service.imagen, 900) ?? ''} 900w, ${publicImageUrl(service.imagen, 1800) ?? ''} 1800w`"
-                sizes="(min-width: 1024px) 33vw, 100vw"
-                loading="lazy"
-                decoding="async"
-                class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                @error="brokenImages[service.id] = true"
-              >
-              <div v-else class="flex h-full w-full items-center justify-center text-gold/60" aria-hidden="true">
-                <svg class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7.848 8.25l1.536.887M7.848 8.25a3 3 0 11-5.196-3 3 3 0 015.196 3zm1.536.887a2.165 2.165 0 011.083 1.839c.005.351.054.695.196 1.024M9.384 9.137l2.077 1.199M13.5 15.75l1.83 1.83a3 3 0 006.086-1.803L21 15.75m-6.5-4.5l-3.83-2.212M7.848 15.75l1.536-.887M7.848 15.75a3 3 0 11-5.196 3 3 3 0 015.196-3zm1.536-.887a2.165 2.165 0 001.083-1.839 4.166 4.166 0 01.196-1.024M9.384 14.863l7.632-4.406M18.75 4.5l-2.928 1.69" />
-                </svg>
-              </div>
-              <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" aria-hidden="true" />
-              <span class="absolute right-4 top-4 rounded-full bg-black/60 px-3 py-1.5 text-[11px] font-bold text-gold backdrop-blur-sm">{{ service.duracion_min }} min</span>
-            </div>
-            <div class="p-8">
-              <h3 class="text-2xl font-black uppercase text-ink">{{ service.nombre }}</h3>
-              <p class="mt-3 text-sm font-medium leading-relaxed text-muted">
-                {{ service.descripcion || 'Una experiencia diseñada para resaltar tu mejor versión con técnica clásica.' }}
-              </p>
-              <div class="mt-6 flex items-center justify-between">
-                <span class="text-2xl font-black text-ink">{{ currency(service.precio) }}</span>
-                <NuxtLink
-                  :to="`/reservar?servicio=${service.id}`"
-                  class="text-xs font-bold uppercase tracking-widest text-gold transition-colors hover:text-ink"
-                >Reservar →</NuxtLink>
-              </div>
-            </div>
-          </article>
+        <p v-else-if="!servicesAll.length" class="py-20 text-center italic text-muted">El catálogo estará disponible muy pronto.</p>
+        <div v-else v-reveal class="reveal">
+          <LandingStyleLookbook :services="servicesAll" />
         </div>
         <template #fallback>
           <p class="py-20 text-center italic text-muted">Cargando catálogo premium…</p>
@@ -495,12 +465,12 @@ onBeforeUnmount(() => {
         <ClientOnly>
         <p v-if="barbersPending" class="py-20 text-center text-muted">Cargando maestros…</p>
         <p v-else-if="!barbers.length" class="py-20 text-center text-muted">Nuestros maestros se están preparando...</p>
-        <div v-else class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+        <div v-else class="-mx-4 flex snap-x snap-mandatory gap-5 overflow-x-auto px-4 pb-4 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-8 sm:overflow-visible sm:px-0 lg:grid-cols-4">
           <NuxtLink
             v-for="(barber, k) in barbers" :key="barber.id"
             v-reveal
             :to="`/equipo/${barber.slug}`"
-            class="barber-card reveal group relative block"
+            class="barber-card reveal group relative block w-[72%] shrink-0 snap-center sm:w-auto"
             :style="{ transitionDelay: `${k * 120}ms` }"
           >
             <div class="relative aspect-[3/4] overflow-hidden rounded-3xl border border-line bg-card">
@@ -512,6 +482,9 @@ onBeforeUnmount(() => {
                 <span class="text-4xl font-black uppercase tracking-tighter text-gold/50">{{ initials(barber.user?.name) }}</span>
               </div>
               <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+              <span v-if="barber.avg_rating && (barber.total_reviews ?? 0) > 0" class="absolute left-4 top-4 rounded-full bg-black/60 px-3 py-1.5 text-[11px] font-bold text-gold backdrop-blur-sm">
+                ★ {{ Number(barber.avg_rating).toFixed(1) }} · {{ barber.total_reviews }}
+              </span>
               <div class="absolute bottom-0 left-0 right-0 translate-y-1 p-6 transition-transform duration-400 group-hover:translate-y-0">
                 <h3 class="text-base font-black uppercase text-white">{{ barber.user?.name }}</h3>
                 <p class="mt-1 text-[9px] font-bold uppercase tracking-widest text-gold">{{ barber.especialidades || 'Master Groomer' }}</p>
@@ -530,56 +503,23 @@ onBeforeUnmount(() => {
       </div>
     </section>
 
-    <!-- TESTIMONIALES -->
-    <section class="relative overflow-hidden border-y border-line bg-panel py-32">
+    <!-- PRUEBA SOCIAL: solo si ya hay reseñas reales (se quitaron los testimonios y el "500+" de ejemplo) -->
+    <section v-if="publicStats.reviews > 0" class="relative overflow-hidden border-y border-line bg-panel py-24">
       <div class="pointer-events-none absolute -top-40 right-0 h-96 w-96 rounded-full bg-gold/4 blur-[120px]" />
-      <div class="mx-auto max-w-7xl px-4">
-        <div class="grid grid-cols-1 items-center gap-20 lg:grid-cols-2">
-          <div v-reveal class="reveal">
-            <p class="mb-4 flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.4em] text-gold">
-              <span class="inline-block h-px w-8 bg-gold" />
-              Testimonios
-            </p>
-            <h2 class="text-4xl font-black uppercase tracking-tight leading-[1.1] text-ink">Lo que dicen <br>nuestros <span class="text-gradient-gold">Caballeros</span></h2>
-            <p class="mt-6 max-w-sm text-sm leading-relaxed text-muted">Nuestra reputación se ha forjado con precisión y satisfacción. Más de 500 clientes confían en UrbanBlade.</p>
-
-            <div class="mt-10 inline-flex items-center gap-5 rounded-2xl border border-line bg-card px-6 py-4">
-              <div class="text-center">
-                <p class="text-3xl font-black text-ink">4.9</p>
-                <div class="mt-1 flex justify-center gap-0.5 text-gold" role="img" aria-label="Calificación 4.9 de 5 estrellas">
-                  <svg v-for="n in 5" :key="n" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
-                </div>
-              </div>
-              <div class="h-10 w-px bg-line" />
-              <div>
-                <p class="text-xs font-bold text-ink">500+ Reseñas</p>
-              </div>
-            </div>
+      <div class="mx-auto max-w-4xl px-4 text-center">
+        <p class="mb-4 flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.4em] text-gold">
+          <span class="inline-block h-px w-8 bg-gold" />
+          Opiniones reales
+          <span class="inline-block h-px w-8 bg-gold" />
+        </p>
+        <h2 class="text-4xl font-black uppercase tracking-tight text-ink">Lo que dicen <span class="text-gradient-gold">nuestros clientes</span></h2>
+        <div v-reveal class="reveal mt-10 inline-flex items-center gap-5 rounded-2xl border border-line bg-card px-8 py-5">
+          <div>
+            <p class="text-4xl font-black text-ink">{{ publicStats.rating }}</p>
+            <p class="mt-1 text-gold" role="img" :aria-label="`Calificación ${publicStats.rating} de 5`">★★★★★</p>
           </div>
-
-          <div class="space-y-5">
-            <div v-reveal class="ui-card-premium reveal border-gold/15 p-8 transition-colors hover:border-gold/30" style="transition-delay:100ms">
-              <div class="mb-5 flex gap-0.5">
-                <svg v-for="n in 5" :key="n" class="h-3.5 w-3.5 text-gold" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
-              </div>
-              <p class="font-serif text-base italic leading-relaxed text-ink">"La atención al detalle es increíble. No es solo un corte, es un ritual de relajación. Totalmente recomendado."</p>
-              <div class="mt-5 flex items-center gap-3">
-                <div class="flex h-8 w-8 items-center justify-center rounded-full border border-gold/20 bg-gradient-to-br from-gold/35 to-gold/10 text-[10px] font-black text-gold">R</div>
-                <p class="text-[10px] font-black uppercase tracking-widest text-gold">Ricardo Arjona &nbsp;·&nbsp; Cliente VIP</p>
-              </div>
-            </div>
-
-            <div v-reveal class="ui-card-premium reveal border-line p-8 transition-colors hover:border-ink/10" style="transition-delay:200ms">
-              <div class="mb-5 flex gap-0.5">
-                <svg v-for="n in 5" :key="n" class="h-3.5 w-3.5 text-gold" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
-              </div>
-              <p class="font-serif text-base italic leading-relaxed text-ink">"El sistema de reservas es súper rápido. Llego y mi barbero ya me espera. Eficiencia y lujo en un solo lugar."</p>
-              <div class="mt-5 flex items-center gap-3">
-                <div class="flex h-8 w-8 items-center justify-center rounded-full border border-line bg-ink/10 text-[10px] font-black text-muted">J</div>
-                <p class="text-[10px] font-black uppercase tracking-widest text-muted">Julian Casas &nbsp;·&nbsp; Emprendedor</p>
-              </div>
-            </div>
-          </div>
+          <div class="h-12 w-px bg-line" />
+          <p class="text-sm font-bold text-ink">{{ publicStats.reviews }} {{ publicStats.reviews === 1 ? 'reseña' : 'reseñas' }}<br><span class="text-[11px] font-medium text-muted">de clientes con cita completada</span></p>
         </div>
       </div>
     </section>
@@ -667,7 +607,7 @@ onBeforeUnmount(() => {
           ¿Listo para tu <br>
           <span class="text-gradient-gold font-serif lowercase italic normal-case" style="font-size: clamp(3rem, 8vw, 5.5rem);">mejor versión?</span>
         </h2>
-        <p class="mb-12 text-base leading-relaxed text-muted">Únete a cientos de caballeros que ya confían en UrbanBlade para lucir siempre impecables.</p>
+        <p class="mb-12 text-base leading-relaxed text-muted">Elige tu servicio, tu maestro y un horario realmente disponible. Sin llamadas, sin esperas.</p>
         <NuxtLink :to="isAuthenticated ? '/dashboard' : '/register'" class="ui-btn gold-glow-hover animate-float px-16 py-6 text-[13px] uppercase tracking-[0.25em] shadow-[0_0_60px_rgba(212,175,55,0.18)]">
           Reserva tu Turno Ahora
         </NuxtLink>
@@ -759,6 +699,16 @@ onBeforeUnmount(() => {
   background:
     linear-gradient(to bottom, color-mix(in srgb, var(--bg-main) 55%, transparent) 0%, color-mix(in srgb, var(--bg-main) 12%, transparent) 45%, var(--bg-main) 100%),
     linear-gradient(to right, color-mix(in srgb, var(--bg-main) 40%, transparent), transparent, color-mix(in srgb, var(--bg-main) 40%, transparent));
+}
+
+.hero-word { display: inline-block; opacity: 0; transform: translateY(0.4em); animation: hero-rise .8s cubic-bezier(.2,.8,.2,1) forwards; animation-delay: calc(var(--i, 0) * 110ms + 120ms); }
+@keyframes hero-rise { to { opacity: 1; transform: none; } }
+.hero-spot {
+  background: radial-gradient(520px circle at var(--mx, 50%) var(--my, 40%), rgb(var(--gold-rgb) / 0.16), transparent 60%);
+  transition: background .15s linear;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-word { opacity: 1; transform: none; animation: none; }
 }
 
 .mobile-menu-enter-active, .mobile-menu-leave-active { transition: opacity .2s ease, transform .2s ease; }
