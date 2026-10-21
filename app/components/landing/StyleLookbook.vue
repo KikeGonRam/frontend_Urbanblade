@@ -66,7 +66,7 @@ const money = (n: number) => `$${Math.round(n).toLocaleString('es-MX')}`
               <p v-if="selected.descripcion" class="mt-3 max-w-md text-sm leading-relaxed text-white/75">{{ selected.descripcion }}</p>
               <div class="mt-6 flex flex-wrap items-center gap-5">
                 <span class="text-3xl font-black text-white">{{ money(selected.precio) }}</span>
-                <NuxtLink :to="`/reservar?servicio=${selected.id}`" class="ui-btn px-8 py-3 text-[11px] tracking-[0.15em]">Reservar este estilo</NuxtLink>
+                <NuxtLink :to="`/reservar?servicio=${selected.id}`" class="ui-btn min-h-[44px] px-8 py-3 text-[11px] tracking-[0.15em]">Reservar este estilo</NuxtLink>
               </div>
             </div>
           </div>
