@@ -209,7 +209,22 @@ const vReveal = {
   },
 }
 
+/*
+ * Entrada directa con #ancla (p. ej. /#app): el catálogo y los maestros llegan por
+ * fetch en cliente y la página crece después de que el navegador ya saltó, así que la
+ * sección queda desplazada. Se reposiciona una sola vez cuando terminan de cargar.
+ */
+const route = useRoute()
+let anchorRestored = false
+function restoreAnchor() {
+  if (anchorRestored || !route.hash || servicesPending.value || barbersPending.value) return
+  anchorRestored = true
+  nextTick(() => document.querySelector(route.hash)?.scrollIntoView())
+}
+if (import.meta.client) watch([servicesPending, barbersPending], restoreAnchor)
+
 onMounted(() => {
+  restoreAnchor()
   scrollHandler = () => { scrolled.value = window.scrollY > 50 }
   window.addEventListener('scroll', scrollHandler, { passive: true })
 

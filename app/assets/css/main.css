@@ -12,6 +12,12 @@
         overscroll-behavior: none;
     }
 
+    /* Saltos a #ancla con scroll suave; el margen libera la barra fija de 80 px de la landing. */
+    @media (prefers-reduced-motion: no-preference) {
+        html { scroll-behavior: smooth; }
+    }
+    section[id], header[id] { scroll-margin-top: 5rem; }
+
     body {
         overscroll-behavior: none;
     }

@@ -93,6 +93,8 @@ export default defineNuxtConfig({
    * esas rutas.
    */
   routeRules: {
+    // Atajo compartible: /app lleva a la sección de la app móvil de la landing.
+    '/app': { redirect: { to: '/#app', statusCode: 302 } },
     '/**': {
       headers: {
         'X-Content-Type-Options': 'nosniff',

@@ -5,8 +5,9 @@
     <NuxtLayout>
       <NuxtPage>
         <template #default="{ Component, route }">
+          <!-- La key ignora el #ancla: si no, un salto a #servicios remontaba la página entera y la dejaba en negro. -->
           <Transition name="ub-page" mode="out-in" appear :duration="{ enter: 140, leave: 90 }">
-            <component :is="Component" :key="route.fullPath" />
+            <component :is="Component" :key="route.fullPath.split('#')[0]" />
           </Transition>
         </template>
       </NuxtPage>
