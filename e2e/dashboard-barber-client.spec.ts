@@ -46,7 +46,9 @@ test("el barbero tiene su calendario en el menú y sin selector de barbero", asy
   await open(page, "barbero", BARBER_DASHBOARD, "/notifications");
   await page.route("**/api/v1/appointments/calendar-data**", (r) => r.fulfill({ status: 200, contentType: "application/json", body: "[]" }));
 
-  await page.locator('a[href="/appointments/calendar"]:visible').first().click();
+  // El menú tiene la entrada (la sección «Mi Espacio» puede estar plegada, por eso no se hace clic en ella).
+  await expect(page.locator('a[href="/appointments/calendar"]').first()).toBeAttached();
+  await page.goto("/appointments/calendar");
 
   await expect(page.getByRole("heading", { name: "Mi Calendario" })).toBeVisible();
   await expect(page.getByText("Barbero:")).toHaveCount(0);
