@@ -37,6 +37,35 @@ const sparkPath = computed(() => {
 // Resuelto aquí: resolveComponent dentro de la plantilla dejaba la tarjeta sin enlace.
 const NuxtLink = resolveComponent("NuxtLink");
 
+// La cifra sube de 0 al valor (ease-out) al aparecer o cambiar. El texto de otro tipo ("Luis", "—") se muestra tal cual,
+// y con "reducir movimiento" no hay conteo. El valor final siempre es exactamente props.value.
+const display = ref(String(props.value));
+const NUMBER = /^([^\d-]*)(-?\d[\d,]*(?:\.\d+)?)(.*)$/;
+let frame = 0;
+function countTo(raw: string) {
+  cancelAnimationFrame(frame);
+  const m = raw.match(NUMBER);
+  if (!m || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+    display.value = raw;
+    return;
+  }
+  const [, prefix, num, suffix] = m;
+  const target = Number(num!.replaceAll(",", ""));
+  const decimals = num!.includes(".") ? num!.split(".")[1]!.length : 0;
+  const start = performance.now();
+  const step = (now: number) => {
+    const p = Math.min(1, (now - start) / 1000);
+    const eased = 1 - (1 - p) ** 3;
+    display.value = `${prefix}${(target * eased).toLocaleString("es-MX", { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}${suffix}`;
+    if (p < 1) frame = requestAnimationFrame(step);
+    else display.value = raw;
+  };
+  frame = requestAnimationFrame(step);
+}
+onMounted(() => countTo(String(props.value)));
+watch(() => props.value, (v) => countTo(String(v)));
+onBeforeUnmount(() => cancelAnimationFrame(frame));
+
 const up = computed(() => (props.delta ?? 0) >= 0);
 const showDelta = computed(() => props.delta !== null && props.delta !== 0 && Number.isFinite(props.delta));
 </script>
@@ -55,7 +84,7 @@ const showDelta = computed(() => props.delta !== null && props.delta !== 0 && Nu
       </span>
     </div>
 
-    <p class="mt-2 text-3xl font-bold tracking-tight text-ink tabular-nums">{{ value }}</p>
+    <p class="mt-2 text-3xl font-bold tracking-tight text-ink tabular-nums">{{ display }}</p>
 
     <svg v-if="sparkPath" viewBox="0 0 100 28" preserveAspectRatio="none" class="mt-3 h-7 w-full" aria-hidden="true">
       <path :d="sparkPath" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="text-gold" vector-effect="non-scaling-stroke" />
