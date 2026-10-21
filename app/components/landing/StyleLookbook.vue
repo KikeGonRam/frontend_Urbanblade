@@ -49,7 +49,7 @@ const money = (n: number) => `$${Math.round(n).toLocaleString('es-MX')}`
     </div>
 
     <div v-if="selected" class="grid items-stretch gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,4fr)]">
-      <div class="relative min-h-[320px] overflow-hidden rounded-3xl border border-line bg-card lg:min-h-[460px]">
+      <div class="relative min-h-[280px] overflow-hidden rounded-3xl border border-line bg-card lg:min-h-[460px]">
         <Transition name="look-fade" mode="out-in">
           <div :key="selected.id" class="absolute inset-0">
             <img
@@ -73,7 +73,7 @@ const money = (n: number) => `$${Math.round(n).toLocaleString('es-MX')}`
         </Transition>
       </div>
 
-      <ul class="look-list grid max-h-[460px] content-start gap-3 overflow-y-auto" role="tablist" aria-label="Estilos">
+      <ul class="look-list grid max-h-[260px] lg:max-h-[460px] content-start gap-3 overflow-y-auto" role="tablist" aria-label="Estilos">
         <li v-for="s in visible" :key="s.id">
           <button
             type="button" role="tab" :aria-selected="selected.id === s.id"
