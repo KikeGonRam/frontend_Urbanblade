@@ -217,7 +217,7 @@ export function useNavigation() {
           item('Tienda', '/store', 'products', true),
           item('Carrito', '/cart', 'cart'),
           item('Mis Pedidos', '/my/orders', 'orders'),
-          item('Mis Facturas', '/my/invoices', 'invoices'),
+          item('Mis Recibos', '/my/invoices', 'invoices'),
         ]),
         collapsibleSection('cliente-beneficios', 'Beneficios', [
           item('Membresía', '/membership', 'membership'),
