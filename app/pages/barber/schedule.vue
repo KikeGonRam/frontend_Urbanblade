@@ -47,6 +47,31 @@ const saving = ref(false)
 const message = ref('')
 const errorMessage = ref('')
 
+// Resumen de la semana: días con atención, horas totales y una barra por día sobre un eje de 6:00 a 24:00.
+const AXIS_START = 6 * 60
+const AXIS_END = 24 * 60
+
+function minutes(time: string): number {
+  const [h = 0, m = 0] = time.split(':').map(Number)
+
+  return h * 60 + m
+}
+
+function spanMinutes(day: Day): number {
+  return day.is_active ? Math.max(0, minutes(day.end_time) - minutes(day.start_time)) : 0
+}
+
+const activeDays = computed(() => days.value.filter(d => d.is_active).length)
+const weeklyHours = computed(() => Math.round((days.value.reduce((sum, d) => sum + spanMinutes(d), 0) / 60) * 10) / 10)
+
+function barStyle(day: Day) {
+  const from = Math.max(AXIS_START, minutes(day.start_time))
+  const to = Math.min(AXIS_END, minutes(day.end_time))
+  const total = AXIS_END - AXIS_START
+
+  return { left: `${((from - AXIS_START) / total) * 100}%`, width: `${(Math.max(0, to - from) / total) * 100}%` }
+}
+
 function copyToAll(source: Day) {
   days.value = days.value.map(day => ({
     ...day,
@@ -107,7 +132,8 @@ async function save() {
       @action="refresh"
     />
 
-    <form v-else class="max-w-3xl space-y-4" @submit.prevent="save">
+    <form v-else class="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]" @submit.prevent="save">
+      <div class="space-y-4">
       <article
         v-for="day in days"
         :key="day.day_of_week"
@@ -154,17 +180,49 @@ async function save() {
           Copiar a todos
         </button>
       </article>
+      </div>
 
-      <p v-if="message" class="text-sm font-medium text-success">{{ message }}</p>
-      <p v-if="errorMessage" class="text-sm font-medium text-danger">{{ errorMessage }}</p>
+      <aside class="ui-card space-y-5 p-5 xl:sticky xl:top-6" aria-label="Resumen de tu semana">
+        <div>
+          <h2 class="text-base font-semibold text-ink">Tu semana</h2>
+          <p class="mt-0.5 text-sm text-muted">Así ven tu disponibilidad los clientes.</p>
+        </div>
 
-      <button
-        type="submit"
-        :disabled="saving"
-        class="rounded-lg bg-gold px-6 py-2.5 text-sm font-bold text-black hover:bg-gold-dim disabled:opacity-50"
-      >
-        {{ saving ? 'Guardando horario…' : 'Guardar horario' }}
-      </button>
+        <dl class="grid grid-cols-2 gap-3">
+          <div class="rounded-xl border border-line p-3">
+            <dt class="text-[11px] font-bold uppercase tracking-wide text-muted">Días con atención</dt>
+            <dd class="mt-1 text-2xl font-semibold tabular-nums text-ink">{{ activeDays }}<span class="text-sm text-muted"> de 7</span></dd>
+          </div>
+          <div class="rounded-xl border border-line p-3">
+            <dt class="text-[11px] font-bold uppercase tracking-wide text-muted">Horas a la semana</dt>
+            <dd class="mt-1 text-2xl font-semibold tabular-nums text-gold">{{ weeklyHours }}</dd>
+          </div>
+        </dl>
+
+        <ul class="space-y-2.5" aria-label="Horario por día">
+          <li v-for="day in days" :key="day.day_of_week" class="grid grid-cols-[2.25rem_1fr] items-center gap-2 text-xs">
+            <span class="font-semibold text-muted">{{ (names[day.day_of_week] ?? '').slice(0, 3) }}</span>
+            <span class="relative block h-2.5 rounded-full bg-ink/10">
+              <span v-if="day.is_active" class="absolute inset-y-0 rounded-full bg-gold" :style="barStyle(day)" />
+            </span>
+          </li>
+          <li class="grid grid-cols-[2.25rem_1fr] gap-2 text-[10px] text-muted" aria-hidden="true">
+            <span />
+            <span class="flex justify-between"><span>6:00</span><span>12:00</span><span>18:00</span><span>24:00</span></span>
+          </li>
+        </ul>
+
+        <p v-if="message" class="text-sm font-medium text-success" role="status">{{ message }}</p>
+        <p v-if="errorMessage" class="text-sm font-medium text-danger" role="alert">{{ errorMessage }}</p>
+
+        <button
+          type="submit"
+          :disabled="saving"
+          class="min-h-11 w-full rounded-xl bg-gold px-6 py-2.5 text-sm font-bold text-black hover:bg-gold-dim disabled:opacity-50"
+        >
+          {{ saving ? 'Guardando horario…' : 'Guardar horario' }}
+        </button>
+      </aside>
     </form>
   </div>
 </template>
