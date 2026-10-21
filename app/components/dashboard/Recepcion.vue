@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Bar } from "vue-chartjs";
 import type { DashboardInsight } from "~/components/dashboard/AnalyticsInsights.vue";
-import { chartAxisClean, chartScale, chartTooltip, fmtInt, fmtMoney, goldRgba } from "~/utils/chartTheme";
+import { chartAxisClean, chartColor, chartScale, chartTooltip, fmtInt, fmtMoney, goldRgba } from "~/utils/chartTheme";
 import { ensureChartjsRegistered } from "~/utils/registerChartjs";
 
 ensureChartjsRegistered();
@@ -65,7 +65,7 @@ const flowChartData = computed(() => {
       {
         label: "Citas",
         data: values,
-        backgroundColor: values.map((v) => goldRgba(v === peak && v > 0 ? 0.95 : 0.4)),
+        backgroundColor: values.map((v) => (v === peak && v > 0 ? chartColor(0, 0.95) : chartColor(1, 0.55))),
         hoverBackgroundColor: goldRgba(1),
         borderRadius: 999,
         borderSkipped: false,

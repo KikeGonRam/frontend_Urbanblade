@@ -37,5 +37,6 @@ watch(() => route.path, async () => {
     <ShellMobileBottomNav />
     <ShellMobileDrawer />
     <ChatWidget />
+    <UiChartDetailModal />
   </div>
 </template>

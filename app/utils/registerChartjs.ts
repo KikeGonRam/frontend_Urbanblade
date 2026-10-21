@@ -1,5 +1,6 @@
 import { Chart as ChartJS, registerables } from "chart.js";
 import { goldHex, inkRgba } from "~/utils/chartTheme";
+import { buildChartDetail } from "~/utils/chartDetail";
 
 let registered = false;
 
@@ -66,6 +67,18 @@ export function ensureChartjsRegistered() {
   // Chart.js no sabe interpolar un degradado entre dos estados de color y se rompe a media animación:
   // la transición de color se apaga (el crecimiento y el movimiento de barras y puntos siguen animados).
   Object.assign(ChartJS.defaults.animations, { colors: false });
+
+  // Clic en una barra, punto o porción: abre la ventana de detalle (ChartDetailModal, montada en el layout).
+  // El cursor cambia a mano al pasar por encima para que se note que se puede seleccionar.
+  ChartJS.defaults.onHover = (_event, elements, chart) => {
+    chart.canvas.style.cursor = elements.length ? "pointer" : "default";
+  };
+  ChartJS.defaults.onClick = (_event, elements, chart) => {
+    const index = elements[0]?.index;
+    if (index === undefined) return;
+    const detail = buildChartDetail(chart, index);
+    if (detail) window.dispatchEvent(new CustomEvent("ub:chart-detail", { detail }));
+  };
 
   ChartJS.defaults.font.family = "'Figtree', sans-serif";
   ChartJS.defaults.color = inkRgba(0.4);
