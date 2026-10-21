@@ -32,6 +32,16 @@ test("el barbero aprueba solicitudes y ve su semana en español", async ({ page 
   expect((await status).postDataJSON()).toEqual({ estado: "confirmada" });
 });
 
+test("el barbero inicia el servicio de su siguiente cita con un toque", async ({ page }) => {
+  await open(page, "barbero", BARBER_DASHBOARD, "/notifications");
+  const status = page.waitForRequest((r) => r.url().includes("/appointments/UB-2/status") && r.method() === "PATCH");
+  await page.route("**/api/v1/appointments/UB-2/status", (r) => r.fulfill({ status: 200, contentType: "application/json", body: "{}" }));
+
+  await expect(page.getByText("Llevas 1 de 2 citas de hoy.")).toBeVisible();
+  await page.getByRole("button", { name: "Iniciar servicio" }).click();
+  expect((await status).postDataJSON()).toEqual({ estado: "en_proceso" });
+});
+
 test("el cliente ve su próxima cita con su estado, puntos y visitas", async ({ page }) => {
   await open(page, "cliente", CLIENT_DASHBOARD, "/notifications");
 
