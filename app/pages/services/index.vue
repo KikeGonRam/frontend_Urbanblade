@@ -196,7 +196,6 @@ async function removeService(service: ServiceRow) {
       class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
     >
       <div>
-        <p class="text-sm uppercase tracking-widest text-muted">UrbanBlade</p>
         <h1 class="mt-1 text-2xl font-semibold text-ink">
           Catálogo de <span class="text-gold">Servicios</span>
         </h1>

@@ -274,7 +274,6 @@ async function downloadReport(type: string, format: "excel" | "pdf") {
       class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
     >
       <div>
-        <p class="text-sm uppercase tracking-widest text-muted">UrbanBlade</p>
         <h1 class="mt-1 text-2xl font-semibold text-ink">
           Centro de <span class="text-gold">Reportes</span>
         </h1>

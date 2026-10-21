@@ -75,7 +75,6 @@ async function cancelOrder(order: OrderRow) {
   <div class="p-4 sm:p-6 lg:p-8">
     <header class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <p class="text-sm uppercase tracking-widest text-muted">UrbanBlade</p>
         <h1 class="mt-1 text-2xl font-semibold text-ink">Mis <span class="text-gold">Pedidos</span></h1>
         <p class="mt-1 text-sm text-muted">Historial de tus compras en la tienda.</p>
       </div>
