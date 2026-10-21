@@ -5,6 +5,7 @@
  * consumidor de este endpoint hoy; administrador e ingeniero comparten la
  * misma ruta y el mismo middleware 'engineer' (ver app/middleware/engineer.ts).
  */
+import type { Ref } from 'vue'
 import { buildSystemNodes, type SystemStatus } from '~/utils/systemMap'
 
 definePageMeta({ middleware: ['auth', 'engineer'], layout: 'dashboard' })
@@ -21,6 +22,54 @@ const { data, pending, error, refresh } = await useAsyncData(
 
 // TT38: nodos del mapa del sistema (vista 3D + lista accesible).
 const mapNodes = computed(() => (data.value ? buildSystemNodes(data.value) : []))
+
+// Un monitor que hay que refrescar a mano no sirve: se actualiza solo cada 30 s (si la pestaña está visible)
+// y guarda las últimas lecturas de latencia de la sesión para ver la tendencia.
+const REFRESH_MS = 30_000
+const HISTORY_SIZE = 20
+const autoRefresh = ref(true)
+const updatedAt = ref<Date | null>(null)
+const dbHistory = ref<number[]>([])
+const redisHistory = ref<number[]>([])
+
+function pushLatency(list: Ref<number[]>, ms: number | null) {
+  if (ms !== null) list.value = [...list.value, ms].slice(-HISTORY_SIZE)
+}
+
+watch(data, (value) => {
+  if (!value) return
+  updatedAt.value = new Date()
+  pushLatency(dbHistory, value.database.latency_ms)
+  pushLatency(redisHistory, value.redis.latency_ms)
+}, { immediate: true })
+
+let timer: ReturnType<typeof setInterval> | undefined
+onMounted(() => {
+  timer = setInterval(() => {
+    if (autoRefresh.value && document.visibilityState === 'visible' && !pending.value) refresh()
+  }, REFRESH_MS)
+})
+onBeforeUnmount(() => { if (timer) clearInterval(timer) })
+
+const updatedLabel = computed(() =>
+  updatedAt.value?.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) ?? '—',
+)
+
+function sparkPath(vals: number[]) {
+  if (vals.length < 2) return ''
+  const w = 100
+  const h = 28
+  const max = Math.max(...vals)
+  const min = Math.min(...vals)
+  const rng = max - min || 1
+
+  return 'M ' + vals.map((v, i) => `${((i * w) / (vals.length - 1)).toFixed(2)},${(h - 2 - ((v - min) / rng) * (h - 4)).toFixed(2)}`).join(' L ')
+}
+
+// Lo que falló va primero: es lo que el ingeniero necesita ver.
+const sortedTasks = computed(() =>
+  [...(data.value?.scheduled_tasks ?? [])].sort((a, b) => Number(b.status === 'failed') - Number(a.status === 'failed')),
+)
 
 const STATUS_CLASS: Record<string, string> = {
   up: 'border-success/25 bg-success/10 text-success',
@@ -40,10 +89,10 @@ const health = computed(() => {
   const failedJobs = data.value.queue.failed ?? 0
   const failedTasks = data.value.scheduled_tasks.filter(task => task.status === 'failed').length
 
-  if (unavailable) return { label: 'Servicio crítico', detail: 'Hay una dependencia de infraestructura sin respuesta.', dot: 'bg-red-400', surface: 'border-danger/25 bg-red-500/[0.05]' }
-  if (failedJobs > 0 || failedTasks > 0) return { label: 'Requiere atención', detail: `${failedJobs} jobs y ${failedTasks} tareas requieren revisión.`, dot: 'bg-amber-300', surface: 'border-warning/25 bg-amber-500/[0.05]' }
+  if (unavailable) return { label: 'Servicio crítico', detail: 'Hay una dependencia de infraestructura sin respuesta.', dot: 'bg-red-400', surface: 'border-danger/25 bg-danger/5' }
+  if (failedJobs > 0 || failedTasks > 0) return { label: 'Requiere atención', detail: `${failedJobs} jobs y ${failedTasks} tareas requieren revisión.`, dot: 'bg-amber-300', surface: 'border-warning/25 bg-warning/5' }
 
-  return { label: 'Entorno estable', detail: 'Las dependencias y las últimas tareas reportan estado saludable.', dot: 'bg-emerald-300', surface: 'border-success/25 bg-emerald-500/[0.05]' }
+  return { label: 'Entorno estable', detail: 'Las dependencias y las últimas tareas reportan estado saludable.', dot: 'bg-emerald-300', surface: 'border-success/25 bg-success/5' }
 })
 
 function fmtDate(iso: string | null) {
@@ -61,15 +110,22 @@ function fmtDate(iso: string | null) {
         <h1 class="mt-1 text-2xl font-semibold text-ink">Estado del <span class="text-gold">Servidor</span></h1>
         <p class="mt-1 text-sm text-muted">Conectividad, cola y tareas programadas — solo lectura.</p>
       </div>
-      <button
-        type="button" class="min-h-10 rounded-lg border border-line px-3 py-2 text-xs font-bold uppercase tracking-widest text-muted transition hover:border-gold/40 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-2"
-        :disabled="pending" @click="refresh()"
-      >
-        {{ pending ? 'Actualizando…' : 'Actualizar' }}
-      </button>
+      <div class="flex flex-wrap items-center gap-3">
+        <p class="text-xs text-muted" role="status">Actualizado a las <span class="font-semibold tabular-nums text-ink">{{ updatedLabel }}</span></p>
+        <label class="flex min-h-10 cursor-pointer items-center gap-2 text-xs font-semibold text-muted">
+          <input v-model="autoRefresh" type="checkbox" class="h-4 w-4 accent-[var(--gold)]">
+          Cada 30 s
+        </label>
+        <button
+          type="button" class="min-h-10 rounded-lg border border-line px-3 py-2 text-xs font-bold uppercase tracking-widest text-muted transition hover:border-gold/40 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-2"
+          :disabled="pending" @click="refresh()"
+        >
+          {{ pending ? 'Actualizando…' : 'Actualizar' }}
+        </button>
+      </div>
     </header>
 
-    <p v-if="pending && !data" class="text-sm text-muted">Cargando…</p>
+    <BrandStatePanel v-if="pending && !data" mascot="bladebot" state="waiting" title="Leyendo el estado del servidor…" />
     <BrandStatePanel
       v-else-if="error"
       mascot="bruno"
@@ -111,6 +167,7 @@ function fmtDate(iso: string | null) {
           </div>
           <p class="mt-3 text-xl font-black" :class="data.database.status === 'up' ? 'text-success' : 'text-danger'">{{ STATUS_LABEL[data.database.status] }}</p>
           <p v-if="data.database.latency_ms !== null" class="mt-1 text-xs text-ink/45">{{ data.database.latency_ms }} ms de latencia</p>
+          <svg v-if="dbHistory.length > 1" viewBox="0 0 100 28" preserveAspectRatio="none" class="mt-3 h-7 w-full text-gold" role="img" :aria-label="`Latencia de MongoDB en las últimas ${dbHistory.length} lecturas`"><path :d="sparkPath(dbHistory)" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" /></svg>
           <p v-if="data.database.error" class="mt-2 text-xs text-danger">{{ data.database.error }}</p>
         </div>
 
@@ -124,6 +181,7 @@ function fmtDate(iso: string | null) {
           </div>
           <p class="mt-3 text-xl font-black" :class="data.redis.status === 'up' ? 'text-success' : data.redis.status === 'no_usado' ? 'text-ink/50' : 'text-danger'">{{ STATUS_LABEL[data.redis.status] }}</p>
           <p v-if="data.redis.latency_ms !== null" class="mt-1 text-xs text-ink/45">{{ data.redis.latency_ms }} ms de latencia</p>
+          <svg v-if="redisHistory.length > 1" viewBox="0 0 100 28" preserveAspectRatio="none" class="mt-3 h-7 w-full text-gold" role="img" :aria-label="`Latencia de Redis en las últimas ${redisHistory.length} lecturas`"><path :d="sparkPath(redisHistory)" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" /></svg>
           <p v-if="data.redis.error" class="mt-2 text-xs text-danger">{{ data.redis.error }}</p>
         </div>
 
@@ -141,7 +199,7 @@ function fmtDate(iso: string | null) {
         <div class="border-b border-line px-4 py-3">
           <p class="text-sm font-bold text-ink">Tareas programadas</p>
         </div>
-        <table aria-label="Servicios monitoreados" class="w-full text-left text-sm">
+        <table aria-label="Tareas programadas" class="w-full text-left text-sm">
           <thead>
             <tr class="border-b border-line text-[11px] uppercase tracking-wider text-muted">
               <th scope="col" class="px-4 py-3">Tarea</th>
@@ -152,7 +210,7 @@ function fmtDate(iso: string | null) {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="task in data.scheduled_tasks" :key="task.name" class="border-b border-line/60 last:border-0">
+            <tr v-for="task in sortedTasks" :key="task.name" class="border-b border-line/60 last:border-0" :class="task.status === 'failed' ? 'bg-danger/5' : ''">
               <td class="px-4 py-3 text-ink">{{ task.name }}</td>
               <td class="px-4 py-3 font-mono text-xs text-muted">{{ task.expression }}</td>
               <td class="px-4 py-3 whitespace-nowrap text-muted">{{ fmtDate(task.ran_at) }}</td>
