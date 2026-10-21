@@ -197,6 +197,7 @@ export function useNavigation() {
         collapsible: true,
         items: [
           item('Mi Agenda', '/barber/agenda', 'agenda', true),
+          item('Mi Calendario', '/appointments/calendar', 'calendar', true),
           item('Mi Portafolio', '/barber/portfolio', 'wall', true),
           item('Mi Horario', '/barber/schedule', 'schedule', true),
           item('Mi Perfil', '/barber/profile', 'profile'),

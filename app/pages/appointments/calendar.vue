@@ -42,7 +42,7 @@ async function ensureCalendarDeps() {
  * fuera de la ruta web con sesión), y el modal no tiene botón "Editar Cita"
  * porque /appointments/{id}/edit no existe en este frontend todavía.
  */
-definePageMeta({ middleware: ["auth", "staff"], layout: "dashboard" });
+definePageMeta({ middleware: ["auth", "calendar"], layout: "dashboard" });
 useSeoMeta({ title: 'Calendario — UrbanBlade', robots: 'noindex' })
 
 
@@ -66,6 +66,12 @@ interface CalendarEvent {
 }
 
 const { apiFetch } = useApi();
+const { hasRole } = useAuth();
+
+// El barbero ve solo su calendario (el backend lo limita a sus citas): sin selector de barbero y en primera persona.
+const ownCalendar = computed(
+  () => hasRole("barbero") && !hasRole("administrador") && !hasRole("recepcionista"),
+);
 
 type FcHandle = { getApi: () => { refetchEvents: () => void } };
 
@@ -88,6 +94,28 @@ const calendarOptions = ref<CalendarOptions>({
     list: "Lista",
   },
   height: "auto",
+  firstDay: 1,
+  nowIndicator: true,
+  navLinks: true,
+  // Con muchas citas el mes no se aprieta: 3 por día y un «+N más» que abre la lista del día.
+  dayMaxEvents: 3,
+  moreLinkClick: "popover",
+  moreLinkText: (n) => `+${n} más`,
+  eventTimeFormat: { hour: "numeric", minute: "2-digit", hour12: false },
+  // En el mes cada cita cabe en una línea: hora y nombre del cliente (el servicio queda en el detalle al tocarla).
+  eventContent(arg) {
+    if (arg.view.type !== "dayGridMonth") return undefined;
+    const line = document.createElement("span");
+    line.className = "ub-fc-event";
+    const dot = document.createElement("i");
+    dot.className = "ub-fc-dot";
+    dot.style.background = arg.backgroundColor || arg.borderColor || "var(--gold)";
+    const time = document.createElement("b");
+    time.textContent = arg.timeText;
+    line.append(dot, time, ` ${arg.event.extendedProps.cliente ?? arg.event.title}`);
+
+    return { domNodes: [line] };
+  },
   slotMinTime: "08:00:00",
   slotMaxTime: "22:00:00",
   events: fetchEvents,
@@ -96,16 +124,18 @@ const calendarOptions = ref<CalendarOptions>({
     info.el.title = `${info.event.extendedProps.cliente} · ${info.event.extendedProps.servicio}`;
   },
   dayCellDidMount(info) {
-    info.el.style.minHeight = "80px";
+    info.el.style.minHeight = "118px";
   },
 });
 
 onMounted(async () => {
   try {
     const [barbersRes, deps] = await Promise.all([
-      apiFetch<{ data: Array<{ id: string; user: { name: string } | null }> }>(
-        "/barbers",
-      ).catch(() => null),
+      ownCalendar.value
+        ? Promise.resolve(null)
+        : apiFetch<{ data: Array<{ id: string; user: { name: string } | null }> }>(
+            "/barbers",
+          ).catch(() => null),
       ensureCalendarDeps(),
     ]);
     if (barbersRes) {
@@ -206,10 +236,11 @@ function onEventClick(info: EventClickArg) {
     >
       <div>
         <h1 class="mt-1 text-2xl font-semibold text-ink">
-          Calendario de <span class="text-gold">Citas</span>
+          <template v-if="ownCalendar">Mi <span class="text-gold">Calendario</span></template>
+          <template v-else>Calendario de <span class="text-gold">Citas</span></template>
         </h1>
         <p class="mt-1 text-sm text-muted">
-          Vista mensual, semanal y diaria de la agenda.
+          {{ ownCalendar ? "Tus citas por mes, semana y día." : "Vista mensual, semanal y diaria de la agenda." }}
         </p>
       </div>
     </header>
@@ -232,12 +263,14 @@ function onEventClick(info: EventClickArg) {
           </span>
         </div>
 
-        <div class="flex items-center gap-3">
+        <div v-if="!ownCalendar" class="flex items-center gap-3">
           <label
+            for="calendar-barbero"
             class="text-[11px] font-black uppercase tracking-widest text-muted"
             >Barbero:</label
           >
           <select
+            id="calendar-barbero"
             v-model="selectedBarber"
             class="w-full min-w-0 rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink sm:w-auto sm:min-w-[180px]"
             @change="refetchEvents"
@@ -475,5 +508,34 @@ function onEventClick(info: EventClickArg) {
 }
 .fc-h-event .fc-event-main {
   color: #fff;
+}
+/* El botón de la vista activa (Mes, Semana…) heredaba gris sobre dorado y casi no se leía. */
+.fc .fc-button-primary:not(:disabled).fc-button-active,
+.fc .fc-button-primary:not(:disabled):active,
+.fc .fc-button-primary:not(:disabled):hover {
+  color: #0a0a0a !important;
+}
+/* Cita del mes en una línea: hora en negrita y nombre del cliente, sin partirse ni desbordar. */
+.ub-fc-event {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.ub-fc-event b {
+  font-weight: 800;
+}
+.ub-fc-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 5px;
+  border-radius: 50%;
+  vertical-align: 0;
+}
+.fc-daygrid-event {
+  margin-bottom: 2px;
 }
 </style>

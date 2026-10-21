@@ -42,6 +42,18 @@ test("el barbero inicia el servicio de su siguiente cita con un toque", async ({
   expect((await status).postDataJSON()).toEqual({ estado: "en_proceso" });
 });
 
+test("el barbero tiene su calendario en el menú y sin selector de barbero", async ({ page }) => {
+  await open(page, "barbero", BARBER_DASHBOARD, "/notifications");
+  await page.route("**/api/v1/appointments/calendar-data**", (r) => r.fulfill({ status: 200, contentType: "application/json", body: "[]" }));
+
+  // El menú tiene la entrada (la sección «Mi Espacio» puede estar plegada, por eso no se hace clic en ella).
+  await expect(page.locator('a[href="/appointments/calendar"]').first()).toBeAttached();
+  await page.goto("/appointments/calendar");
+
+  await expect(page.getByRole("heading", { name: "Mi Calendario" })).toBeVisible();
+  await expect(page.getByText("Barbero:")).toHaveCount(0);
+});
+
 test("el cliente ve su próxima cita con su estado, puntos y visitas", async ({ page }) => {
   await open(page, "cliente", CLIENT_DASHBOARD, "/notifications");
 

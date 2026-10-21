@@ -54,8 +54,15 @@ const rows = computed<Row[]>(() => [
   })),
 ])
 
-const DOT: Record<BadgeTone, string> = {
+// El tono se ve en el filo superior de la tarjeta, en la barra y en el color del dato; ya no hay punto de color.
+const EDGE: Record<BadgeTone, string> = {
+  neutral: 'border-t-line', gold: 'border-t-gold', success: 'border-t-success', warning: 'border-t-warning', danger: 'border-t-danger', info: 'border-t-info',
+}
+const BAR: Record<BadgeTone, string> = {
   neutral: 'bg-muted', gold: 'bg-gold', success: 'bg-success', warning: 'bg-warning', danger: 'bg-danger', info: 'bg-info',
+}
+const VALUE: Record<BadgeTone, string> = {
+  neutral: 'text-ink', gold: 'text-ink', success: 'text-success', warning: 'text-warning', danger: 'text-danger', info: 'text-ink',
 }
 
 const open = ref<Record<string, boolean>>({})
@@ -74,17 +81,19 @@ const open = ref<Record<string, boolean>>({})
       </NuxtLink>
     </header>
 
-    <ul v-if="rows.length" class="grid gap-3 md:grid-cols-2">
-      <li v-for="row in rows" :key="row.key" class="ub-rise rounded-xl border border-line bg-main/40 p-4">
-        <div class="flex items-center gap-2">
-          <span class="h-2 w-2 shrink-0 rounded-full" :class="DOT[row.tone]" aria-hidden="true" />
-          <p class="text-sm font-medium text-muted">{{ row.titulo }}</p>
+    <ul v-if="rows.length" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <li
+        v-for="row in rows"
+        :key="row.key"
+        class="ub-rise flex flex-col rounded-xl border border-line border-t-2 bg-main/40 p-5"
+        :class="EDGE[row.tone]"
+      >
+        <p class="text-sm font-semibold text-ink">{{ row.titulo }}</p>
+        <p class="mt-2 text-3xl font-semibold leading-none tracking-tight" :class="VALUE[row.tone]">{{ row.dato }}</p>
+        <div v-if="row.progress !== null" class="mt-3 h-1.5 overflow-hidden rounded-full bg-ink/10" role="presentation">
+          <span class="block h-full rounded-full" :class="BAR[row.tone]" :style="{ width: `${row.progress}%` }" />
         </div>
-        <p class="mt-1 text-xl font-semibold tracking-tight text-ink">{{ row.dato }}</p>
-        <div v-if="row.progress !== null" class="mt-2 h-1.5 overflow-hidden rounded-full bg-ink/10" role="presentation">
-          <span class="block h-full rounded-full" :class="DOT[row.tone]" :style="{ width: `${row.progress}%` }" />
-        </div>
-        <p class="mt-2 text-sm leading-relaxed text-muted">{{ row.texto }}</p>
+        <p class="mt-3 text-sm leading-relaxed text-muted">{{ row.texto }}</p>
 
         <template v-if="row.detalle">
           <div class="ub-collapse" :class="{ 'is-open': open[row.key] }">
@@ -94,11 +103,11 @@ const open = ref<Record<string, boolean>>({})
           </div>
           <button
             type="button"
-            class="mt-2 text-sm font-semibold text-gold hover:underline"
+            class="mt-auto self-start pt-3 text-sm font-semibold text-gold hover:underline"
             :aria-expanded="!!open[row.key]"
             @click="open[row.key] = !open[row.key]"
           >
-            {{ open[row.key] ? 'Ver menos' : 'Ver detalle' }}
+            {{ open[row.key] ? 'Ver menos' : 'Leer más' }}
           </button>
         </template>
       </li>
