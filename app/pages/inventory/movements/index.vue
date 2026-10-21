@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { CsvColumn } from "~/composables/useCsvExport";
 /*
  * Fase 9.5 — historial de movimientos de inventario, puerto de
  * Inventory\InventoryMovementController (web). Admin puede registrar
@@ -47,6 +48,16 @@ interface LowStockItem {
   pending_restock: boolean;
 }
 
+const exportColumns: CsvColumn<MovementRow>[] = [
+  { header: "Fecha", value: (m) => m.fecha },
+  { header: "Tipo", value: (m) => m.tipo },
+  { header: "Producto", value: (m) => m.product.nombre },
+  { header: "Cantidad", value: (m) => m.cantidad },
+  { header: "Motivo", value: (m) => m.motivo },
+  { header: "Registrado por", value: (m) => m.user.name },
+  { header: "Cliente de la cita", value: (m) => m.appointment.client },
+];
+
 const { apiFetch } = useApi();
 const { hasRole } = useAuth();
 const isAdmin = computed(() => hasRole("administrador"));
@@ -55,6 +66,8 @@ const search = ref("");
 const debouncedSearch = useDebounce(search, 350);
 const tipoFilter = ref("");
 const productFilter = ref("");
+const fechaDesde = ref("");
+const fechaHasta = ref("");
 const page = ref(1);
 
 const {
@@ -67,6 +80,8 @@ const {
     q: search.value || undefined,
     tipo: tipoFilter.value || undefined,
     product_id: productFilter.value || undefined,
+    fecha_desde: fechaDesde.value || undefined,
+    fecha_hasta: fechaHasta.value || undefined,
     page: page.value,
     per_page: 15,
   }),
@@ -76,17 +91,19 @@ const {
         q: search.value || undefined,
         tipo: tipoFilter.value || undefined,
         product_id: productFilter.value || undefined,
+    fecha_desde: fechaDesde.value || undefined,
+    fecha_hasta: fechaHasta.value || undefined,
         page: page.value,
         per_page: 15,
       },
     }),
-  { watch: [debouncedSearch, tipoFilter, productFilter, page], lazy: true },
+  { watch: [debouncedSearch, tipoFilter, productFilter, fechaDesde, fechaHasta, page], lazy: true },
 );
 const movements = computed(() => response.value?.data ?? []);
 const stats = computed(() => response.value?.meta.stats);
 const pagination = computed(() => response.value?.meta);
 
-watch([debouncedSearch, tipoFilter, productFilter], () => {
+watch([debouncedSearch, tipoFilter, productFilter, fechaDesde, fechaHasta], () => {
   page.value = 1;
 });
 
@@ -111,6 +128,8 @@ function clearFilters() {
   search.value = "";
   tipoFilter.value = "";
   productFilter.value = "";
+  fechaDesde.value = "";
+  fechaHasta.value = "";
   page.value = 1;
 }
 
@@ -236,6 +255,14 @@ async function submitForm() {
         </button>
       </div>
     </header>
+    <div class="mb-3">
+      <UiExportCsvButton
+        endpoint="/inventory/movements"
+        :query="{ q: search || undefined, tipo: tipoFilter || undefined, product_id: productFilter || undefined, fecha_desde: fechaDesde || undefined, fecha_hasta: fechaHasta || undefined }"
+        :columns="exportColumns"
+        filename="movimientos-inventario"
+      />
+    </div>
     <p v-if="actionError" role="alert" class="mb-4 text-sm text-danger">
       {{ actionError }}
     </p>
@@ -351,8 +378,22 @@ async function submitForm() {
           {{ p.nombre }}
         </option>
       </select>
+      <label for="movement-filter-from" class="sr-only">Desde</label>
+      <input
+        id="movement-filter-from"
+        v-model="fechaDesde"
+        type="date"
+        class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
+      >
+      <label for="movement-filter-to" class="sr-only">Hasta</label>
+      <input
+        id="movement-filter-to"
+        v-model="fechaHasta"
+        type="date"
+        class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
+      >
       <button
-        v-if="search || tipoFilter || productFilter"
+        v-if="search || tipoFilter || productFilter || fechaDesde || fechaHasta"
         type="button"
         class="text-xs font-bold uppercase tracking-widest text-muted hover:text-ink"
         @click="clearFilters"
@@ -374,17 +415,17 @@ async function submitForm() {
     />
 
     <section v-if="!pending && !error" class="ui-card overflow-x-auto">
-      <table class="w-full text-left text-sm">
+      <table aria-label="Movimientos de inventario" class="w-full text-left text-sm">
         <thead>
           <tr
             class="border-b border-line text-[11px] uppercase tracking-wider text-muted"
           >
-            <th class="px-4 py-3">Fecha</th>
-            <th class="px-4 py-3">Producto</th>
-            <th class="px-4 py-3">Tipo</th>
-            <th class="px-4 py-3 text-right">Cantidad</th>
-            <th class="px-4 py-3">Motivo</th>
-            <th class="px-4 py-3">Responsable</th>
+            <th scope="col" class="px-4 py-3">Fecha</th>
+            <th scope="col" class="px-4 py-3">Producto</th>
+            <th scope="col" class="px-4 py-3">Tipo</th>
+            <th scope="col" class="px-4 py-3 text-right">Cantidad</th>
+            <th scope="col" class="px-4 py-3">Motivo</th>
+            <th scope="col" class="px-4 py-3">Responsable</th>
           </tr>
         </thead>
         <tbody>

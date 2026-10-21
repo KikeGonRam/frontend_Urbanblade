@@ -141,14 +141,14 @@ function fmtDate(iso: string | null) {
         <div class="border-b border-line px-4 py-3">
           <p class="text-sm font-bold text-ink">Tareas programadas</p>
         </div>
-        <table class="w-full text-left text-sm">
+        <table aria-label="Servicios monitoreados" class="w-full text-left text-sm">
           <thead>
             <tr class="border-b border-line text-[11px] uppercase tracking-wider text-muted">
-              <th class="px-4 py-3">Tarea</th>
-              <th class="px-4 py-3">Frecuencia</th>
-              <th class="px-4 py-3">Última corrida</th>
-              <th class="px-4 py-3">Estado</th>
-              <th class="px-4 py-3">Duración</th>
+              <th scope="col" class="px-4 py-3">Tarea</th>
+              <th scope="col" class="px-4 py-3">Frecuencia</th>
+              <th scope="col" class="px-4 py-3">Última corrida</th>
+              <th scope="col" class="px-4 py-3">Estado</th>
+              <th scope="col" class="px-4 py-3">Duración</th>
             </tr>
           </thead>
           <tbody>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { CsvColumn } from "~/composables/useCsvExport";
 /*
  * Fase 9.1 del plan (ver .claude/skills/nuxt-migration-plan/SKILL.md) — a
  * diferencia de las fases 1-7, no hay página Inertia/Vue de referencia:
@@ -54,6 +55,17 @@ const SEGMENT_CLASS: Record<string, string> = {
   active: "border-success/25 bg-success/10 text-success",
   inactive: "border-ink/10 bg-ink/5 text-muted",
 };
+
+const exportColumns: CsvColumn<ClientRow>[] = [
+  { header: "Nombre", value: (c) => c.name },
+  { header: "Correo", value: (c) => c.email },
+  { header: "Teléfono", value: (c) => c.telefono },
+  { header: "Segmento", value: (c) => SEGMENT_LABEL[c.segment] ?? c.segment },
+  { header: "Citas", value: (c) => c.totalAppointments },
+  { header: "Total gastado", value: (c) => c.totalSpent },
+  { header: "Última cita", value: (c) => c.lastAppointment },
+  { header: "Alta", value: (c) => c.joinedAt },
+];
 
 const { apiFetch } = useApi();
 const { confirm } = useConfirm();
@@ -252,6 +264,14 @@ function fmtDate(iso: string | null) {
         + Nuevo Cliente
       </button>
     </header>
+    <div class="mb-3">
+      <UiExportCsvButton
+        endpoint="/admin/clients"
+        :query="{ search: search || undefined, segment: segment || undefined }"
+        :columns="exportColumns"
+        filename="clientes"
+      />
+    </div>
 
     <!-- Segmentación comercial: solo administración (ver authorizeAdmin()
          en ClientAdminController::getSegmentation). -->
@@ -318,18 +338,18 @@ function fmtDate(iso: string | null) {
     </p>
 
     <section v-if="!pending && !error" class="ui-card overflow-x-auto">
-      <table class="w-full text-left text-sm">
+      <table aria-label="Clientes" class="w-full text-left text-sm">
         <thead>
           <tr
             class="border-b border-line text-[10px] uppercase tracking-wider text-muted"
           >
-            <th class="px-4 py-3">Cliente</th>
-            <th class="px-4 py-3">Email</th>
-            <th class="px-4 py-3">Teléfono</th>
-            <th class="px-4 py-3 text-center">Segmento</th>
-            <th class="px-4 py-3 text-center">Citas</th>
-            <th class="px-4 py-3">Registrado</th>
-            <th class="px-4 py-3 text-right">Acciones</th>
+            <th scope="col" class="px-4 py-3">Cliente</th>
+            <th scope="col" class="px-4 py-3">Email</th>
+            <th scope="col" class="px-4 py-3">Teléfono</th>
+            <th scope="col" class="px-4 py-3 text-center">Segmento</th>
+            <th scope="col" class="px-4 py-3 text-center">Citas</th>
+            <th scope="col" class="px-4 py-3">Registrado</th>
+            <th scope="col" class="px-4 py-3 text-right">Acciones</th>
           </tr>
         </thead>
         <tbody>

@@ -138,18 +138,18 @@ function fmtDate(iso: string | null) {
     </p>
 
     <section v-else class="ui-card overflow-x-auto">
-      <table class="w-full min-w-[48rem] text-left text-sm">
+      <table aria-label="Reseñas" class="w-full min-w-[48rem] text-left text-sm">
         <thead>
           <tr class="border-b border-line text-[11px] uppercase tracking-wider text-muted">
-            <th class="cursor-pointer px-4 py-3 select-none" @click="toggleSort('created_at')">
+            <th scope="col" class="cursor-pointer px-4 py-3 select-none" @click="toggleSort('created_at')">
               Fecha {{ sort === 'created_at' ? (dir === 'asc' ? '↑' : '↓') : '' }}
             </th>
-            <th class="cursor-pointer px-4 py-3 select-none" @click="toggleSort('rating')">
+            <th scope="col" class="cursor-pointer px-4 py-3 select-none" @click="toggleSort('rating')">
               Calificación {{ sort === 'rating' ? (dir === 'asc' ? '↑' : '↓') : '' }}
             </th>
-            <th class="px-4 py-3">Barbero</th>
-            <th class="px-4 py-3">Cliente</th>
-            <th class="px-4 py-3">Comentario</th>
+            <th scope="col" class="px-4 py-3">Barbero</th>
+            <th scope="col" class="px-4 py-3">Cliente</th>
+            <th scope="col" class="px-4 py-3">Comentario</th>
           </tr>
         </thead>
         <tbody>
