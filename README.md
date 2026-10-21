@@ -21,9 +21,21 @@ alcanzar esta app paridad funcional confirmada.
 - **Reserva de citas con disponibilidad real**: al elegir barbero + servicio + fecha,
   el formulario consulta `/availability/slots` y solo ofrece horarios realmente
   libres — nunca un horario que el backend vaya a rechazar.
-- **4 experiencias por rol**: administrador (KPIs globales, control operativo),
-  recepcionista (agenda del turno, cobros), barbero (agenda personal, portafolio,
-  aprobación de citas), cliente (reservas, historial, tienda, membresía, lealtad).
+- **Sitio público sin cuenta**: landing con recorrido de estilos, equipo, servicios,
+  reserva pública y promoción de la app Android (acceso anticipado con código QR).
+- **Experiencia distinta por rol**:
+  - *Administrador, recepcionista e ingeniero* — interfaz corporativa de datos (plana y
+    densa): KPIs, tablas, reportes y sistema.
+  - *Cliente* — la próxima cita en grande con cuenta regresiva, nivel de lealtad, accesos
+    rápidos (reservar, tienda, recibos) y membresía digital.
+  - *Barbero* — avance del día, aprobaciones pendientes y agenda en tarjetas con un
+    botón de un toque por cita (iniciar, terminar con ticket, no asistió).
+- **Gráficas que se pueden explorar**: paletas de varios colores, animación de entrada y
+  una ventana de detalle al tocar cualquier barra, punto o porción
+  (`ub:chart-detail`). Incluye un **mapa de calor de horas pico** (demanda real de citas
+  por día y hora) en el Centro de Reportes.
+- **Reportes exportables**: CSV desde las pantallas y PDF/Excel corporativos desde el
+  backend (portada, introducción, resumen ejecutivo, hallazgos y detalle).
 - **Pagos reales**: Stripe (tarjeta, beta), transferencia con comprobante, efectivo —
   todo con el monto recalculado server-side, nunca confiando en lo que el cliente envía.
 - **4 temas visuales** (Sastrería Nocturna / Taller de Acero / Salón Inglés / Libreta
@@ -56,7 +68,7 @@ alcanzar esta app paridad funcional confirmada.
   <img src="docs/assets/dashboard-cliente.png" alt="Panel del cliente" width="1000" />
 </p>
 
-<p align="center"><em>Panel del cliente — próxima cita, ritmo de visitas, recomendaciones y tarjeta de membresía digital, todo desde la cuenta del propio cliente.</em></p>
+<p align="center"><em>Panel del cliente — próxima cita, ritmo de visitas, recomendaciones y tarjeta de membresía digital, todo desde la cuenta del propio cliente. (Captura anterior al rediseño actual: hoy la próxima cita va en grande con cuenta regresiva y accesos rápidos.)</em></p>
 
 <p align="center">
   <img src="docs/assets/booking-modal-cliente.png" alt="Modal de reserva del cliente" width="1000" />
@@ -67,10 +79,13 @@ alcanzar esta app paridad funcional confirmada.
 ## 🏗️ Stack
 
 - Nuxt 4 + Vue 3 + TypeScript
-- Tailwind CSS 3 (`@nuxtjs/tailwindcss`), 4 temas por tokens CSS
-- Chart.js (métricas), FullCalendar (agenda/citas)
+- Tailwind CSS 4 (`@tailwindcss/vite`), 4 temas por tokens CSS (`app/assets/css/main.css`)
+- Chart.js 4 + `vue-chartjs` (métricas; plugin propio de degradados y ventana de detalle en
+  `app/utils/registerChartjs.ts`), FullCalendar (agenda/citas)
 - Stripe Elements (cobro con tarjeta, beta)
-- Playwright para E2E, contra el **build de producción**, no `nuxt dev`
+- Playwright para E2E, contra el **build de producción**, no `nuxt dev`; Cypress para
+  flujos de interfaz
+- Contrato de API: tipos generados desde `contract/openapi.yaml` (copia del spec de `barber`)
 
 ## 🧭 Roles del sistema
 
@@ -79,7 +94,7 @@ alcanzar esta app paridad funcional confirmada.
 | Administrador | Dashboard global, reportes, KPIs, clientes, pagos, inventario y control operativo. |
 | Recepcionista | Agenda del día, atención rápida, cobros y gestión de clientes. |
 | Barbero | Horario personal, citas, perfil, portafolio y seguimiento de actividad. |
-| Cliente | Reservas, historial, tienda, carrito, facturas y membresía. |
+| Cliente | Reservas, historial, tienda, carrito, recibos y membresía. |
 | Ingeniero | Solo lectura: reportes, logs y estado del sistema (`/pulse`), nunca gestión. |
 
 ## 🚀 Requisitos
@@ -113,6 +128,10 @@ contraseñas; no se duplican aquí).
 npm run lint                       # eslint
 npm run build                      # build de producción
 npm run test:e2e                   # Playwright, contra el build ya compilado
+npm run cypress:run                # Cypress, contra el build y la API simulada (cypress:open para depurar)
+npm run audit:gate                 # npm audit con lista de excepciones que caducan (ver scripts/audit-gate.mjs)
+npm run contract:check             # los tipos de app/types/api.d.ts siguen a contract/openapi.yaml
+npm run contract:sync              # copia el spec de barber y regenera los tipos
 ```
 
 `e2e/security.spec.ts` fija las regresiones de seguridad: que el build emita la CSP
@@ -120,16 +139,23 @@ npm run test:e2e                   # Playwright, contra el build ya compilado
 `frame-ancestors`), que un texto con HTML que venga de la API se pinte escapado y no se
 ejecute, y que el token no acabe en `localStorage`.
 
-CI (`.github/workflows/ci.yml`) corre dos jobs en cada push/PR a `main`:
+CI corre en cada push/PR a `main`. Los jobs de `.github/workflows/ci.yml`:
 
 - **Frontend**: `eslint . --max-warnings=0` (más estricto que `npm run lint` local —
   probar siempre con el flag exacto antes de pushear), `npm run build`, `npm audit
-  --audit-level=high`.
+  --audit-level=high` (con la lista de excepciones de `audit:gate`).
+- **Contrato de API**: falla si `app/types/api.d.ts` no corresponde a
+  `contract/openapi.yaml`; además avisa (sin fallar) si la copia quedó atrás del spec de
+  `barber@main`. Si cambia la API del backend: `npm run contract:sync` y commitear.
 - **E2E**: Playwright contra `nuxt build && nuxt preview` (puerto 3100, no 3000 — no
   reutiliza un `npm run dev` que pueda estar corriendo). La API de `barber` se
   intercepta en el navegador (`e2e/support/api-mock.ts` + `e2e/support/mock-api.mjs`
   para las peticiones que Nuxt resuelve en SSR), así que este job no necesita
   Laravel/Mongo/Redis corriendo.
+
+Además, `.github/workflows/cypress.yml` corre Cypress en dos contenedores en paralelo
+(registrado en Cypress Cloud si existe el secreto; ver `docs/CYPRESS_CLOUD.md`), y el PR
+pasa por SonarCloud (calidad, duplicación y fiabilidad) y GitGuardian (secretos).
 
 ### Tres cosas que conviene saber antes de correrlas
 
@@ -164,6 +190,9 @@ mismo más los otros tres proyectos:
 - `.claude/skills/git-commit-conventions/SKILL.md` — convención de mensajes de commit
   (español, un solo autor humano).
 - `design-qa.md` — notas de auditoría visual/UX del sidebar y los 4 temas.
+- `docs/AUDITORIA_UI_UX.md` — auditoría de interfaz y accesibilidad.
+- `docs/CYPRESS_CLOUD.md` — cómo se registran las corridas de Cypress.
+- `contract/openapi.yaml` — copia versionada del contrato de la API de `barber`.
 - `docs/IDENTITY_MASCOT_SIDEBAR_PLAN.md` — sistema de identidad, mascotas y temas.
 - `docs/ENGINEER_OBSERVABILITY_DASHBOARD_PLAN.md` — ADR del panel de solo lectura
   para el rol ingeniero.
