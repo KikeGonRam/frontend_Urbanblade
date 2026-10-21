@@ -42,6 +42,7 @@ const toneClass = (tone?: string) => (tone === "up" ? "text-success" : tone === 
       class="ub-chart-detail"
       aria-labelledby="ub-chart-detail-title"
       @cancel.prevent="close"
+      @keydown.esc.prevent="close"
       @click="$event.target === dialog && close()"
     >
       <div class="p-5 sm:p-6">
