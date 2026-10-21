@@ -12,6 +12,12 @@
         overscroll-behavior: none;
     }
 
+    /* Saltos a #ancla con scroll suave; el margen libera la barra fija de 80 px de la landing. */
+    @media (prefers-reduced-motion: no-preference) {
+        html { scroll-behavior: smooth; }
+    }
+    section[id], header[id] { scroll-margin-top: 5rem; }
+
     body {
         overscroll-behavior: none;
     }
@@ -514,8 +520,10 @@ html[data-theme="libreta"] {
     @keyframes ub-landing-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 
     /* Reveal-on-scroll (IntersectionObserver desde useScrollReveal.ts) */
-    .reveal { opacity: 0; transform: translateY(28px); transition: opacity .65s ease, transform .65s ease; }
+    .reveal { opacity: 0; transform: translateY(18px); transition: opacity .45s ease, transform .45s ease; }
     .reveal.is-visible { opacity: 1; transform: translateY(0); }
+    /* Sin JavaScript nunca se oculta contenido. */
+    @media (scripting: none) { .reveal { opacity: 1; transform: none; } }
 
     @keyframes ub-landing-float-badge { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
     .float-badge { animation: ub-landing-float-badge 4s ease-in-out infinite; }

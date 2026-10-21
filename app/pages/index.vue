@@ -17,9 +17,27 @@
  */
 import { publicImageUrl } from '~/utils/publicImage'
 
+const HERO_IMG = 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1'
+const SITE_URL = 'https://urbanblade.com.mx'
+
 useSeoMeta({
-  title: 'UrbanBlade',
-  description: 'Donde el estilo toma vida. Reserva tu cita premium en UrbanBlade: cortes, barba y grooming de estudio.',
+  title: 'UrbanBlade — Barbería premium con reserva en línea',
+  description: 'Reserva tu cita en UrbanBlade: cortes, barba y grooming de estudio con maestros barberos. Elige servicio, maestro y un horario realmente disponible.',
+  ogTitle: 'UrbanBlade — Barbería premium con reserva en línea',
+  ogDescription: 'Cortes, barba y grooming de estudio. Reserva en segundos, sin llamadas.',
+  ogType: 'website',
+  ogUrl: SITE_URL,
+  ogLocale: 'es_MX',
+  ogImage: `${HERO_IMG}?q=75&w=1200&h=630&fit=crop&auto=format`,
+  twitterCard: 'summary_large_image',
+})
+
+// La foto del hero es lo más grande de la portada: se conecta y se pide antes de que el CSS la descubra.
+useHead({
+  link: [
+    { rel: 'preconnect', href: 'https://images.unsplash.com', crossorigin: '' },
+    { rel: 'preload', as: 'image', href: `${HERO_IMG}?q=75&w=1920&auto=format&fit=max`, fetchpriority: 'high' },
+  ],
 })
 
 interface ServiceRow {
@@ -159,6 +177,23 @@ const socials = computed(() =>
 
 const mapAddress = computed(() => shop.value?.direccion ?? '')
 
+// Datos de negocio local para buscadores: solo lo que la barbería realmente capturó.
+useHead({
+  script: [{
+    type: 'application/ld+json',
+    innerHTML: computed(() => JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'HairSalon',
+      'name': shop.value?.nombre || 'UrbanBlade',
+      'url': SITE_URL,
+      'image': `${HERO_IMG}?q=75&w=1200&auto=format`,
+      ...(shop.value?.telefono ? { telephone: shop.value.telefono } : {}),
+      ...(shop.value?.direccion ? { address: { '@type': 'PostalAddress', 'streetAddress': shop.value.direccion, 'addressCountry': 'MX' } } : {}),
+      ...(publicStats.value.reviews > 0 ? { aggregateRating: { '@type': 'AggregateRating', 'ratingValue': publicStats.value.rating, 'reviewCount': publicStats.value.reviews } } : {}),
+    })),
+  }],
+})
+
 let scrollHandler: (() => void) | undefined
 let parallaxHandler: (() => void) | undefined
 let pointerHandler: ((e: PointerEvent) => void) | undefined
@@ -198,7 +233,7 @@ if (import.meta.client) {
           revealObserver?.unobserve(entry.target)
         }
       })
-    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' })
+    }, { threshold: 0.01, rootMargin: '0px 0px 18% 0px' })
   }
 }
 
@@ -209,7 +244,22 @@ const vReveal = {
   },
 }
 
+/*
+ * Entrada directa con #ancla (p. ej. /#app): el catálogo y los maestros llegan por
+ * fetch en cliente y la página crece después de que el navegador ya saltó, así que la
+ * sección queda desplazada. Se reposiciona una sola vez cuando terminan de cargar.
+ */
+const route = useRoute()
+let anchorRestored = false
+function restoreAnchor() {
+  if (anchorRestored || !route.hash || servicesPending.value || barbersPending.value) return
+  anchorRestored = true
+  nextTick(() => document.querySelector(route.hash)?.scrollIntoView())
+}
+if (import.meta.client) watch([servicesPending, barbersPending], restoreAnchor)
+
 onMounted(() => {
+  restoreAnchor()
   scrollHandler = () => { scrolled.value = window.scrollY > 50 }
   window.addEventListener('scroll', scrollHandler, { passive: true })
 
@@ -249,7 +299,7 @@ onBeforeUnmount(() => {
         <div class="flex h-20 items-center justify-between">
           <div class="flex items-center gap-3">
             <img src="/images/urbanblade-mark.svg" class="h-10 w-10" alt="UrbanBlade">
-            <NuxtLink to="/" class="text-xl font-black uppercase tracking-tighter text-ink">Urban<span class="text-gold">Blade</span></NuxtLink>
+            <NuxtLink to="/" class="inline-flex min-h-[44px] items-center text-xl font-black uppercase tracking-tighter text-ink">Urban<span class="text-gold">Blade</span></NuxtLink>
           </div>
 
           <div class="hidden items-center gap-5 text-[10px] font-black uppercase tracking-[0.2em] text-muted lg:flex">
@@ -270,7 +320,7 @@ onBeforeUnmount(() => {
             </template>
           </div>
 
-          <button type="button" class="p-2 text-ink lg:hidden" aria-label="Abrir menú" @click="mobileMenuOpen = !mobileMenuOpen">
+          <button type="button" class="flex h-11 w-11 items-center justify-center text-ink lg:hidden" aria-label="Abrir menú" @click="mobileMenuOpen = !mobileMenuOpen">
             <svg v-if="!mobileMenuOpen" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M4 6h16M4 12h16M4 18h16" stroke-width="2" stroke-linecap="round" /></svg>
             <svg v-else class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M6 18L18 6M6 6l12 12" stroke-width="2" stroke-linecap="round" /></svg>
           </button>
@@ -296,6 +346,7 @@ onBeforeUnmount(() => {
       </Transition>
     </nav>
 
+    <main id="contenido">
     <!-- HERO -->
     <header id="inicio" class="relative flex items-center justify-center overflow-hidden" style="min-height: 92vh;">
       <div class="hero-bg absolute inset-0 z-0 scale-110">
@@ -457,7 +508,7 @@ onBeforeUnmount(() => {
             <h2 class="text-4xl font-black uppercase tracking-tight text-ink">Los <span class="text-gold">Maestros</span></h2>
             <p class="mt-2 text-sm text-muted">Arquitectos de la imagen masculina</p>
           </div>
-          <NuxtLink to="/equipo" class="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-gold transition-colors hover:text-ink">
+          <NuxtLink to="/equipo" class="flex min-h-[44px] items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-gold transition-colors hover:text-ink">
             Ver equipo completo <span>&rarr;</span>
           </NuxtLink>
         </div>
@@ -568,7 +619,7 @@ onBeforeUnmount(() => {
                     v-for="social in socials" :key="social.network"
                     :href="social.url" target="_blank" rel="noopener noreferrer"
                     :aria-label="`UrbanBlade en ${social.network}`"
-                    class="flex h-9 w-9 items-center justify-center rounded-xl border border-line bg-ink/5 text-muted transition-all hover:border-gold/20 hover:bg-gold/10 hover:text-gold"
+                    class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-line bg-ink/5 text-muted transition-all hover:border-gold/20 hover:bg-gold/10 hover:text-gold"
                   >
                     <svg v-if="social.network === 'instagram'" class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" /></svg>
                     <svg v-else-if="social.network === 'facebook'" class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>
@@ -587,7 +638,7 @@ onBeforeUnmount(() => {
               <a
                 :href="`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapAddress)}`"
                 target="_blank" rel="noopener noreferrer"
-                class="absolute bottom-4 right-4 flex items-center gap-2 rounded-xl border border-gold/20 bg-main/90 px-4 py-2.5 text-[9px] font-black uppercase tracking-widest text-gold backdrop-blur transition-all hover:bg-gold hover:text-black"
+                class="absolute bottom-4 right-4 flex min-h-[44px] items-center gap-2 rounded-xl border border-gold/20 bg-main/90 px-4 py-2.5 text-[9px] font-black uppercase tracking-widest text-gold backdrop-blur transition-all hover:bg-gold hover:text-black"
               >
                 <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                 Abrir en Google Maps
@@ -617,6 +668,8 @@ onBeforeUnmount(() => {
       </div>
     </section>
 
+    </main>
+
     <!-- FOOTER -->
     <footer class="relative overflow-hidden border-t border-line bg-main py-16">
       <div class="pointer-events-none absolute -bottom-32 -left-32 h-80 w-80 rounded-full bg-gold/4 blur-3xl" />
@@ -636,10 +689,10 @@ onBeforeUnmount(() => {
             <div>
               <h3 class="mb-5 text-[10px] font-black uppercase tracking-widest text-ink">Navegación</h3>
               <ul class="space-y-3 text-[11px] font-bold uppercase tracking-wider text-muted">
-                <li><a href="#servicios" class="transition hover:text-gold">Servicios</a></li>
-                <li><a href="#como-funciona" class="transition hover:text-gold">Proceso</a></li>
-                <li><a href="#equipo" class="transition hover:text-gold">Maestros</a></li>
-                <li><NuxtLink to="/login" class="transition hover:text-gold">Acceso Staff</NuxtLink></li>
+                <li><a href="#servicios" class="inline-flex min-h-[44px] items-center transition hover:text-gold">Servicios</a></li>
+                <li><a href="#como-funciona" class="inline-flex min-h-[44px] items-center transition hover:text-gold">Proceso</a></li>
+                <li><a href="#equipo" class="inline-flex min-h-[44px] items-center transition hover:text-gold">Maestros</a></li>
+                <li><NuxtLink to="/login" class="inline-flex min-h-[44px] items-center transition hover:text-gold">Acceso Staff</NuxtLink></li>
               </ul>
             </div>
             <!-- Segundo bloque de contacto de la landing (el otro está en la
@@ -663,7 +716,7 @@ onBeforeUnmount(() => {
                   v-for="social in socials" :key="`footer-${social.network}`"
                   :href="social.url" target="_blank" rel="noopener noreferrer"
                   :aria-label="`UrbanBlade en ${social.network}`"
-                  class="flex h-8 w-8 items-center justify-center rounded-lg bg-ink/5 text-muted transition-all hover:bg-gold/10 hover:text-gold"
+                  class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-ink/5 text-muted transition-all hover:bg-gold/10 hover:text-gold"
                 >
                   <svg v-if="social.network === 'instagram'" class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" /></svg>
                   <svg v-else-if="social.network === 'facebook'" class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>
@@ -679,8 +732,8 @@ onBeforeUnmount(() => {
             &copy; {{ new Date().getFullYear() }} UrbanBlade. Todos los derechos reservados.
           </p>
           <div class="flex gap-6 text-[9px] font-black uppercase tracking-[0.2em] text-muted">
-            <NuxtLink to="/privacidad" class="transition hover:text-ink">Privacidad</NuxtLink>
-            <NuxtLink to="/terminos" class="transition hover:text-ink">Términos</NuxtLink>
+            <NuxtLink to="/privacidad" class="inline-flex min-h-[44px] items-center transition hover:text-ink">Privacidad</NuxtLink>
+            <NuxtLink to="/terminos" class="inline-flex min-h-[44px] items-center transition hover:text-ink">Términos</NuxtLink>
           </div>
         </div>
       </div>
@@ -693,7 +746,7 @@ onBeforeUnmount(() => {
 <style scoped>
 .hero-bg { will-change: transform; }
 .hero-photo {
-  background-image: url('https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=90&w=2400&auto=format&fit=max');
+  background-image: url('https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=75&w=1920&auto=format&fit=max');
   background-size: cover;
   background-position: center;
   opacity: 0.48;

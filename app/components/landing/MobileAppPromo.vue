@@ -11,9 +11,9 @@ const storeUrl = ''
 const earlyAccessUrl = 'https://play.google.com/apps/testing/com.urbanblade.mobile'
 
 const shots = [
-  { src: '/images/app/inicio.png', alt: 'Pantalla de inicio de la app con la próxima visita confirmada', label: 'Tu próxima visita' },
-  { src: '/images/app/reservar.png', alt: 'Pantalla para reservar una cita en la app', label: 'Reserva en segundos' },
-  { src: '/images/app/mis-citas.png', alt: 'Pantalla Mis citas con opción de reagendar o cancelar', label: 'Reagenda o cancela' },
+  { src: '/images/app/inicio.jpg', alt: 'Pantalla de inicio de la app con la próxima visita confirmada', label: 'Tu próxima visita' },
+  { src: '/images/app/reservar.jpg', alt: 'Pantalla para reservar una cita en la app', label: 'Reserva en segundos' },
+  { src: '/images/app/mis-citas.jpg', alt: 'Pantalla Mis citas con opción de reagendar o cancelar', label: 'Reagenda o cancela' },
 ]
 const features = [
   'Reserva con tu maestro favorito y un horario realmente disponible',
@@ -81,7 +81,7 @@ onBeforeUnmount(stop)
               <p class="text-[9px] font-black uppercase tracking-[0.25em] text-gold">Acceso anticipado · Google Play</p>
               <p class="mt-1 text-sm font-black text-ink">Escanea el QR desde tu Android</p>
               <p class="mt-1 text-[11px] leading-snug text-muted">Prueba cerrada: entra con la cuenta de Google que el equipo registró. ¿Aún no la tienes? Pídela en recepción.</p>
-              <a :href="earlyAccessUrl" target="_blank" rel="noopener noreferrer" class="mt-2 inline-block text-[10px] font-black uppercase tracking-widest text-gold hover:text-ink">Abrir enlace &rarr;</a>
+              <a :href="earlyAccessUrl" target="_blank" rel="noopener noreferrer" class="mt-1 inline-flex min-h-[44px] items-center text-[10px] font-black uppercase tracking-widest text-gold hover:text-ink">Abrir enlace &rarr;</a>
             </div>
           </div>
           <span class="text-[11px] font-bold uppercase tracking-widest text-muted">Solo Android</span>
@@ -101,10 +101,10 @@ onBeforeUnmount(stop)
           </div>
         </div>
         <p class="mt-6 text-[11px] font-black uppercase tracking-[0.25em] text-gold">{{ shots[active]?.label }}</p>
-        <div class="mt-3 flex gap-2" role="tablist" aria-label="Pantallas de la app">
+        <div class="mt-1 flex" role="tablist" aria-label="Pantallas de la app">
           <button
             v-for="(s, i) in shots" :key="s.label" type="button" role="tab" :aria-selected="i === active" :aria-label="s.label"
-            class="flex h-6 w-6 items-center justify-center" @click="select(i)"
+            class="flex h-11 w-11 items-center justify-center" @click="select(i)"
           >
             <span class="block h-2 rounded-full transition-all" :class="i === active ? 'w-6 bg-gold' : 'w-2 bg-line'" />
           </button>
