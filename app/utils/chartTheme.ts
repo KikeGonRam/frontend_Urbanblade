@@ -78,3 +78,19 @@ export function chartAxisClean() {
     border: { display: false },
   }
 }
+
+/** Color de un token semántico del tema (success, warning, danger, info, gold, ink) para Chart.js. */
+export function tokenRgba(token: 'success' | 'warning' | 'danger' | 'info' | 'gold' | 'ink', alpha = 1): string {
+  const fallback = { success: '52 211 153', warning: '245 180 70', danger: '248 113 113', info: '96 165 250', gold: '212 175 55', ink: '242 242 242' }[token]
+
+  return `rgba(${cssVar(`--${token}-rgb`, fallback).replace(/\s+/g, ',')}, ${alpha})`
+}
+
+/** Color de cada estado de cita, igual que sus insignias (appointmentStatus). */
+export function appointmentStatusColor(estado: string): string {
+  const map: Record<string, Parameters<typeof tokenRgba>[0]> = {
+    pendiente: 'warning', confirmada: 'info', en_proceso: 'gold', completada: 'success', cancelada: 'danger', no_asistio: 'ink',
+  }
+
+  return tokenRgba(map[estado] ?? 'ink', estado === 'no_asistio' ? 0.35 : 0.9)
+}
