@@ -6,6 +6,8 @@
  * para comentar, o descartar los reportes (POST .../resolve).
  */
 definePageMeta({ middleware: ["auth", "admin"], layout: "dashboard" });
+useSeoMeta({ title: 'Moderación del muro — UrbanBlade', robots: 'noindex' })
+
 
 interface ReportedComment {
   comment_id: string;
@@ -89,7 +91,7 @@ async function resolve(item: ReportedComment, action: Action) {
       <p class="mt-1 text-sm text-muted">Comentarios reportados por los usuarios, pendientes de revisión.</p>
     </header>
 
-    <p v-if="actionError" role="alert" class="mb-4 text-sm text-red-400">{{ actionError }}</p>
+    <p v-if="actionError" role="alert" class="mb-4 text-sm text-danger">{{ actionError }}</p>
     <p v-if="pending" class="text-sm text-muted">Cargando…</p>
     <BrandStatePanel
       v-else-if="error"
@@ -110,7 +112,7 @@ async function resolve(item: ReportedComment, action: Action) {
           <span
             v-for="r in item.reasons"
             :key="r"
-            class="rounded-full border border-amber-500/25 bg-amber-500/10 px-2 py-0.5 text-[10px] font-black uppercase text-amber-300"
+            class="rounded-full border border-warning/25 bg-warning/10 px-2 py-0.5 text-[11px] font-black uppercase text-warning"
           >{{ reasonLabel(r) }}</span>
           <span class="text-xs text-muted">
             {{ item.reports_count }} {{ item.reports_count === 1 ? "reporte" : "reportes" }} · primero: {{ fmtDate(item.first_reported_at) }}
@@ -119,7 +121,7 @@ async function resolve(item: ReportedComment, action: Action) {
         <p class="mt-3 whitespace-pre-line break-words text-sm text-ink">{{ item.comment ?? "(sin texto)" }}</p>
         <p class="mt-2 text-xs text-muted">
           Autor: <strong class="text-ink">{{ item.author?.name ?? "Desconocido" }}</strong>
-          <span v-if="item.author?.comments_banned" class="ml-1 text-red-400">(ya vetado)</span>
+          <span v-if="item.author?.comments_banned" class="ml-1 text-danger">(ya vetado)</span>
           · Publicación: {{ item.work?.title ?? "—" }}
         </p>
         <div class="mt-4 flex flex-wrap gap-2">

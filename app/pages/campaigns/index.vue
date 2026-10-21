@@ -7,6 +7,8 @@
  */
 definePageMeta({ middleware: ['auth', 'admin'], layout: 'dashboard' })
 
+useSeoMeta({ title: 'Campañas — UrbanBlade', robots: 'noindex' })
+
 interface CampaignRow {
   id: string
   titulo: string
@@ -33,8 +35,8 @@ interface IndexResponse {
 
 const ESTADO_LABEL: Record<string, string> = { programada: 'Programada', enviada: 'Enviada' }
 const ESTADO_CLASS: Record<string, string> = {
-  programada: 'border-amber-500/25 bg-amber-500/10 text-amber-300',
-  enviada: 'border-emerald-500/25 bg-emerald-500/10 text-emerald-300',
+  programada: 'border-warning/25 bg-warning/10 text-warning',
+  enviada: 'border-success/25 bg-success/10 text-success',
 }
 
 const { apiFetch } = useApi()
@@ -69,7 +71,7 @@ const fieldErrors = ref<Record<string, string[]>>({})
 
 const inputClass = (field: string) => [
   'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink',
-  fieldErrors.value[field] ? 'border-red-500/60' : 'border-line',
+  fieldErrors.value[field] ? 'border-danger/60' : 'border-line',
 ]
 
 async function submitCampaign() {
@@ -122,23 +124,23 @@ async function submitCampaign() {
           <div>
             <label for="campaign-title" class="mb-1 block text-xs text-muted">Título</label>
             <input id="campaign-title" v-model="form.titulo" type="text" required maxlength="150" :aria-invalid="!!fieldErrors.titulo" :aria-describedby="fieldErrors.titulo ? 'campaign-title-error' : undefined" :class="inputClass('titulo')">
-            <p v-if="fieldErrors.titulo" id="campaign-title-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.titulo[0] }}</p>
+            <p v-if="fieldErrors.titulo" id="campaign-title-error" class="mt-1 text-xs text-danger">{{ fieldErrors.titulo[0] }}</p>
           </div>
           <div>
             <label for="campaign-body" class="mb-1 block text-xs text-muted">Mensaje</label>
             <textarea id="campaign-body" v-model="form.cuerpo" rows="3" required maxlength="2000" :aria-invalid="!!fieldErrors.cuerpo" :aria-describedby="fieldErrors.cuerpo ? 'campaign-body-error' : undefined" :class="inputClass('cuerpo')" />
-            <p v-if="fieldErrors.cuerpo" id="campaign-body-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.cuerpo[0] }}</p>
+            <p v-if="fieldErrors.cuerpo" id="campaign-body-error" class="mt-1 text-xs text-danger">{{ fieldErrors.cuerpo[0] }}</p>
           </div>
           <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label for="campaign-cta-label" class="mb-1 block text-xs text-muted">Texto del botón (opcional)</label>
               <input id="campaign-cta-label" v-model="form.cta_label" type="text" maxlength="40" :aria-invalid="!!fieldErrors.cta_label" :aria-describedby="fieldErrors.cta_label ? 'campaign-cta-label-error' : undefined" :class="inputClass('cta_label')">
-              <p v-if="fieldErrors.cta_label" id="campaign-cta-label-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.cta_label[0] }}</p>
+              <p v-if="fieldErrors.cta_label" id="campaign-cta-label-error" class="mt-1 text-xs text-danger">{{ fieldErrors.cta_label[0] }}</p>
             </div>
             <div>
               <label for="campaign-cta-url" class="mb-1 block text-xs text-muted">URL del botón (opcional)</label>
               <input id="campaign-cta-url" v-model="form.cta_url" type="url" maxlength="300" :aria-invalid="!!fieldErrors.cta_url" :aria-describedby="fieldErrors.cta_url ? 'campaign-cta-url-error' : undefined" :class="inputClass('cta_url')">
-              <p v-if="fieldErrors.cta_url" id="campaign-cta-url-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.cta_url[0] }}</p>
+              <p v-if="fieldErrors.cta_url" id="campaign-cta-url-error" class="mt-1 text-xs text-danger">{{ fieldErrors.cta_url[0] }}</p>
             </div>
           </div>
           <div>
@@ -146,7 +148,7 @@ async function submitCampaign() {
             <select id="campaign-segment" v-model="form.segmento" :aria-invalid="!!fieldErrors.segmento" :aria-describedby="fieldErrors.segmento ? 'campaign-segment-error' : undefined" :class="inputClass('segmento')">
               <option v-for="opt in segmentOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
             </select>
-            <p v-if="fieldErrors.segmento" id="campaign-segment-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.segmento[0] }}</p>
+            <p v-if="fieldErrors.segmento" id="campaign-segment-error" class="mt-1 text-xs text-danger">{{ fieldErrors.segmento[0] }}</p>
           </div>
           <div>
             <span id="campaign-mode-label" class="mb-1 block text-xs text-muted">Envío</span>
@@ -154,15 +156,15 @@ async function submitCampaign() {
               <label for="campaign-mode-now" class="flex items-center gap-1.5"><input id="campaign-mode-now" v-model="form.modo" type="radio" value="ahora"> Ahora</label>
               <label for="campaign-mode-schedule" class="flex items-center gap-1.5"><input id="campaign-mode-schedule" v-model="form.modo" type="radio" value="programar"> Programar</label>
             </div>
-            <p v-if="fieldErrors.modo" id="campaign-mode-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.modo[0] }}</p>
+            <p v-if="fieldErrors.modo" id="campaign-mode-error" class="mt-1 text-xs text-danger">{{ fieldErrors.modo[0] }}</p>
           </div>
           <div v-if="form.modo === 'programar'">
             <label for="campaign-scheduled-at" class="mb-1 block text-xs text-muted">Fecha y hora</label>
             <input id="campaign-scheduled-at" v-model="form.programada_para" type="datetime-local" required :aria-invalid="!!fieldErrors.programada_para" :aria-describedby="fieldErrors.programada_para ? 'campaign-scheduled-at-error' : undefined" :class="inputClass('programada_para')">
-            <p v-if="fieldErrors.programada_para" id="campaign-scheduled-at-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.programada_para[0] }}</p>
+            <p v-if="fieldErrors.programada_para" id="campaign-scheduled-at-error" class="mt-1 text-xs text-danger">{{ fieldErrors.programada_para[0] }}</p>
           </div>
-          <p v-if="formError" role="alert" class="text-sm text-red-400">{{ formError }}</p>
-          <p v-if="formSuccess" role="status" class="text-sm text-emerald-400">{{ formSuccess }}</p>
+          <p v-if="formError" role="alert" class="text-sm text-danger">{{ formError }}</p>
+          <p v-if="formSuccess" role="status" class="text-sm text-success">{{ formSuccess }}</p>
           <button type="submit" :disabled="sending" class="w-full rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-black hover:bg-gold-dim disabled:opacity-50">
             {{ sending ? 'Enviando…' : form.modo === 'ahora' ? 'Enviar ahora' : 'Programar' }}
           </button>
@@ -188,7 +190,7 @@ async function submitCampaign() {
           <div v-for="c in campaigns" :key="c.id" class="ui-card p-4">
             <div class="mb-1 flex flex-wrap items-center justify-between gap-2">
               <p class="font-black text-ink">{{ c.titulo }}</p>
-              <span class="rounded-full border px-2 py-0.5 text-[10px] font-black uppercase" :class="ESTADO_CLASS[c.estado]">{{ ESTADO_LABEL[c.estado] ?? c.estado }}</span>
+              <span class="rounded-full border px-2 py-0.5 text-[11px] font-black uppercase" :class="ESTADO_CLASS[c.estado]">{{ ESTADO_LABEL[c.estado] ?? c.estado }}</span>
             </div>
             <p class="mb-2 text-sm text-muted">{{ c.cuerpo }}</p>
             <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">

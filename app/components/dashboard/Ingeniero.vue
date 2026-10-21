@@ -363,7 +363,7 @@ const barberRanking = computed(() => {
           />
           <div>
             <p
-              class="text-[10px] font-black uppercase tracking-[0.2em] text-ink/45"
+              class="text-[11px] font-black uppercase tracking-[0.2em] text-ink/45"
             >
               Centro de observabilidad
             </p>
@@ -606,7 +606,7 @@ const barberRanking = computed(() => {
         </div>
         <p
           v-if="data.kpis.top_barber_name"
-          class="mt-3 text-[10px] font-bold text-ink/50"
+          class="mt-3 text-[11px] font-bold text-ink/50"
         >
           Top del mes:
           <span class="text-gold">{{ data.kpis.top_barber_name }}</span> ({{
@@ -715,7 +715,7 @@ const barberRanking = computed(() => {
             />
           </svg>
         </div>
-        <p class="mt-3 text-[10px] leading-relaxed text-ink/50">
+        <p class="mt-3 text-[11px] leading-relaxed text-ink/50">
           Indicador agregado; el detalle de productos permanece fuera de este
           rol.
         </p>
@@ -845,7 +845,7 @@ const barberRanking = computed(() => {
             <p class="text-[11px] font-black uppercase text-ink/45">Clics</p>
           </div>
         </div>
-        <p class="mt-3 text-[10px] text-ink/50">
+        <p class="mt-3 text-[11px] text-ink/50">
           {{ fmtInt(moduleTelemetry.campaigns.recipients) }} destinatarios
           acumulados en la ventana.
         </p>
@@ -914,7 +914,7 @@ const barberRanking = computed(() => {
             <p class="text-[11px] font-black uppercase text-ink/45">Guardados</p>
           </div>
         </div>
-        <p class="mt-3 text-[10px] leading-relaxed text-ink/50">
+        <p class="mt-3 text-[11px] leading-relaxed text-ink/50">
           Sólo comportamiento agregado; el feed y sus acciones siguen fuera de
           este rol.
         </p>

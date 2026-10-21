@@ -342,7 +342,7 @@ onMounted(async () => {
     </section>
 
     <div class="flex items-center gap-3 px-1 pt-1">
-      <span class="text-[10px] font-black uppercase tracking-[0.22em] text-gold"
+      <span class="text-[11px] font-black uppercase tracking-[0.22em] text-gold"
         >Resumen</span
       >
       <span class="h-px flex-1 bg-ink/[0.06]" />
@@ -438,7 +438,7 @@ onMounted(async () => {
     />
 
     <div class="flex items-center gap-3 px-1 pt-2">
-      <span class="text-[10px] font-black uppercase tracking-[0.22em] text-gold"
+      <span class="text-[11px] font-black uppercase tracking-[0.22em] text-gold"
         >Operación de hoy</span
       >
       <span class="h-px flex-1 bg-ink/[0.06]" />
@@ -612,7 +612,7 @@ onMounted(async () => {
                         class="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-[#111] bg-danger"
                       />
                     </div>
-                    <p class="truncate text-[10px] font-black text-ink">
+                    <p class="truncate text-[11px] font-black text-ink">
                       {{ st.name.split(" ")[0] }}
                     </p>
                     <p class="text-[11px] font-black uppercase text-danger">
@@ -674,7 +674,7 @@ onMounted(async () => {
                           class="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-[#111] bg-success"
                         />
                       </div>
-                      <p class="truncate text-[10px] font-black text-ink">
+                      <p class="truncate text-[11px] font-black text-ink">
                         {{ st.name.split(" ")[0] }}
                       </p>
                       <p
@@ -864,11 +864,11 @@ onMounted(async () => {
                   <div
                     class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-warning"
                   />
-                  <p class="text-[10px] text-ink/45">Cargando análisis...</p>
+                  <p class="text-[11px] text-ink/45">Cargando análisis...</p>
                 </div>
                 <p
                   v-else-if="!aiInsights.length"
-                  class="text-[10px] italic text-ink/45"
+                  class="text-[11px] italic text-ink/45"
                 >
                   Sin insights disponibles.
                 </p>
@@ -890,7 +890,7 @@ onMounted(async () => {
                       ).dot
                     "
                   />
-                  <p class="text-[10px] text-ink/60">{{ insight.message }}</p>
+                  <p class="text-[11px] text-ink/60">{{ insight.message }}</p>
                 </div>
               </div>
             </div>

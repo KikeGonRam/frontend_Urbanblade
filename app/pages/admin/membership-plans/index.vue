@@ -9,6 +9,8 @@
  * desactivar el plan viejo y crear uno nuevo.
  */
 definePageMeta({ middleware: ["auth", "admin"], layout: "dashboard" });
+useSeoMeta({ title: 'Planes de membresía — UrbanBlade', robots: 'noindex' })
+
 
 interface Plan {
   id: string;
@@ -123,8 +125,8 @@ async function deactivate(plan: Plan) {
         <div class="flex items-center justify-between gap-2">
           <h3 class="font-black uppercase text-ink">{{ plan.nombre }}</h3>
           <span
-            class="rounded-full border px-2 py-0.5 text-[9px] font-black uppercase"
-            :class="plan.activo ? 'border-emerald-500/25 bg-emerald-500/10 text-emerald-300' : 'border-ink/15 bg-ink/5 text-ink/50'"
+            class="rounded-full border px-2 py-0.5 text-[11px] font-black uppercase"
+            :class="plan.activo ? 'border-success/25 bg-success/10 text-success' : 'border-ink/15 bg-ink/5 text-ink/50'"
           >{{ plan.activo ? "Activo" : "Desactivado" }}</span>
         </div>
         <p v-if="plan.descripcion" class="mt-1 text-xs text-muted">{{ plan.descripcion }}</p>
@@ -170,7 +172,7 @@ async function deactivate(plan: Plan) {
               <input v-model.number="form.descuento_pct" type="number" min="1" max="100" step="1" required class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
             </div>
           </div>
-          <p v-if="createError" role="alert" class="text-sm text-red-400">{{ createError }}</p>
+          <p v-if="createError" role="alert" class="text-sm text-danger">{{ createError }}</p>
           <button type="submit" class="ui-btn w-full justify-center" :disabled="saving">
             {{ saving ? "Creando…" : "Crear plan" }}
           </button>

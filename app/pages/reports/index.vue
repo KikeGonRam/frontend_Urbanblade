@@ -10,6 +10,8 @@
  * que son placeholders sin persistencia ni archivo real.
  */
 definePageMeta({ middleware: ["auth", "engineer"], layout: "dashboard" });
+useSeoMeta({ title: 'Reportes — UrbanBlade', robots: 'noindex' })
+
 
 type Period = "dia" | "semana" | "mes" | "trimestre" | "año";
 
@@ -196,13 +198,13 @@ async function downloadReport(type: string, format: "excel" | "pdf") {
         </h2>
         <div v-if="revenue" class="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <div>
-            <p class="text-[10px] font-bold uppercase text-muted">Total</p>
+            <p class="text-[11px] font-bold uppercase text-muted">Total</p>
             <p class="mt-1 text-lg font-black text-gold">
               {{ fmtMoney(revenue.totalRevenue) }}
             </p>
           </div>
           <div>
-            <p class="text-[10px] font-bold uppercase text-muted">
+            <p class="text-[11px] font-bold uppercase text-muted">
               Citas cobradas
             </p>
             <p class="mt-1 text-lg font-black text-ink">
@@ -210,7 +212,7 @@ async function downloadReport(type: string, format: "excel" | "pdf") {
             </p>
           </div>
           <div>
-            <p class="text-[10px] font-bold uppercase text-muted">Promedio</p>
+            <p class="text-[11px] font-bold uppercase text-muted">Promedio</p>
             <p class="mt-1 text-lg font-black text-ink">
               {{ fmtMoney(revenue.averageRevenue) }}
             </p>
@@ -229,21 +231,21 @@ async function downloadReport(type: string, format: "excel" | "pdf") {
         </h2>
         <div v-if="appt" class="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <div>
-            <p class="text-[10px] font-bold uppercase text-muted">Total</p>
+            <p class="text-[11px] font-bold uppercase text-muted">Total</p>
             <p class="mt-1 text-lg font-black text-ink">
               {{ appt.totalAppointments }}
             </p>
           </div>
           <div>
-            <p class="text-[10px] font-bold uppercase text-muted">
+            <p class="text-[11px] font-bold uppercase text-muted">
               Finalización
             </p>
-            <p class="mt-1 text-lg font-black text-emerald-400">
+            <p class="mt-1 text-lg font-black text-success">
               {{ appt.completionRate }}%
             </p>
           </div>
           <div>
-            <p class="text-[10px] font-bold uppercase text-muted">Prom./día</p>
+            <p class="text-[11px] font-bold uppercase text-muted">Prom./día</p>
             <p class="mt-1 text-lg font-black text-ink">
               {{ appt.averageAppointmentsPerDay }}
             </p>
@@ -265,13 +267,13 @@ async function downloadReport(type: string, format: "excel" | "pdf") {
         </h2>
         <div v-if="inventory" class="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
-            <p class="text-[10px] font-bold uppercase text-muted">Productos</p>
+            <p class="text-[11px] font-bold uppercase text-muted">Productos</p>
             <p class="mt-1 text-lg font-black text-ink">
               {{ inventory.totalProducts }}
             </p>
           </div>
           <div>
-            <p class="text-[10px] font-bold uppercase text-muted">
+            <p class="text-[11px] font-bold uppercase text-muted">
               Valor total
             </p>
             <p class="mt-1 text-lg font-black text-gold">
@@ -279,14 +281,14 @@ async function downloadReport(type: string, format: "excel" | "pdf") {
             </p>
           </div>
           <div>
-            <p class="text-[10px] font-bold uppercase text-muted">Stock bajo</p>
-            <p class="mt-1 text-lg font-black text-amber-400">
+            <p class="text-[11px] font-bold uppercase text-muted">Stock bajo</p>
+            <p class="mt-1 text-lg font-black text-warning">
               {{ inventory.lowStockCount }}
             </p>
           </div>
           <div>
-            <p class="text-[10px] font-bold uppercase text-muted">Crítico</p>
-            <p class="mt-1 text-lg font-black text-red-400">
+            <p class="text-[11px] font-bold uppercase text-muted">Crítico</p>
+            <p class="mt-1 text-lg font-black text-danger">
               {{ inventory.criticalCount }}
             </p>
           </div>
@@ -299,25 +301,25 @@ async function downloadReport(type: string, format: "excel" | "pdf") {
         </h2>
         <div v-if="clients" class="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
-            <p class="text-[10px] font-bold uppercase text-muted">Total</p>
+            <p class="text-[11px] font-bold uppercase text-muted">Total</p>
             <p class="mt-1 text-lg font-black text-ink">
               {{ clients.totalClients }}
             </p>
           </div>
           <div>
-            <p class="text-[10px] font-bold uppercase text-muted">Nuevos</p>
+            <p class="text-[11px] font-bold uppercase text-muted">Nuevos</p>
             <p class="mt-1 text-lg font-black text-gold">
               {{ clients.newClients }}
             </p>
           </div>
           <div>
-            <p class="text-[10px] font-bold uppercase text-muted">Activos</p>
-            <p class="mt-1 text-lg font-black text-emerald-400">
+            <p class="text-[11px] font-bold uppercase text-muted">Activos</p>
+            <p class="mt-1 text-lg font-black text-success">
               {{ clients.activeClients }}
             </p>
           </div>
           <div>
-            <p class="text-[10px] font-bold uppercase text-muted">Retención</p>
+            <p class="text-[11px] font-bold uppercase text-muted">Retención</p>
             <p class="mt-1 text-lg font-black text-ink">
               {{ clients.clientRetention }}%
             </p>
@@ -337,11 +339,11 @@ async function downloadReport(type: string, format: "excel" | "pdf") {
       </div>
       <div v-if="commissions" class="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
-          <p class="text-[10px] font-bold uppercase text-muted">Generado (precio de lista)</p>
+          <p class="text-[11px] font-bold uppercase text-muted">Generado (precio de lista)</p>
           <p class="mt-1 text-lg font-black text-ink">{{ fmtMoney(commissions.total_generado) }}</p>
         </div>
         <div>
-          <p class="text-[10px] font-bold uppercase text-muted">Total a pagar</p>
+          <p class="text-[11px] font-bold uppercase text-muted">Total a pagar</p>
           <p class="mt-1 text-lg font-black text-gold">{{ fmtMoney(commissions.total_comisiones) }}</p>
         </div>
       </div>
@@ -351,7 +353,7 @@ async function downloadReport(type: string, format: "excel" | "pdf") {
       <div v-else-if="commissions" class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead>
-            <tr class="text-left text-[10px] font-bold uppercase text-muted">
+            <tr class="text-left text-[11px] font-bold uppercase text-muted">
               <th class="pb-2">Barbero</th>
               <th class="pb-2 text-right">Citas</th>
               <th class="pb-2 text-right">Generado</th>
@@ -370,7 +372,7 @@ async function downloadReport(type: string, format: "excel" | "pdf") {
           </tbody>
         </table>
       </div>
-      <p class="mt-3 text-[10px] italic text-muted">
+      <p class="mt-3 text-[11px] italic text-muted">
         Sobre el precio de lista del servicio, no lo que realmente entró en caja
         (descuentos, paquetes, gift cards y premios de rifa son decisión del
         negocio, no reducen lo que se le debe al barbero). Este reporte solo
@@ -382,7 +384,7 @@ async function downloadReport(type: string, format: "excel" | "pdf") {
       <h2 class="mb-3 text-sm font-black uppercase tracking-wide text-ink">
         Exportar reporte detallado
       </h2>
-      <p v-if="exportError" class="mb-3 text-sm text-red-400">
+      <p v-if="exportError" class="mb-3 text-sm text-danger">
         {{ exportError }}
       </p>
       <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">

@@ -193,19 +193,19 @@ async function confirmReject(payment: PendingPayment) {
               {{ payment.appointment.client ?? "Cliente" }}
             </p>
             <p
-              class="text-[10px] font-black uppercase tracking-widest text-gold"
+              class="text-[11px] font-black uppercase tracking-widest text-gold"
             >
               {{ payment.appointment.service ?? "Servicio" }}
             </p>
             <span
               v-if="payment.kind === 'anticipo'"
-              class="mt-1 inline-block rounded-full border border-gold/30 bg-gold/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-gold"
+              class="mt-1 inline-block rounded-full border border-gold/30 bg-gold/10 px-2 py-0.5 text-[11px] font-black uppercase tracking-widest text-gold"
             >
               Anticipo al reservar
             </span>
           </div>
           <span
-            class="text-[9px] font-black uppercase tracking-widest text-muted"
+            class="text-[11px] font-black uppercase tracking-widest text-muted"
             >{{ fmtDateTime(payment.created_at) }}</span
           >
         </div>
@@ -238,7 +238,7 @@ async function confirmReject(payment: PendingPayment) {
           <div v-if="payment.appointment.service_price != null" class="grid grid-cols-2 gap-3 text-sm">
             <div class="rounded-xl border border-line bg-ink/5 p-3">
               <p
-                class="text-[9px] font-black uppercase tracking-widest text-muted"
+                class="text-[11px] font-black uppercase tracking-widest text-muted"
               >
                 Monto esperado
               </p>
@@ -255,7 +255,7 @@ async function confirmReject(payment: PendingPayment) {
               "
             >
               <p
-                class="text-[9px] font-black uppercase tracking-widest text-muted"
+                class="text-[11px] font-black uppercase tracking-widest text-muted"
               >
                 Monto de la cita
               </p>
@@ -279,7 +279,7 @@ async function confirmReject(payment: PendingPayment) {
             class="rounded-xl border border-info/20 bg-info/5 p-3"
           >
             <p
-              class="mb-1 text-[9px] font-black uppercase tracking-widest text-info"
+              class="mb-1 text-[11px] font-black uppercase tracking-widest text-info"
             >
               Texto detectado (OCR)
             </p>
@@ -288,7 +288,7 @@ async function confirmReject(payment: PendingPayment) {
             </p>
             <p
               v-if="payment.ocr_monto_detectado"
-              class="mt-1 text-[10px] text-info"
+              class="mt-1 text-[11px] text-info"
             >
               Monto sugerido: {{ fmtMoney(payment.ocr_monto_detectado) }}
             </p>
@@ -321,7 +321,7 @@ async function confirmReject(payment: PendingPayment) {
                     v-for="reason in QUICK_REASONS"
                     :key="reason"
                     type="button"
-                    class="rounded-full border px-2.5 py-1 text-[10px]"
+                    class="rounded-full border px-2.5 py-1 text-[11px]"
                     :class="motivo === reason ? 'border-gold bg-gold/10 text-gold' : 'border-line text-muted hover:text-ink'"
                     @click="motivo = reason"
                   >
@@ -339,14 +339,14 @@ async function confirmReject(payment: PendingPayment) {
                   <button
                     type="button"
                     :disabled="!motivo.trim() || busy === payment.id"
-                    class="flex-1 rounded-lg bg-red-500 py-2 text-[10px] font-black uppercase tracking-widest text-white hover:bg-red-400 disabled:opacity-50"
+                    class="flex-1 rounded-lg bg-red-500 py-2 text-[11px] font-black uppercase tracking-widest text-white hover:bg-red-400 disabled:opacity-50"
                     @click="confirmReject(payment)"
                   >
                     Confirmar rechazo
                   </button>
                   <button
                     type="button"
-                    class="rounded-lg border border-line px-3 py-2 text-[10px] text-muted hover:text-ink"
+                    class="rounded-lg border border-line px-3 py-2 text-[11px] text-muted hover:text-ink"
                     @click="rejecting = null"
                   >
                     Cancelar

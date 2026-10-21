@@ -7,6 +7,8 @@
  * backend, solo esta página.
  */
 definePageMeta({ middleware: ["auth", "admin"], layout: "dashboard" });
+useSeoMeta({ title: 'Usuarios — UrbanBlade', robots: 'noindex' })
+
 
 interface UserRow {
   id: string;
@@ -223,7 +225,7 @@ async function removeUser(user: UserRow) {
       action-label="Reintentar"
       @action="refresh"
     />
-    <p v-if="actionError" role="alert" class="mb-4 text-sm text-red-400">
+    <p v-if="actionError" role="alert" class="mb-4 text-sm text-danger">
       {{ actionError }}
     </p>
 
@@ -231,7 +233,7 @@ async function removeUser(user: UserRow) {
       <table class="w-full text-left text-sm">
         <thead>
           <tr
-            class="border-b border-line text-[10px] uppercase tracking-wider text-muted"
+            class="border-b border-line text-[11px] uppercase tracking-wider text-muted"
           >
             <th class="px-4 py-3">Usuario</th>
             <th class="px-4 py-3">Email</th>
@@ -251,7 +253,7 @@ async function removeUser(user: UserRow) {
                 <span class="font-bold text-ink">{{ user.name }}</span>
                 <span
                   v-if="currentUser && user.id === currentUser.id"
-                  class="rounded-full border border-gold/25 bg-gold/10 px-1.5 py-0.5 text-[9px] font-black uppercase text-gold"
+                  class="rounded-full border border-gold/25 bg-gold/10 px-1.5 py-0.5 text-[11px] font-black uppercase text-gold"
                   >Tú</span
                 >
               </div>
@@ -259,7 +261,7 @@ async function removeUser(user: UserRow) {
             <td class="px-4 py-3 text-muted">{{ user.email }}</td>
             <td class="px-4 py-3 text-center">
               <span
-                class="rounded-full border border-line bg-ink/5 px-2 py-0.5 text-[9px] font-black uppercase text-muted"
+                class="rounded-full border border-line bg-ink/5 px-2 py-0.5 text-[11px] font-black uppercase text-muted"
                 >{{ ROLE_LABEL[user.roles[0]] ?? user.roles[0] ?? "—" }}</span
               >
             </td>
@@ -275,7 +277,7 @@ async function removeUser(user: UserRow) {
                 <button
                   v-if="!currentUser || user.id !== currentUser.id"
                   type="button"
-                  class="rounded-lg border border-red-500/20 px-3 py-1 text-xs text-red-400 hover:bg-red-500/10"
+                  class="rounded-lg border border-danger/20 px-3 py-1 text-xs text-danger hover:bg-danger/10"
                   @click="removeUser(user)"
                 >
                   Eliminar
@@ -318,7 +320,7 @@ async function removeUser(user: UserRow) {
             </h2>
             <p class="mt-2 ub-form-help">Configura la identidad, el nivel de acceso y las credenciales de esta cuenta.</p>
           </div>
-          <span class="rounded-full border border-gold/25 bg-gold/10 px-2 py-1 text-[9px] font-black uppercase tracking-wider text-gold">
+          <span class="rounded-full border border-gold/25 bg-gold/10 px-2 py-1 text-[11px] font-black uppercase tracking-wider text-gold">
             {{ editing ? "Edición" : "Alta" }}
           </span>
         </div>
@@ -340,13 +342,13 @@ async function removeUser(user: UserRow) {
               "
               :class="[
                 'ui-input w-full',
-                fieldErrors.name ? 'border-red-500/60' : 'border-line',
+                fieldErrors.name ? 'border-danger/60' : 'border-line',
               ]"
             >
             <p
               v-if="fieldErrors.name"
               id="user-name-error"
-              class="mt-1 text-xs text-red-400"
+              class="mt-1 text-xs text-danger"
             >
               {{ fieldErrors.name[0] }}
             </p>
@@ -366,13 +368,13 @@ async function removeUser(user: UserRow) {
               "
               :class="[
                 'ui-input w-full',
-                fieldErrors.email ? 'border-red-500/60' : 'border-line',
+                fieldErrors.email ? 'border-danger/60' : 'border-line',
               ]"
             >
             <p
               v-if="fieldErrors.email"
               id="user-email-error"
-              class="mt-1 text-xs text-red-400"
+              class="mt-1 text-xs text-danger"
             >
               {{ fieldErrors.email[0] }}
             </p>
@@ -394,7 +396,7 @@ async function removeUser(user: UserRow) {
               "
               :class="[
                 'ui-input w-full',
-                fieldErrors.role ? 'border-red-500/60' : 'border-line',
+                fieldErrors.role ? 'border-danger/60' : 'border-line',
               ]"
             >
               <option v-for="r in roles" :key="r" :value="r">
@@ -404,7 +406,7 @@ async function removeUser(user: UserRow) {
             <p
               v-if="fieldErrors.role"
               id="user-role-error"
-              class="mt-1 text-xs text-red-400"
+              class="mt-1 text-xs text-danger"
             >
               {{ fieldErrors.role[0] }}
             </p>
@@ -432,13 +434,13 @@ async function removeUser(user: UserRow) {
               "
               :class="[
                 'ui-input w-full',
-                fieldErrors.password ? 'border-red-500/60' : 'border-line',
+                fieldErrors.password ? 'border-danger/60' : 'border-line',
               ]"
             >
             <p
               v-if="fieldErrors.password"
               id="user-password-error"
-              class="mt-1 text-xs text-red-400"
+              class="mt-1 text-xs text-danger"
             >
               {{ fieldErrors.password[0] }}
             </p>
@@ -465,20 +467,20 @@ async function removeUser(user: UserRow) {
               :class="[
                 'ui-input w-full',
                 fieldErrors.password_confirmation
-                  ? 'border-red-500/60'
+                  ? 'border-danger/60'
                   : 'border-line',
               ]"
             >
             <p
               v-if="fieldErrors.password_confirmation"
               id="user-password-confirmation-error"
-              class="mt-1 text-xs text-red-400"
+              class="mt-1 text-xs text-danger"
             >
               {{ fieldErrors.password_confirmation[0] }}
             </p>
           </div>
           </div>
-          <p v-if="formError" class="text-sm text-red-400">{{ formError }}</p>
+          <p v-if="formError" class="text-sm text-danger">{{ formError }}</p>
           <div class="mt-5 flex gap-3">
             <button
               type="submit"
