@@ -101,6 +101,11 @@
     --gold:          #d4af37;
     --gold-dim:      #a8842c;
     --gold-rgb:      212 175 55;
+    --chart-1-rgb:   56 189 248;
+    --chart-2-rgb:   45 212 191;
+    --chart-3-rgb:   167 139 250;
+    --chart-4-rgb:   251 113 133;
+    --chart-5-rgb:   251 146 60;
     --gold-dim-rgb:  168 132 44;
     --gold-glow:     rgba(212, 175, 55, 0.28);
 
@@ -138,6 +143,11 @@ html[data-theme="acero"] {
     --gold:          #c1703d;
     --gold-dim:      #9c5a30;
     --gold-rgb:      193 112 61;
+    --chart-1-rgb:   56 189 248;
+    --chart-2-rgb:   45 212 191;
+    --chart-3-rgb:   167 139 250;
+    --chart-4-rgb:   251 113 133;
+    --chart-5-rgb:   251 146 60;
     --gold-dim-rgb:  156 90 48;
     --gold-glow:     rgba(193, 112, 61, 0.28);
 
@@ -168,6 +178,11 @@ html[data-theme="salon"] {
     --gold:          #c9a24a;
     --gold-dim:      #a1813a;
     --gold-rgb:      201 162 74;
+    --chart-1-rgb:   56 189 248;
+    --chart-2-rgb:   45 212 191;
+    --chart-3-rgb:   167 139 250;
+    --chart-4-rgb:   251 113 133;
+    --chart-5-rgb:   251 146 60;
     --gold-dim-rgb:  161 129 58;
     --gold-glow:     rgba(201, 162, 74, 0.28);
 
@@ -198,6 +213,11 @@ html[data-theme="libreta"] {
     --gold:          #b8860b;
     --gold-dim:      #8a6608;
     --gold-rgb:      184 134 11;
+    --chart-1-rgb:   2 132 199;
+    --chart-2-rgb:   13 148 136;
+    --chart-3-rgb:   124 58 237;
+    --chart-4-rgb:   225 29 72;
+    --chart-5-rgb:   234 88 12;
     --gold-dim-rgb:  138 102 8;
     --gold-glow:     rgba(184, 134, 11, 0.20);
 

@@ -9,7 +9,7 @@ import {
   fmtInt,
   fmtMoney,
   goldRgba,
-  goldSeries,
+  chartSeries,
 } from "~/utils/chartTheme";
 import { ensureChartjsRegistered } from "~/utils/registerChartjs";
 
@@ -158,7 +158,7 @@ const servicesData = computed(() => ({
     {
       label: "Citas",
       data: servicesSorted.value.map((s) => s.value),
-      backgroundColor: goldSeries(servicesSorted.value.length),
+      backgroundColor: chartSeries(servicesSorted.value.length),
       borderRadius: 6,
       maxBarThickness: 22,
     },
