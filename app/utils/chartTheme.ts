@@ -94,3 +94,20 @@ export function appointmentStatusColor(estado: string): string {
 
   return tokenRgba(map[estado] ?? 'ink', estado === 'no_asistio' ? 0.35 : 0.9)
 }
+
+/**
+ * Color i de la paleta de series: el 0 es el oro del tema (la marca) y del 1 al 5 salen de --chart-N-rgb,
+ * que cada tema define (más profundos en libreta). Evita que toda gráfica sea del mismo color.
+ */
+export function chartColor(i: number, alpha = 0.9): string {
+  const idx = ((i % 6) + 6) % 6
+  if (idx === 0) return goldRgba(alpha)
+  const fallback = ['', '56 189 248', '45 212 191', '167 139 250', '251 113 133', '251 146 60'][idx]!
+
+  return `rgba(${cssVar(`--chart-${idx}-rgb`, fallback).replace(/\s+/g, ',')}, ${alpha})`
+}
+
+/** n colores distintos de la paleta, para barras de categorías. */
+export function chartSeries(n: number, alpha = 0.9): string[] {
+  return Array.from({ length: n }, (_, i) => chartColor(i, alpha))
+}

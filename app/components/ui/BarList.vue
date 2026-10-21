@@ -20,6 +20,14 @@ const props = defineProps<{ items: BarListItem[] }>();
 const root = ref<HTMLElement | null>(null);
 const inView = useInView(root);
 const max = computed(() => Math.max(1, ...props.items.map((i) => i.value)));
+
+// La primera fila va en el oro de la marca y las demás recorren la paleta del tema (--chart-N-rgb), con un degradado
+// de izquierda a derecha para que la barra no sea un bloque plano.
+function barBackground(i: number) {
+  const rgb = i === 0 ? "var(--gold-rgb)" : `var(--chart-${((i - 1) % 5) + 1}-rgb)`;
+
+  return `linear-gradient(90deg, rgb(${rgb} / 0.55), rgb(${rgb}))`;
+}
 </script>
 
 <template>
@@ -35,8 +43,12 @@ const max = computed(() => Math.max(1, ...props.items.map((i) => i.value)));
       <div class="mt-2 h-2.5 overflow-hidden rounded-full bg-ink/[0.07]" role="presentation">
         <div
           class="ub-bar h-full rounded-full"
-          :class="item.muted ? 'bg-ink/25' : 'bg-gold'"
-          :style="{ width: inView ? `${Math.max(2, (item.value / max) * 100)}%` : '0%', transitionDelay: `${i * 70}ms` }"
+          :class="item.muted ? 'bg-ink/25' : ''"
+          :style="{
+            width: inView ? `${Math.max(2, (item.value / max) * 100)}%` : '0%',
+            transitionDelay: `${i * 70}ms`,
+            ...(item.muted ? {} : { background: barBackground(i) }),
+          }"
         />
       </div>
     </li>

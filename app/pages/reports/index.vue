@@ -7,6 +7,7 @@ import {
   chartScale,
   chartTooltip,
   fmtInt,
+  chartColor,
   fmtMoney as money,
   goldRgba,
   tokenRgba,
@@ -166,7 +167,7 @@ const barberRevenueData = computed(() => ({
     {
       label: "Ingresos",
       data: barberRevenue.value.map((b) => b.total),
-      backgroundColor: barberRevenue.value.map((_, i) => goldRgba(i === 0 ? 0.95 : 0.55)),
+      backgroundColor: barberRevenue.value.map((_, i) => chartColor(i, 0.9)),
       borderRadius: 6,
       maxBarThickness: 26,
     },
@@ -210,7 +211,7 @@ const inventoryHealth = computed(() => {
 const commissionsData = computed(() => ({
   labels: (commissions.value?.barberos ?? []).map((b) => b.barber.nombre),
   datasets: [
-    { label: "Generado", data: (commissions.value?.barberos ?? []).map((b) => b.total_generado), backgroundColor: goldRgba(0.35), borderRadius: 6, maxBarThickness: 32 },
+    { label: "Generado", data: (commissions.value?.barberos ?? []).map((b) => b.total_generado), backgroundColor: chartColor(1, 0.7), borderRadius: 6, maxBarThickness: 32 },
     { label: "Comisión", data: (commissions.value?.barberos ?? []).map((b) => b.comision_monto), backgroundColor: goldRgba(0.95), borderRadius: 6, maxBarThickness: 32 },
   ],
 }));

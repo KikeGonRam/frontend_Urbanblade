@@ -18,8 +18,9 @@ import {
   chartTooltip,
   fmtInt,
   fmtMoney,
+  chartColor,
+  chartSeries,
   goldRgba,
-  goldSeries,
 } from "~/utils/chartTheme";
 import { untilToday } from "~/utils/chartBuckets";
 import { ensureChartjsRegistered } from "~/utils/registerChartjs";
@@ -211,15 +212,15 @@ const appointmentTrendData = computed(() => ({
     {
       label: "Citas",
       data: appointmentTrend.value.values,
-      borderColor: goldRgba(0.95),
-      backgroundColor: goldRgba(0.1),
+      borderColor: chartColor(1, 0.95),
+      backgroundColor: chartColor(1, 0.1),
       borderWidth: 2.5,
       fill: true,
       cubicInterpolationMode: "monotone" as const,
       pointRadius: 2.5,
       pointHoverRadius: 5,
-      pointBackgroundColor: goldRgba(1),
-      pointBorderColor: goldRgba(1),
+      pointBackgroundColor: chartColor(1, 1),
+      pointBorderColor: chartColor(1, 1),
       pointBorderWidth: 2,
     },
   ],
@@ -284,7 +285,7 @@ const servicesData = computed(() => ({
     {
       label: "Citas",
       data: servicesSorted.value.map((s) => s.value),
-      backgroundColor: goldSeries(servicesSorted.value.length),
+      backgroundColor: chartSeries(servicesSorted.value.length),
       borderRadius: 6,
       maxBarThickness: 18,
     },
