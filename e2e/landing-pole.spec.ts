@@ -34,7 +34,7 @@ test("en escritorio el hero muestra el poste 3D sin errores de consola", async (
   await expect(pole.locator("canvas")).toBeVisible();
   await expect(pole).toHaveClass(/opacity-100/);
   // El texto y los botones del hero siguen siendo lo que se puede usar.
-  await expect(page.getByRole("link", { name: /Agendar Cita Premium/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Reservar mi cita/ })).toBeVisible();
   expect(errors).toEqual([]);
 });
 
