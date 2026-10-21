@@ -11,6 +11,8 @@
  * la calcula el servidor, nunca esta pantalla.
  */
 definePageMeta({ middleware: ["auth", "staff"], layout: "dashboard" });
+useSeoMeta({ title: 'Corte de caja — UrbanBlade', robots: 'noindex' })
+
 
 interface Cierre {
   fecha: string;
@@ -223,7 +225,7 @@ function money(n: number | null | undefined) {
             <dt class="font-black uppercase tracking-widest text-ink">Diferencia</dt>
             <dd
               class="text-lg font-black"
-              :class="cierre.diferencia === 0 ? 'text-emerald-400' : 'text-red-400'"
+              :class="cierre.diferencia === 0 ? 'text-success' : 'text-danger'"
             >
               {{ cierre.diferencia > 0 ? "+" : "" }}{{ money(cierre.diferencia) }}
             </dd>
@@ -267,7 +269,7 @@ function money(n: number | null | undefined) {
             <span
               v-if="diferenciaPreview !== null"
               class="mt-1 block text-xl font-black"
-              :class="diferenciaPreview === 0 ? 'text-emerald-400' : 'text-red-400'"
+              :class="diferenciaPreview === 0 ? 'text-success' : 'text-danger'"
             >
               {{ diferenciaPreview > 0 ? "+" : "" }}{{ money(diferenciaPreview) }}
             </span>
@@ -288,7 +290,7 @@ function money(n: number | null | undefined) {
           />
         </label>
 
-        <p v-if="saveError" role="alert" class="mt-3 text-sm font-bold text-red-400">
+        <p v-if="saveError" role="alert" class="mt-3 text-sm font-bold text-danger">
           {{ saveError }}
         </p>
 

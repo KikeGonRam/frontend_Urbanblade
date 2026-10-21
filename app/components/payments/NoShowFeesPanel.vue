@@ -86,10 +86,10 @@ async function waive(fee: NoShowFee) {
           Clientes que no llegaron a su cita y no se les pudo cobrar a su tarjeta. No pueden reservar hasta pagar.
         </p>
       </div>
-      <p v-if="fees.length" class="text-sm font-bold text-amber-300">{{ fees.length }} pendiente(s) · {{ money(total) }}</p>
+      <p v-if="fees.length" class="text-sm font-bold text-warning">{{ fees.length }} pendiente(s) · {{ money(total) }}</p>
     </div>
 
-    <output v-if="message" class="mb-3 block text-sm" :class="isError ? 'text-red-400' : 'text-gold'">{{ message }}</output>
+    <output v-if="message" class="mb-3 block text-sm" :class="isError ? 'text-danger' : 'text-gold'">{{ message }}</output>
     <p v-if="pending" class="text-sm text-muted">Cargando adeudos...</p>
     <p v-else-if="!fees.length" class="ui-card p-4 text-sm text-muted">No hay adeudos pendientes.</p>
 
@@ -110,7 +110,7 @@ async function waive(fee: NoShowFee) {
           <button type="button" :disabled="busy === fee.id" class="rounded-lg bg-emerald-500 px-3 py-2 text-xs font-bold text-black hover:bg-emerald-400 disabled:opacity-50" @click="pay(fee, 'efectivo')">
             Cobrar en efectivo
           </button>
-          <button type="button" :disabled="busy === fee.id" class="rounded-lg border border-emerald-500/40 px-3 py-2 text-xs font-bold text-emerald-300 disabled:opacity-50" @click="pay(fee, 'transferencia')">
+          <button type="button" :disabled="busy === fee.id" class="rounded-lg border border-success/40 px-3 py-2 text-xs font-bold text-success disabled:opacity-50" @click="pay(fee, 'transferencia')">
             Cobrar por transferencia
           </button>
           <button v-if="hasRole('administrador') && waiving !== fee.id" type="button" class="rounded-lg border border-line px-3 py-2 text-xs text-muted hover:text-ink" @click="waiving = fee.id">

@@ -25,6 +25,8 @@ import { computeLoyaltyCharge } from "~/utils/loyaltyCharge";
 import type { ChoiceOption } from "~/types/choice";
 
 definePageMeta({ middleware: ["auth", "staff"], layout: "dashboard" });
+useSeoMeta({ title: 'Pagos — UrbanBlade', robots: 'noindex' })
+
 
 const METODO_LABEL: Record<string, string> = {
   efectivo: "Efectivo",
@@ -542,7 +544,7 @@ onUnmounted(() => teardownStripe());
         </button>
       </div>
     </header>
-    <p v-if="actionError" role="alert" class="mb-4 text-sm text-red-400">
+    <p v-if="actionError" role="alert" class="mb-4 text-sm text-danger">
       {{ actionError }}
     </p>
 
@@ -553,7 +555,7 @@ onUnmounted(() => teardownStripe());
         >
           Facturación Hoy
         </p>
-        <p class="text-2xl font-black text-emerald-400">
+        <p class="text-2xl font-black text-success">
           {{ fmtMoney(stats.total_hoy) }}
         </p>
       </div>
@@ -706,7 +708,7 @@ onUnmounted(() => teardownStripe());
             </td>
             <td class="px-4 py-3 text-right">
               <div class="flex flex-col items-end">
-                <span class="font-black text-emerald-400">{{
+                <span class="font-black text-success">{{
                   fmtMoney(Number(payment.monto) + Number(payment.propina))
                 }}</span>
                 <span
@@ -727,7 +729,7 @@ onUnmounted(() => teardownStripe());
                 </button>
                 <button
                   type="button"
-                  class="rounded-lg border border-red-500/20 px-3 py-1 text-xs text-red-400 hover:bg-red-500/10"
+                  class="rounded-lg border border-danger/20 px-3 py-1 text-xs text-danger hover:bg-danger/10"
                   @click="removePayment(payment)"
                 >
                   Anular
@@ -821,12 +823,12 @@ onUnmounted(() => teardownStripe());
 
             <div
               v-if="selected.paquete_disponible"
-              class="rounded-xl border border-sky-400/25 bg-sky-400/5 p-4"
+              class="rounded-xl border border-info/25 bg-info/5 p-4"
             >
               <div class="flex items-start gap-3">
                 <span class="min-w-0 flex-1">
                   <span
-                    class="block text-[10px] font-black uppercase tracking-widest text-sky-300"
+                    class="block text-[10px] font-black uppercase tracking-widest text-info"
                     >Paquete prepagado disponible</span
                   >
                   <span class="mt-0.5 block text-xs text-ink/80"
@@ -937,7 +939,7 @@ onUnmounted(() => teardownStripe());
               />
               <p
                 v-if="stripeErrors"
-                class="text-[10px] font-black uppercase text-red-500"
+                class="text-[10px] font-black uppercase text-danger"
               >
                 {{ stripeErrors }}
               </p>
@@ -968,7 +970,7 @@ onUnmounted(() => teardownStripe());
                 <div v-else-if="form.usarPaquete" class="flex justify-between">
                   <span class="text-[10px] font-bold uppercase text-muted"
                     >Paquete prepagado</span
-                  ><span class="text-sky-400"
+                  ><span class="text-info"
                     >-{{ fmtMoney(selected.precio) }}</span
                   >
                 </div>
@@ -978,7 +980,7 @@ onUnmounted(() => teardownStripe());
                 >
                   <span class="text-[10px] font-bold uppercase text-muted"
                     >Descuento nivel ({{ selected.nivel_pct }}%)</span
-                  ><span class="text-green-500"
+                  ><span class="text-success"
                     >-{{
                       fmtMoney(selected.precio - preview.montoConNivel)
                     }}</span
@@ -990,7 +992,7 @@ onUnmounted(() => teardownStripe());
                 >
                   <span class="text-[10px] font-bold uppercase text-muted"
                     >Puntos canjeados</span
-                  ><span class="text-green-500"
+                  ><span class="text-success"
                     >-{{ fmtMoney(preview.descuentoPuntos) }}</span
                   >
                 </div>
@@ -1010,7 +1012,7 @@ onUnmounted(() => teardownStripe());
               </div>
             </div>
 
-            <p v-if="chargeError" class="text-sm text-red-400">
+            <p v-if="chargeError" class="text-sm text-danger">
               {{ chargeError }}
             </p>
 

@@ -268,7 +268,7 @@ const servicesOptions = {
           <h3 id="barber-today" class="text-base font-semibold text-ink">Tu agenda de hoy</h3>
           <p class="mt-0.5 text-sm text-muted">En orden de llegada</p>
         </div>
-        <NuxtLink to="/appointments" class="text-sm font-semibold text-gold hover:underline">Ver todas</NuxtLink>
+        <NuxtLink to="/barber/agenda" class="text-sm font-semibold text-gold hover:underline">Ver mi agenda</NuxtLink>
       </header>
       <p
         v-if="!data.barberToday.length"
