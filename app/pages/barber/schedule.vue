@@ -1,6 +1,8 @@
 <script setup lang="ts">
 definePageMeta({ middleware: ['auth', 'barber'], layout: 'dashboard' })
 
+useSeoMeta({ title: 'Mi horario — UrbanBlade', robots: 'noindex' })
+
 interface Day {
   day_of_week: string
   start_time: string
@@ -153,8 +155,8 @@ async function save() {
         </button>
       </article>
 
-      <p v-if="message" class="text-sm font-medium text-emerald-400">{{ message }}</p>
-      <p v-if="errorMessage" class="text-sm font-medium text-red-400">{{ errorMessage }}</p>
+      <p v-if="message" class="text-sm font-medium text-success">{{ message }}</p>
+      <p v-if="errorMessage" class="text-sm font-medium text-danger">{{ errorMessage }}</p>
 
       <button
         type="submit"

@@ -15,6 +15,8 @@
 import type { ApiAppointment } from "~/types/contract";
 
 definePageMeta({ middleware: ["auth", "staff"], layout: "dashboard" });
+useSeoMeta({ title: 'Citas — UrbanBlade', robots: 'noindex' })
+
 
 // Derivado del OpenAPI de barber (npm run contract:types), no escrito a mano.
 type AppointmentRow = ApiAppointment;
@@ -28,12 +30,12 @@ const ESTADO_LABEL: Record<string, string> = {
   no_asistio: "No Asistió",
 };
 const ESTADO_CLASS: Record<string, string> = {
-  pendiente: "border-amber-500/25 bg-amber-500/10 text-amber-300",
-  confirmada: "border-blue-500/25 bg-blue-500/10 text-blue-300",
-  en_proceso: "border-sky-500/25 bg-sky-500/10 text-sky-300",
-  completada: "border-emerald-500/25 bg-emerald-500/10 text-emerald-300",
-  cancelada: "border-red-500/25 bg-red-500/10 text-red-400",
-  no_asistio: "border-orange-500/25 bg-orange-500/10 text-orange-300",
+  pendiente: "border-warning/25 bg-warning/10 text-warning",
+  confirmada: "border-info/25 bg-info/10 text-info",
+  en_proceso: "border-info/25 bg-info/10 text-info",
+  completada: "border-success/25 bg-success/10 text-success",
+  cancelada: "border-danger/25 bg-danger/10 text-danger",
+  no_asistio: "border-warning/25 bg-warning/10 text-warning",
 };
 const ESTADOS = Object.keys(ESTADO_LABEL);
 
@@ -440,7 +442,7 @@ onBeforeUnmount(() => {
 
     <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando citas…" />
     <BrandStatePanel v-else-if="error" mascot="bruno" state="error" tone="danger" title="No se pudo cargar la lista de citas" description="Inténtalo nuevamente en unos minutos." />
-    <p v-if="actionError" role="alert" class="mb-4 text-sm text-red-400">
+    <p v-if="actionError" role="alert" class="mb-4 text-sm text-danger">
       {{ actionError }}
     </p>
 
@@ -514,7 +516,7 @@ onBeforeUnmount(() => {
                 <NuxtLink
                   v-if="COBRABLES.includes(appt.estado)"
                   :to="`/payments?cita=${appt.id}`"
-                  class="flex min-h-9 items-center rounded-lg border border-emerald-500/30 px-3 py-1 text-xs font-bold text-emerald-300 transition-colors hover:bg-emerald-500/10"
+                  class="flex min-h-9 items-center rounded-lg border border-success/30 px-3 py-1 text-xs font-bold text-success transition-colors hover:bg-success/10"
                 >
                   Cobrar
                 </NuxtLink>
@@ -528,7 +530,7 @@ onBeforeUnmount(() => {
                 <button
                   v-if="TRANSICIONES[appt.estado]?.includes('cancelada')"
                   type="button"
-                  class="min-h-9 rounded-lg border border-red-500/20 px-3 py-1 text-xs text-red-400 hover:bg-red-500/10"
+                  class="min-h-9 rounded-lg border border-danger/20 px-3 py-1 text-xs text-danger hover:bg-danger/10"
                   @click="cancelAppointment(appt)"
                 >
                   Cancelar
@@ -538,7 +540,7 @@ onBeforeUnmount(() => {
                    transferencia o aún no es la hora. Cobrar se hace con el botón de arriba. -->
               <p
                 v-if="appt.estado === 'confirmada' && appt.puede_iniciar === false && appt.motivo_no_iniciar"
-                class="mt-1 text-right text-[11px] text-amber-300"
+                class="mt-1 text-right text-[11px] text-warning"
               >
                 {{ appt.motivo_no_iniciar }}
               </p>
@@ -657,7 +659,7 @@ onBeforeUnmount(() => {
                   {{ slot.label }}
                 </option>
               </datalist>
-              <p v-if="horaOcupada" class="mt-1 text-xs text-amber-400">
+              <p v-if="horaOcupada" class="mt-1 text-xs text-warning">
                 Ese horario no aparece libre para este barbero. Puedes
                 continuar; el sistema lo rechazará si ya está tomado.
               </p>
@@ -685,7 +687,7 @@ onBeforeUnmount(() => {
               class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
             />
           </div>
-          <p v-if="formError" class="text-sm text-red-400">{{ formError }}</p>
+          <p v-if="formError" class="text-sm text-danger">{{ formError }}</p>
           <div class="mt-5 flex gap-3">
             <button
               type="submit"

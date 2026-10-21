@@ -6,6 +6,8 @@
  */
 definePageMeta({ middleware: ['auth', 'barber'], layout: 'dashboard' })
 
+useSeoMeta({ title: 'Mi perfil — UrbanBlade', robots: 'noindex' })
+
 interface Profile {
   id: string
   name: string

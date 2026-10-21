@@ -13,6 +13,8 @@
  * /deposits/{id}/approve|reject y no completan la cita.
  */
 definePageMeta({ middleware: ["auth", "staff"], layout: "dashboard" });
+useSeoMeta({ title: 'Pagos pendientes — UrbanBlade', robots: 'noindex' })
+
 
 interface PendingPayment {
   id: string;
@@ -170,7 +172,7 @@ async function confirmReject(payment: PendingPayment) {
         Ver todos los pagos
       </NuxtLink>
     </header>
-    <p v-if="actionError" role="alert" class="mb-4 text-sm text-red-400">
+    <p v-if="actionError" role="alert" class="mb-4 text-sm text-danger">
       {{ actionError }}
     </p>
 
@@ -248,8 +250,8 @@ async function confirmReject(payment: PendingPayment) {
               class="rounded-xl border p-3"
               :class="
                 montoMatches(payment)
-                  ? 'border-emerald-500/25 bg-emerald-500/8'
-                  : 'border-amber-500/25 bg-amber-500/8'
+                  ? 'border-success/25 bg-success/8'
+                  : 'border-warning/25 bg-warning/8'
               "
             >
               <p
@@ -260,7 +262,7 @@ async function confirmReject(payment: PendingPayment) {
               <p
                 class="font-black"
                 :class="
-                  montoMatches(payment) ? 'text-emerald-400' : 'text-amber-400'
+                  montoMatches(payment) ? 'text-success' : 'text-warning'
                 "
               >
                 {{ fmtMoney(payment.monto) }}
@@ -274,10 +276,10 @@ async function confirmReject(payment: PendingPayment) {
 
           <div
             v-if="payment.ocr_texto"
-            class="rounded-xl border border-blue-500/20 bg-blue-500/5 p-3"
+            class="rounded-xl border border-info/20 bg-info/5 p-3"
           >
             <p
-              class="mb-1 text-[9px] font-black uppercase tracking-widest text-blue-300"
+              class="mb-1 text-[9px] font-black uppercase tracking-widest text-info"
             >
               Texto detectado (OCR)
             </p>
@@ -286,7 +288,7 @@ async function confirmReject(payment: PendingPayment) {
             </p>
             <p
               v-if="payment.ocr_monto_detectado"
-              class="mt-1 text-[10px] text-blue-300"
+              class="mt-1 text-[10px] text-info"
             >
               Monto sugerido: {{ fmtMoney(payment.ocr_monto_detectado) }}
             </p>
@@ -305,7 +307,7 @@ async function confirmReject(payment: PendingPayment) {
               <button
                 v-if="rejecting !== payment.id"
                 type="button"
-                class="w-full rounded-xl border border-red-500/30 bg-red-500/10 py-2.5 text-[11px] font-black uppercase tracking-widest text-red-300 hover:bg-red-500/20"
+                class="w-full rounded-xl border border-danger/30 bg-danger/10 py-2.5 text-[11px] font-black uppercase tracking-widest text-danger hover:bg-danger/20"
                 @click="openReject(payment)"
               >
                 Rechazar

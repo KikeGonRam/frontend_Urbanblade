@@ -43,6 +43,8 @@ async function ensureCalendarDeps() {
  * porque /appointments/{id}/edit no existe en este frontend todavía.
  */
 definePageMeta({ middleware: ["auth", "staff"], layout: "dashboard" });
+useSeoMeta({ title: 'Calendario — UrbanBlade', robots: 'noindex' })
+
 
 interface Barber {
   id: string;

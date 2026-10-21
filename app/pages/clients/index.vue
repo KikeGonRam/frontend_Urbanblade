@@ -16,6 +16,8 @@
 // clientes. El backend es la autoridad real (authorizeCounterStaff()
 // vs authorizeAdmin() por acción en ClientAdminController).
 definePageMeta({ middleware: ["auth", "staff"], layout: "dashboard" });
+useSeoMeta({ title: 'Clientes — UrbanBlade', robots: 'noindex' })
+
 
 interface ClientRow {
   id: string;
@@ -48,8 +50,8 @@ const SEGMENT_LABEL: Record<string, string> = {
 };
 const SEGMENT_CLASS: Record<string, string> = {
   vip: "border-gold/25 bg-gold/10 text-gold",
-  new: "border-blue-500/25 bg-blue-500/10 text-blue-400",
-  active: "border-emerald-500/25 bg-emerald-500/10 text-emerald-400",
+  new: "border-info/25 bg-info/10 text-info",
+  active: "border-success/25 bg-success/10 text-success",
   inactive: "border-ink/10 bg-ink/5 text-muted",
 };
 
@@ -311,7 +313,7 @@ function fmtDate(iso: string | null) {
       action-label="Reintentar"
       @action="refresh"
     />
-    <p v-if="actionError" role="alert" class="mb-4 text-sm text-red-400">
+    <p v-if="actionError" role="alert" class="mb-4 text-sm text-danger">
       {{ actionError }}
     </p>
 
@@ -377,7 +379,7 @@ function fmtDate(iso: string | null) {
                 <button
                   v-if="isAdmin"
                   type="button"
-                  class="rounded-lg border border-red-500/20 px-3 py-1 text-xs text-red-400 hover:bg-red-500/10"
+                  class="rounded-lg border border-danger/20 px-3 py-1 text-xs text-danger hover:bg-danger/10"
                   @click="removeClient(client)"
                 >
                   Eliminar
@@ -430,13 +432,13 @@ function fmtDate(iso: string | null) {
               "
               :class="[
                 'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink',
-                fieldErrors.name ? 'border-red-500/60' : 'border-line',
+                fieldErrors.name ? 'border-danger/60' : 'border-line',
               ]"
             >
             <p
               v-if="fieldErrors.name"
               id="client-name-error"
-              class="mt-1 text-xs text-red-400"
+              class="mt-1 text-xs text-danger"
             >
               {{ fieldErrors.name[0] }}
             </p>
@@ -456,13 +458,13 @@ function fmtDate(iso: string | null) {
               "
               :class="[
                 'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink',
-                fieldErrors.email ? 'border-red-500/60' : 'border-line',
+                fieldErrors.email ? 'border-danger/60' : 'border-line',
               ]"
             >
             <p
               v-if="fieldErrors.email"
               id="client-email-error"
-              class="mt-1 text-xs text-red-400"
+              class="mt-1 text-xs text-danger"
             >
               {{ fieldErrors.email[0] }}
             </p>
@@ -481,13 +483,13 @@ function fmtDate(iso: string | null) {
               "
               :class="[
                 'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink',
-                fieldErrors.telefono ? 'border-red-500/60' : 'border-line',
+                fieldErrors.telefono ? 'border-danger/60' : 'border-line',
               ]"
             >
             <p
               v-if="fieldErrors.telefono"
               id="client-phone-error"
-              class="mt-1 text-xs text-red-400"
+              class="mt-1 text-xs text-danger"
             >
               {{ fieldErrors.telefono[0] }}
             </p>
@@ -509,18 +511,18 @@ function fmtDate(iso: string | null) {
               "
               :class="[
                 'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink',
-                fieldErrors.password ? 'border-red-500/60' : 'border-line',
+                fieldErrors.password ? 'border-danger/60' : 'border-line',
               ]"
             >
             <p
               v-if="fieldErrors.password"
               id="client-password-error"
-              class="mt-1 text-xs text-red-400"
+              class="mt-1 text-xs text-danger"
             >
               {{ fieldErrors.password[0] }}
             </p>
           </div>
-          <p v-if="formError" class="text-sm text-red-400">{{ formError }}</p>
+          <p v-if="formError" class="text-sm text-danger">{{ formError }}</p>
           <div class="mt-5 flex gap-3">
             <button
               type="submit"

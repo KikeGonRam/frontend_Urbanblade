@@ -8,6 +8,8 @@
 import type { ChoiceOption } from "~/types/choice";
 
 definePageMeta({ middleware: ["auth", "staff"], layout: "dashboard" });
+useSeoMeta({ title: 'Pedidos — UrbanBlade', robots: 'noindex' })
+
 
 const METODO_LABEL: Record<string, string> = {
   efectivo: "Efectivo",
@@ -21,9 +23,9 @@ const ESTADO_LABEL: Record<string, string> = {
   cancelado: "Cancelado",
 };
 const ESTADO_CLASS: Record<string, string> = {
-  pendiente: "border-amber-500/25 bg-amber-500/10 text-amber-300",
-  entregado: "border-emerald-500/25 bg-emerald-500/10 text-emerald-300",
-  cancelado: "border-red-500/25 bg-red-500/10 text-red-400",
+  pendiente: "border-warning/25 bg-warning/10 text-warning",
+  entregado: "border-success/25 bg-success/10 text-success",
+  cancelado: "border-danger/25 bg-danger/10 text-danger",
 };
 
 interface OrderRow {
@@ -196,7 +198,7 @@ async function downloadReceipt(order: OrderRow) {
         >
           Pendientes
         </p>
-        <p class="text-2xl font-black text-amber-400">{{ stats.pendientes }}</p>
+        <p class="text-2xl font-black text-warning">{{ stats.pendientes }}</p>
       </div>
       <div class="rounded-2xl border border-line bg-card p-4">
         <p
@@ -204,7 +206,7 @@ async function downloadReceipt(order: OrderRow) {
         >
           Entregados
         </p>
-        <p class="text-2xl font-black text-emerald-400">
+        <p class="text-2xl font-black text-success">
           {{ stats.entregados }}
         </p>
       </div>
@@ -307,7 +309,7 @@ async function downloadReceipt(order: OrderRow) {
                 }})</span
               >
             </td>
-            <td class="px-4 py-3 text-right font-black text-emerald-400">
+            <td class="px-4 py-3 text-right font-black text-success">
               {{ fmtMoney(order.total) }}
             </td>
             <td class="px-4 py-3">
@@ -324,7 +326,7 @@ async function downloadReceipt(order: OrderRow) {
                   <button
                     type="button"
                     :disabled="busy === order.id"
-                    class="rounded-lg border border-red-500/20 px-3 py-1 text-xs text-red-400 hover:bg-red-500/10 disabled:opacity-50"
+                    class="rounded-lg border border-danger/20 px-3 py-1 text-xs text-danger hover:bg-danger/10 disabled:opacity-50"
                     @click="cancelOrder(order)"
                   >
                     Cancelar
@@ -384,7 +386,7 @@ async function downloadReceipt(order: OrderRow) {
           :columns="1"
           class="mb-4"
         />
-        <p v-if="actionError" class="mb-3 text-sm text-red-400">
+        <p v-if="actionError" class="mb-3 text-sm text-danger">
           {{ actionError }}
         </p>
         <div class="flex gap-3">

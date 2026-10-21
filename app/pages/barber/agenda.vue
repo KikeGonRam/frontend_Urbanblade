@@ -9,6 +9,8 @@
  */
 definePageMeta({ middleware: ['auth', 'barber'], layout: 'dashboard' })
 
+useSeoMeta({ title: 'Mi agenda — UrbanBlade', robots: 'noindex' })
+
 interface Appointment {
   id: string
   code: string
@@ -52,14 +54,14 @@ const labels: Record<string, string> = {
   no_asistio: 'No asistió',
 }
 const classes: Record<string, string> = {
-  pendiente: 'text-amber-300 bg-amber-500/10',
-  confirmada: 'text-blue-300 bg-blue-500/10',
-  en_proceso: 'text-sky-300 bg-sky-500/10',
-  completada: 'text-emerald-300 bg-emerald-500/10',
-  cancelada: 'text-red-400 bg-red-500/10',
-  no_asistio: 'text-orange-300 bg-orange-500/10',
+  pendiente: 'text-warning bg-warning/10',
+  confirmada: 'text-info bg-info/10',
+  en_proceso: 'text-info bg-info/10',
+  completada: 'text-success bg-success/10',
+  cancelada: 'text-danger bg-danger/10',
+  no_asistio: 'text-warning bg-warning/10',
 }
-const toneClass = { ok: 'text-sky-300', soon: 'text-amber-300', over: 'text-red-400' } as const
+const toneClass = { ok: 'text-info', soon: 'text-warning', over: 'text-danger' } as const
 
 // Reloj para la cuenta regresiva y recarga periódica de la agenda (un cambio hecho por recepción o el cliente aparece solo).
 const now = ref(new Date())
@@ -217,7 +219,7 @@ async function openTicket(appt: Appointment) {
           <p v-if="appt.estado === 'en_proceso'" class="mt-1 text-sm font-bold" :class="toneClass[remainingTone(left(appt))]" aria-live="polite">
             {{ remainingLabel(left(appt)) }}<span v-if="appt.minutos_extra" class="font-normal text-muted"> · +{{ appt.minutos_extra }} min agregados</span>
           </p>
-          <p v-else-if="appt.estado === 'confirmada' && appt.puede_iniciar === false && appt.motivo_no_iniciar" class="mt-1 text-xs text-amber-300">
+          <p v-else-if="appt.estado === 'confirmada' && appt.puede_iniciar === false && appt.motivo_no_iniciar" class="mt-1 text-xs text-warning">
             {{ appt.motivo_no_iniciar }}
           </p>
         </div>
@@ -226,37 +228,37 @@ async function openTicket(appt: Appointment) {
 
         <div class="flex flex-wrap gap-2">
           <template v-if="appt.estado === 'pendiente'">
-            <button :disabled="busyCode === appt.code" class="rounded-lg bg-gold px-3 py-2 text-xs font-bold text-black disabled:opacity-50" @click="changeStatus(appt, 'confirmada')">Aprobar</button>
-            <button :disabled="busyCode === appt.code" class="rounded-lg border border-red-500/20 px-3 py-2 text-xs text-red-400 disabled:opacity-50" @click="reject(appt)">Rechazar</button>
+            <button :disabled="busyCode === appt.code" class="rounded-lg bg-gold min-h-11 px-4 py-2 text-sm font-bold text-black disabled:opacity-50" @click="changeStatus(appt, 'confirmada')">Aprobar</button>
+            <button :disabled="busyCode === appt.code" class="rounded-lg border border-danger/20 min-h-11 px-4 py-2 text-sm text-danger disabled:opacity-50" @click="reject(appt)">Rechazar</button>
           </template>
 
           <template v-else-if="appt.estado === 'confirmada'">
             <button
               :disabled="busyCode === appt.code || appt.puede_iniciar === false"
               :title="appt.puede_iniciar === false ? (appt.motivo_no_iniciar ?? '') : ''"
-              class="rounded-lg bg-gold px-3 py-2 text-xs font-bold text-black disabled:opacity-40"
+              class="rounded-lg bg-gold min-h-11 px-4 py-2 text-sm font-bold text-black disabled:opacity-40"
               @click="changeStatus(appt, 'en_proceso')"
             >
               Iniciar
             </button>
-            <button :disabled="busyCode === appt.code" class="rounded-lg border border-orange-500/30 px-3 py-2 text-xs text-orange-300 disabled:opacity-50" @click="noShow(appt)">No asistió</button>
-            <button :disabled="busyCode === appt.code" class="rounded-lg border border-red-500/20 px-3 py-2 text-xs text-red-400 disabled:opacity-50" @click="changeStatus(appt, 'cancelada')">Cancelar</button>
+            <button :disabled="busyCode === appt.code" class="rounded-lg border border-warning/30 min-h-11 px-4 py-2 text-sm text-warning disabled:opacity-50" @click="noShow(appt)">No asistió</button>
+            <button :disabled="busyCode === appt.code" class="rounded-lg border border-danger/20 min-h-11 px-4 py-2 text-sm text-danger disabled:opacity-50" @click="changeStatus(appt, 'cancelada')">Cancelar</button>
           </template>
 
           <template v-else-if="appt.estado === 'en_proceso'">
-            <button :disabled="busyCode === appt.code" class="rounded-lg bg-gold px-3 py-2 text-xs font-bold text-black disabled:opacity-50" @click="changeStatus(appt, 'completada')">Terminar ahora</button>
+            <button :disabled="busyCode === appt.code" class="rounded-lg bg-gold min-h-11 px-4 py-2 text-sm font-bold text-black disabled:opacity-50" @click="changeStatus(appt, 'completada')">Terminar ahora</button>
             <button
               v-for="minutos in EXTEND_OPTIONS"
               :key="minutos"
               :disabled="busyCode === appt.code"
-              class="rounded-lg border border-sky-500/30 px-3 py-2 text-xs font-bold text-sky-300 disabled:opacity-50"
+              class="rounded-lg border border-info/30 min-h-11 px-4 py-2 text-sm font-bold text-info disabled:opacity-50"
               @click="extend(appt, minutos)"
             >
               +{{ minutos }} min
             </button>
           </template>
 
-          <button v-else-if="appt.estado === 'completada'" :disabled="busyCode === appt.code" class="rounded-lg border border-emerald-500/30 px-3 py-2 text-xs font-bold text-emerald-300 disabled:opacity-50" @click="openTicket(appt)">
+          <button v-else-if="appt.estado === 'completada'" :disabled="busyCode === appt.code" class="rounded-lg border border-success/30 min-h-11 px-4 py-2 text-sm font-bold text-success disabled:opacity-50" @click="openTicket(appt)">
             Ver ticket
           </button>
         </div>
