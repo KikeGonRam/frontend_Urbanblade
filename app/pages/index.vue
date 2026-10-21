@@ -257,6 +257,7 @@ onBeforeUnmount(() => {
             <a href="#servicios" class="transition-colors hover:text-gold">Servicios</a>
             <a href="#como-funciona" class="transition-colors hover:text-gold">Proceso</a>
             <a href="#equipo" class="transition-colors hover:text-gold">Maestros</a>
+            <a href="#app" class="transition-colors hover:text-gold">App</a>
             <a href="#contacto" class="transition-colors hover:text-gold">Ubicación</a>
             <div class="mx-1 h-4 w-px bg-line" />
             <NuxtLink v-if="isAuthenticated" to="/dashboard" class="ui-btn px-6 py-2">Mi Panel</NuxtLink>
@@ -282,6 +283,7 @@ onBeforeUnmount(() => {
           <a href="#servicios" class="block py-2 text-[11px] font-black uppercase tracking-widest text-ink" @click="mobileMenuOpen = false">Servicios</a>
           <a href="#como-funciona" class="block py-2 text-[11px] font-black uppercase tracking-widest text-ink" @click="mobileMenuOpen = false">Proceso</a>
           <a href="#equipo" class="block py-2 text-[11px] font-black uppercase tracking-widest text-ink" @click="mobileMenuOpen = false">Maestros</a>
+          <a href="#app" class="block py-2 text-[11px] font-black uppercase tracking-widest text-ink" @click="mobileMenuOpen = false">App</a>
           <a href="#contacto" class="block py-2 text-[11px] font-black uppercase tracking-widest text-ink" @click="mobileMenuOpen = false">Ubicación</a>
           <div class="flex flex-col gap-3 pt-3">
             <NuxtLink v-if="isAuthenticated" to="/dashboard" class="ui-btn w-full py-3">Mi Panel</NuxtLink>
@@ -333,9 +335,7 @@ onBeforeUnmount(() => {
           Elevamos el concepto de barbería a un estudio de arte. Un espacio diseñado para el hombre que exige perfección y confort.
         </p>
 
-        <LandingQuickBook v-if="servicesAll.length" :services="servicesAll" :barbers="barbersAll" />
-
-        <div class="mt-8 flex flex-col items-center justify-center gap-5 sm:flex-row">
+        <div class="mt-12 flex flex-col items-center justify-center gap-5 sm:flex-row">
           <NuxtLink :to="isAuthenticated ? '/dashboard' : '/register'" class="ui-btn w-full px-12 py-5 text-[13px] tracking-[0.15em] shadow-[0_0_50px_rgba(212,175,55,0.18)] sm:w-auto">
             Agendar Cita Premium
             <svg class="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
@@ -502,6 +502,9 @@ onBeforeUnmount(() => {
         </ClientOnly>
       </div>
     </section>
+
+    <!-- APP MÓVIL -->
+    <LandingMobileAppPromo v-reveal class="reveal" />
 
     <!-- PRUEBA SOCIAL: solo si ya hay reseñas reales (se quitaron los testimonios y el "500+" de ejemplo) -->
     <section v-if="publicStats.reviews > 0" class="relative overflow-hidden border-y border-line bg-panel py-24">
