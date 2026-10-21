@@ -44,9 +44,9 @@ onBeforeUnmount(stop)
 </script>
 
 <template>
-  <section id="app" class="relative overflow-hidden border-y border-line bg-panel py-28">
+  <section id="app" class="relative overflow-hidden border-y border-line bg-panel py-16">
     <div class="pointer-events-none absolute -left-32 top-10 h-96 w-96 rounded-full bg-gold/5 blur-[120px]" />
-    <div class="mx-auto grid max-w-6xl items-center gap-16 px-4 lg:grid-cols-2">
+    <div class="mx-auto grid max-w-6xl items-center gap-10 px-4 lg:grid-cols-2">
       <div class="order-2 lg:order-1">
         <p class="mb-4 flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.4em] text-gold">
           <span class="inline-block h-px w-8 bg-gold" />
@@ -59,7 +59,7 @@ onBeforeUnmount(stop)
           La misma experiencia de la web, hecha para tu teléfono Android. Tu cita, tu barbero y tus beneficios, a un toque.
         </p>
 
-        <ul class="mt-8 space-y-4">
+        <ul class="mt-6 space-y-3">
           <li v-for="f in features" :key="f" class="flex items-start gap-3 text-sm font-medium text-ink">
             <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gold/15 text-gold" aria-hidden="true">
               <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg>
@@ -89,7 +89,7 @@ onBeforeUnmount(stop)
       </div>
 
       <div class="order-1 flex flex-col items-center lg:order-2" @mouseenter="stop" @mouseleave="start">
-        <div class="phone relative w-[240px] sm:w-[270px]">
+        <div class="phone relative w-[170px] sm:w-[230px]">
           <div class="absolute left-1/2 top-3 z-10 h-5 w-20 -translate-x-1/2 rounded-full bg-black" aria-hidden="true" />
           <div class="relative aspect-[1080/2160] overflow-hidden rounded-[2.4rem] bg-black">
             <img
