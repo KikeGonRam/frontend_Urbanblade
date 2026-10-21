@@ -48,7 +48,7 @@ export const ADMIN_DASHBOARD = {
     },
     chatbotTelemetry: { window_days: 7, total_requests: 214, error_rate_pct: 1.4, avg_latency_ms: 5200, estimated_cost_usd: 0, top_sources: { ollama: 120, manual: 70, memory: 24 } },
     todayAppointments: [
-      { id: "a1", estado: "completada", hora_inicio: "10:00", hora_fin: "10:30", cliente: "Carlos Ruiz", servicio: "Corte Clásico", barbero: "Nava Panther" },
+      { id: "a1", code: "UB-A1", estado: "completada", hora_inicio: "10:00", hora_fin: "10:30", cliente: "Carlos Ruiz", servicio: "Corte Clásico", barbero: "Nava Panther" },
       { id: "a2", estado: "en_proceso", hora_inicio: "12:00", hora_fin: "12:45", cliente: "Mario León", servicio: "Fade", barbero: "Bruno Díaz" },
       { id: "a3", estado: "confirmada", hora_inicio: "16:00", hora_fin: "17:00", cliente: "Ana Torres", servicio: "Combo Corte + Barba", barbero: "Luis Enrique" },
       { id: "a4", estado: "pendiente", hora_inicio: "18:30", hora_fin: "19:00", cliente: "Diego Prado", servicio: "Barba", barbero: "Nava Panther" },

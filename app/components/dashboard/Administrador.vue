@@ -57,6 +57,7 @@ interface AdminData {
   };
   todayAppointments: Array<{
     id: string;
+    code: string;
     estado: string;
     hora_inicio: string;
     hora_fin: string;
@@ -66,6 +67,7 @@ interface AdminData {
   }>;
   recentAppointments: Array<{
     id: string;
+    code: string;
     estado: string;
     hora_inicio: string;
     fecha: string;
@@ -79,6 +81,8 @@ interface AdminData {
 
 const props = defineProps<{ data: AdminData }>();
 
+// Cita abierta en la ventana de detalle (se toca desde «Citas de hoy» o «Actividad»).
+const detailCode = ref<string | null>(null);
 
 const ratioActiveClients = computed(() =>
   props.data.kpis.total_clients > 0
@@ -523,12 +527,6 @@ onMounted(async () => {
       </UiChartCard>
     </section>
 
-    <DashboardAnalyticsInsights
-      :simple="data.insights"
-      :insights="data.sparkHighlights"
-      show-link
-    />
-
     <div class="flex items-center gap-3 px-1 pt-2">
       <span class="text-[11px] font-black uppercase tracking-[0.22em] text-gold"
         >Operación de hoy</span
@@ -569,10 +567,13 @@ onMounted(async () => {
           </p>
         </div>
         <div v-else class="space-y-2">
-          <div
+          <button
             v-for="appt in data.todayAppointments"
             :key="appt.id"
-            class="flex items-center gap-3 rounded-xl border border-ink/[0.05] p-3 transition-all hover:border-ink/10 hover:bg-ink/[0.02]"
+            type="button"
+            class="flex w-full items-center gap-3 rounded-xl border border-ink/[0.05] p-3 text-left transition-all hover:border-gold/40 hover:bg-ink/[0.02] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+            :aria-label="`Ver detalle de la cita de ${appt.cliente}`"
+            @click="detailCode = appt.code"
           >
             <div class="w-10 shrink-0 text-center">
               <p class="text-[11px] font-black text-ink">
@@ -594,7 +595,7 @@ onMounted(async () => {
             <UiBadge :tone="appointmentStatus(appt.estado).tone" class="shrink-0">
               {{ appointmentStatus(appt.estado).label }}
             </UiBadge>
-          </div>
+          </button>
         </div>
       </div>
 
@@ -621,10 +622,13 @@ onMounted(async () => {
 
           <div class="flex-1 p-5">
             <div v-if="activeTab === 'activity'" class="space-y-3">
-              <div
+              <button
                 v-for="appt in data.recentAppointments.slice(0, 6)"
                 :key="appt.id"
-                class="flex items-center gap-3"
+                type="button"
+                class="-mx-2 flex w-[calc(100%+1rem)] items-center gap-3 rounded-lg px-2 py-1 text-left transition-colors hover:bg-ink/[0.04] focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold"
+                :aria-label="`Ver detalle de la cita de ${appt.cliente}`"
+                @click="detailCode = appt.code"
               >
                 <UiAvatar :src="appt.cliente_avatar_url" :name="appt.cliente" />
                 <div class="min-w-0 flex-1">
@@ -638,7 +642,7 @@ onMounted(async () => {
                 <UiBadge :tone="appointmentStatus(appt.estado).tone" class="shrink-0">
                   {{ appointmentStatus(appt.estado).label }}
                 </UiBadge>
-              </div>
+              </button>
               <p
                 v-if="!data.recentAppointments.length"
                 class="py-8 text-center text-xs italic text-ink/45"
@@ -1122,5 +1126,14 @@ onMounted(async () => {
         </section>
       </div>
     </section>
+
+    <!-- Al final: es lectura de apoyo (plegada por defecto), no lo primero que el administrador necesita. -->
+    <DashboardAnalyticsInsights
+      :simple="data.insights"
+      :insights="data.sparkHighlights"
+      show-link
+    />
+
+    <UiAppointmentDetailModal v-if="detailCode" :code="detailCode" @close="detailCode = null" />
   </div>
 </template>

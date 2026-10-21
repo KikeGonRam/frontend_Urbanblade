@@ -166,6 +166,9 @@ watch(clientQuery, (q) => {
   }, 350);
 });
 
+// Cita abierta en la ventana de detalle (se toca el nombre del cliente).
+const detailCode = ref("");
+
 // ── Crear / editar ───────────────────────────────────────────────────────
 const showForm = ref(false);
 const editing = ref<AppointmentRow | null>(null);
@@ -473,7 +476,14 @@ v-model="barberFilter"
               {{ appt.hora_inicio?.slice(0, 5) }}
             </td>
             <td class="px-4 py-3 font-bold text-ink">
-              {{ appt.client.user.name ?? "—" }}
+              <button
+                type="button"
+                class="rounded text-left underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+                :aria-label="`Ver detalle de la cita de ${appt.client.user.name ?? 'este cliente'}`"
+                @click="detailCode = appt.code"
+              >
+                {{ appt.client.user.name ?? "—" }}
+              </button>
             </td>
             <td class="px-4 py-3 text-muted">
               {{ appt.service.nombre ?? "—" }}
@@ -714,5 +724,7 @@ v-model="form.notas"
           </div>
         </form>
     </UiModal>
+
+    <UiAppointmentDetailModal v-if="detailCode" :code="detailCode" @close="detailCode = ''" />
   </div>
 </template>

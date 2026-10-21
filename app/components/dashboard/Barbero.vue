@@ -73,6 +73,8 @@ const kpiCards = computed(() => [
 const actingOn = ref<string | null>(null);
 const actionError = ref("");
 const ticket = ref<ServiceTicket | null>(null);
+// Cita abierta en la ventana de detalle (se toca el nombre o la hora de la cita).
+const detailCode = ref<string | null>(null);
 
 async function setStatus(
   appt: BarberPending,
@@ -336,13 +338,18 @@ const servicesOptions = {
           :class="[EDGE[appt.estado] ?? 'border-l-line', ['completada', 'cancelada', 'no_asistio'].includes(appt.estado) ? 'opacity-70' : '']"
         >
           <div class="flex items-start justify-between gap-3">
-            <div class="min-w-0">
-              <p class="truncate text-base font-semibold text-ink">
+            <button
+              type="button"
+              class="min-w-0 rounded-lg text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold"
+              :aria-label="`Ver detalle de la cita de ${appt.cliente}`"
+              @click="detailCode = appt.code"
+            >
+              <span class="block truncate text-base font-semibold text-ink">
                 <span class="tabular-nums" :class="appt.isNext || appt.estado === 'en_proceso' ? 'text-gold' : ''">{{ appt.hora_inicio?.slice(0, 5) ?? "--:--" }}</span>
                 · {{ appt.cliente }}
-              </p>
-              <p class="truncate text-sm text-muted">{{ appt.servicio }} · hasta {{ appt.hora_fin?.slice(0, 5) }}</p>
-            </div>
+              </span>
+              <span class="block truncate text-sm text-muted">{{ appt.servicio }} · hasta {{ appt.hora_fin?.slice(0, 5) }}</span>
+            </button>
             <UiBadge :tone="appointmentStatus(appt.estado).tone" class="shrink-0">
               {{ appt.isNext && appt.estado === "confirmada" ? "Siguiente" : appointmentStatus(appt.estado).label }}
             </UiBadge>
@@ -412,5 +419,6 @@ const servicesOptions = {
     <DashboardAnalyticsInsights :insights="data.sparkHighlights" titulo="Tus oportunidades" />
 
     <UiServiceTicketModal v-if="ticket" :ticket="ticket" @close="closeTicket" />
+    <UiAppointmentDetailModal v-if="detailCode" :code="detailCode" @close="detailCode = null" />
   </div>
 </template>
