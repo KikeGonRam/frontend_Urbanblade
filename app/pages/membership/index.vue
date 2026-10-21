@@ -69,7 +69,7 @@ function fmtDate(iso: string | null) {
   });
 }
 
-const { data: plansResponse, pending: plansPending } = await useAsyncData(
+const { data: plansResponse, pending: plansPending, error: plansError, refresh: refreshPlans } = await useAsyncData(
   "membership-plans",
   () => apiFetch<{ data: Plan[] }>("/memberships/plans"),
 );
@@ -78,6 +78,7 @@ const plans = computed(() => plansResponse.value?.data ?? []);
 const {
   data: mineResponse,
   pending: minePending,
+  error: mineError,
   refresh: refreshMine,
 } = await useAsyncData("membership-mine", () =>
   apiFetch<{ data: Membership | null }>("/memberships/mine"),
@@ -235,14 +236,15 @@ async function cancelMembership() {
       </p>
     </header>
 
-    <p v-if="minePending || plansPending" class="text-sm text-muted">Cargando…</p>
+    <BrandStatePanel v-if="minePending || plansPending" mascot="bladebot" state="waiting" title="Cargando tu membresía…" />
+    <BrandStatePanel v-else-if="plansError || mineError" mascot="bruno" state="error" tone="danger" title="No pudimos cargar tu membresía" description="Revisa tu conexión e inténtalo de nuevo." action-label="Reintentar" @action="() => { refreshPlans(); refreshMine() }" />
 
     <!-- Ya tiene una membresía activa/pendiente/con pago fallido -->
     <section v-else-if="hasActiveOrPending && membership" class="ui-card max-w-lg p-6">
       <div class="flex items-center justify-between gap-2">
         <h2 class="text-lg font-black uppercase text-ink">{{ membership.plan.nombre }}</h2>
         <span
-          class="rounded-full border px-2 py-0.5 text-[10px] font-black uppercase"
+          class="rounded-full border px-2 py-0.5 text-[11px] font-black uppercase"
           :class="ESTADO_CLASS[membership.estado]"
         >{{ ESTADO_LABEL[membership.estado] ?? membership.estado }}</span>
       </div>
@@ -304,11 +306,11 @@ async function cancelMembership() {
     </section>
 
     <!-- Modal de contratación -->
-    <div v-if="subscribing" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+    <div v-if="subscribing" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" role="dialog" aria-modal="true" aria-labelledby="subscribe-title" @keydown.esc="closeSubscribe">
       <div class="w-full max-w-md rounded-2xl border border-line bg-card p-6">
         <div class="mb-4 flex items-center justify-between">
-          <h3 class="text-lg font-black uppercase text-ink">{{ subscribing.nombre }}</h3>
-          <button type="button" class="text-sm text-muted hover:text-ink" @click="closeSubscribe">✕</button>
+          <h3 id="subscribe-title" class="text-lg font-black uppercase text-ink">{{ subscribing.nombre }}</h3>
+          <button type="button" class="flex h-11 w-11 items-center justify-center text-sm text-muted hover:text-ink" aria-label="Cerrar" @click="closeSubscribe">✕</button>
         </div>
 
         <template v-if="subscribeSucceeded && subscribeWaiting">

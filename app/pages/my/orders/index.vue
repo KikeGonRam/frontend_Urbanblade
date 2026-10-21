@@ -88,7 +88,7 @@ async function cancelOrder(order: OrderRow) {
       Pedido {{ route.query.created }} creado. Paga y recoge en sucursal.
     </p>
 
-    <p v-if="pending" class="text-sm text-muted">Cargando pedidos…</p>
+    <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando tus pedidos…" />
     <BrandStatePanel
       v-else-if="error"
       mascot="bruno"
@@ -108,10 +108,10 @@ async function cancelOrder(order: OrderRow) {
         <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
           <div>
             <p class="font-black text-ink">{{ order.folio }}</p>
-            <p class="text-[10px] font-bold uppercase text-muted">{{ fmtDate(order.created_at) }}</p>
+            <p class="text-[11px] font-bold uppercase text-muted">{{ fmtDate(order.created_at) }}</p>
           </div>
           <div class="flex items-center gap-3">
-            <span class="rounded-full border px-2 py-0.5 text-[10px] font-black uppercase" :class="ESTADO_CLASS[order.estado]">{{ ESTADO_LABEL[order.estado] ?? order.estado }}</span>
+            <span class="rounded-full border px-2 py-0.5 text-[11px] font-black uppercase" :class="ESTADO_CLASS[order.estado]">{{ ESTADO_LABEL[order.estado] ?? order.estado }}</span>
             <span class="font-black text-gold">{{ fmtMoney(order.total) }}</span>
           </div>
         </div>
@@ -120,7 +120,7 @@ async function cancelOrder(order: OrderRow) {
         </ul>
         <button
           v-if="order.estado === 'pendiente'" type="button" :disabled="cancelling === order.id"
-          class="rounded-lg border border-danger/20 px-3 py-1.5 text-xs text-danger hover:bg-danger/10 disabled:opacity-50"
+          class="rounded-lg border border-danger/20 px-3 py-1.5 text-xs text-danger hover:bg-danger/10 disabled:opacity-50 min-h-10"
           @click="cancelOrder(order)"
         >
           Cancelar pedido

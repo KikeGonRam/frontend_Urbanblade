@@ -255,7 +255,7 @@ async function submitForm() {
 
 // ── Horarios disponibles ──────────────────────────────────────────────────
 // AvailabilityController::slots() existía en el backend desde hace tiempo
-// pero no lo consumía nadie: el formulario pedía la hora con un <input
+// pero no lo consumía nadie: el formulario pedía la hora con un <input aria-label="Hora"
 // type="time"> a ciegas, así que el cliente solo descubría que el horario
 // estaba ocupado al recibir el 422. Ahora se piden los huecos reales en
 // cuanto barbero + servicio + fecha están completos.
@@ -525,21 +525,21 @@ onUnmounted(() => teardownStripe());
       class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4"
     >
       <div class="ui-card p-4">
-        <p class="text-[10px] font-bold uppercase text-muted">Total</p>
+        <p class="text-[11px] font-bold uppercase text-muted">Total</p>
         <p class="mt-1 text-xl font-black text-ink">{{ stats.total }}</p>
       </div>
       <div class="ui-card p-4">
-        <p class="text-[10px] font-bold uppercase text-muted">Próximas</p>
+        <p class="text-[11px] font-bold uppercase text-muted">Próximas</p>
         <p class="mt-1 text-xl font-black text-gold">{{ stats.proximas }}</p>
       </div>
       <div class="ui-card p-4">
-        <p class="text-[10px] font-bold uppercase text-muted">Completadas</p>
+        <p class="text-[11px] font-bold uppercase text-muted">Completadas</p>
         <p class="mt-1 text-xl font-black text-success">
           {{ stats.completadas }}
         </p>
       </div>
       <div class="ui-card p-4">
-        <p class="text-[10px] font-bold uppercase text-muted">Canceladas</p>
+        <p class="text-[11px] font-bold uppercase text-muted">Canceladas</p>
         <p class="mt-1 text-xl font-black text-danger">
           {{ stats.canceladas }}
         </p>
@@ -550,7 +550,7 @@ onUnmounted(() => teardownStripe());
       v-if="next"
       class="mb-6 rounded-2xl border border-gold/30 bg-gold/5 p-5"
     >
-      <p class="text-[10px] font-bold uppercase tracking-widest text-gold">
+      <p class="text-[11px] font-bold uppercase tracking-widest text-gold">
         Tu próxima cita
       </p>
       <p class="mt-1 font-black text-ink">
@@ -608,7 +608,7 @@ onUnmounted(() => teardownStripe());
             </p>
           </div>
           <span
-            class="rounded-full border px-2 py-0.5 text-[10px] font-black uppercase"
+            class="rounded-full border px-2 py-0.5 text-[11px] font-black uppercase"
             :class="ESTADO_CLASS[appt.estado]"
             >{{ ESTADO_LABEL[appt.estado] ?? appt.estado }}</span
           >
@@ -624,7 +624,7 @@ onUnmounted(() => teardownStripe());
             v-if="appt.estado === 'completada'"
             type="button"
             :disabled="ticketBusy === appt.id"
-            class="rounded-lg border border-success/30 px-3 py-1.5 text-xs font-semibold text-success hover:bg-success/10 disabled:opacity-50"
+            class="rounded-lg border border-success/30 px-3 py-1.5 text-xs font-semibold text-success hover:bg-success/10 disabled:opacity-50 min-h-10"
             @click="openTicket(appt)"
           >
             {{ ticketBusy === appt.id ? "Abriendo…" : "Ver ticket" }}
@@ -632,7 +632,7 @@ onUnmounted(() => teardownStripe());
           <button
             v-if="canPay(appt) && stripeConfigured"
             type="button"
-            class="rounded-lg bg-gold px-3 py-1.5 text-xs font-semibold text-black hover:bg-gold-dim"
+            class="rounded-lg bg-gold px-3 py-1.5 text-xs font-semibold text-black hover:bg-gold-dim min-h-10"
             @click="openPay(appt)"
           >
             Pagar con tarjeta
@@ -640,7 +640,7 @@ onUnmounted(() => teardownStripe());
           <template v-if="canManage(appt)">
             <button
               type="button"
-              class="rounded-lg border border-line px-3 py-1.5 text-xs text-muted hover:text-ink"
+              class="rounded-lg border border-line px-3 py-1.5 text-xs text-muted hover:text-ink min-h-10"
               @click="openReschedule(appt)"
             >
               Reagendar
@@ -648,7 +648,7 @@ onUnmounted(() => teardownStripe());
             <button
               type="button"
               :disabled="cancelling === appt.id"
-              class="rounded-lg border border-danger/20 px-3 py-1.5 text-xs text-danger hover:bg-danger/10 disabled:opacity-50"
+              class="rounded-lg border border-danger/20 px-3 py-1.5 text-xs text-danger hover:bg-danger/10 disabled:opacity-50 min-h-10"
               @click="cancelAppointment(appt)"
             >
               {{ cancelling === appt.id ? "Cancelando…" : "Cancelar" }}
@@ -675,7 +675,8 @@ onUnmounted(() => teardownStripe());
             <div>
               <label class="mb-1 block text-xs text-muted">Barbero</label>
               <select
-                v-model="form.barber_id"
+v-model="form.barber_id"
+                aria-label="Barbero"
                 required
                 class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
               >
@@ -688,7 +689,8 @@ onUnmounted(() => teardownStripe());
             <div>
               <label class="mb-1 block text-xs text-muted">Servicio</label>
               <select
-                v-model="form.service_id"
+v-model="form.service_id"
+                aria-label="Servicio"
                 required
                 class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
               >
@@ -703,7 +705,8 @@ onUnmounted(() => teardownStripe());
             <div>
               <label class="mb-1 block text-xs text-muted">Fecha</label>
               <input
-                v-model="form.fecha"
+v-model="form.fecha"
+                aria-label="Fecha"
                 type="date"
                 required
                 class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
@@ -717,15 +720,17 @@ onUnmounted(() => teardownStripe());
                 dejar al cliente sin poder reservar.
               -->
               <input
-                v-if="slotsFailed"
+v-if="slotsFailed"
                 v-model="form.hora_inicio"
+                aria-label="Hora de inicio"
                 type="time"
                 required
                 class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
               >
               <select
-                v-else
+v-else
                 v-model="form.hora_inicio"
+                aria-label="Hora de inicio"
                 required
                 :disabled="slotsPending || !slots.length"
                 class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink disabled:opacity-50"
@@ -754,7 +759,8 @@ onUnmounted(() => teardownStripe());
           <div>
             <label class="mb-1 block text-xs text-muted">Notas</label>
             <textarea
-              v-model="form.notas"
+v-model="form.notas"
+              aria-label="Notas"
               rows="2"
               class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
             />

@@ -292,7 +292,7 @@ function fmtDate(iso: string | null) {
         "
       >
         <p
-          class="mb-1 text-[10px] font-black uppercase tracking-wider text-muted"
+          class="mb-1 text-[11px] font-black uppercase tracking-wider text-muted"
         >
           {{ card.label }}
         </p>
@@ -302,7 +302,8 @@ function fmtDate(iso: string | null) {
 
     <section class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center">
       <input
-        v-model="search"
+v-model="search"
+        aria-label="Nombre o email"
         type="text"
         placeholder="Nombre o email..."
         class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink sm:max-w-xs"
@@ -341,7 +342,7 @@ function fmtDate(iso: string | null) {
       <table aria-label="Clientes" class="w-full text-left text-sm">
         <thead>
           <tr
-            class="border-b border-line text-[10px] uppercase tracking-wider text-muted"
+            class="border-b border-line text-[11px] uppercase tracking-wider text-muted"
           >
             <th scope="col" class="px-4 py-3">Cliente</th>
             <th scope="col" class="px-4 py-3">Email</th>
@@ -370,7 +371,7 @@ function fmtDate(iso: string | null) {
             <td class="px-4 py-3 text-muted">{{ client.telefono ?? "—" }}</td>
             <td class="px-4 py-3 text-center">
               <span
-                class="rounded-full border px-2 py-0.5 text-[10px] font-black"
+                class="rounded-full border px-2 py-0.5 text-[11px] font-black"
                 :class="SEGMENT_CLASS[client.segment]"
                 >{{ SEGMENT_LABEL[client.segment] }}</span
               >
@@ -389,7 +390,7 @@ function fmtDate(iso: string | null) {
                 </NuxtLink>
                 <button
                   type="button"
-                  class="rounded-lg border border-line px-3 py-1 text-xs text-muted hover:text-ink"
+                  class="rounded-lg border border-line px-3 py-1 text-xs text-muted hover:text-ink min-h-10"
                   @click="openEdit(client)"
                 >
                   Editar
@@ -399,7 +400,7 @@ function fmtDate(iso: string | null) {
                 <button
                   v-if="isAdmin"
                   type="button"
-                  class="rounded-lg border border-danger/20 px-3 py-1 text-xs text-danger hover:bg-danger/10"
+                  class="rounded-lg border border-danger/20 px-3 py-1 text-xs text-danger hover:bg-danger/10 min-h-10"
                   @click="removeClient(client)"
                 >
                   Eliminar

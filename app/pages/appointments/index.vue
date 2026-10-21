@@ -407,7 +407,8 @@ onBeforeUnmount(() => {
 
     <section class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center">
       <select
-        v-model="estadoFilter"
+v-model="estadoFilter"
+        aria-label="Filtrar por estado"
         class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
       >
         <option value="">Todos los estados</option>
@@ -416,7 +417,8 @@ onBeforeUnmount(() => {
         </option>
       </select>
       <select
-        v-model="barberFilter"
+v-model="barberFilter"
+        aria-label="Filtrar por barbero"
         class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
       >
         <option value="">Todos los barberos</option>
@@ -450,7 +452,7 @@ onBeforeUnmount(() => {
       <table class="w-full text-left text-sm">
         <thead>
           <tr
-            class="border-b border-line text-[10px] uppercase tracking-wider text-muted"
+            class="border-b border-line text-[11px] uppercase tracking-wider text-muted"
           >
             <th class="px-4 py-3">Fecha</th>
             <th class="px-4 py-3">Hora</th>
@@ -482,7 +484,7 @@ onBeforeUnmount(() => {
             </td>
             <td class="px-4 py-3 text-center">
               <span
-                class="rounded-full border px-2 py-0.5 text-[10px] font-black"
+                class="rounded-full border px-2 py-0.5 text-[11px] font-black"
                 :class="ESTADO_CLASS[appt.estado]"
                 >{{ ESTADO_LABEL[appt.estado] ?? appt.estado }}</span
               >
@@ -582,7 +584,8 @@ onBeforeUnmount(() => {
             </div>
             <template v-else>
               <input
-                v-model="clientQuery"
+v-model="clientQuery"
+                aria-label="Buscar cliente por nombre o correo"
                 type="text"
                 placeholder="Buscar por nombre o email…"
                 class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
@@ -607,7 +610,8 @@ onBeforeUnmount(() => {
             <div>
               <label class="mb-1 block text-xs text-muted">Barbero</label>
               <select
-                v-model="form.barber_id"
+v-model="form.barber_id"
+                aria-label="Barbero"
                 required
                 class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
               >
@@ -620,7 +624,8 @@ onBeforeUnmount(() => {
             <div>
               <label class="mb-1 block text-xs text-muted">Servicio</label>
               <select
-                v-model="form.service_id"
+v-model="form.service_id"
+                aria-label="Servicio"
                 required
                 class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
               >
@@ -635,7 +640,8 @@ onBeforeUnmount(() => {
             <div>
               <label class="mb-1 block text-xs text-muted">Fecha</label>
               <input
-                v-model="form.fecha"
+v-model="form.fecha"
+                aria-label="Fecha"
                 type="date"
                 required
                 class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
@@ -644,7 +650,8 @@ onBeforeUnmount(() => {
             <div>
               <label class="mb-1 block text-xs text-muted">Hora</label>
               <input
-                v-model="form.hora_inicio"
+v-model="form.hora_inicio"
+                aria-label="Hora de inicio"
                 type="time"
                 required
                 list="horarios-libres"
@@ -671,7 +678,8 @@ onBeforeUnmount(() => {
           <div>
             <label class="mb-1 block text-xs text-muted">Estado</label>
             <select
-              v-model="form.estado"
+v-model="form.estado"
+              aria-label="Estado de la cita"
               class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
             >
               <option v-for="e in ESTADOS" :key="e" :value="e">
@@ -682,7 +690,8 @@ onBeforeUnmount(() => {
           <div>
             <label class="mb-1 block text-xs text-muted">Notas</label>
             <textarea
-              v-model="form.notas"
+v-model="form.notas"
+              aria-label="Notas"
               rows="2"
               class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
             />

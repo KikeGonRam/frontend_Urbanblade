@@ -75,7 +75,7 @@ function fmtDate(iso: string | null) {
 }
 
 // ── Catálogo ─────────────────────────────────────────────────────────────
-const { data: catalogResponse, pending: catalogPending } = await useAsyncData(
+const { data: catalogResponse, pending: catalogPending, error: catalogError, refresh: refreshCatalog } = await useAsyncData(
   "packages-catalog",
   () => apiFetch<{ data: CatalogPackage[] }>("/packages/catalog"),
 );
@@ -215,13 +215,14 @@ async function waitForPackageToAppear() {
 
     <section>
       <h2 class="mb-3 text-lg font-black uppercase text-ink">Catálogo</h2>
-      <p v-if="catalogPending" class="text-sm text-muted">Cargando…</p>
+      <BrandStatePanel v-if="catalogPending" mascot="bladebot" state="waiting" title="Cargando paquetes…" />
+      <BrandStatePanel v-else-if="catalogError" mascot="bruno" state="error" tone="danger" title="No pudimos cargar los paquetes" description="Revisa tu conexión e inténtalo de nuevo." action-label="Reintentar" @action="refreshCatalog" />
       <p v-else-if="!catalog.length" class="rounded-2xl border border-dashed border-line p-8 text-center text-sm text-muted">
         No hay paquetes disponibles por el momento.
       </p>
       <div v-else class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div v-for="pkg in catalog" :key="pkg.id" class="ui-card flex flex-col p-5">
-          <p class="text-[9px] font-black uppercase tracking-widest text-gold/70">
+          <p class="text-[11px] font-black uppercase tracking-widest text-gold/70">
             {{ pkg.service.nombre }}
           </p>
           <h3 class="mt-1 text-lg font-black text-ink">{{ pkg.nombre }}</h3>
@@ -239,7 +240,7 @@ async function waitForPackageToAppear() {
           >
             Comprar
           </button>
-          <p v-else class="mt-4 text-[10px] italic text-muted">
+          <p v-else class="mt-4 text-[11px] italic text-muted">
             El cliente compra el paquete desde su cuenta.
           </p>
         </div>
@@ -256,7 +257,7 @@ async function waitForPackageToAppear() {
           <div class="flex items-center justify-between gap-2">
             <p class="font-black text-ink">{{ pkg.nombre }}</p>
             <span
-              class="rounded-full border px-2 py-0.5 text-[9px] font-black uppercase"
+              class="rounded-full border px-2 py-0.5 text-[11px] font-black uppercase"
               :class="ESTADO_CLASS[pkg.estado]"
             >{{ ESTADO_LABEL[pkg.estado] ?? pkg.estado }}</span>
           </div>
@@ -264,7 +265,7 @@ async function waitForPackageToAppear() {
           <p class="mt-2 text-xl font-black text-gold">
             {{ pkg.usos_restantes }} / {{ pkg.usos_totales }} usos
           </p>
-          <p class="text-[10px] font-bold uppercase text-muted">
+          <p class="text-[11px] font-bold uppercase text-muted">
             Comprado {{ fmtDate(pkg.comprado_en) }}
             <span v-if="pkg.expira_en"> · vence {{ fmtDate(pkg.expira_en) }}</span>
           </p>
@@ -273,11 +274,11 @@ async function waitForPackageToAppear() {
     </section>
 
     <!-- Modal de compra -->
-    <div v-if="buying" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+    <div v-if="buying" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" role="dialog" aria-modal="true" aria-labelledby="buy-title" @keydown.esc="closeBuy">
       <div class="w-full max-w-md rounded-2xl border border-line bg-card p-6">
         <div class="mb-4 flex items-center justify-between">
-          <h3 class="text-lg font-black uppercase text-ink">{{ buying.nombre }}</h3>
-          <button type="button" class="text-sm text-muted hover:text-ink" @click="closeBuy">✕</button>
+          <h3 id="buy-title" class="text-lg font-black uppercase text-ink">{{ buying.nombre }}</h3>
+          <button type="button" class="flex h-11 w-11 items-center justify-center text-sm text-muted hover:text-ink" aria-label="Cerrar" @click="closeBuy">✕</button>
         </div>
 
         <template v-if="buySucceeded && buyWaiting">

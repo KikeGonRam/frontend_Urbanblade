@@ -262,7 +262,7 @@ async function lookupBalance() {
 
         <template v-else-if="revealedCode">
           <div class="rounded-xl border border-success/25 bg-success/10 p-5 text-center">
-            <p class="text-[10px] font-black uppercase tracking-widest text-success">
+            <p class="text-[11px] font-black uppercase tracking-widest text-success">
               ¡Tarjeta creada!
             </p>
             <p class="mt-2 font-mono text-2xl font-black tracking-widest text-ink">
@@ -292,7 +292,8 @@ async function lookupBalance() {
           <div>
             <label class="mb-1 block text-xs text-muted">Monto (MXN)</label>
             <input
-              v-model.number="buyForm.monto"
+v-model.number="buyForm.monto"
+              aria-label="Monto de la tarjeta de regalo"
               type="number"
               :min="MONTO_MIN"
               :max="MONTO_MAX"
@@ -303,7 +304,8 @@ async function lookupBalance() {
           <div>
             <label class="mb-1 block text-xs text-muted">Nombre de quien regala (opcional)</label>
             <input
-              v-model="buyForm.compradorNombre"
+v-model="buyForm.compradorNombre"
+              aria-label="Nombre del comprador"
               type="text"
               class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
             >
@@ -311,7 +313,8 @@ async function lookupBalance() {
           <div>
             <label class="mb-1 block text-xs text-muted">Correo de quien la recibe (opcional)</label>
             <input
-              v-model="buyForm.destinatarioEmail"
+v-model="buyForm.destinatarioEmail"
+              aria-label="Correo del destinatario"
               type="email"
               placeholder="Déjalo vacío si es para ti"
               class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
@@ -341,7 +344,8 @@ async function lookupBalance() {
 
         <form class="flex gap-2" @submit.prevent="lookupBalance">
           <input
-            v-model="lookupCode"
+v-model="lookupCode"
+            aria-label="Código de la tarjeta de regalo"
             type="text"
             placeholder="Ej. A1B2C3D4"
             class="flex-1 rounded-lg border border-line bg-main px-3 py-2 text-sm uppercase text-ink"
@@ -357,7 +361,7 @@ async function lookupBalance() {
           <div class="flex items-center justify-between">
             <p class="font-mono text-sm font-black text-ink">{{ lookupResult.code }}</p>
             <span
-              class="rounded-full border px-2 py-0.5 text-[10px] font-black uppercase"
+              class="rounded-full border px-2 py-0.5 text-[11px] font-black uppercase"
               :class="ESTADO_CLASS[lookupResult.estado]"
             >{{ ESTADO_LABEL[lookupResult.estado] ?? lookupResult.estado }}</span>
           </div>
@@ -378,12 +382,12 @@ async function lookupBalance() {
           <div class="flex items-center justify-between gap-2">
             <p class="font-mono text-sm font-black text-ink">{{ card.code }}</p>
             <span
-              class="rounded-full border px-2 py-0.5 text-[9px] font-black uppercase"
+              class="rounded-full border px-2 py-0.5 text-[11px] font-black uppercase"
               :class="ESTADO_CLASS[card.estado]"
             >{{ ESTADO_LABEL[card.estado] ?? card.estado }}</span>
           </div>
           <p class="mt-2 text-xl font-black text-gold">{{ fmtMoney(card.saldo) }}</p>
-          <p class="text-[10px] font-bold uppercase text-muted">
+          <p class="text-[11px] font-bold uppercase text-muted">
             de {{ fmtMoney(card.monto_inicial) }} · {{ fmtDate(card.comprado_en) }}
           </p>
         </div>

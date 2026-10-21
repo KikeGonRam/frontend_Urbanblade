@@ -198,7 +198,7 @@ async function remove(work: Work) {
             </div>
             <button
               type="button"
-              class="rounded-lg border border-danger/20 px-2.5 py-1 text-xs text-danger hover:bg-danger/10"
+              class="rounded-lg border border-danger/20 px-2.5 py-1 text-xs text-danger hover:bg-danger/10 min-h-10"
               @click="remove(work)"
             >
               Eliminar
