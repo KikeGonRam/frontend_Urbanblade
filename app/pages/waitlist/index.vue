@@ -10,6 +10,8 @@
  */
 definePageMeta({ middleware: ["auth"], layout: "dashboard" });
 
+useSeoMeta({ title: 'Lista de espera — UrbanBlade', robots: 'noindex' })
+
 interface BarberRow {
   id: string;
   user: { id: string; name: string } | null;
@@ -36,11 +38,11 @@ const ESTADO_LABEL: Record<string, string> = {
   cancelado: "Cancelada",
 };
 const ESTADO_CLASS: Record<string, string> = {
-  activo: "border-amber-500/25 bg-amber-500/10 text-amber-300",
-  notificado: "border-sky-500/25 bg-sky-500/10 text-sky-300",
-  reservado: "border-emerald-500/25 bg-emerald-500/10 text-emerald-300",
+  activo: "border-warning/25 bg-warning/10 text-warning",
+  notificado: "border-info/25 bg-info/10 text-info",
+  reservado: "border-success/25 bg-success/10 text-success",
   expirado: "border-ink/15 bg-ink/5 text-ink/50",
-  cancelado: "border-red-500/25 bg-red-500/10 text-red-400",
+  cancelado: "border-danger/25 bg-danger/10 text-danger",
 };
 
 const { apiFetch } = useApi();
@@ -160,7 +162,7 @@ async function cancelEntry(entry: WaitlistEntry) {
           {{ joining ? "…" : "Anotarme" }}
         </button>
       </form>
-      <p v-if="joinError" role="alert" class="mt-3 text-sm text-red-400">{{ joinError }}</p>
+      <p v-if="joinError" role="alert" class="mt-3 text-sm text-danger">{{ joinError }}</p>
     </section>
 
     <section>
@@ -204,7 +206,7 @@ async function cancelEntry(entry: WaitlistEntry) {
             <button
               v-if="isClient && (entry.estado === 'activo' || entry.estado === 'notificado')"
               type="button"
-              class="text-xs text-red-400 hover:underline"
+              class="text-xs text-danger hover:underline"
               :disabled="cancelling === entry.id"
               @click="cancelEntry(entry)"
             >

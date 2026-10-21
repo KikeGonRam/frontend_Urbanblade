@@ -21,6 +21,8 @@ ensureChartjsRegistered()
 
 definePageMeta({ middleware: ['auth'], layout: 'dashboard' })
 
+useSeoMeta({ title: 'Analítica — UrbanBlade', robots: 'noindex' })
+
 // El barbero ya ve sus oportunidades en su dashboard; aquí solo se repetían (se quitó del menú el 26-sep).
 const { user: analyticsUser } = useAuth()
 if (analyticsUser.value?.roles?.length && analyticsUser.value.roles.every((r) => r === 'barbero')) {
@@ -93,9 +95,9 @@ interface AnalyticsResponse {
 const TONE_CLASS: Record<string, string> = {
   gold: 'border-gold/25 bg-gold/[0.06] text-gold',
   info: 'border-sky-400/25 bg-sky-500/[0.06] text-sky-300',
-  success: 'border-emerald-400/25 bg-emerald-500/[0.06] text-emerald-300',
-  warning: 'border-amber-400/25 bg-amber-500/[0.06] text-amber-300',
-  danger: 'border-rose-400/25 bg-rose-500/[0.06] text-rose-300',
+  success: 'border-success/25 bg-emerald-500/[0.06] text-success',
+  warning: 'border-warning/25 bg-amber-500/[0.06] text-warning',
+  danger: 'border-danger/25 bg-rose-500/[0.06] text-danger',
 }
 const BAR_COLOR: Record<string, string> = {
   gold: 'bg-gold', info: 'bg-sky-400', success: 'bg-emerald-400', warning: 'bg-amber-400', danger: 'bg-rose-400',

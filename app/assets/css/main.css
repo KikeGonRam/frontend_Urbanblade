@@ -212,8 +212,8 @@ html[data-theme="libreta"] {
     --dot-color: rgba(30, 42, 60, 0.035);
 
     /* Versiones oscuras de los colores de estado: las claras no se leen sobre marfil. */
-    --success-rgb: 21 128 61;
-    --warning-rgb: 161 98 7;
+    --success-rgb: 22 101 52;
+    --warning-rgb: 133 77 14;
     --danger-rgb:  185 28 28;
     --info-rgb:    29 78 216;
 }

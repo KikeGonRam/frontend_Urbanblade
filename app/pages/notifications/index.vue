@@ -11,6 +11,8 @@
  */
 definePageMeta({ middleware: 'auth', layout: 'dashboard' })
 
+useSeoMeta({ title: 'Notificaciones — UrbanBlade', robots: 'noindex' })
+
 interface NotificationItem {
   id: string
   type: string
@@ -173,7 +175,7 @@ function fmtDate(iso: string | null) {
         </button>
         <button
           type="button" :disabled="busyId === n.id"
-          class="shrink-0 rounded-lg p-2 text-muted transition hover:bg-accent hover:text-red-400 disabled:opacity-50"
+          class="shrink-0 rounded-lg p-2 text-muted transition hover:bg-accent hover:text-danger disabled:opacity-50"
           aria-label="Eliminar notificación"
           @click="removeNotification(n)"
         >
@@ -204,7 +206,7 @@ function fmtDate(iso: string | null) {
         </div>
         <ShellPushToggle />
       </div>
-      <p v-if="prefsMessage" role="status" class="text-sm text-emerald-400">{{ prefsMessage }}</p>
+      <p v-if="prefsMessage" role="status" class="text-sm text-success">{{ prefsMessage }}</p>
     </section>
   </div>
 </template>

@@ -7,6 +7,8 @@
  */
 definePageMeta({ middleware: ['auth'], layout: 'dashboard' })
 
+useSeoMeta({ title: 'Nuestros barberos — UrbanBlade', robots: 'noindex' })
+
 interface BarberRow {
   id: string
   slug: string | null

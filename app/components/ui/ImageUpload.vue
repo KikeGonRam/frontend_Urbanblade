@@ -110,7 +110,7 @@ function onChange(event: Event) {
         </p>
       </div>
     </div>
-    <p v-if="message" class="mt-1 text-xs text-red-400" role="alert">
+    <p v-if="message" class="mt-1 text-xs text-danger" role="alert">
       {{ message }}
     </p>
   </div>

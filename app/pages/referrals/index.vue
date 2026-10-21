@@ -9,6 +9,8 @@
  */
 definePageMeta({ middleware: ["auth", "client"], layout: "dashboard" });
 
+useSeoMeta({ title: 'Referidos — UrbanBlade', robots: 'noindex' })
+
 interface Referido {
   referido: string;
   estado: "pendiente" | "completado";
@@ -24,8 +26,8 @@ interface MineResponse {
 
 const ESTADO_LABEL: Record<string, string> = { pendiente: "Pendiente", completado: "Completado" };
 const ESTADO_CLASS: Record<string, string> = {
-  pendiente: "border-amber-500/25 bg-amber-500/10 text-amber-300",
-  completado: "border-emerald-500/25 bg-emerald-500/10 text-emerald-300",
+  pendiente: "border-warning/25 bg-warning/10 text-warning",
+  completado: "border-success/25 bg-success/10 text-success",
 };
 
 const { apiFetch } = useApi();
@@ -133,10 +135,10 @@ async function submitLink() {
             {{ linking ? "…" : "Vincular" }}
           </button>
         </form>
-        <p v-if="linkSuccess" class="mt-3 text-sm text-emerald-300">
+        <p v-if="linkSuccess" class="mt-3 text-sm text-success">
           ¡Listo! Cuando completes tu primera cita, tu referido ganará sus puntos.
         </p>
-        <p v-else-if="linkError" role="alert" class="mt-3 text-sm text-red-400">{{ linkError }}</p>
+        <p v-else-if="linkError" role="alert" class="mt-3 text-sm text-danger">{{ linkError }}</p>
       </section>
 
       <section class="ui-card p-6 lg:col-span-2">

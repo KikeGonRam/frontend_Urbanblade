@@ -108,11 +108,11 @@ async function onSubmit() {
       <div>
         <label for="password_confirmation" class="mb-1 block text-sm text-muted">Confirmar contraseña</label>
         <AuthPasswordField id="password_confirmation" v-model="passwordConfirmation" autocomplete="new-password" placeholder="Repite tu contraseña" />
-        <p v-if="passwordsMatch === true" class="mt-1.5 flex items-center gap-1 text-xs text-emerald-400">
+        <p v-if="passwordsMatch === true" class="mt-1.5 flex items-center gap-1 text-xs text-success">
           <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
           Las contraseñas coinciden
         </p>
-        <p v-else-if="passwordsMatch === false" class="mt-1.5 text-xs text-red-400">Las contraseñas no coinciden todavía</p>
+        <p v-else-if="passwordsMatch === false" class="mt-1.5 text-xs text-danger">Las contraseñas no coinciden todavía</p>
       </div>
 
       <label class="flex items-start gap-2 text-xs leading-relaxed text-muted">
@@ -123,8 +123,8 @@ async function onSubmit() {
         </span>
       </label>
 
-      <p v-if="secondsLeft > 0" class="text-sm text-amber-400">Demasiados intentos. Espera {{ secondsLeft }}s para volver a intentar.</p>
-      <p v-else-if="errorMessage" class="text-sm text-red-400">{{ errorMessage }}</p>
+      <p v-if="secondsLeft > 0" class="text-sm text-warning">Demasiados intentos. Espera {{ secondsLeft }}s para volver a intentar.</p>
+      <p v-else-if="errorMessage" class="text-sm text-danger">{{ errorMessage }}</p>
 
       <button
         type="submit" :disabled="loading || secondsLeft > 0 || !acceptedTerms"

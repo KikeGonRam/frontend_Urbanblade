@@ -7,6 +7,8 @@
  */
 definePageMeta({ middleware: ['auth', 'client'], layout: 'dashboard' })
 
+useSeoMeta({ title: 'Mis pedidos — UrbanBlade', robots: 'noindex' })
+
 interface OrderRow {
   id: string
   folio: string
@@ -18,9 +20,9 @@ interface OrderRow {
 
 const ESTADO_LABEL: Record<string, string> = { pendiente: 'Pendiente', entregado: 'Entregado', cancelado: 'Cancelado' }
 const ESTADO_CLASS: Record<string, string> = {
-  pendiente: 'border-amber-500/25 bg-amber-500/10 text-amber-300',
-  entregado: 'border-emerald-500/25 bg-emerald-500/10 text-emerald-300',
-  cancelado: 'border-red-500/25 bg-red-500/10 text-red-400',
+  pendiente: 'border-warning/25 bg-warning/10 text-warning',
+  entregado: 'border-success/25 bg-success/10 text-success',
+  cancelado: 'border-danger/25 bg-danger/10 text-danger',
 }
 
 const { apiFetch } = useApi()
@@ -82,7 +84,7 @@ async function cancelOrder(order: OrderRow) {
       </NuxtLink>
     </header>
 
-    <p v-if="route.query.created" class="mb-5 rounded-xl border border-emerald-500/25 bg-emerald-500/10 p-4 text-sm text-emerald-300">
+    <p v-if="route.query.created" class="mb-5 rounded-xl border border-success/25 bg-success/10 p-4 text-sm text-success">
       Pedido {{ route.query.created }} creado. Paga y recoge en sucursal.
     </p>
 
@@ -96,7 +98,7 @@ async function cancelOrder(order: OrderRow) {
       action-label="Reintentar"
       @action="refresh"
     />
-    <p v-if="actionError" role="alert" class="mb-4 text-sm text-red-400">{{ actionError }}</p>
+    <p v-if="actionError" role="alert" class="mb-4 text-sm text-danger">{{ actionError }}</p>
     <p v-if="!pending && !error && !orders.length" class="rounded-2xl border border-dashed border-line p-12 text-center text-sm text-muted">
       Todavía no tienes pedidos.
     </p>
@@ -118,7 +120,7 @@ async function cancelOrder(order: OrderRow) {
         </ul>
         <button
           v-if="order.estado === 'pendiente'" type="button" :disabled="cancelling === order.id"
-          class="rounded-lg border border-red-500/20 px-3 py-1.5 text-xs text-red-400 hover:bg-red-500/10 disabled:opacity-50"
+          class="rounded-lg border border-danger/20 px-3 py-1.5 text-xs text-danger hover:bg-danger/10 disabled:opacity-50"
           @click="cancelOrder(order)"
         >
           Cancelar pedido

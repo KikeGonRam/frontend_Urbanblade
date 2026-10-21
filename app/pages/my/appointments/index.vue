@@ -22,6 +22,8 @@ import {
 
 definePageMeta({ middleware: ["auth", "client"], layout: "dashboard" });
 
+useSeoMeta({ title: 'Mis citas — UrbanBlade', robots: 'noindex' })
+
 // Tipos derivados del OpenAPI de barber (npm run contract:types), no escritos a mano.
 type AppointmentRow = ApiAppointment;
 type Stats = ApiClientAppointmentsResponse["stats"];
@@ -35,12 +37,12 @@ const ESTADO_LABEL: Record<string, string> = {
   no_asistio: "No Asistió",
 };
 const ESTADO_CLASS: Record<string, string> = {
-  pendiente: "border-amber-500/25 bg-amber-500/10 text-amber-300",
-  confirmada: "border-blue-500/25 bg-blue-500/10 text-blue-300",
-  en_proceso: "border-sky-500/25 bg-sky-500/10 text-sky-300",
-  completada: "border-emerald-500/25 bg-emerald-500/10 text-emerald-300",
-  cancelada: "border-red-500/25 bg-red-500/10 text-red-400",
-  no_asistio: "border-orange-500/25 bg-orange-500/10 text-orange-300",
+  pendiente: "border-warning/25 bg-warning/10 text-warning",
+  confirmada: "border-info/25 bg-info/10 text-info",
+  en_proceso: "border-info/25 bg-info/10 text-info",
+  completada: "border-success/25 bg-success/10 text-success",
+  cancelada: "border-danger/25 bg-danger/10 text-danger",
+  no_asistio: "border-warning/25 bg-warning/10 text-warning",
 };
 
 const { apiFetch } = useApi();
@@ -532,13 +534,13 @@ onUnmounted(() => teardownStripe());
       </div>
       <div class="ui-card p-4">
         <p class="text-[10px] font-bold uppercase text-muted">Completadas</p>
-        <p class="mt-1 text-xl font-black text-emerald-400">
+        <p class="mt-1 text-xl font-black text-success">
           {{ stats.completadas }}
         </p>
       </div>
       <div class="ui-card p-4">
         <p class="text-[10px] font-bold uppercase text-muted">Canceladas</p>
-        <p class="mt-1 text-xl font-black text-red-400">
+        <p class="mt-1 text-xl font-black text-danger">
           {{ stats.canceladas }}
         </p>
       </div>
@@ -577,7 +579,7 @@ onUnmounted(() => teardownStripe());
       Todavía no tienes citas.
     </p>
 
-    <p v-if="cancelError" class="mb-3 text-sm text-red-400">
+    <p v-if="cancelError" class="mb-3 text-sm text-danger">
       {{ cancelError }}
     </p>
 
@@ -585,12 +587,12 @@ onUnmounted(() => teardownStripe());
       <p
         v-if="debtTotal > 0"
         role="alert"
-        class="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-200"
+        class="rounded-xl border border-warning/30 bg-warning/10 p-4 text-sm text-warning"
       >
         Tienes un adeudo por inasistencia de <strong>{{ money(debtTotal) }}</strong>.
         Págalo en la barbería (efectivo o transferencia) para volver a reservar.
       </p>
-      <output v-if="ticketError" class="block text-sm text-red-400">
+      <output v-if="ticketError" class="block text-sm text-danger">
         {{ ticketError }}
       </output>
       <div v-for="appt in appointments" :key="appt.id" class="ui-card p-5">
@@ -622,7 +624,7 @@ onUnmounted(() => teardownStripe());
             v-if="appt.estado === 'completada'"
             type="button"
             :disabled="ticketBusy === appt.id"
-            class="rounded-lg border border-emerald-500/30 px-3 py-1.5 text-xs font-semibold text-emerald-300 hover:bg-emerald-500/10 disabled:opacity-50"
+            class="rounded-lg border border-success/30 px-3 py-1.5 text-xs font-semibold text-success hover:bg-success/10 disabled:opacity-50"
             @click="openTicket(appt)"
           >
             {{ ticketBusy === appt.id ? "Abriendo…" : "Ver ticket" }}
@@ -646,7 +648,7 @@ onUnmounted(() => teardownStripe());
             <button
               type="button"
               :disabled="cancelling === appt.id"
-              class="rounded-lg border border-red-500/20 px-3 py-1.5 text-xs text-red-400 hover:bg-red-500/10 disabled:opacity-50"
+              class="rounded-lg border border-danger/20 px-3 py-1.5 text-xs text-danger hover:bg-danger/10 disabled:opacity-50"
               @click="cancelAppointment(appt)"
             >
               {{ cancelling === appt.id ? "Cancelando…" : "Cancelar" }}
@@ -757,7 +759,7 @@ onUnmounted(() => teardownStripe());
               class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
             />
           </div>
-          <p v-if="formError" class="text-sm text-red-400">{{ formError }}</p>
+          <p v-if="formError" class="text-sm text-danger">{{ formError }}</p>
           <div class="mt-5 flex gap-3">
             <button
               type="submit"
@@ -805,7 +807,7 @@ onUnmounted(() => teardownStripe());
             ref="cardElementRef"
             class="rounded-lg border border-line bg-main px-3 py-3"
           />
-          <p v-if="payError" class="mt-2 text-sm text-red-400">
+          <p v-if="payError" class="mt-2 text-sm text-danger">
             {{ payError }}
           </p>
           <p class="mt-2 text-[11px] text-muted">
@@ -834,7 +836,7 @@ onUnmounted(() => teardownStripe());
 
         <template v-else>
           <div
-            class="rounded-lg border border-emerald-500/25 bg-emerald-500/10 p-4 text-sm text-emerald-300"
+            class="rounded-lg border border-success/25 bg-success/10 p-4 text-sm text-success"
           >
             Pago recibido.
             {{ payConfirming ? "Confirmando con el sistema…" : "Listo." }}
