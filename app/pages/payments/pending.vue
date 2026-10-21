@@ -321,7 +321,7 @@ async function confirmReject(payment: PendingPayment) {
                     v-for="reason in QUICK_REASONS"
                     :key="reason"
                     type="button"
-                    class="rounded-full border px-2.5 py-1 text-[11px]"
+                    class="rounded-full border px-2.5 py-1 text-[11px] min-h-10"
                     :class="motivo === reason ? 'border-gold bg-gold/10 text-gold' : 'border-line text-muted hover:text-ink'"
                     @click="motivo = reason"
                   >
@@ -329,7 +329,8 @@ async function confirmReject(payment: PendingPayment) {
                   </button>
                 </div>
                 <textarea
-                  v-model="motivo"
+v-model="motivo"
+                  aria-label="Motivo del rechazo"
                   rows="2"
                   maxlength="500"
                   placeholder="Motivo del rechazo…"

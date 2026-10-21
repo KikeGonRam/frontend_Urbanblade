@@ -66,11 +66,11 @@ async function downloadReceipt(payment: PaymentRow) {
     </header>
 
     <section v-if="!pending && !error" class="mb-6 grid grid-cols-2 gap-3 sm:w-fit sm:grid-cols-2">
-      <div class="ui-card p-4"><p class="text-[10px] font-bold uppercase text-muted">Total pagado</p><p class="mt-1 text-xl font-black text-gold">{{ fmtMoney(meta.total_pagado) }}</p></div>
-      <div class="ui-card p-4"><p class="text-[10px] font-bold uppercase text-muted">Citas facturadas</p><p class="mt-1 text-xl font-black text-ink">{{ meta.total_citas }}</p></div>
+      <div class="ui-card p-4"><p class="text-[11px] font-bold uppercase text-muted">Total pagado</p><p class="mt-1 text-xl font-black text-gold">{{ fmtMoney(meta.total_pagado) }}</p></div>
+      <div class="ui-card p-4"><p class="text-[11px] font-bold uppercase text-muted">Citas facturadas</p><p class="mt-1 text-xl font-black text-ink">{{ meta.total_citas }}</p></div>
     </section>
 
-    <p v-if="pending" class="text-sm text-muted">Cargando tus facturas…</p>
+    <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando tus facturas…" />
     <BrandStatePanel
       v-else-if="error"
       mascot="bruno"
@@ -89,7 +89,7 @@ async function downloadReceipt(payment: PaymentRow) {
     <section v-if="!pending && !error && payments.length" class="ui-card overflow-x-auto">
       <table class="w-full text-left text-sm">
         <thead>
-          <tr class="border-b border-line text-[10px] uppercase tracking-wider text-muted">
+          <tr class="border-b border-line text-[11px] uppercase tracking-wider text-muted">
             <th class="px-4 py-3">Fecha</th>
             <th class="px-4 py-3">Servicio</th>
             <th class="px-4 py-3">Barbero</th>
@@ -108,7 +108,7 @@ async function downloadReceipt(payment: PaymentRow) {
             <td class="px-4 py-3 text-right">
               <button
                 type="button" :disabled="downloading === payment.id"
-                class="rounded-lg border border-line px-3 py-1 text-xs text-muted hover:text-ink disabled:opacity-50"
+                class="rounded-lg border border-line px-3 py-1 text-xs text-muted hover:text-ink disabled:opacity-50 min-h-10"
                 @click="downloadReceipt(payment)"
               >
                 {{ downloading === payment.id ? 'Generando…' : 'Descargar' }}

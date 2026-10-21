@@ -223,7 +223,7 @@ function onEventClick(info: EventClickArg) {
           <span
             v-for="item in legend"
             :key="item.label"
-            class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-muted"
+            class="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-muted"
           >
             <span
               class="h-2.5 w-2.5 rounded-full"
@@ -235,7 +235,7 @@ function onEventClick(info: EventClickArg) {
 
         <div class="flex items-center gap-3">
           <label
-            class="text-[10px] font-black uppercase tracking-widest text-muted"
+            class="text-[11px] font-black uppercase tracking-widest text-muted"
             >Barbero:</label
           >
           <select
@@ -299,7 +299,7 @@ function onEventClick(info: EventClickArg) {
             {{ modal.title }}
           </h3>
           <p
-            class="mb-6 text-[10px] font-bold uppercase tracking-widest text-muted"
+            class="mb-6 text-[11px] font-bold uppercase tracking-widest text-muted"
           >
             {{ modal.time }}
           </p>
@@ -325,7 +325,7 @@ function onEventClick(info: EventClickArg) {
               </div>
               <div>
                 <p
-                  class="text-[9px] font-bold uppercase tracking-widest text-muted"
+                  class="text-[11px] font-bold uppercase tracking-widest text-muted"
                 >
                   Cliente
                 </p>
@@ -352,7 +352,7 @@ function onEventClick(info: EventClickArg) {
               </div>
               <div>
                 <p
-                  class="text-[9px] font-bold uppercase tracking-widest text-muted"
+                  class="text-[11px] font-bold uppercase tracking-widest text-muted"
                 >
                   Servicio
                 </p>
@@ -379,7 +379,7 @@ function onEventClick(info: EventClickArg) {
               </div>
               <div>
                 <p
-                  class="text-[9px] font-bold uppercase tracking-widest text-muted"
+                  class="text-[11px] font-bold uppercase tracking-widest text-muted"
                 >
                   Barbero
                 </p>

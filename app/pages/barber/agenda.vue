@@ -194,7 +194,7 @@ async function openTicket(appt: Appointment) {
     </div>
 
     <output v-if="message" class="mb-4 block text-sm text-gold">{{ message }}</output>
-    <p v-if="pending" class="text-sm text-muted">Cargando agenda...</p>
+    <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando tu agenda…" />
     <BrandStatePanel
       v-else-if="error"
       mascot="bruno"

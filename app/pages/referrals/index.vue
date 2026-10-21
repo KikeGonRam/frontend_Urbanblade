@@ -95,7 +95,7 @@ async function submitLink() {
       <p class="mt-1 text-sm text-muted">Invita a tus amigos y gana puntos de lealtad.</p>
     </header>
 
-    <p v-if="pending" class="text-sm text-muted">Cargando…</p>
+    <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando tus referidos…" />
     <BrandStatePanel
       v-else-if="error"
       mascot="bruno"
@@ -108,7 +108,7 @@ async function submitLink() {
 
     <div v-else-if="data" class="grid grid-cols-1 gap-6 lg:grid-cols-2">
       <section class="ui-card p-6 text-center">
-        <p class="text-[10px] font-black uppercase tracking-widest text-gold/70">Tu código</p>
+        <p class="text-[11px] font-black uppercase tracking-widest text-gold/70">Tu código</p>
         <p class="mt-2 font-mono text-4xl font-black tracking-widest text-ink">{{ data.codigo_referido }}</p>
         <button type="button" class="ui-btn-secondary mt-4" @click="copyCode">
           {{ copied ? "¡Copiado!" : "Copiar código" }}
@@ -126,7 +126,8 @@ async function submitLink() {
         </p>
         <form class="mt-4 flex gap-2" @submit.prevent="submitLink">
           <input
-            v-model="linkCode"
+v-model="linkCode"
+            aria-label="Código de referido"
             type="text"
             placeholder="Ej. A1B2C3"
             class="flex-1 rounded-lg border border-line bg-main px-3 py-2 text-sm uppercase text-ink"
@@ -157,12 +158,12 @@ async function submitLink() {
           >
             <div>
               <p class="text-sm font-bold text-ink">{{ r.referido }}</p>
-              <p v-if="r.recompensa_otorgada_en" class="text-[10px] text-muted">
+              <p v-if="r.recompensa_otorgada_en" class="text-[11px] text-muted">
                 Puntos otorgados {{ fmtDate(r.recompensa_otorgada_en) }}
               </p>
             </div>
             <span
-              class="rounded-full border px-2 py-0.5 text-[9px] font-black uppercase"
+              class="rounded-full border px-2 py-0.5 text-[11px] font-black uppercase"
               :class="ESTADO_CLASS[r.estado]"
             >{{ ESTADO_LABEL[r.estado] ?? r.estado }}</span>
           </div>

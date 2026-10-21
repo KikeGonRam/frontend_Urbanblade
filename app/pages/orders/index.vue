@@ -194,7 +194,7 @@ async function downloadReceipt(order: OrderRow) {
     <section v-if="stats" class="mb-5 grid grid-cols-3 gap-4">
       <div class="rounded-2xl border border-line bg-card p-4">
         <p
-          class="mb-1 text-[10px] font-black uppercase tracking-wider text-muted"
+          class="mb-1 text-[11px] font-black uppercase tracking-wider text-muted"
         >
           Pendientes
         </p>
@@ -202,7 +202,7 @@ async function downloadReceipt(order: OrderRow) {
       </div>
       <div class="rounded-2xl border border-line bg-card p-4">
         <p
-          class="mb-1 text-[10px] font-black uppercase tracking-wider text-muted"
+          class="mb-1 text-[11px] font-black uppercase tracking-wider text-muted"
         >
           Entregados
         </p>
@@ -212,7 +212,7 @@ async function downloadReceipt(order: OrderRow) {
       </div>
       <div class="rounded-2xl border border-line bg-card p-4">
         <p
-          class="mb-1 text-[10px] font-black uppercase tracking-wider text-muted"
+          class="mb-1 text-[11px] font-black uppercase tracking-wider text-muted"
         >
           Por Cobrar
         </p>
@@ -224,13 +224,15 @@ async function downloadReceipt(order: OrderRow) {
 
     <section class="mb-5 flex flex-wrap items-center gap-3">
       <input
-        v-model="search"
+v-model="search"
+        aria-label="Buscar folio"
         type="text"
         placeholder="Buscar folio…"
         class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink sm:max-w-xs"
       >
       <select
-        v-model="estadoFilter"
+v-model="estadoFilter"
+        aria-label="Filtrar por estado"
         class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
       >
         <option value="">Todos los estados</option>
@@ -267,7 +269,7 @@ async function downloadReceipt(order: OrderRow) {
       <table class="w-full text-left text-sm">
         <thead>
           <tr
-            class="border-b border-line text-[10px] uppercase tracking-wider text-muted"
+            class="border-b border-line text-[11px] uppercase tracking-wider text-muted"
           >
             <th class="px-4 py-3">Folio / Fecha</th>
             <th class="px-4 py-3">Cliente</th>
@@ -286,7 +288,7 @@ async function downloadReceipt(order: OrderRow) {
             <td class="px-4 py-3">
               <div class="flex flex-col">
                 <span class="font-black text-ink">{{ order.folio }}</span>
-                <span class="text-[10px] font-bold uppercase text-muted">{{
+                <span class="text-[11px] font-bold uppercase text-muted">{{
                   fmtDate(order.created_at)
                 }}</span>
               </div>
@@ -299,11 +301,11 @@ async function downloadReceipt(order: OrderRow) {
             </td>
             <td class="px-4 py-3">
               <span
-                class="rounded-full border px-2 py-0.5 text-[9px] font-black uppercase"
+                class="rounded-full border px-2 py-0.5 text-[11px] font-black uppercase"
                 :class="ESTADO_CLASS[order.estado]"
                 >{{ ESTADO_LABEL[order.estado] ?? order.estado }}</span
               >
-              <span v-if="order.metodo_pago" class="ml-1 text-[9px] text-muted"
+              <span v-if="order.metodo_pago" class="ml-1 text-[11px] text-muted"
                 >({{
                   METODO_LABEL[order.metodo_pago] ?? order.metodo_pago
                 }})</span
@@ -318,7 +320,7 @@ async function downloadReceipt(order: OrderRow) {
                   <button
                     type="button"
                     :disabled="busy === order.id"
-                    class="rounded-lg bg-emerald-500 px-3 py-1 text-xs font-bold text-black hover:bg-emerald-400 disabled:opacity-50"
+                    class="rounded-lg bg-emerald-500 px-3 py-1 text-xs font-bold text-black hover:bg-emerald-400 disabled:opacity-50 min-h-10"
                     @click="openDeliver(order)"
                   >
                     Entregar
@@ -326,7 +328,7 @@ async function downloadReceipt(order: OrderRow) {
                   <button
                     type="button"
                     :disabled="busy === order.id"
-                    class="rounded-lg border border-danger/20 px-3 py-1 text-xs text-danger hover:bg-danger/10 disabled:opacity-50"
+                    class="rounded-lg border border-danger/20 px-3 py-1 text-xs text-danger hover:bg-danger/10 disabled:opacity-50 min-h-10"
                     @click="cancelOrder(order)"
                   >
                     Cancelar
@@ -335,7 +337,7 @@ async function downloadReceipt(order: OrderRow) {
                 <button
                   v-else-if="order.estado === 'entregado'"
                   type="button"
-                  class="rounded-lg border border-line px-3 py-1 text-xs text-muted hover:text-gold"
+                  class="rounded-lg border border-line px-3 py-1 text-xs text-muted hover:text-gold min-h-10"
                   @click="downloadReceipt(order)"
                 >
                   Recibo

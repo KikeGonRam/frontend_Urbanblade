@@ -196,18 +196,19 @@ async function submitComment(work: WorkRow) {
             <li v-for="c in work.comments" :key="c.id" class="text-sm">
               <span class="font-bold text-ink">{{ c.user.name ?? 'Usuario' }}</span>
               <span class="ml-1.5 text-muted">{{ c.comment }}</span>
-              <span class="ml-1.5 text-[10px] text-muted">{{ fmtDate(c.created_at) }}</span>
+              <span class="ml-1.5 text-[11px] text-muted">{{ fmtDate(c.created_at) }}</span>
             </li>
           </ul>
 
           <form class="mt-3 flex gap-2" @submit.prevent="submitComment(work)">
             <input
-              v-model="commentDrafts[work.id]" type="text" maxlength="500" placeholder="Agrega un comentario…"
+v-model="commentDrafts[work.id]"
+              aria-label="Escribe un comentario" type="text" maxlength="500" placeholder="Agrega un comentario…"
               class="flex-1 rounded-lg border border-line bg-main px-3 py-1.5 text-sm text-ink"
             >
             <button
               type="submit" :disabled="commentSending[work.id] || !(commentDrafts[work.id] ?? '').trim()"
-              class="rounded-lg bg-gold px-3 py-1.5 text-sm font-semibold text-black disabled:opacity-50"
+              class="rounded-lg bg-gold px-3 py-1.5 text-sm font-semibold text-black disabled:opacity-50 min-h-10"
             >
               Enviar
             </button>
