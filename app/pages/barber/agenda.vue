@@ -36,6 +36,8 @@ const offset = ref(0)
 const busyCode = ref('')
 const message = ref('')
 const ticket = ref<ServiceTicket | null>(null)
+// Cita abierta en la ventana de detalle (se toca el nombre del cliente).
+const detailCode = ref('')
 
 const { data: response, pending, error, refresh } = await useAsyncData<AgendaResponse>(
   'barber-agenda',
@@ -213,8 +215,15 @@ async function openTicket(appt: Appointment) {
         </div>
 
         <div class="min-w-0 flex-1">
-          <p class="font-bold text-ink">{{ appt.client.user.name ?? 'Cliente' }}</p>
-          <p class="text-sm text-muted">{{ appt.service.nombre ?? 'Servicio' }}</p>
+          <button
+            type="button"
+            class="block rounded-lg text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold"
+            :aria-label="`Ver detalle de la cita de ${appt.client.user.name ?? 'Cliente'}`"
+            @click="detailCode = appt.code"
+          >
+            <span class="block font-bold text-ink underline-offset-4 hover:underline">{{ appt.client.user.name ?? 'Cliente' }}</span>
+            <span class="block text-sm text-muted">{{ appt.service.nombre ?? 'Servicio' }}</span>
+          </button>
 
           <p v-if="appt.estado === 'en_proceso'" class="mt-1 text-sm font-bold" :class="toneClass[remainingTone(left(appt))]" aria-live="polite">
             {{ remainingLabel(left(appt)) }}<span v-if="appt.minutos_extra" class="font-normal text-muted"> · +{{ appt.minutos_extra }} min agregados</span>
@@ -268,5 +277,6 @@ async function openTicket(appt: Appointment) {
     </section>
 
     <UiServiceTicketModal v-if="ticket" :ticket="ticket" @close="ticket = null" />
+    <UiAppointmentDetailModal v-if="detailCode" :code="detailCode" @close="detailCode = null" />
   </div>
 </template>

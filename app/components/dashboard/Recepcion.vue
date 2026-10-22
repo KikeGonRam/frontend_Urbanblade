@@ -18,6 +18,7 @@ interface ReceptionistData {
   };
   nextAppointments: Array<{
     id: string;
+    code: string;
     hora_inicio: string;
     cliente: string;
     servicio: string;
@@ -36,6 +37,9 @@ interface ReceptionistData {
 }
 
 const props = defineProps<{ data: ReceptionistData; firstName: string }>();
+
+// Cita abierta en la ventana de detalle (se toca desde «Próximas llegadas»).
+const detailCode = ref<string | null>(null);
 
 // Mismos 6 números de GET /dashboard; cada tarjeta lleva a la pantalla donde se atienden.
 const kpiCards = computed(() => [
@@ -122,8 +126,6 @@ const flowChartOptions = {
       />
     </section>
 
-    <DashboardAnalyticsInsights :insights="data.sparkHighlights" show-link />
-
     <section class="grid grid-cols-1 gap-4 lg:grid-cols-12">
       <section class="rounded-2xl border border-line bg-card p-5 lg:col-span-7">
         <header class="mb-4 flex items-center justify-between">
@@ -134,18 +136,22 @@ const flowChartOptions = {
           <NuxtLink to="/appointments" class="text-sm font-semibold text-gold hover:underline">Ver agenda</NuxtLink>
         </header>
         <ul v-if="data.nextAppointments.length" class="divide-y divide-line">
-          <li
-            v-for="appt in data.nextAppointments"
-            :key="appt.id"
-            class="flex items-center gap-3 py-3"
-          >
-            <span class="w-14 shrink-0 text-sm font-semibold tabular-nums text-gold">
-              {{ appt.hora_inicio?.slice(0, 5) }}
-            </span>
-            <div class="min-w-0 flex-1">
-              <p class="truncate text-sm font-semibold text-ink">{{ appt.cliente }}</p>
-              <p class="truncate text-xs text-muted">{{ appt.servicio }} · {{ appt.barbero }}</p>
-            </div>
+          <li v-for="appt in data.nextAppointments" :key="appt.id">
+            <button
+              type="button"
+              class="-mx-2 flex w-[calc(100%+1rem)] items-center gap-3 rounded-lg px-2 py-3 text-left transition-colors hover:bg-ink/[0.04] focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold"
+              :aria-label="`Ver detalle de la cita de ${appt.cliente}`"
+              @click="detailCode = appt.code"
+            >
+              <span class="w-14 shrink-0 text-sm font-semibold tabular-nums text-gold">
+                {{ appt.hora_inicio?.slice(0, 5) }}
+              </span>
+              <div class="min-w-0 flex-1">
+                <p class="truncate text-sm font-semibold text-ink">{{ appt.cliente }}</p>
+                <p class="truncate text-xs text-muted">{{ appt.servicio }} · {{ appt.barbero }}</p>
+              </div>
+              <span class="shrink-0 text-xs font-semibold text-gold" aria-hidden="true">Ver detalle</span>
+            </button>
           </li>
         </ul>
         <p
@@ -203,5 +209,9 @@ const flowChartOptions = {
         No hay pedidos pendientes.
       </p>
     </section>
+
+    <DashboardAnalyticsInsights :insights="data.sparkHighlights" show-link />
+
+    <UiAppointmentDetailModal v-if="detailCode" :code="detailCode" @close="detailCode = null" />
   </div>
 </template>
