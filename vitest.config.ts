@@ -11,5 +11,10 @@ export default defineVitestConfig({
     environment: 'nuxt',
     environmentOptions: { nuxt: { domEnvironment: 'happy-dom' } },
     include: ['tests/**/*.test.ts'],
+    // Vue avisa en cada montaje de que <Suspense> es experimental (mountSuspended lo usa por dentro). Es ruido
+    // conocido, no un problema de los formularios: se filtra solo ese aviso y todo lo demás se sigue viendo.
+    onConsoleLog(log) {
+      if (log.includes('<Suspense> is an experimental feature')) return false
+    },
   },
 })
