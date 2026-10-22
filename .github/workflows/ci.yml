@@ -46,6 +46,28 @@ jobs:
       - name: npm audit (high/critical)
         run: npm run audit:gate
 
+  # T090 (HT-28): pruebas unitarias y de componente con Vitest + Vue Test Utils (tests/). Cada formulario se monta
+  # solo, con sus dependencias simuladas; no necesita navegador ni servidor. Las pruebas de extremo a extremo
+  # siguen siendo Playwright (job e2e) y Cypress.
+  unitarias:
+    name: Pruebas unitarias y de componente (Vitest)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install Node dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Vitest
+        run: npm run test:unit
+
   contract:
     name: Contrato de API (tipos generados)
     runs-on: ubuntu-latest
