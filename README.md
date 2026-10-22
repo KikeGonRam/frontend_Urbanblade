@@ -127,6 +127,7 @@ contraseñas; no se duplican aquí).
 ```bash
 npm run lint                       # eslint
 npm run build                      # build de producción
+npm run test:unit                  # Vitest + Vue Test Utils: formularios y utilidades, sin navegador ni servidor (tests/)
 npm run test:e2e                   # Playwright, contra el build ya compilado
 npm run cypress:run                # Cypress, contra el build y la API simulada (cypress:open para depurar)
 npm run audit:gate                 # npm audit con lista de excepciones que caducan (ver scripts/audit-gate.mjs)
