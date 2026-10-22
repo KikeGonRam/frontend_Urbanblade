@@ -49,7 +49,7 @@ onBeforeUnmount(() => {
         <div class="auth-shell__gridlines" aria-hidden="true" />
 
         <NuxtLink to="/" class="auth-shell__logo auth-shell__reveal" style="--d: 0s">
-          <BrandBrandMark class="h-11 w-11" />
+          <BrandMark class="h-11 w-11" />
           <div>
             <span class="auth-shell__logo-name">Urban<strong>Blade</strong></span>
           </div>
@@ -84,7 +84,7 @@ onBeforeUnmount(() => {
       <section class="auth-shell__form-side">
         <div class="auth-shell__mobile-logo auth-shell__reveal" style="--d: 0s">
           <NuxtLink to="/">
-            <BrandBrandMark class="mx-auto h-14 w-14" />
+            <BrandMark class="mx-auto h-14 w-14" />
           </NuxtLink>
           <div class="auth-shell__wordmark">Urban<strong>Blade</strong></div>
           <p>Acceso Exclusivo</p>
