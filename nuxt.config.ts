@@ -52,7 +52,12 @@ export default defineNuxtConfig({
       // lang="" y un lector de pantalla no sabe que debe pronunciar en espanol.
       // Toda la interfaz esta en espanol, asi que el idioma es constante.
       htmlAttrs: { lang: 'es' },
-      link: [{ rel: 'icon', type: 'image/svg+xml', href: '/images/urbanblade-mark.svg' }],
+      link: [
+        { rel: 'icon', type: 'image/svg+xml', href: '/images/urbanblade-mark.svg' },
+        // PWA: manifiesto de instalación e ícono de iOS (Safari no lee los íconos del manifiesto).
+        { rel: 'manifest', href: '/manifest.webmanifest' },
+        { rel: 'apple-touch-icon', href: '/icons/apple-touch-icon.png' },
+      ],
       meta: [
         {
           name: 'viewport',
@@ -61,6 +66,10 @@ export default defineNuxtConfig({
         { name: 'theme-color', media: '(prefers-color-scheme: dark)', content: '#0a0a0a' },
         { name: 'theme-color', media: '(prefers-color-scheme: light)', content: '#f7f3ea' },
         { name: 'color-scheme', content: 'dark light' },
+        { name: 'mobile-web-app-capable', content: 'yes' },
+        { name: 'apple-mobile-web-app-capable', content: 'yes' },
+        { name: 'apple-mobile-web-app-title', content: 'UrbanBlade' },
+        { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
       ],
       // Aplica el tema guardado en cookie ANTES de pintar, para evitar el
       // flash de tema incorrecto (FOUC) — equivalente a que barber lo
@@ -93,6 +102,10 @@ export default defineNuxtConfig({
    * esas rutas.
    */
   routeRules: {
+    // El navegador revalida el service worker y el manifiesto en cada visita: así una versión
+    // nueva de la app llega sin esperar a que caduque la copia en caché.
+    '/sw.js': { headers: { 'cache-control': 'no-cache' } },
+    '/manifest.webmanifest': { headers: { 'cache-control': 'no-cache' } },
     // Atajo compartible: /app lleva a la sección de la app móvil de la landing.
     '/app': { redirect: { to: '/#app', statusCode: 302 } },
     '/**': {
