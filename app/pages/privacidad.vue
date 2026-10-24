@@ -94,6 +94,7 @@ const mailto = `mailto:${LEGAL.contactEmail}`
       <li><strong>Amazon Web Services</strong>: servidores donde corre la plataforma, almacenamiento de fotos y comprobantes, y protección de claves.</li>
       <li><strong>MongoDB Atlas</strong>: base de datos donde se guarda tu información.</li>
       <li><strong>Stripe</strong>: pagos con tarjeta, tarjetas guardadas y cobro de membresías.</li>
+      <li><strong>Google y Microsoft</strong>: estadísticas de uso del sitio (Google Tag Manager, Google Analytics y Microsoft Clarity), solo si aceptas las cookies de analítica.</li>
       <li><strong>Google</strong>: inicio de sesión con Google y, en la app Android, Firebase (envío de notificaciones, estadísticas de uso, reportes de fallos y rendimiento, y configuración remota).</li>
       <li><strong>Wikipedia</strong>: para algunas preguntas generales (por ejemplo, sobre un estilo de corte), Bladebot consulta el texto de la pregunta en Wikipedia; no se envía tu nombre ni ningún otro dato de tu cuenta.</li>
     </ul>
@@ -132,17 +133,28 @@ const mailto = `mailto:${LEGAL.contactEmail}`
       ningún otro fin; si quieres que también se elimine, pídelo por correo.
     </p>
 
-    <h2>7. Cookies y almacenamiento en el navegador</h2>
-    <p>En el sitio web solo usamos lo necesario para que funcione:</p>
+    <h2 id="cookies">7. Cookies y almacenamiento en el navegador</h2>
+    <p><strong>Necesarias</strong> (siempre activas, no requieren consentimiento):</p>
     <ul>
       <li><strong>ub_token</strong>: mantiene tu sesión iniciada.</li>
       <li><strong>ub_theme</strong>: recuerda el tema visual que elegiste.</li>
+      <li><strong>ub_consent</strong>: recuerda tu elección sobre las cookies de analítica (180 días).</li>
       <li><strong>sidebarRail</strong> (almacenamiento local): recuerda si contrajiste el menú lateral.</li>
     </ul>
+    <p><strong>De analítica</strong> (solo si las aceptas en el aviso de cookies):</p>
+    <ul>
+      <li><strong>Google Tag Manager</strong>: carga las etiquetas de medición del sitio.</li>
+      <li><strong>Microsoft Clarity</strong> (cookies <em>_clck</em> y <em>_clsk</em>) y <strong>Google Analytics</strong>: estadísticas de uso del sitio, como páginas visitadas y clics. Esos proveedores reciben tu dirección IP y datos del navegador.</li>
+    </ul>
     <p>
-      El sitio web no usa cookies de publicidad ni herramientas de rastreo de terceros. Cuando pagas con tarjeta,
-      el formulario de Stripe puede usar sus propias cookies para prevenir fraudes, según la política de
-      privacidad de Stripe. Si borras las cookies se cerrará tu sesión.
+      Hasta que aceptas, el sitio no carga estas herramientas ni envía información a esos proveedores. Si las
+      rechazas, no se cargan. Puedes cambiar tu elección en cualquier momento desde «Preferencias de cookies», en
+      el pie de página.
+    </p>
+    <p>
+      <strong>Stripe</strong> solo se carga cuando abres un formulario de pago con tarjeta; puede usar sus propias
+      cookies para prevenir fraudes, según la política de privacidad de Stripe. Si borras las cookies se cerrará
+      tu sesión.
     </p>
 
     <h2>8. Cuánto tiempo guardamos tus datos</h2>

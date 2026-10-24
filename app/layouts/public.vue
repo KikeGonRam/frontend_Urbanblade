@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const { reopen: reopenConsent } = useConsent()
 /*
  * Chrome ligero para páginas públicas fuera de la landing (catálogo de
  * servicios, equipo de barberos): sin sidebar de dashboard, sin exigir
@@ -81,6 +82,7 @@ const socials = computed(() =>
         <div class="flex gap-6">
           <NuxtLink to="/privacidad" class="transition hover:text-gold">Aviso de Privacidad</NuxtLink>
           <NuxtLink to="/terminos" class="transition hover:text-gold">Términos y Condiciones</NuxtLink>
+          <button type="button" class="font-black uppercase tracking-[0.2em] transition hover:text-gold" data-testid="cookie-prefs" @click="reopenConsent()">Preferencias de cookies</button>
         </div>
       </div>
     </footer>

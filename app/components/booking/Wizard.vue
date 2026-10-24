@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { loadStripe, type Stripe, type StripeCardElement, type StripeElements } from '@stripe/stripe-js'
+import { loadStripe, type Stripe, type StripeCardElement, type StripeElements } from '@stripe/stripe-js/pure'
 import type { ChoiceOption } from '~/types/choice'
 
 const props = withDefaults(defineProps<{ initialBarber?: string, embedded?: boolean }>(), { initialBarber: '', embedded: false })

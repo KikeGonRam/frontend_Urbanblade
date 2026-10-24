@@ -18,9 +18,9 @@ import { randomBytes } from 'node:crypto'
  * nonce no se ejecuta. Los estilos siguen con 'unsafe-inline' porque Vue usa atributos style.
  * Ninguna página se prerenderiza, así que el nonce siempre es por petición.
  *
- * Google Tag Manager (GTM-K4RR96BB): su loader lleva nonce, pero el gtm.js y los scripts que este
- * inyecta no, así que se permite el host www.googletagmanager.com en script-src (sin
- * 'unsafe-inline'), y los de medición (Google Analytics) en img-src y connect-src.
+ * Google Tag Manager (GTM-K4RR96BB): solo se carga tras aceptar las cookies de analítica. Su gtm.js
+ * y los scripts que inyecta no llevan nonce, así que se permite el host www.googletagmanager.com en
+ * script-src (sin 'unsafe-inline'), y los de medición (Google Analytics) en img-src y connect-src.
  * El contenedor también publica Microsoft Clarity: scripts.clarity.ms en script-src, *.clarity.ms en
  * img-src y connect-src, c.bing.com en img-src (sincronización de cookies de Clarity) y blob: en
  * worker-src (Clarity comprime sus datos en un worker).
@@ -33,10 +33,14 @@ function originOf(url: string): string {
   }
 }
 
-/** Buckets de subidas (staging y producción) en S3, con y sin región en el host. */
-const S3 = 'https://*.s3.amazonaws.com https://*.s3.us-east-1.amazonaws.com'
-
-const GTM_NOSCRIPT = '<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-K4RR96BB" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>'
+/**
+ * Hosts de los buckets de imágenes y videos (NUXT_UPLOADS_HOSTS, separados por coma). Por defecto,
+ * el bucket de staging; ya no se permite cualquier bucket de S3.
+ */
+const UPLOADS_HOSTS = (process.env.NUXT_UPLOADS_HOSTS
+  || 'urbanblade-staging-uploads-209479293733.s3.amazonaws.com,urbanblade-staging-uploads-209479293733.s3.us-east-1.amazonaws.com')
+  .split(',').map(h => h.trim()).filter(Boolean).map(h => `https://${h}`).join(' ')
+const S3 = UPLOADS_HOSTS
 
 /** Pone el nonce en cada <script> que no lo tenga. */
 function withNonce(chunks: string[], nonce: string): string[] {
@@ -67,13 +71,6 @@ export default defineNitroPlugin((nitroApp) => {
     "frame-ancestors 'self'",
   ].join('; ')
 
-  // GTM (noscript): se inyecta aquí y no con app.head.noscript ni antes de #__nuxt, porque en ambos
-  // casos Vue reporta "Hydration completed but contains mismatches". Al final del body (donde GTM
-  // lo admite) no afecta a la hidratación, y solo lo usan navegadores sin JavaScript.
-  nitroApp.hooks.hook('render:html', (html) => {
-    html.bodyAppend.push(GTM_NOSCRIPT)
-  })
-
   nitroApp.hooks.hook('render:html', (html, { event }) => {
     if (!production) return
     const nonce = randomBytes(16).toString('base64')
@@ -82,6 +79,12 @@ export default defineNitroPlugin((nitroApp) => {
     html.bodyPrepend = withNonce(html.bodyPrepend, nonce)
     html.body = withNonce(html.body, nonce)
     html.bodyAppend = withNonce(html.bodyAppend, nonce)
+  })
+
+  // HSTS también en los errores (404, 500): el manejador de errores de Nitro no pasa por beforeResponse
+  // con nuestra cabecera, así que se fija al recibir la petición.
+  nitroApp.hooks.hook('request', (event) => {
+    if (production) setResponseHeader(event, 'Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
   })
 
   nitroApp.hooks.hook('beforeResponse', (event) => {

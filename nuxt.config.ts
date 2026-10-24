@@ -82,13 +82,8 @@ export default defineNuxtConfig({
           innerHTML: `(function(){try{var m=document.cookie.match(/(?:^|; )ub_theme=([^;]+)/);var t=m?decodeURIComponent(m[1]):'noir';var c={noir:'#0a0a0a',acero:'#111317',salon:'#0b1210',libreta:'#f3ede0'}[t]||'#0a0a0a';document.documentElement.setAttribute('data-theme',t);document.querySelectorAll('meta[name="theme-color"]').forEach(function(e){e.setAttribute('content',c)});document.querySelector('meta[name="color-scheme"]')?.setAttribute('content',t==='libreta'?'light':'dark');}catch(e){}})();`,
           tagPosition: 'head',
         },
-        // Google Tag Manager (contenedor GTM-K4RR96BB). Va lo más arriba posible del <head>.
-        // El plugin security-headers.ts le pone el nonce de la CSP, permite googletagmanager.com e
-        // inyecta el <noscript> de GTM (por app.head causa un mismatch de hidratación).
-        {
-          innerHTML: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-K4RR96BB');`,
-          tagPosition: 'head',
-        },
+        // Google Tag Manager (GTM-K4RR96BB) ya NO se carga aquí: solo después de que la persona
+        // acepta las cookies de analítica (app/composables/useConsent.ts y app/plugins/consent.client.ts).
       ],
     },
   },

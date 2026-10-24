@@ -20,7 +20,7 @@ import {
     type Stripe,
     type StripeCardElement,
     type StripeElements,
-} from "@stripe/stripe-js";
+} from "@stripe/stripe-js/pure";
 import { computeLoyaltyCharge } from "~/utils/loyaltyCharge";
 import type { ChoiceOption } from "~/types/choice";
 

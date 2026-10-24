@@ -1,4 +1,5 @@
 <script setup lang="ts">
+useSeoMeta({ robots: 'noindex' })
 definePageMeta({ middleware: "auth", layout: false });
 
 interface ProfileResponse {

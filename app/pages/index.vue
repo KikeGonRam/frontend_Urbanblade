@@ -17,6 +17,7 @@
  */
 import { publicImageUrl } from '~/utils/publicImage'
 
+const { reopen: reopenConsent } = useConsent()
 const HERO_IMG = 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1'
 const SITE_URL = 'https://urbanblade.com.mx'
 
@@ -697,6 +698,7 @@ onBeforeUnmount(() => {
           <div class="flex gap-6 text-[9px] font-black uppercase tracking-[0.2em] text-muted">
             <NuxtLink to="/privacidad" class="inline-flex min-h-[44px] items-center transition hover:text-ink">Privacidad</NuxtLink>
             <NuxtLink to="/terminos" class="inline-flex min-h-[44px] items-center transition hover:text-ink">Términos</NuxtLink>
+            <button type="button" class="inline-flex min-h-[44px] items-center font-black uppercase tracking-[0.2em] transition hover:text-ink" data-testid="cookie-prefs" @click="reopenConsent()">Cookies</button>
           </div>
         </div>
       </div>
