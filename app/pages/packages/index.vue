@@ -11,7 +11,7 @@ import {
   type Stripe,
   type StripeCardElement,
   type StripeElements,
-} from "@stripe/stripe-js";
+} from "@stripe/stripe-js/pure";
 
 definePageMeta({ middleware: ["auth"], layout: "dashboard" });
 

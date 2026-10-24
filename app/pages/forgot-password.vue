@@ -1,4 +1,5 @@
 <script setup lang="ts">
+useSeoMeta({ robots: 'noindex' })
 definePageMeta({ middleware: 'guest', pageTransition: { name: 'auth', mode: 'out-in' } })
 
 const email = ref('')

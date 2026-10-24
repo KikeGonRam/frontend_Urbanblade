@@ -5,7 +5,7 @@
  */
 export const LEGAL = {
   /** Fecha de la versión vigente de ambos documentos. */
-  lastUpdated: '30 de septiembre de 2026',
+  lastUpdated: '24 de octubre de 2026',
   /** Quién responde por los datos: el equipo del proyecto académico (no hay empresa constituida). */
   responsable: 'Equipo UrbanBlade',
   /** Correo real que el equipo revisa; ahí llegan dudas y solicitudes ARCO. */

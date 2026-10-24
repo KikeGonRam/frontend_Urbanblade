@@ -46,6 +46,14 @@ export default defineConfig({
     // suite — tres pruebas "fallaron" por una corrección que sí estaba en el
     // código pero no en el servidor reutilizado.
     baseURL: "http://127.0.0.1:3100",
+    // El banner de cookies (fijo abajo) taparía botones en casi todas las pruebas; se parte de una
+    // visita que ya rechazó la analítica. e2e/cookies.spec.ts prueba el banner con un contexto limpio.
+    storageState: {
+      cookies: [
+        { name: "ub_consent", value: "rejected", domain: "127.0.0.1", path: "/", expires: -1, httpOnly: false, secure: false, sameSite: "Lax" },
+      ],
+      origins: [],
+    },
     trace: "on-first-retry",
   },
 
