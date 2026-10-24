@@ -40,9 +40,13 @@ self.addEventListener('activate', (event) => {
 })
 
 async function trim(cacheName, max) {
-  const cache = await caches.open(cacheName)
-  const keys = await cache.keys()
-  if (keys.length > max) await Promise.all(keys.slice(0, keys.length - max).map((k) => cache.delete(k)))
+  try {
+    const cache = await caches.open(cacheName)
+    const keys = await cache.keys()
+    if (keys.length > max) await Promise.all(keys.slice(0, keys.length - max).map((k) => cache.delete(k)))
+  } catch {
+    // Limpiar la caché es un extra: si falla, la siguiente petición lo reintenta.
+  }
 }
 
 async function networkFirstPage(request) {
@@ -52,7 +56,7 @@ async function networkFirstPage(request) {
     if (response.ok && response.type === 'basic' && !response.redirected) {
       const cache = await caches.open(PAGES)
       await cache.put(request, response.clone())
-      trim(PAGES, MAX_PAGES)
+      void trim(PAGES, MAX_PAGES)
     }
     return response
   } catch {
@@ -68,7 +72,7 @@ async function cacheFirst(request) {
   if (response.ok && response.type === 'basic') {
     const cache = await caches.open(ASSETS)
     await cache.put(request, response.clone())
-    trim(ASSETS, MAX_ASSETS)
+    void trim(ASSETS, MAX_ASSETS)
   }
   return response
 }
@@ -79,8 +83,7 @@ async function staleWhileRevalidate(request) {
   const fresh = fetch(request)
     .then((response) => {
       if (response.ok && response.type === 'basic') {
-        cache.put(request, response.clone())
-        trim(ASSETS, MAX_ASSETS)
+        cache.put(request, response.clone()).then(() => trim(ASSETS, MAX_ASSETS)).catch(() => {})
       }
       return response
     })
