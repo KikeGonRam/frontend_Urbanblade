@@ -1,3 +1,5 @@
+import { request as httpRequest } from "node:http";
+
 import { expect, test } from "@playwright/test";
 
 import { mockApi } from "./support/api-mock";
@@ -82,4 +84,40 @@ test("las páginas públicas declaran su dirección canónica y los errores llev
   const error = await request.get("/esta-ruta-no-existe-xyz");
   expect(error.status()).toBe(404);
   expect(error.headers()["strict-transport-security"]).toContain("max-age=");
+});
+
+test("la web solo acepta GET, HEAD y OPTIONS y rechaza rutas malformadas con 404", async ({ request }) => {
+  for (const metodo of ["put", "patch", "delete", "post"] as const) {
+    const res = await request[metodo]("/");
+    expect(res.status(), `${metodo.toUpperCase()} / debe dar 405`).toBe(405);
+    expect(res.headers()["allow"]).toContain("GET");
+  }
+
+  // Se pide con http crudo: el cliente de Playwright trataría «//host» como una URL absoluta.
+  const crudo = (ruta: string) =>
+    new Promise<number>((resolve, reject) => {
+      const req = httpRequest({ host: "127.0.0.1", port: 3100, path: ruta }, (res) => {
+        res.resume();
+        resolve(res.statusCode ?? 0);
+      });
+      req.on("error", reject);
+      req.end();
+    });
+  for (const ruta of ["//evil.example/%2e%2e", "//evil.example", "/%5cevil"]) {
+    expect(await crudo(ruta), `GET ${ruta}`).toBe(404);
+  }
+
+  expect((await request.get("/")).status()).toBe(200);
+});
+
+test("security.txt cumple el RFC 9116 (contacto y vencimiento)", async ({ request }) => {
+  const res = await request.get("/.well-known/security.txt");
+  expect(res.status()).toBe(200);
+  expect(res.headers()["content-type"]).toContain("text/plain");
+
+  const texto = await res.text();
+  expect(texto).toMatch(/^Contact: mailto:.+@.+/m);
+  const vence = /^Expires: (.+)$/m.exec(texto)?.[1];
+  expect(vence, "falta Expires").toBeTruthy();
+  expect(new Date(vence!).getTime()).toBeGreaterThan(Date.now());
 });
