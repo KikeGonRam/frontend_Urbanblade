@@ -194,7 +194,10 @@ export function useNavigation() {
           item('Mi Agenda', '/barber/agenda', 'agenda', true),
           item('Mi Portafolio', '/barber/portfolio', 'wall', true),
           item('Mi Horario', '/barber/schedule', 'schedule', true),
-          item('Mi Perfil', '/barber/profile', 'profile'),
+          // "Mi Perfil" se quitó de aquí (25-oct, confuso tener dos "Mi Perfil"): /profile ya
+          // cubre todo lo del barbero (POST /barber/profile, GET /barber/me) y se llega ahí desde
+          // el avatar del topbar/drawer, igual que cualquier otro rol. /barber/profile.vue ahora
+          // solo redirige, por si algún enlace guardado todavía apunta ahí.
           // "Mi Analítica" se quitó (26-sep): solo repetía las oportunidades que ya salen en su dashboard.
         ],
       })
