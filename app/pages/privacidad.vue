@@ -52,7 +52,7 @@ const mailto = `mailto:${LEGAL.contactEmail}`
       <li><strong>Programa de lealtad y beneficios:</strong> nivel, puntos y su historial, código para invitar amigos, membresías, paquetes, tarjetas de regalo y pedidos de la tienda.</li>
       <li><strong>Contenido que publicas:</strong> reseñas y calificaciones de barberos, y comentarios, reacciones y guardados en el Muro de Inspiración.</li>
       <li><strong>Chat con Bladebot:</strong> si usas el asistente con tu sesión iniciada, guardamos tus mensajes y sus respuestas para mostrarte tu historial y mejorar las respuestas.</li>
-      <li><strong>Datos técnicos:</strong> el identificador de tu teléfono para enviarte notificaciones, la dirección IP de cada petición (para limitar intentos de acceso y detectar abusos) y la fecha de uso de tu sesión.</li>
+      <li><strong>Datos técnicos:</strong> el identificador de tu teléfono para enviarte notificaciones, la dirección IP de cada petición (para limitar intentos de acceso, detectar abusos y bloquear de forma temporal a quien manda un número excesivo de solicitudes; cuando el servicio de red lo informa, también el país, la región y la ciudad aproximados de esa IP) y la fecha de uso de tu sesión.</li>
       <li><strong>Solo en la app Android:</strong> estadísticas de uso sin datos de identificación (qué pantallas se abren y en qué paso de la reserva se avanza), reportes de fallos de la app y mediciones de rendimiento, con modelo del teléfono, versión de Android y un identificador de instalación de la app.</li>
     </ul>
     <p>
