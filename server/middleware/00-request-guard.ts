@@ -7,7 +7,7 @@
  *    una URL absoluta al redirigir.
  */
 const METODOS_PERMITIDOS = new Set(['GET', 'HEAD', 'OPTIONS'])
-const RUTA_SOSPECHOSA = /(?:^\/\/)|(?:\)|(?:%5c)|(?:%2e%2e)|(?:\.\.\/)/i
+const RUTA_SOSPECHOSA = /(?:^\/\/)|(?:\\)|(?:%5c)|(?:%2e%2e)|(?:\.\.\/)/i
 
 export default defineEventHandler((event) => {
   if (!METODOS_PERMITIDOS.has(event.method)) {
