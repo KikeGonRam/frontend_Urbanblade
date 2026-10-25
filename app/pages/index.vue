@@ -21,11 +21,15 @@ const { reopen: reopenConsent } = useConsent()
 const HERO_IMG = 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1'
 const SITE_URL = 'https://urbanblade.com.mx'
 
+// "Santa María Atarasquillo, Lerma" en el título y la descripción: para una barbería real, la
+// mayoría de las búsquedas que importan llevan una ubicación ("barbería cerca de mí", "barbería
+// en Lerma"), no solo el nombre de la marca. El nombre va primero para que la pestaña del
+// navegador y el resultado de marca ("UrbanBlade") se sigan viendo igual de claros.
 useSeoMeta({
-  title: 'UrbanBlade — Barbería premium con reserva en línea',
-  description: 'Reserva tu cita en UrbanBlade: cortes, barba y grooming de estudio con maestros barberos. Elige servicio, maestro y un horario realmente disponible.',
-  ogTitle: 'UrbanBlade — Barbería premium con reserva en línea',
-  ogDescription: 'Cortes, barba y grooming de estudio. Reserva en segundos, sin llamadas.',
+  title: 'UrbanBlade — Barbería en Santa María Atarasquillo, Lerma | Reserva en línea',
+  description: 'Barbería en Santa María Atarasquillo, Lerma (Edomex). Reserva tu cita en línea: cortes, barba y grooming de estudio con maestros barberos y horario realmente disponible.',
+  ogTitle: 'UrbanBlade — Barbería en Santa María Atarasquillo, Lerma',
+  ogDescription: 'Cortes, barba y grooming de estudio en Santa María Atarasquillo, Lerma. Reserva en segundos, sin llamadas.',
   ogType: 'website',
   ogUrl: SITE_URL,
   ogLocale: 'es_MX',
@@ -139,10 +143,13 @@ interface Barbershop {
   horario_cierre: string | null
   redes_sociales: Record<string, string | null> | null
 }
+// SEO: a diferencia de servicesData/barbersData (listas grandes, server:false para no retrasar
+// el primer byte), esta sí se resuelve en el servidor. Es la que alimenta el teléfono, la
+// dirección, el horario y las redes del JSON-LD de más abajo — con server:false, Google (y
+// cualquier lector que no ejecute JavaScript) recibía un LocalBusiness vacío, sin nada de eso.
 const { data: shopData } = await useAsyncData<{ data: Barbershop }>(
   'landing-barbershop',
   () => apiFetch('/barbershop'),
-  { server: false },
 )
 const shop = computed(() => shopData.value?.data ?? null)
 
@@ -180,18 +187,46 @@ const socials = computed(() =>
 
 const mapAddress = computed(() => shop.value?.direccion ?? '')
 
-// Datos de negocio local para buscadores: solo lo que la barbería realmente capturó.
+// Rango de precios real del catálogo (p. ej. "$90 – $450"), no un valor inventado.
+const priceRange = computed(() => {
+  const precios = servicesAll.value.map(s => s.precio).filter((p): p is number => typeof p === 'number' && p > 0)
+  if (!precios.length) return null
+  const min = Math.min(...precios)
+  const max = Math.max(...precios)
+  return min === max ? `$${min}` : `$${min} – $${max}`
+})
+
+// Mismo horario todos los días (la ficha del negocio solo guarda una apertura y un cierre, sin
+// variar por día): se repite para cada día en vez de inventar un horario distinto sin datos.
+const DIAS_SEMANA = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+const openingHours = computed(() => {
+  if (!shop.value?.horario_apertura || !shop.value?.horario_cierre) return null
+
+  return {
+    '@type': 'OpeningHoursSpecification',
+    dayOfWeek: DIAS_SEMANA,
+    opens: shop.value.horario_apertura,
+    closes: shop.value.horario_cierre,
+  }
+})
+
+// Datos de negocio local para buscadores: solo lo que la barbería realmente capturó (nunca se
+// inventan coordenadas, código postal ni horarios que no vengan de /barbershop).
 useHead({
   script: [{
     type: 'application/ld+json',
     innerHTML: computed(() => JSON.stringify({
       '@context': 'https://schema.org',
       '@type': 'HairSalon',
+      '@id': `${SITE_URL}/#negocio`,
       'name': shop.value?.nombre || 'UrbanBlade',
       'url': SITE_URL,
       'image': `${HERO_IMG}?q=75&w=1200&auto=format`,
       ...(shop.value?.telefono ? { telephone: shop.value.telefono } : {}),
       ...(shop.value?.direccion ? { address: { '@type': 'PostalAddress', 'streetAddress': shop.value.direccion, 'addressCountry': 'MX' } } : {}),
+      ...(openingHours.value ? { openingHoursSpecification: openingHours.value } : {}),
+      ...(priceRange.value ? { priceRange: priceRange.value } : {}),
+      ...(socials.value.length ? { sameAs: socials.value.map(s => s.url) } : {}),
       ...(publicStats.value.reviews > 0 ? { aggregateRating: { '@type': 'AggregateRating', 'ratingValue': publicStats.value.rating, 'reviewCount': publicStats.value.reviews } } : {}),
     })),
   }],
