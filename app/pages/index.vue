@@ -705,14 +705,16 @@ onBeforeUnmount(() => {
     </footer>
 
     <Transition name="mobile-menu">
-      <div v-if="showBar && !mobileMenuOpen" class="fixed inset-x-4 bottom-4 z-40 pr-16 lg:hidden">
+      <!-- Ya sin pr-16: la mascota se oculta (yieldSpace) mientras esta barra está en pantalla,
+           así que ya no hay que reservarle espacio al botón para evitar que se solapen. -->
+      <div v-if="showBar && !mobileMenuOpen" class="fixed inset-x-4 bottom-4 z-40 lg:hidden">
         <NuxtLink :to="isAuthenticated ? '/dashboard' : '/reservar'" class="ui-btn min-h-[48px] w-full py-3 text-[12px] tracking-[0.15em] shadow-[0_8px_30px_rgba(0,0,0,0.5)]">
           {{ isAuthenticated ? 'Mi panel' : 'Reservar cita' }}
         </NuxtLink>
       </div>
     </Transition>
 
-    <BrandMascotCompanion />
+    <BrandMascotCompanion :yield-space="showBar && !mobileMenuOpen" />
   </div>
 </template>
 
