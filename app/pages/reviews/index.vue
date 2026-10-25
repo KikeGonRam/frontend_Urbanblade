@@ -7,6 +7,8 @@
  */
 definePageMeta({ middleware: ['auth', 'admin'], layout: 'dashboard' })
 
+useSeoMeta({ title: 'Reseñas — UrbanBlade', robots: 'noindex' })
+
 interface ReviewRow {
   id: string
   rating: number
@@ -81,7 +83,6 @@ function fmtDate(iso: string | null) {
 <template>
   <div class="p-4 sm:p-6 lg:p-8">
     <header class="mb-6">
-      <p class="text-sm uppercase tracking-widest text-muted">UrbanBlade</p>
       <h1 class="mt-1 text-2xl font-semibold text-ink">
         Reseñas de <span class="text-gold">Clientes</span>
       </h1>
@@ -89,9 +90,9 @@ function fmtDate(iso: string | null) {
     </header>
 
     <section v-if="!pending && !error" class="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
-      <div class="ui-card p-4"><p class="text-[10px] font-bold uppercase text-muted">Total</p><p class="mt-1 text-xl font-black text-ink">{{ stats.total }}</p></div>
-      <div class="ui-card p-4"><p class="text-[10px] font-bold uppercase text-muted">Promedio</p><p class="mt-1 text-xl font-black text-gold">{{ stats.promedio }} ★</p></div>
-      <div class="ui-card p-4"><p class="text-[10px] font-bold uppercase text-muted">Bajas (≤2★)</p><p class="mt-1 text-xl font-black text-red-400">{{ stats.bajas }}</p></div>
+      <div class="ui-card p-4"><p class="text-[11px] font-bold uppercase text-muted">Total</p><p class="mt-1 text-xl font-black text-ink">{{ stats.total }}</p></div>
+      <div class="ui-card p-4"><p class="text-[11px] font-bold uppercase text-muted">Promedio</p><p class="mt-1 text-xl font-black text-gold">{{ stats.promedio }} ★</p></div>
+      <div class="ui-card p-4"><p class="text-[11px] font-bold uppercase text-muted">Bajas (≤2★)</p><p class="mt-1 text-xl font-black text-danger">{{ stats.bajas }}</p></div>
     </section>
 
     <UiPagination
@@ -136,24 +137,24 @@ function fmtDate(iso: string | null) {
     </p>
 
     <section v-else class="ui-card overflow-x-auto">
-      <table class="w-full min-w-[48rem] text-left text-sm">
+      <table aria-label="Reseñas" class="w-full min-w-[48rem] text-left text-sm">
         <thead>
-          <tr class="border-b border-line text-[10px] uppercase tracking-wider text-muted">
-            <th class="cursor-pointer px-4 py-3 select-none" @click="toggleSort('created_at')">
+          <tr class="border-b border-line text-[11px] uppercase tracking-wider text-muted">
+            <th scope="col" class="cursor-pointer px-4 py-3 select-none" @click="toggleSort('created_at')">
               Fecha {{ sort === 'created_at' ? (dir === 'asc' ? '↑' : '↓') : '' }}
             </th>
-            <th class="cursor-pointer px-4 py-3 select-none" @click="toggleSort('rating')">
+            <th scope="col" class="cursor-pointer px-4 py-3 select-none" @click="toggleSort('rating')">
               Calificación {{ sort === 'rating' ? (dir === 'asc' ? '↑' : '↓') : '' }}
             </th>
-            <th class="px-4 py-3">Barbero</th>
-            <th class="px-4 py-3">Cliente</th>
-            <th class="px-4 py-3">Comentario</th>
+            <th scope="col" class="px-4 py-3">Barbero</th>
+            <th scope="col" class="px-4 py-3">Cliente</th>
+            <th scope="col" class="px-4 py-3">Comentario</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="r in reviews" :key="r.id" class="border-b border-line/60 last:border-0">
             <td class="px-4 py-3 whitespace-nowrap text-muted">{{ fmtDate(r.created_at) }}</td>
-            <td class="px-4 py-3" :class="r.rating <= 2 ? 'text-red-400' : 'text-gold'">{{ r.rating }} ★</td>
+            <td class="px-4 py-3" :class="r.rating <= 2 ? 'text-danger' : 'text-gold'">{{ r.rating }} ★</td>
             <td class="px-4 py-3 text-ink">{{ r.barber.name ?? '—' }}</td>
             <td class="px-4 py-3 text-ink">{{ r.client.name ?? '—' }}</td>
             <td class="px-4 py-3 text-muted">{{ r.comment ?? '—' }}</td>

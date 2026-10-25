@@ -52,7 +52,12 @@ export default defineNuxtConfig({
       // lang="" y un lector de pantalla no sabe que debe pronunciar en espanol.
       // Toda la interfaz esta en espanol, asi que el idioma es constante.
       htmlAttrs: { lang: 'es' },
-      link: [{ rel: 'icon', type: 'image/svg+xml', href: '/images/urbanblade-mark.svg' }],
+      link: [
+        { rel: 'icon', type: 'image/svg+xml', href: '/images/urbanblade-mark.svg' },
+        // PWA: manifiesto de instalación e ícono de iOS (Safari no lee los íconos del manifiesto).
+        { rel: 'manifest', href: '/manifest.webmanifest' },
+        { rel: 'apple-touch-icon', href: '/icons/apple-touch-icon.png' },
+      ],
       meta: [
         {
           name: 'viewport',
@@ -61,6 +66,10 @@ export default defineNuxtConfig({
         { name: 'theme-color', media: '(prefers-color-scheme: dark)', content: '#0a0a0a' },
         { name: 'theme-color', media: '(prefers-color-scheme: light)', content: '#f7f3ea' },
         { name: 'color-scheme', content: 'dark light' },
+        { name: 'mobile-web-app-capable', content: 'yes' },
+        { name: 'apple-mobile-web-app-capable', content: 'yes' },
+        { name: 'apple-mobile-web-app-title', content: 'UrbanBlade' },
+        { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
       ],
       // Aplica el tema guardado en cookie ANTES de pintar, para evitar el
       // flash de tema incorrecto (FOUC) — equivalente a que barber lo
@@ -73,13 +82,8 @@ export default defineNuxtConfig({
           innerHTML: `(function(){try{var m=document.cookie.match(/(?:^|; )ub_theme=([^;]+)/);var t=m?decodeURIComponent(m[1]):'noir';var c={noir:'#0a0a0a',acero:'#111317',salon:'#0b1210',libreta:'#f3ede0'}[t]||'#0a0a0a';document.documentElement.setAttribute('data-theme',t);document.querySelectorAll('meta[name="theme-color"]').forEach(function(e){e.setAttribute('content',c)});document.querySelector('meta[name="color-scheme"]')?.setAttribute('content',t==='libreta'?'light':'dark');}catch(e){}})();`,
           tagPosition: 'head',
         },
-        // Google Tag Manager (contenedor GTM-K4RR96BB). Va lo más arriba posible del <head>.
-        // El plugin security-headers.ts le pone el nonce de la CSP, permite googletagmanager.com e
-        // inyecta el <noscript> de GTM (por app.head causa un mismatch de hidratación).
-        {
-          innerHTML: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-K4RR96BB');`,
-          tagPosition: 'head',
-        },
+        // Google Tag Manager (GTM-K4RR96BB) ya NO se carga aquí: solo después de que la persona
+        // acepta las cookies de analítica (app/composables/useConsent.ts y app/plugins/consent.client.ts).
       ],
     },
   },
@@ -93,6 +97,12 @@ export default defineNuxtConfig({
    * esas rutas.
    */
   routeRules: {
+    // El navegador revalida el service worker y el manifiesto en cada visita: así una versión
+    // nueva de la app llega sin esperar a que caduque la copia en caché.
+    '/sw.js': { headers: { 'cache-control': 'no-cache' } },
+    '/manifest.webmanifest': { headers: { 'cache-control': 'no-cache' } },
+    // Atajo compartible: /app lleva a la sección de la app móvil de la landing.
+    '/app': { redirect: { to: '/#app', statusCode: 302 } },
     '/**': {
       headers: {
         'X-Content-Type-Options': 'nosniff',

@@ -5,9 +5,12 @@
  * consumidor de este endpoint hoy; administrador e ingeniero comparten la
  * misma ruta y el mismo middleware 'engineer' (ver app/middleware/engineer.ts).
  */
+import type { Ref } from 'vue'
 import { buildSystemNodes, type SystemStatus } from '~/utils/systemMap'
 
 definePageMeta({ middleware: ['auth', 'engineer'], layout: 'dashboard' })
+
+useSeoMeta({ title: 'Estado del servidor — UrbanBlade', robots: 'noindex' })
 
 const { apiFetch } = useApi()
 
@@ -20,11 +23,59 @@ const { data, pending, error, refresh } = await useAsyncData(
 // TT38: nodos del mapa del sistema (vista 3D + lista accesible).
 const mapNodes = computed(() => (data.value ? buildSystemNodes(data.value) : []))
 
+// Un monitor que hay que refrescar a mano no sirve: se actualiza solo cada 30 s (si la pestaña está visible)
+// y guarda las últimas lecturas de latencia de la sesión para ver la tendencia.
+const REFRESH_MS = 30_000
+const HISTORY_SIZE = 20
+const autoRefresh = ref(true)
+const updatedAt = ref<Date | null>(null)
+const dbHistory = ref<number[]>([])
+const redisHistory = ref<number[]>([])
+
+function pushLatency(list: Ref<number[]>, ms: number | null) {
+  if (ms !== null) list.value = [...list.value, ms].slice(-HISTORY_SIZE)
+}
+
+watch(data, (value) => {
+  if (!value) return
+  updatedAt.value = new Date()
+  pushLatency(dbHistory, value.database.latency_ms)
+  pushLatency(redisHistory, value.redis.latency_ms)
+}, { immediate: true })
+
+let timer: ReturnType<typeof setInterval> | undefined
+onMounted(() => {
+  timer = setInterval(() => {
+    if (autoRefresh.value && document.visibilityState === 'visible' && !pending.value) refresh()
+  }, REFRESH_MS)
+})
+onBeforeUnmount(() => { if (timer) clearInterval(timer) })
+
+const updatedLabel = computed(() =>
+  updatedAt.value?.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) ?? '—',
+)
+
+function sparkPath(vals: number[]) {
+  if (vals.length < 2) return ''
+  const w = 100
+  const h = 28
+  const max = Math.max(...vals)
+  const min = Math.min(...vals)
+  const rng = max - min || 1
+
+  return 'M ' + vals.map((v, i) => `${((i * w) / (vals.length - 1)).toFixed(2)},${(h - 2 - ((v - min) / rng) * (h - 4)).toFixed(2)}`).join(' L ')
+}
+
+// Lo que falló va primero: es lo que el ingeniero necesita ver.
+const sortedTasks = computed(() =>
+  [...(data.value?.scheduled_tasks ?? [])].sort((a, b) => Number(b.status === 'failed') - Number(a.status === 'failed')),
+)
+
 const STATUS_CLASS: Record<string, string> = {
-  up: 'border-emerald-500/25 bg-emerald-500/10 text-emerald-300',
-  down: 'border-red-500/25 bg-red-500/10 text-red-400',
-  success: 'border-emerald-500/25 bg-emerald-500/10 text-emerald-300',
-  failed: 'border-red-500/25 bg-red-500/10 text-red-400',
+  up: 'border-success/25 bg-success/10 text-success',
+  down: 'border-danger/25 bg-danger/10 text-danger',
+  success: 'border-success/25 bg-success/10 text-success',
+  failed: 'border-danger/25 bg-danger/10 text-danger',
   unknown: 'border-line bg-panel text-muted',
 }
 const STATUS_LABEL: Record<string, string> = {
@@ -38,10 +89,10 @@ const health = computed(() => {
   const failedJobs = data.value.queue.failed ?? 0
   const failedTasks = data.value.scheduled_tasks.filter(task => task.status === 'failed').length
 
-  if (unavailable) return { label: 'Servicio crítico', detail: 'Hay una dependencia de infraestructura sin respuesta.', dot: 'bg-red-400', surface: 'border-red-500/25 bg-red-500/[0.05]' }
-  if (failedJobs > 0 || failedTasks > 0) return { label: 'Requiere atención', detail: `${failedJobs} jobs y ${failedTasks} tareas requieren revisión.`, dot: 'bg-amber-300', surface: 'border-amber-500/25 bg-amber-500/[0.05]' }
+  if (unavailable) return { label: 'Servicio crítico', detail: 'Hay una dependencia de infraestructura sin respuesta.', dot: 'bg-red-400', surface: 'border-danger/25 bg-danger/5' }
+  if (failedJobs > 0 || failedTasks > 0) return { label: 'Requiere atención', detail: `${failedJobs} jobs y ${failedTasks} tareas requieren revisión.`, dot: 'bg-amber-300', surface: 'border-warning/25 bg-warning/5' }
 
-  return { label: 'Entorno estable', detail: 'Las dependencias y las últimas tareas reportan estado saludable.', dot: 'bg-emerald-300', surface: 'border-emerald-500/25 bg-emerald-500/[0.05]' }
+  return { label: 'Entorno estable', detail: 'Las dependencias y las últimas tareas reportan estado saludable.', dot: 'bg-emerald-300', surface: 'border-success/25 bg-success/5' }
 })
 
 function fmtDate(iso: string | null) {
@@ -55,19 +106,25 @@ function fmtDate(iso: string | null) {
   <div class="space-y-5 p-4 sm:p-6 lg:p-8">
     <header class="flex flex-wrap items-center justify-between gap-3">
       <div>
-        <p class="text-sm uppercase tracking-widest text-muted">UrbanBlade</p>
         <h1 class="mt-1 text-2xl font-semibold text-ink">Estado del <span class="text-gold">Servidor</span></h1>
         <p class="mt-1 text-sm text-muted">Conectividad, cola y tareas programadas — solo lectura.</p>
       </div>
-      <button
-        type="button" class="min-h-10 rounded-lg border border-line px-3 py-2 text-xs font-bold uppercase tracking-widest text-muted transition hover:border-gold/40 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-2"
-        :disabled="pending" @click="refresh()"
-      >
-        {{ pending ? 'Actualizando…' : 'Actualizar' }}
-      </button>
+      <div class="flex flex-wrap items-center gap-3">
+        <p class="text-xs text-muted" role="status">Actualizado a las <span class="font-semibold tabular-nums text-ink">{{ updatedLabel }}</span></p>
+        <label class="flex min-h-10 cursor-pointer items-center gap-2 text-xs font-semibold text-muted">
+          <input v-model="autoRefresh" type="checkbox" class="h-4 w-4 accent-[var(--gold)]">
+          Cada 30 s
+        </label>
+        <button
+          type="button" class="min-h-10 rounded-lg border border-line px-3 py-2 text-xs font-bold uppercase tracking-widest text-muted transition hover:border-gold/40 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-2"
+          :disabled="pending" @click="refresh()"
+        >
+          {{ pending ? 'Actualizando…' : 'Actualizar' }}
+        </button>
+      </div>
     </header>
 
-    <p v-if="pending && !data" class="text-sm text-muted">Cargando…</p>
+    <BrandStatePanel v-if="pending && !data" mascot="bladebot" state="waiting" title="Leyendo el estado del servidor…" />
     <BrandStatePanel
       v-else-if="error"
       mascot="bruno"
@@ -83,54 +140,56 @@ function fmtDate(iso: string | null) {
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div class="flex items-start gap-3">
             <span class="mt-1 flex h-3 w-3 shrink-0 rounded-full" :class="health.dot" />
-            <div><p class="text-[10px] font-black uppercase tracking-[0.2em] text-ink/45">Resumen de monitor</p><h2 class="mt-1 text-xl font-black text-ink">{{ health.label }}</h2><p class="mt-1 text-sm text-muted">{{ health.detail }}</p></div>
+            <div><p class="text-[11px] font-black uppercase tracking-[0.2em] text-ink/45">Resumen de monitor</p><h2 class="mt-1 text-xl font-black text-ink">{{ health.label }}</h2><p class="mt-1 text-sm text-muted">{{ health.detail }}</p></div>
           </div>
-          <div class="flex flex-wrap gap-2"><NuxtLink to="/dashboard" class="rounded-xl border border-line bg-card px-3 py-2 text-[10px] font-black uppercase tracking-widest text-muted transition hover:border-gold/40 hover:text-gold">Módulos</NuxtLink><NuxtLink to="/reports" class="rounded-xl border border-line bg-card px-3 py-2 text-[10px] font-black uppercase tracking-widest text-muted transition hover:border-gold/40 hover:text-gold">Reportes</NuxtLink><NuxtLink to="/logs" class="rounded-xl border border-line bg-card px-3 py-2 text-[10px] font-black uppercase tracking-widest text-muted transition hover:border-gold/40 hover:text-gold">Logs</NuxtLink></div>
+          <div class="flex flex-wrap gap-2"><NuxtLink to="/dashboard" class="rounded-xl border border-line bg-card px-3 py-2 text-[11px] font-black uppercase tracking-widest text-muted transition hover:border-gold/40 hover:text-gold">Módulos</NuxtLink><NuxtLink to="/reports" class="rounded-xl border border-line bg-card px-3 py-2 text-[11px] font-black uppercase tracking-widest text-muted transition hover:border-gold/40 hover:text-gold">Reportes</NuxtLink><NuxtLink to="/logs" class="rounded-xl border border-line bg-card px-3 py-2 text-[11px] font-black uppercase tracking-widest text-muted transition hover:border-gold/40 hover:text-gold">Logs</NuxtLink></div>
         </div>
       </section>
 
       <SystemMap3D :nodes="mapNodes" />
 
       <section class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <div class="rounded-2xl border border-ink/[0.06] bg-card p-4"><p class="text-[9px] font-black uppercase tracking-widest text-ink/50">Entorno</p><p class="mt-1 text-lg font-black text-ink">{{ data.app.env }}</p></div>
-        <div class="rounded-2xl border border-ink/[0.06] bg-card p-4"><p class="text-[9px] font-black uppercase tracking-widest text-ink/50">Laravel</p><p class="mt-1 text-lg font-black text-ink">{{ data.app.laravel_version }}</p></div>
-        <div class="rounded-2xl border border-ink/[0.06] bg-card p-4"><p class="text-[9px] font-black uppercase tracking-widest text-ink/50">PHP</p><p class="mt-1 text-lg font-black text-ink">{{ data.app.php_version }}</p></div>
-        <div class="rounded-2xl border border-ink/[0.06] bg-card p-4"><p class="text-[9px] font-black uppercase tracking-widest text-ink/50">Cola</p><p class="mt-1 text-lg font-black text-ink">{{ data.queue.connection }}</p></div>
+        <div class="rounded-2xl border border-ink/[0.06] bg-card p-4"><p class="text-[11px] font-black uppercase tracking-widest text-ink/50">Entorno</p><p class="mt-1 text-lg font-black text-ink">{{ data.app.env }}</p></div>
+        <div class="rounded-2xl border border-ink/[0.06] bg-card p-4"><p class="text-[11px] font-black uppercase tracking-widest text-ink/50">Laravel</p><p class="mt-1 text-lg font-black text-ink">{{ data.app.laravel_version }}</p></div>
+        <div class="rounded-2xl border border-ink/[0.06] bg-card p-4"><p class="text-[11px] font-black uppercase tracking-widest text-ink/50">PHP</p><p class="mt-1 text-lg font-black text-ink">{{ data.app.php_version }}</p></div>
+        <div class="rounded-2xl border border-ink/[0.06] bg-card p-4"><p class="text-[11px] font-black uppercase tracking-widest text-ink/50">Cola</p><p class="mt-1 text-lg font-black text-ink">{{ data.queue.connection }}</p></div>
       </section>
 
       <section class="mb-5 grid grid-cols-1 gap-5 lg:grid-cols-3">
         <div class="rounded-2xl border border-ink/[0.06] bg-card p-5">
           <div class="flex items-center justify-between">
-            <p class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/50">MongoDB</p>
+            <p class="text-[11px] font-black uppercase tracking-[0.25em] text-ink/50">MongoDB</p>
             <span class="relative flex h-3 w-3">
               <span v-if="data.database.status === 'up'" class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
               <span class="relative inline-flex h-3 w-3 rounded-full" :class="data.database.status === 'up' ? 'bg-emerald-400' : 'bg-red-500'" />
             </span>
           </div>
-          <p class="mt-3 text-xl font-black" :class="data.database.status === 'up' ? 'text-emerald-400' : 'text-red-400'">{{ STATUS_LABEL[data.database.status] }}</p>
+          <p class="mt-3 text-xl font-black" :class="data.database.status === 'up' ? 'text-success' : 'text-danger'">{{ STATUS_LABEL[data.database.status] }}</p>
           <p v-if="data.database.latency_ms !== null" class="mt-1 text-xs text-ink/45">{{ data.database.latency_ms }} ms de latencia</p>
-          <p v-if="data.database.error" class="mt-2 text-xs text-red-400">{{ data.database.error }}</p>
+          <svg v-if="dbHistory.length > 1" viewBox="0 0 100 28" preserveAspectRatio="none" class="mt-3 h-7 w-full text-gold" role="img" :aria-label="`Latencia de MongoDB en las últimas ${dbHistory.length} lecturas`"><path :d="sparkPath(dbHistory)" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" /></svg>
+          <p v-if="data.database.error" class="mt-2 text-xs text-danger">{{ data.database.error }}</p>
         </div>
 
         <div class="rounded-2xl border border-ink/[0.06] bg-card p-5">
           <div class="flex items-center justify-between">
-            <p class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/50">Redis</p>
+            <p class="text-[11px] font-black uppercase tracking-[0.25em] text-ink/50">Redis</p>
             <span class="relative flex h-3 w-3">
               <span v-if="data.redis.status === 'up'" class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
               <span class="relative inline-flex h-3 w-3 rounded-full" :class="data.redis.status === 'up' ? 'bg-emerald-400' : data.redis.status === 'no_usado' ? 'bg-ink/30' : 'bg-red-500'" />
             </span>
           </div>
-          <p class="mt-3 text-xl font-black" :class="data.redis.status === 'up' ? 'text-emerald-400' : data.redis.status === 'no_usado' ? 'text-ink/50' : 'text-red-400'">{{ STATUS_LABEL[data.redis.status] }}</p>
+          <p class="mt-3 text-xl font-black" :class="data.redis.status === 'up' ? 'text-success' : data.redis.status === 'no_usado' ? 'text-ink/50' : 'text-danger'">{{ STATUS_LABEL[data.redis.status] }}</p>
           <p v-if="data.redis.latency_ms !== null" class="mt-1 text-xs text-ink/45">{{ data.redis.latency_ms }} ms de latencia</p>
-          <p v-if="data.redis.error" class="mt-2 text-xs text-red-400">{{ data.redis.error }}</p>
+          <svg v-if="redisHistory.length > 1" viewBox="0 0 100 28" preserveAspectRatio="none" class="mt-3 h-7 w-full text-gold" role="img" :aria-label="`Latencia de Redis en las últimas ${redisHistory.length} lecturas`"><path :d="sparkPath(redisHistory)" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" /></svg>
+          <p v-if="data.redis.error" class="mt-2 text-xs text-danger">{{ data.redis.error }}</p>
         </div>
 
         <div class="rounded-2xl border border-ink/[0.06] bg-card p-5">
-          <p class="text-[9px] font-black uppercase tracking-[0.25em] text-ink/50">Jobs en cola</p>
+          <p class="text-[11px] font-black uppercase tracking-[0.25em] text-ink/50">Jobs en cola</p>
           <div class="mt-3 flex items-center gap-5">
-            <div><p class="text-2xl font-black leading-none text-ink">{{ data.queue.pending ?? '—' }}</p><p class="mt-1 text-[9px] font-black uppercase text-ink/40">Pendientes</p></div>
+            <div><p class="text-2xl font-black leading-none text-ink">{{ data.queue.pending ?? '—' }}</p><p class="mt-1 text-[11px] font-black uppercase text-ink/40">Pendientes</p></div>
             <div class="h-8 w-px bg-ink/[0.08]" />
-            <div><p class="text-2xl font-black leading-none" :class="(data.queue.failed ?? 0) > 0 ? 'text-red-400' : 'text-ink'">{{ data.queue.failed ?? '—' }}</p><p class="mt-1 text-[9px] font-black uppercase text-ink/40">Fallidos</p></div>
+            <div><p class="text-2xl font-black leading-none" :class="(data.queue.failed ?? 0) > 0 ? 'text-danger' : 'text-ink'">{{ data.queue.failed ?? '—' }}</p><p class="mt-1 text-[11px] font-black uppercase text-ink/40">Fallidos</p></div>
           </div>
         </div>
       </section>
@@ -139,23 +198,23 @@ function fmtDate(iso: string | null) {
         <div class="border-b border-line px-4 py-3">
           <p class="text-sm font-bold text-ink">Tareas programadas</p>
         </div>
-        <table class="w-full text-left text-sm">
+        <table aria-label="Tareas programadas" class="w-full text-left text-sm">
           <thead>
-            <tr class="border-b border-line text-[10px] uppercase tracking-wider text-muted">
-              <th class="px-4 py-3">Tarea</th>
-              <th class="px-4 py-3">Frecuencia</th>
-              <th class="px-4 py-3">Última corrida</th>
-              <th class="px-4 py-3">Estado</th>
-              <th class="px-4 py-3">Duración</th>
+            <tr class="border-b border-line text-[11px] uppercase tracking-wider text-muted">
+              <th scope="col" class="px-4 py-3">Tarea</th>
+              <th scope="col" class="px-4 py-3">Frecuencia</th>
+              <th scope="col" class="px-4 py-3">Última corrida</th>
+              <th scope="col" class="px-4 py-3">Estado</th>
+              <th scope="col" class="px-4 py-3">Duración</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="task in data.scheduled_tasks" :key="task.name" class="border-b border-line/60 last:border-0">
+            <tr v-for="task in sortedTasks" :key="task.name" class="border-b border-line/60 last:border-0" :class="task.status === 'failed' ? 'bg-danger/5' : ''">
               <td class="px-4 py-3 text-ink">{{ task.name }}</td>
               <td class="px-4 py-3 font-mono text-xs text-muted">{{ task.expression }}</td>
               <td class="px-4 py-3 whitespace-nowrap text-muted">{{ fmtDate(task.ran_at) }}</td>
               <td class="px-4 py-3">
-                <span class="rounded-full border px-2 py-0.5 text-[10px] font-black" :class="STATUS_CLASS[task.status]">{{ STATUS_LABEL[task.status] }}</span>
+                <span class="rounded-full border px-2 py-0.5 text-[11px] font-black" :class="STATUS_CLASS[task.status]">{{ STATUS_LABEL[task.status] }}</span>
               </td>
               <td class="px-4 py-3 text-muted">{{ task.runtime_ms !== null ? `${task.runtime_ms} ms` : '—' }}</td>
             </tr>

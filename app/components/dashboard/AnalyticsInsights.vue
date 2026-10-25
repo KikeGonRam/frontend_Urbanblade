@@ -54,37 +54,91 @@ const rows = computed<Row[]>(() => [
   })),
 ])
 
-const DOT: Record<BadgeTone, string> = {
+// El tono se ve en el filo superior de la tarjeta, en la barra y en el color del dato; ya no hay punto de color.
+const EDGE: Record<BadgeTone, string> = {
+  neutral: 'border-t-line', gold: 'border-t-gold', success: 'border-t-success', warning: 'border-t-warning', danger: 'border-t-danger', info: 'border-t-info',
+}
+const BAR: Record<BadgeTone, string> = {
   neutral: 'bg-muted', gold: 'bg-gold', success: 'bg-success', warning: 'bg-warning', danger: 'bg-danger', info: 'bg-info',
+}
+const VALUE: Record<BadgeTone, string> = {
+  neutral: 'text-ink', gold: 'text-ink', success: 'text-success', warning: 'text-warning', danger: 'text-danger', info: 'text-ink',
 }
 
 const open = ref<Record<string, boolean>>({})
+
+// La sección va plegada: es lectura de apoyo y ocupaba media pantalla. Lo que elijas se recuerda en este navegador.
+const STORAGE_KEY = 'ub:insights-open'
+const expanded = ref(false)
+onMounted(() => {
+  try {
+    expanded.value = localStorage.getItem(STORAGE_KEY) === '1'
+  } catch {
+    // Sin almacenamiento (ventana privada, bloqueado): se queda plegada.
+  }
+})
+function toggle() {
+  expanded.value = !expanded.value
+  try {
+    localStorage.setItem(STORAGE_KEY, expanded.value ? '1' : '0')
+  } catch {
+    // No pasa nada si no se puede recordar la elección.
+  }
+}
+
+// Resumen de una línea para cuando está plegada: «Hora pico: 10:00 · 6 clientes · …».
+const summary = computed(() => rows.value.slice(0, 3).map(r => `${r.titulo}: ${r.dato}`).join('  ·  '))
 </script>
 
 <template>
-  <section v-if="rows.length || showLink" :aria-label="titulo" class="rounded-2xl border border-line bg-card p-5">
-    <header class="flex items-center justify-between gap-3" :class="rows.length ? 'mb-4' : ''">
-      <div>
+  <section v-if="rows.length || showLink" :aria-label="titulo" class="rounded-2xl border border-line bg-card px-5 py-4">
+    <header class="flex items-center justify-between gap-3">
+      <button
+        v-if="rows.length"
+        type="button"
+        class="flex min-w-0 flex-1 items-center gap-3 rounded-lg text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold"
+        :aria-expanded="expanded"
+        aria-controls="insights-panel"
+        @click="toggle"
+      >
+        <svg
+          class="h-4 w-4 shrink-0 text-muted transition-transform duration-200"
+          :class="expanded ? 'rotate-90' : ''"
+          fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+        <span class="min-w-0">
+          <span class="block text-base font-semibold text-ink">
+            {{ titulo }}<span class="ml-2 text-sm font-normal text-muted">{{ rows.length }} {{ rows.length === 1 ? 'hallazgo' : 'hallazgos' }}</span>
+          </span>
+          <span v-if="!expanded" class="mt-0.5 block truncate text-sm text-muted">{{ summary }}</span>
+        </span>
+      </button>
+      <div v-else>
         <h3 class="text-base font-semibold text-ink">{{ titulo }}</h3>
-        <p v-if="rows.length" class="mt-0.5 text-sm text-muted">Hallazgos calculados con el historial real de la barbería</p>
-        <p v-else class="mt-0.5 text-sm text-muted">Patrones, predicciones y recomendaciones sobre tu historial</p>
+        <p class="mt-0.5 text-sm text-muted">Patrones, predicciones y recomendaciones sobre tu historial</p>
       </div>
       <NuxtLink v-if="showLink" to="/analytics" class="shrink-0 text-sm font-semibold text-gold hover:underline">
         Ver analítica completa →
       </NuxtLink>
     </header>
 
-    <ul v-if="rows.length" class="grid gap-3 md:grid-cols-2">
-      <li v-for="row in rows" :key="row.key" class="ub-rise rounded-xl border border-line bg-main/40 p-4">
-        <div class="flex items-center gap-2">
-          <span class="h-2 w-2 shrink-0 rounded-full" :class="DOT[row.tone]" aria-hidden="true" />
-          <p class="text-sm font-medium text-muted">{{ row.titulo }}</p>
+    <div v-if="rows.length" id="insights-panel" class="ub-collapse" :class="{ 'is-open': expanded }">
+      <div class="overflow-hidden">
+    <ul class="mt-4 grid gap-4 pb-1 md:grid-cols-2 xl:grid-cols-3">
+      <li
+        v-for="row in rows"
+        :key="row.key"
+        class="ub-rise flex flex-col rounded-xl border border-line border-t-2 bg-main/40 p-5"
+        :class="EDGE[row.tone]"
+      >
+        <p class="text-sm font-semibold text-ink">{{ row.titulo }}</p>
+        <p class="mt-2 text-3xl font-semibold leading-none tracking-tight" :class="VALUE[row.tone]">{{ row.dato }}</p>
+        <div v-if="row.progress !== null" class="mt-3 h-1.5 overflow-hidden rounded-full bg-ink/10" role="presentation">
+          <span class="block h-full rounded-full" :class="BAR[row.tone]" :style="{ width: `${row.progress}%` }" />
         </div>
-        <p class="mt-1 text-xl font-semibold tracking-tight text-ink">{{ row.dato }}</p>
-        <div v-if="row.progress !== null" class="mt-2 h-1.5 overflow-hidden rounded-full bg-ink/10" role="presentation">
-          <span class="block h-full rounded-full" :class="DOT[row.tone]" :style="{ width: `${row.progress}%` }" />
-        </div>
-        <p class="mt-2 text-sm leading-relaxed text-muted">{{ row.texto }}</p>
+        <p class="mt-3 text-sm leading-relaxed text-muted">{{ row.texto }}</p>
 
         <template v-if="row.detalle">
           <div class="ub-collapse" :class="{ 'is-open': open[row.key] }">
@@ -94,14 +148,16 @@ const open = ref<Record<string, boolean>>({})
           </div>
           <button
             type="button"
-            class="mt-2 text-sm font-semibold text-gold hover:underline"
+            class="mt-auto self-start pt-3 text-sm font-semibold text-gold hover:underline"
             :aria-expanded="!!open[row.key]"
             @click="open[row.key] = !open[row.key]"
           >
-            {{ open[row.key] ? 'Ver menos' : 'Ver detalle' }}
+            {{ open[row.key] ? 'Ver menos' : 'Leer más' }}
           </button>
         </template>
       </li>
     </ul>
+      </div>
+    </div>
   </section>
 </template>

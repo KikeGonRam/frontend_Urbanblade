@@ -52,7 +52,7 @@ onBeforeUnmount(() => {
         <div class="mb-4 flex items-start gap-4">
           <div
             v-if="state.isDanger"
-            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-red-500/20 bg-red-500/10 text-red-400"
+            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-danger/20 bg-danger/10 text-danger"
           >
             <svg
               class="h-5 w-5"

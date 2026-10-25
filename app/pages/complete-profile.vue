@@ -1,4 +1,5 @@
 <script setup lang="ts">
+useSeoMeta({ robots: 'noindex' })
 definePageMeta({ middleware: "auth", layout: false });
 
 interface ProfileResponse {
@@ -119,9 +120,9 @@ async function submit() {
             placeholder="Tu número de teléfono"
             :aria-invalid="!!fieldErrors.telefono"
             :aria-describedby="fieldErrors.telefono ? 'telefono-error' : undefined"
-            :class="['w-full rounded-lg border bg-main px-3 py-2 text-ink transition-all duration-200 focus:outline-none', fieldErrors.telefono ? 'border-red-500/60 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]' : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]']"
+            :class="['w-full rounded-lg border bg-main px-3 py-2 text-ink transition-all duration-200 focus:outline-none', fieldErrors.telefono ? 'border-danger/60 focus:border-danger focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]' : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]']"
           >
-          <p v-if="fieldErrors.telefono" id="telefono-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.telefono[0] }}</p>
+          <p v-if="fieldErrors.telefono" id="telefono-error" class="mt-1 text-xs text-danger">{{ fieldErrors.telefono[0] }}</p>
         </div>
         <div>
           <label for="fecha-nacimiento" class="mb-1 block text-sm text-muted"
@@ -135,9 +136,9 @@ async function submit() {
             autocomplete="bday"
             :aria-invalid="!!fieldErrors.fecha_nacimiento"
             :aria-describedby="fieldErrors.fecha_nacimiento ? 'fecha-nacimiento-error' : undefined"
-            :class="['w-full rounded-lg border bg-main px-3 py-2 text-ink transition-all duration-200 focus:outline-none', fieldErrors.fecha_nacimiento ? 'border-red-500/60 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]' : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]']"
+            :class="['w-full rounded-lg border bg-main px-3 py-2 text-ink transition-all duration-200 focus:outline-none', fieldErrors.fecha_nacimiento ? 'border-danger/60 focus:border-danger focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]' : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]']"
           >
-          <p v-if="fieldErrors.fecha_nacimiento" id="fecha-nacimiento-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.fecha_nacimiento[0] }}</p>
+          <p v-if="fieldErrors.fecha_nacimiento" id="fecha-nacimiento-error" class="mt-1 text-xs text-danger">{{ fieldErrors.fecha_nacimiento[0] }}</p>
         </div>
         <div>
           <label for="sexo" class="mb-1 block text-sm text-muted">Sexo (opcional)</label>
@@ -146,17 +147,17 @@ async function submit() {
             v-model="sexo"
             :aria-invalid="!!fieldErrors.sexo"
             :aria-describedby="fieldErrors.sexo ? 'sexo-error' : 'sexo-help'"
-            :class="['w-full rounded-lg border bg-main px-3 py-2 text-ink transition-all duration-200 focus:outline-none', fieldErrors.sexo ? 'border-red-500/60 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]' : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]']"
+            :class="['w-full rounded-lg border bg-main px-3 py-2 text-ink transition-all duration-200 focus:outline-none', fieldErrors.sexo ? 'border-danger/60 focus:border-danger focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]' : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]']"
           >
             <option value="">Sin especificar</option>
             <option value="masculino">Masculino</option>
             <option value="femenino">Femenino</option>
             <option value="prefiero_no_decir">Prefiero no decirlo</option>
           </select>
-          <p v-if="fieldErrors.sexo" id="sexo-error" class="mt-1 text-xs text-red-400">{{ fieldErrors.sexo[0] }}</p>
+          <p v-if="fieldErrors.sexo" id="sexo-error" class="mt-1 text-xs text-danger">{{ fieldErrors.sexo[0] }}</p>
           <p v-else id="sexo-help" class="mt-1 text-xs text-muted">Google no comparte este dato con el acceso estándar; puedes elegirlo manualmente.</p>
         </div>
-        <p v-if="errorMessage" role="alert" class="text-sm text-red-400">
+        <p v-if="errorMessage" role="alert" class="text-sm text-danger">
           {{ errorMessage }}
         </p>
         <button

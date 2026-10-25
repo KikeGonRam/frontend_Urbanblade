@@ -254,10 +254,10 @@ function money(n: number | null) {
           </div>
         </dl>
 
-        <p v-if="mensajeOk" role="status" class="mt-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm font-bold text-emerald-300">
+        <p v-if="mensajeOk" role="status" class="mt-4 rounded-xl border border-success/30 bg-success/10 p-3 text-sm font-bold text-success">
           {{ mensajeOk }}
         </p>
-        <p v-if="accionError" role="alert" class="mt-4 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm font-bold text-red-300">
+        <p v-if="accionError" role="alert" class="mt-4 rounded-xl border border-danger/30 bg-danger/10 p-3 text-sm font-bold text-danger">
           {{ accionError }}
         </p>
 
@@ -285,7 +285,7 @@ function money(n: number | null) {
           </button>
           <button
             type="button"
-            class="min-h-11 flex-1 rounded-xl border border-red-500/30 py-3 text-[11px] font-black uppercase tracking-widest text-red-400 transition-colors hover:bg-red-500/10"
+            class="min-h-11 flex-1 rounded-xl border border-danger/30 py-3 text-[11px] font-black uppercase tracking-widest text-danger transition-colors hover:bg-danger/10"
             :disabled="working"
             @click="confirmandoCancelar = true; moviendo = false"
           >
@@ -307,7 +307,7 @@ function money(n: number | null) {
         <div class="mt-4 flex flex-col gap-3 sm:flex-row">
           <button
             type="button"
-            class="min-h-11 flex-1 rounded-xl border border-red-500/40 py-3 text-[11px] font-black uppercase tracking-widest text-red-300 transition-colors hover:bg-red-500/10 disabled:opacity-50"
+            class="min-h-11 flex-1 rounded-xl border border-danger/40 py-3 text-[11px] font-black uppercase tracking-widest text-danger transition-colors hover:bg-danger/10 disabled:opacity-50"
             :disabled="working"
             @click="cancelar"
           >

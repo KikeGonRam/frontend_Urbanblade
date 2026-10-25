@@ -1,9 +1,12 @@
 <script setup lang="ts">
+import type { CsvColumn } from "~/composables/useCsvExport";
 /*
  * Fase 9.5 — catálogo de servicios, gestión admin. Api/Service/
  * ServiceManagementController maneja el CRUD completo bajo /services/manage.
  */
 definePageMeta({ middleware: ["auth", "admin"], layout: "dashboard" });
+useSeoMeta({ title: 'Servicios — UrbanBlade', robots: 'noindex' })
+
 
 interface ServiceRow {
   id: string;
@@ -23,6 +26,15 @@ interface ServicesResponse {
   meta: { current_page: number; last_page: number; total: number };
   categories: string[];
 }
+
+const exportColumns: CsvColumn<ServiceRow>[] = [
+  { header: "Servicio", value: (s) => s.nombre },
+  { header: "Categoría", value: (s) => s.categoria },
+  { header: "Precio", value: (s) => s.precio },
+  { header: "Duración (min)", value: (s) => s.duracion_min },
+  { header: "Activo", value: (s) => s.activo },
+  { header: "Descripción", value: (s) => s.descripcion },
+];
 
 const { apiFetch } = useApi();
 const { confirm } = useConfirm();
@@ -184,7 +196,6 @@ async function removeService(service: ServiceRow) {
       class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
     >
       <div>
-        <p class="text-sm uppercase tracking-widest text-muted">UrbanBlade</p>
         <h1 class="mt-1 text-2xl font-semibold text-ink">
           Catálogo de <span class="text-gold">Servicios</span>
         </h1>
@@ -200,6 +211,14 @@ async function removeService(service: ServiceRow) {
         + Nuevo Servicio
       </button>
     </header>
+    <div class="mb-3">
+      <UiExportCsvButton
+        endpoint="/services/manage"
+        :query="{ q: search || undefined, categoria: categoria || undefined, activo: activo || undefined }"
+        :columns="exportColumns"
+        filename="servicios"
+      />
+    </div>
 
     <section class="mb-5 flex flex-wrap items-center gap-3">
       <input
@@ -255,17 +274,17 @@ async function removeService(service: ServiceRow) {
     />
 
     <section v-if="!pending && !error" class="ui-card overflow-x-auto">
-      <table class="w-full text-left text-sm">
+      <table aria-label="Servicios" class="w-full text-left text-sm">
         <thead>
           <tr
-            class="border-b border-line text-[10px] uppercase tracking-wider text-muted"
+            class="border-b border-line text-[11px] uppercase tracking-wider text-muted"
           >
-            <th class="px-4 py-3">Servicio</th>
-            <th class="px-4 py-3">Categoría</th>
-            <th class="px-4 py-3">Duración</th>
-            <th class="px-4 py-3 text-right">Precio</th>
-            <th class="px-4 py-3 text-center">Estado</th>
-            <th class="px-4 py-3 text-right">Acciones</th>
+            <th scope="col" class="px-4 py-3">Servicio</th>
+            <th scope="col" class="px-4 py-3">Categoría</th>
+            <th scope="col" class="px-4 py-3">Duración</th>
+            <th scope="col" class="px-4 py-3 text-right">Precio</th>
+            <th scope="col" class="px-4 py-3 text-center">Estado</th>
+            <th scope="col" class="px-4 py-3 text-right">Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -301,21 +320,21 @@ async function removeService(service: ServiceRow) {
             </td>
             <td class="px-4 py-3">
               <span
-                class="rounded-full border border-line bg-ink/5 px-2 py-0.5 text-[9px] font-black uppercase text-muted"
+                class="rounded-full border border-line bg-ink/5 px-2 py-0.5 text-[11px] font-black uppercase text-muted"
               >
                 {{ service.categoria }}
               </span>
             </td>
             <td class="px-4 py-3 text-muted">{{ service.duracion_min }} min</td>
-            <td class="px-4 py-3 text-right font-black text-emerald-400">
+            <td class="px-4 py-3 text-right font-black text-success">
               {{ fmtMoney(service.precio) }}
             </td>
             <td class="px-4 py-3 text-center">
               <span
-                class="rounded-full border px-2 py-0.5 text-[9px] font-black uppercase"
+                class="rounded-full border px-2 py-0.5 text-[11px] font-black uppercase"
                 :class="
                   service.activo
-                    ? 'border-emerald-500/25 bg-emerald-500/10 text-emerald-300'
+                    ? 'border-success/25 bg-success/10 text-success'
                     : 'border-line bg-ink/5 text-muted'
                 "
               >
@@ -333,7 +352,7 @@ async function removeService(service: ServiceRow) {
                 </button>
                 <button
                   type="button"
-                  class="rounded-lg border border-red-500/20 px-3 py-1 text-xs text-red-400 hover:bg-red-500/10"
+                  class="rounded-lg border border-danger/20 px-3 py-1 text-xs text-danger hover:bg-danger/10"
                   @click="removeService(service)"
                 >
                   Eliminar
@@ -370,7 +389,7 @@ async function removeService(service: ServiceRow) {
             </h2>
             <p class="mt-2 ub-form-help">Define cómo se mostrará, cuánto dura y qué precio tendrá al reservar.</p>
           </div>
-          <span class="rounded-full border border-gold/25 bg-gold/10 px-2 py-1 text-[9px] font-black uppercase tracking-wider text-gold">
+          <span class="rounded-full border border-gold/25 bg-gold/10 px-2 py-1 text-[11px] font-black uppercase tracking-wider text-gold">
             {{ editing ? "Edición" : "Nuevo" }}
           </span>
         </div>
@@ -394,11 +413,11 @@ async function removeService(service: ServiceRow) {
               :class="[
                 'ui-input w-full',
                 fieldErrors.nombre
-                  ? 'border-red-500/60 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
+                  ? 'border-danger/60 focus:border-danger focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
                   : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]',
               ]"
             >
-            <p v-if="fieldErrors.nombre" class="mt-1 text-xs text-red-400">
+            <p v-if="fieldErrors.nombre" class="mt-1 text-xs text-danger">
               {{ fieldErrors.nombre[0] }}
             </p>
           </div>
@@ -420,7 +439,7 @@ async function removeService(service: ServiceRow) {
               :class="[
                 'ui-input w-full',
                 fieldErrors.categoria
-                  ? 'border-red-500/60 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
+                  ? 'border-danger/60 focus:border-danger focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
                   : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]',
               ]"
             >
@@ -433,13 +452,13 @@ async function removeService(service: ServiceRow) {
                 v-for="cat in categories"
                 :key="cat"
                 type="button"
-                class="rounded-md border border-line/70 bg-ink/5 px-2 py-0.5 text-[10px] text-muted hover:border-gold hover:text-gold"
+                class="rounded-md border border-line/70 bg-ink/5 px-2 py-0.5 text-[11px] text-muted hover:border-gold hover:text-gold"
                 @click="form.categoria = cat"
               >
                 {{ cat }}
               </button>
             </div>
-            <p v-if="fieldErrors.categoria" class="mt-1 text-xs text-red-400">
+            <p v-if="fieldErrors.categoria" class="mt-1 text-xs text-danger">
               {{ fieldErrors.categoria[0] }}
             </p>
           </div>
@@ -464,13 +483,13 @@ async function removeService(service: ServiceRow) {
                 :class="[
                   'ui-input w-full',
                   fieldErrors.duracion_min
-                    ? 'border-red-500/60 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
+                    ? 'border-danger/60 focus:border-danger focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
                     : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]',
                 ]"
               >
               <p
                 v-if="fieldErrors.duracion_min"
-                class="mt-1 text-xs text-red-400"
+                class="mt-1 text-xs text-danger"
               >
                 {{ fieldErrors.duracion_min[0] }}
               </p>
@@ -491,11 +510,11 @@ async function removeService(service: ServiceRow) {
                 :class="[
                   'ui-input w-full',
                   fieldErrors.precio
-                    ? 'border-red-500/60 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
+                    ? 'border-danger/60 focus:border-danger focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
                     : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]',
                 ]"
               >
-              <p v-if="fieldErrors.precio" class="mt-1 text-xs text-red-400">
+              <p v-if="fieldErrors.precio" class="mt-1 text-xs text-danger">
                 {{ fieldErrors.precio[0] }}
               </p>
             </div>
@@ -535,7 +554,7 @@ async function removeService(service: ServiceRow) {
           />
           </div>
 
-          <p v-if="formError" class="text-xs text-red-400">{{ formError }}</p>
+          <p v-if="formError" class="text-xs text-danger">{{ formError }}</p>
 
           <div class="mt-6 flex justify-end gap-3 pt-2">
             <button

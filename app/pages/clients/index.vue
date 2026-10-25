@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { CsvColumn } from "~/composables/useCsvExport";
 /*
  * Fase 9.1 del plan (ver .claude/skills/nuxt-migration-plan/SKILL.md) — a
  * diferencia de las fases 1-7, no hay página Inertia/Vue de referencia:
@@ -16,6 +17,8 @@
 // clientes. El backend es la autoridad real (authorizeCounterStaff()
 // vs authorizeAdmin() por acción en ClientAdminController).
 definePageMeta({ middleware: ["auth", "staff"], layout: "dashboard" });
+useSeoMeta({ title: 'Clientes — UrbanBlade', robots: 'noindex' })
+
 
 interface ClientRow {
   id: string;
@@ -48,10 +51,21 @@ const SEGMENT_LABEL: Record<string, string> = {
 };
 const SEGMENT_CLASS: Record<string, string> = {
   vip: "border-gold/25 bg-gold/10 text-gold",
-  new: "border-blue-500/25 bg-blue-500/10 text-blue-400",
-  active: "border-emerald-500/25 bg-emerald-500/10 text-emerald-400",
+  new: "border-info/25 bg-info/10 text-info",
+  active: "border-success/25 bg-success/10 text-success",
   inactive: "border-ink/10 bg-ink/5 text-muted",
 };
+
+const exportColumns: CsvColumn<ClientRow>[] = [
+  { header: "Nombre", value: (c) => c.name },
+  { header: "Correo", value: (c) => c.email },
+  { header: "Teléfono", value: (c) => c.telefono },
+  { header: "Segmento", value: (c) => SEGMENT_LABEL[c.segment] ?? c.segment },
+  { header: "Citas", value: (c) => c.totalAppointments },
+  { header: "Total gastado", value: (c) => c.totalSpent },
+  { header: "Última cita", value: (c) => c.lastAppointment },
+  { header: "Alta", value: (c) => c.joinedAt },
+];
 
 const { apiFetch } = useApi();
 const { confirm } = useConfirm();
@@ -234,7 +248,6 @@ function fmtDate(iso: string | null) {
       class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
     >
       <div>
-        <p class="text-sm uppercase tracking-widest text-muted">UrbanBlade</p>
         <h1 class="mt-1 text-2xl font-semibold text-ink">
           Gestión de <span class="text-gold">Clientes</span>
         </h1>
@@ -250,6 +263,14 @@ function fmtDate(iso: string | null) {
         + Nuevo Cliente
       </button>
     </header>
+    <div class="mb-3">
+      <UiExportCsvButton
+        endpoint="/admin/clients"
+        :query="{ search: search || undefined, segment: segment || undefined }"
+        :columns="exportColumns"
+        filename="clientes"
+      />
+    </div>
 
     <!-- Segmentación comercial: solo administración (ver authorizeAdmin()
          en ClientAdminController::getSegmentation). -->
@@ -270,7 +291,7 @@ function fmtDate(iso: string | null) {
         "
       >
         <p
-          class="mb-1 text-[10px] font-black uppercase tracking-wider text-muted"
+          class="mb-1 text-[11px] font-black uppercase tracking-wider text-muted"
         >
           {{ card.label }}
         </p>
@@ -280,7 +301,8 @@ function fmtDate(iso: string | null) {
 
     <section class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center">
       <input
-        v-model="search"
+v-model="search"
+        aria-label="Nombre o email"
         type="text"
         placeholder="Nombre o email..."
         class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink sm:max-w-xs"
@@ -311,23 +333,23 @@ function fmtDate(iso: string | null) {
       action-label="Reintentar"
       @action="refresh"
     />
-    <p v-if="actionError" role="alert" class="mb-4 text-sm text-red-400">
+    <p v-if="actionError" role="alert" class="mb-4 text-sm text-danger">
       {{ actionError }}
     </p>
 
     <section v-if="!pending && !error" class="ui-card overflow-x-auto">
-      <table class="w-full text-left text-sm">
+      <table aria-label="Clientes" class="w-full text-left text-sm">
         <thead>
           <tr
-            class="border-b border-line text-[10px] uppercase tracking-wider text-muted"
+            class="border-b border-line text-[11px] uppercase tracking-wider text-muted"
           >
-            <th class="px-4 py-3">Cliente</th>
-            <th class="px-4 py-3">Email</th>
-            <th class="px-4 py-3">Teléfono</th>
-            <th class="px-4 py-3 text-center">Segmento</th>
-            <th class="px-4 py-3 text-center">Citas</th>
-            <th class="px-4 py-3">Registrado</th>
-            <th class="px-4 py-3 text-right">Acciones</th>
+            <th scope="col" class="px-4 py-3">Cliente</th>
+            <th scope="col" class="px-4 py-3">Email</th>
+            <th scope="col" class="px-4 py-3">Teléfono</th>
+            <th scope="col" class="px-4 py-3 text-center">Segmento</th>
+            <th scope="col" class="px-4 py-3 text-center">Citas</th>
+            <th scope="col" class="px-4 py-3">Registrado</th>
+            <th scope="col" class="px-4 py-3 text-right">Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -348,7 +370,7 @@ function fmtDate(iso: string | null) {
             <td class="px-4 py-3 text-muted">{{ client.telefono ?? "—" }}</td>
             <td class="px-4 py-3 text-center">
               <span
-                class="rounded-full border px-2 py-0.5 text-[10px] font-black"
+                class="rounded-full border px-2 py-0.5 text-[11px] font-black"
                 :class="SEGMENT_CLASS[client.segment]"
                 >{{ SEGMENT_LABEL[client.segment] }}</span
               >
@@ -367,7 +389,7 @@ function fmtDate(iso: string | null) {
                 </NuxtLink>
                 <button
                   type="button"
-                  class="rounded-lg border border-line px-3 py-1 text-xs text-muted hover:text-ink"
+                  class="rounded-lg border border-line px-3 py-1 text-xs text-muted hover:text-ink min-h-10"
                   @click="openEdit(client)"
                 >
                   Editar
@@ -377,7 +399,7 @@ function fmtDate(iso: string | null) {
                 <button
                   v-if="isAdmin"
                   type="button"
-                  class="rounded-lg border border-red-500/20 px-3 py-1 text-xs text-red-400 hover:bg-red-500/10"
+                  class="rounded-lg border border-danger/20 px-3 py-1 text-xs text-danger hover:bg-danger/10 min-h-10"
                   @click="removeClient(client)"
                 >
                   Eliminar
@@ -430,13 +452,13 @@ function fmtDate(iso: string | null) {
               "
               :class="[
                 'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink',
-                fieldErrors.name ? 'border-red-500/60' : 'border-line',
+                fieldErrors.name ? 'border-danger/60' : 'border-line',
               ]"
             >
             <p
               v-if="fieldErrors.name"
               id="client-name-error"
-              class="mt-1 text-xs text-red-400"
+              class="mt-1 text-xs text-danger"
             >
               {{ fieldErrors.name[0] }}
             </p>
@@ -456,13 +478,13 @@ function fmtDate(iso: string | null) {
               "
               :class="[
                 'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink',
-                fieldErrors.email ? 'border-red-500/60' : 'border-line',
+                fieldErrors.email ? 'border-danger/60' : 'border-line',
               ]"
             >
             <p
               v-if="fieldErrors.email"
               id="client-email-error"
-              class="mt-1 text-xs text-red-400"
+              class="mt-1 text-xs text-danger"
             >
               {{ fieldErrors.email[0] }}
             </p>
@@ -481,13 +503,13 @@ function fmtDate(iso: string | null) {
               "
               :class="[
                 'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink',
-                fieldErrors.telefono ? 'border-red-500/60' : 'border-line',
+                fieldErrors.telefono ? 'border-danger/60' : 'border-line',
               ]"
             >
             <p
               v-if="fieldErrors.telefono"
               id="client-phone-error"
-              class="mt-1 text-xs text-red-400"
+              class="mt-1 text-xs text-danger"
             >
               {{ fieldErrors.telefono[0] }}
             </p>
@@ -509,18 +531,18 @@ function fmtDate(iso: string | null) {
               "
               :class="[
                 'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink',
-                fieldErrors.password ? 'border-red-500/60' : 'border-line',
+                fieldErrors.password ? 'border-danger/60' : 'border-line',
               ]"
             >
             <p
               v-if="fieldErrors.password"
               id="client-password-error"
-              class="mt-1 text-xs text-red-400"
+              class="mt-1 text-xs text-danger"
             >
               {{ fieldErrors.password[0] }}
             </p>
           </div>
-          <p v-if="formError" class="text-sm text-red-400">{{ formError }}</p>
+          <p v-if="formError" class="text-sm text-danger">{{ formError }}</p>
           <div class="mt-5 flex gap-3">
             <button
               type="submit"

@@ -65,8 +65,12 @@ const IMPLEMENTED_PATHS = new Set([
   '/my/appointments', '/barbers', '/my/invoices',
   '/campaigns', '/raffles', '/logs', '/settings', '/reports', '/analytics',
   '/social/feed', '/reviews', '/system', '/notifications', '/gift-cards', '/packages',
-  '/membership', '/admin/membership-plans', '/referrals', '/waitlist',
+  '/membership', '/admin/membership-plans', '/admin/moderacion', '/referrals', '/waitlist',
 ])
+
+function collapsibleSection(key: string, title: string, items: NavItem[]): NavSection {
+  return { key, title, collapsible: true, items }
+}
 
 function item(label: string, to: string, icon: string, primary = false, badge: number | null = null): NavItem {
   return { label, to, icon: ICONS[icon] ?? '', primary, badge, implemented: IMPLEMENTED_PATHS.has(to) }
@@ -102,7 +106,7 @@ export function useNavigation() {
         item('Dashboard', '/dashboard', 'dashboard', true),
         // El muro es editorial/operativo. Ingeniero ve telemetría agregada
         // cuando exista, nunca publicaciones ni acciones del feed.
-        ...(isEngineer.value ? [] : [item('Muro Inspiración', '/social/feed', 'wall')]),
+        ...(isEngineer.value ? [] : [item('Muro Inspiración', '/social/feed', 'wall', isClient.value)]),
         item('Notificaciones', '/notifications', 'notifications'),
       ],
     })
@@ -136,6 +140,7 @@ export function useNavigation() {
           item('Barberos', '/barbers/manage', 'barbers'),
           item('Planes de Membresía', '/admin/membership-plans', 'membership'),
           item('Reseñas', '/reviews', 'reviews'),
+          item('Moderación del muro', '/admin/moderacion', 'reviews'),
           item('Usuarios', '/users', 'users'),
           item('Servicios', '/services', 'services'),
           item('Productos', '/inventory/products', 'products'),
@@ -192,6 +197,7 @@ export function useNavigation() {
         collapsible: true,
         items: [
           item('Mi Agenda', '/barber/agenda', 'agenda', true),
+          item('Mi Calendario', '/appointments/calendar', 'calendar', true),
           item('Mi Portafolio', '/barber/portfolio', 'wall', true),
           item('Mi Horario', '/barber/schedule', 'schedule', true),
           // "Mi Perfil" se quitó de aquí (25-oct, confuso tener dos "Mi Perfil"): /profile ya
@@ -204,25 +210,27 @@ export function useNavigation() {
     }
 
     if (isClient.value) {
-      out.push({
-        key: 'mi-cuenta',
-        title: 'Mi Cuenta',
-        collapsible: true,
-        items: [
+      // Antes eran 12 enlaces en una sola lista. Se agrupan por lo que el cliente quiere hacer.
+      out.push(
+        collapsibleSection('cliente-reservar', 'Reservar', [
           item('Mis Citas', '/my/appointments', 'my_appointments', true),
-          item('Tienda', '/store', 'products'),
-          item('Carrito', '/cart', 'cart', true),
-          item('Mis Pedidos', '/my/orders', 'orders'),
-          item('Gift Cards', '/gift-cards', 'gift_cards'),
-          item('Paquetes', '/packages', 'packages'),
-          item('Membresía', '/membership', 'membership'),
-          item('Referidos', '/referrals', 'referrals'),
+          item('Nuestros Barberos', '/barbers', 'barbers_client'),
           item('Lista de Espera', '/waitlist', 'waitlist'),
-          item('Nuestros Barberos', '/barbers', 'barbers_client', true),
-          item('Mis Facturas', '/my/invoices', 'invoices'),
+        ]),
+        collapsibleSection('cliente-tienda', 'Tienda', [
+          item('Tienda', '/store', 'products', true),
+          item('Carrito', '/cart', 'cart'),
+          item('Mis Pedidos', '/my/orders', 'orders'),
+          item('Mis Recibos', '/my/invoices', 'invoices'),
+        ]),
+        collapsibleSection('cliente-beneficios', 'Beneficios', [
+          item('Membresía', '/membership', 'membership'),
+          item('Paquetes', '/packages', 'packages'),
+          item('Gift Cards', '/gift-cards', 'gift_cards'),
+          item('Referidos', '/referrals', 'referrals'),
           item('Recomendado para ti', '/analytics', 'analytics'),
-        ],
-      })
+        ]),
+      )
     }
 
     return out

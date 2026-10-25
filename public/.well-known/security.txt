@@ -1,0 +1,7 @@
+# Política de divulgación de vulnerabilidades de UrbanBlade (RFC 9116).
+# UrbanBlade es un proyecto académico: reporta cualquier hallazgo por correo, sin pruebas destructivas.
+Contact: mailto:al222310427@gmail.com
+Expires: 2027-10-24T00:00:00.000Z
+Preferred-Languages: es, en
+Canonical: https://urbanblade.com.mx/.well-known/security.txt
+Policy: https://urbanblade.com.mx/privacidad

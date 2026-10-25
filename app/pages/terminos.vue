@@ -106,6 +106,8 @@ const mailto = `mailto:${LEGAL.contactEmail}`
       <li>Solo puedes reseñar a un barbero con el que tuviste una cita completada.</li>
       <li>No publiques contenido falso, ofensivo, discriminatorio, con datos personales de otras personas o que infrinja derechos de terceros. Podemos retirar ese contenido.</li>
       <li>Al publicar nos das permiso de mostrar tu contenido dentro de UrbanBlade mientras no lo borres o no elimines tu cuenta.</li>
+      <li><strong>Reportar y bloquear:</strong> en el muro de la app puedes reportar cualquier comentario (spam, ofensivo, sexual o violento, otro) y bloquear al usuario que lo escribió para no volver a ver sus comentarios. Revisamos los reportes y eliminamos el contenido que incumpla estas reglas.</li>
+      <li>Podemos retirar contenido y vetar para comentar, o suspender, a quien publique contenido ofensivo, sexual, violento, discriminatorio o de acoso, o incumpla estas reglas repetidamente.</li>
       <li>Los barberos que publican fotos de trabajos en su portafolio declaran tener el consentimiento de las personas que aparecen en ellas.</li>
     </ul>
 

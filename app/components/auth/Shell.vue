@@ -49,7 +49,7 @@ onBeforeUnmount(() => {
         <div class="auth-shell__gridlines" aria-hidden="true" />
 
         <NuxtLink to="/" class="auth-shell__logo auth-shell__reveal" style="--d: 0s">
-          <BrandBrandMark class="h-11 w-11" />
+          <BrandMark class="h-11 w-11" />
           <div>
             <span class="auth-shell__logo-name">Urban<strong>Blade</strong></span>
           </div>
@@ -65,13 +65,7 @@ onBeforeUnmount(() => {
             <span>estilo</span>
             toma vida.
           </p>
-          <p class="auth-shell__subtitle auth-shell__reveal" style="--d: .24s">Más de una década perfeccionando el arte del grooming masculino. Tu próximo gran look comienza aquí.</p>
-
-          <div class="auth-shell__stats auth-shell__reveal" style="--d: .32s">
-            <div><p>500<span>+</span></p><span>Clientes felices</span></div>
-            <div><p>10<span>+</span></p><span>Años de experiencia</span></div>
-            <div><p>4.9</p><span>Calificación</span></div>
-          </div>
+          <p class="auth-shell__subtitle auth-shell__reveal" style="--d: .24s">Diseñado para que agendar tu próxima cita sea simple. Tu próximo gran look comienza aquí.</p>
         </div>
 
         <figure ref="mascotEl" class="auth-shell__mascot auth-shell__reveal" style="--d: .4s">
@@ -84,7 +78,7 @@ onBeforeUnmount(() => {
       <section class="auth-shell__form-side">
         <div class="auth-shell__mobile-logo auth-shell__reveal" style="--d: 0s">
           <NuxtLink to="/">
-            <BrandBrandMark class="mx-auto h-14 w-14" />
+            <BrandMark class="mx-auto h-14 w-14" />
           </NuxtLink>
           <div class="auth-shell__wordmark">Urban<strong>Blade</strong></div>
           <p>Acceso Exclusivo</p>

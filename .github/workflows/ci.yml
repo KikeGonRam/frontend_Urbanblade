@@ -46,6 +46,33 @@ jobs:
       - name: npm audit (high/critical)
         run: npm run audit:gate
 
+  # T090 (HT-28): pruebas unitarias y de componente con Vitest + Vue Test Utils (tests/). Cada formulario se monta
+  # solo, con sus dependencias simuladas; no necesita navegador ni servidor. Las pruebas de extremo a extremo
+  # siguen siendo Playwright (job e2e) y Cypress.
+  unitarias:
+    name: Pruebas unitarias y de componente (Vitest)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      # --ignore-scripts: ningún paquete de terceros corre scripts al instalarse (SonarCloud S6505). El único script
+      # propio que hace falta, `nuxt prepare` (tipos y alias de Nuxt), se ejecuta aparte en el paso siguiente.
+      - name: Install Node dependencies
+        run: npm ci --legacy-peer-deps --ignore-scripts
+
+      - name: Preparar Nuxt
+        run: ./node_modules/.bin/nuxt prepare
+
+      - name: Vitest
+        run: npm run test:unit
+
   contract:
     name: Contrato de API (tipos generados)
     runs-on: ubuntu-latest
@@ -107,3 +134,42 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 7
+
+  # T047 (HT-17): la imagen que se despliega a AWS se construye y se arranca en cada cambio, para enterarse
+  # aquí —y no en el despliegue— de que el Dockerfile se rompió, de que el servidor no levanta o de que
+  # volvió a correr como root. No publica nada: el despliegue a staging sigue siendo aparte (HT-18).
+  imagen-docker:
+    name: Imagen Docker (build y arranque)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Construir la imagen
+        run: docker build . --file Dockerfile --tag urbanblade/frontend-urban:${{ github.sha }}
+
+      - name: Arrancar el contenedor y esperar a que responda
+        run: |
+          docker run -d --name frontend-ci -p 3000:3000 \
+            -e NUXT_PUBLIC_API_BASE=http://localhost:8000/api/v1 \
+            urbanblade/frontend-urban:${{ github.sha }}
+          for i in $(seq 1 30); do
+            if curl -fsS http://localhost:3000/api/health; then
+              echo
+              exit 0
+            fi
+            sleep 3
+          done
+          echo "El servidor no respondió en /api/health. Registros del contenedor:"
+          docker logs frontend-ci
+          exit 1
+
+      - name: Comprobar que no corre como root
+        run: |
+          uid=$(docker exec frontend-ci id -u)
+          echo "uid del proceso: $uid"
+          test "$uid" != "0"
+
+      - name: Detener el contenedor
+        if: always()
+        run: docker rm -f frontend-ci

@@ -10,6 +10,8 @@
  */
 definePageMeta({ middleware: ["auth"], layout: "dashboard" });
 
+useSeoMeta({ title: 'Lista de espera — UrbanBlade', robots: 'noindex' })
+
 interface BarberRow {
   id: string;
   user: { id: string; name: string } | null;
@@ -36,11 +38,11 @@ const ESTADO_LABEL: Record<string, string> = {
   cancelado: "Cancelada",
 };
 const ESTADO_CLASS: Record<string, string> = {
-  activo: "border-amber-500/25 bg-amber-500/10 text-amber-300",
-  notificado: "border-sky-500/25 bg-sky-500/10 text-sky-300",
-  reservado: "border-emerald-500/25 bg-emerald-500/10 text-emerald-300",
+  activo: "border-warning/25 bg-warning/10 text-warning",
+  notificado: "border-info/25 bg-info/10 text-info",
+  reservado: "border-success/25 bg-success/10 text-success",
   expirado: "border-ink/15 bg-ink/5 text-ink/50",
-  cancelado: "border-red-500/25 bg-red-500/10 text-red-400",
+  cancelado: "border-danger/25 bg-danger/10 text-danger",
 };
 
 const { apiFetch } = useApi();
@@ -135,7 +137,6 @@ async function cancelEntry(entry: WaitlistEntry) {
 <template>
   <div class="p-4 sm:p-6 lg:p-8">
     <header class="mb-6">
-      <p class="text-sm uppercase tracking-widest text-muted">UrbanBlade</p>
       <h1 class="mt-1 text-2xl font-semibold text-ink">
         Lista de <span class="text-gold">Espera</span>
       </h1>
@@ -147,27 +148,27 @@ async function cancelEntry(entry: WaitlistEntry) {
     <section v-if="isClient" class="ui-card mb-6 p-5">
       <h2 class="mb-3 text-sm font-black uppercase text-ink">Anotarme</h2>
       <form class="grid grid-cols-1 gap-3 sm:grid-cols-4" @submit.prevent="submitJoin">
-        <select v-model="form.barberId" required class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
+        <select v-model="form.barberId" aria-label="Barbero" required class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
           <option value="" disabled>Barbero…</option>
           <option v-for="b in barbers" :key="b.id" :value="b.id">{{ b.user?.name }}</option>
         </select>
-        <select v-model="form.serviceId" required class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
+        <select v-model="form.serviceId" aria-label="Servicio" required class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
           <option value="" disabled>Servicio…</option>
           <option v-for="s in services" :key="s.id" :value="s.id">{{ s.nombre }}</option>
         </select>
-        <input v-model="form.fecha" type="date" required class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
+        <input v-model="form.fecha" aria-label="Fecha" type="date" required class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
         <button type="submit" class="ui-btn justify-center" :disabled="joining">
           {{ joining ? "…" : "Anotarme" }}
         </button>
       </form>
-      <p v-if="joinError" role="alert" class="mt-3 text-sm text-red-400">{{ joinError }}</p>
+      <p v-if="joinError" role="alert" class="mt-3 text-sm text-danger">{{ joinError }}</p>
     </section>
 
     <section>
       <h2 class="mb-3 text-sm font-black uppercase text-ink">
         {{ isStaff ? "Demanda en lista de espera" : "Mis anotaciones" }}
       </h2>
-      <p v-if="pending" class="text-sm text-muted">Cargando…</p>
+      <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando tu lista de espera…" />
       <BrandStatePanel
         v-else-if="error"
         mascot="bruno"
@@ -191,20 +192,20 @@ async function cancelEntry(entry: WaitlistEntry) {
               {{ entry.service.nombre }}
               <span class="text-muted">con {{ entry.barber.name }}</span>
             </p>
-            <p class="text-[10px] font-bold uppercase text-muted">
+            <p class="text-[11px] font-bold uppercase text-muted">
               {{ fmtDate(entry.fecha) }}
               <span v-if="isStaff"> · {{ entry.client.name }}</span>
             </p>
           </div>
           <div class="flex items-center gap-3">
             <span
-              class="rounded-full border px-2 py-0.5 text-[9px] font-black uppercase"
+              class="rounded-full border px-2 py-0.5 text-[11px] font-black uppercase"
               :class="ESTADO_CLASS[entry.estado]"
             >{{ ESTADO_LABEL[entry.estado] ?? entry.estado }}</span>
             <button
               v-if="isClient && (entry.estado === 'activo' || entry.estado === 'notificado')"
               type="button"
-              class="text-xs text-red-400 hover:underline"
+              class="text-xs text-danger hover:underline"
               :disabled="cancelling === entry.id"
               @click="cancelEntry(entry)"
             >

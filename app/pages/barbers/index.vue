@@ -7,6 +7,8 @@
  */
 definePageMeta({ middleware: ['auth'], layout: 'dashboard' })
 
+useSeoMeta({ title: 'Nuestros barberos — UrbanBlade', robots: 'noindex' })
+
 interface BarberRow {
   id: string
   slug: string | null
@@ -31,7 +33,6 @@ const barbers = computed(() => response.value?.data ?? [])
 <template>
   <div class="p-4 sm:p-6 lg:p-8">
     <header class="mb-6">
-      <p class="text-sm uppercase tracking-widest text-muted">UrbanBlade</p>
       <h1 class="mt-1 text-2xl font-semibold text-ink">Nuestros <span class="text-gold">Barberos</span></h1>
       <p class="mt-1 text-sm text-muted">Conoce al equipo y revisa su trabajo antes de reservar.</p>
     </header>

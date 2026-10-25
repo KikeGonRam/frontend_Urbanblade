@@ -11,6 +11,8 @@
  * la calcula el servidor, nunca esta pantalla.
  */
 definePageMeta({ middleware: ["auth", "staff"], layout: "dashboard" });
+useSeoMeta({ title: 'Corte de caja — UrbanBlade', robots: 'noindex' })
+
 
 interface Cierre {
   fecha: string;
@@ -223,14 +225,14 @@ function money(n: number | null | undefined) {
             <dt class="font-black uppercase tracking-widest text-ink">Diferencia</dt>
             <dd
               class="text-lg font-black"
-              :class="cierre.diferencia === 0 ? 'text-emerald-400' : 'text-red-400'"
+              :class="cierre.diferencia === 0 ? 'text-success' : 'text-danger'"
             >
               {{ cierre.diferencia > 0 ? "+" : "" }}{{ money(cierre.diferencia) }}
             </dd>
           </div>
         </dl>
         <p v-if="cierre.notas" class="mt-3 text-xs leading-5 text-muted">{{ cierre.notas }}</p>
-        <p v-if="cierre.cerrado_por_nombre" class="mt-2 text-[10px] font-bold uppercase tracking-widest text-muted">
+        <p v-if="cierre.cerrado_por_nombre" class="mt-2 text-[11px] font-bold uppercase tracking-widest text-muted">
           Cerró {{ cierre.cerrado_por_nombre }}
         </p>
       </section>
@@ -247,7 +249,7 @@ function money(n: number | null | undefined) {
 
         <div class="mt-4 grid gap-4 sm:grid-cols-2">
           <label class="block">
-            <span class="mb-1 block text-[10px] font-bold uppercase tracking-widest text-muted">
+            <span class="mb-1 block text-[11px] font-bold uppercase tracking-widest text-muted">
               Efectivo contado
             </span>
             <input
@@ -261,13 +263,13 @@ function money(n: number | null | undefined) {
             >
           </label>
           <div class="rounded-xl border border-dashed border-line p-3">
-            <span class="block text-[10px] font-bold uppercase tracking-widest text-muted">
+            <span class="block text-[11px] font-bold uppercase tracking-widest text-muted">
               Diferencia
             </span>
             <span
               v-if="diferenciaPreview !== null"
               class="mt-1 block text-xl font-black"
-              :class="diferenciaPreview === 0 ? 'text-emerald-400' : 'text-red-400'"
+              :class="diferenciaPreview === 0 ? 'text-success' : 'text-danger'"
             >
               {{ diferenciaPreview > 0 ? "+" : "" }}{{ money(diferenciaPreview) }}
             </span>
@@ -276,7 +278,7 @@ function money(n: number | null | undefined) {
         </div>
 
         <label class="mt-4 block">
-          <span class="mb-1 block text-[10px] font-bold uppercase tracking-widest text-muted">
+          <span class="mb-1 block text-[11px] font-bold uppercase tracking-widest text-muted">
             Observaciones
           </span>
           <textarea
@@ -288,7 +290,7 @@ function money(n: number | null | undefined) {
           />
         </label>
 
-        <p v-if="saveError" role="alert" class="mt-3 text-sm font-bold text-red-400">
+        <p v-if="saveError" role="alert" class="mt-3 text-sm font-bold text-danger">
           {{ saveError }}
         </p>
 

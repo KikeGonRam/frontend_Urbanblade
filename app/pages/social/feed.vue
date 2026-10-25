@@ -8,6 +8,8 @@
  */
 definePageMeta({ middleware: ['auth'], layout: 'dashboard' })
 
+useSeoMeta({ title: 'Muro Inspiración — UrbanBlade', robots: 'noindex' })
+
 interface Media { url: string, type: 'image' | 'video' }
 interface CommentPreview { id: string, comment: string, user: { name: string | null }, created_at: string | null }
 interface WorkRow {
@@ -124,7 +126,6 @@ async function submitComment(work: WorkRow) {
 <template>
   <div class="mx-auto max-w-xl p-4 sm:p-6 lg:p-8">
     <header class="mb-6">
-      <p class="text-sm uppercase tracking-widest text-muted">UrbanBlade</p>
       <h1 class="mt-1 text-2xl font-semibold text-ink">
         Muro de <span class="text-gold">Inspiración</span>
       </h1>
@@ -194,18 +195,19 @@ async function submitComment(work: WorkRow) {
             <li v-for="c in work.comments" :key="c.id" class="text-sm">
               <span class="font-bold text-ink">{{ c.user.name ?? 'Usuario' }}</span>
               <span class="ml-1.5 text-muted">{{ c.comment }}</span>
-              <span class="ml-1.5 text-[10px] text-muted">{{ fmtDate(c.created_at) }}</span>
+              <span class="ml-1.5 text-[11px] text-muted">{{ fmtDate(c.created_at) }}</span>
             </li>
           </ul>
 
           <form class="mt-3 flex gap-2" @submit.prevent="submitComment(work)">
             <input
-              v-model="commentDrafts[work.id]" type="text" maxlength="500" placeholder="Agrega un comentario…"
+v-model="commentDrafts[work.id]"
+              aria-label="Escribe un comentario" type="text" maxlength="500" placeholder="Agrega un comentario…"
               class="flex-1 rounded-lg border border-line bg-main px-3 py-1.5 text-sm text-ink"
             >
             <button
               type="submit" :disabled="commentSending[work.id] || !(commentDrafts[work.id] ?? '').trim()"
-              class="rounded-lg bg-gold px-3 py-1.5 text-sm font-semibold text-black disabled:opacity-50"
+              class="rounded-lg bg-gold px-3 py-1.5 text-sm font-semibold text-black disabled:opacity-50 min-h-10"
             >
               Enviar
             </button>
@@ -214,7 +216,7 @@ async function submitComment(work: WorkRow) {
       </article>
 
       <div v-if="hasMore || loadingMore || loadMoreError" class="flex flex-col items-center gap-3 pt-1">
-        <p v-if="loadMoreError" class="text-center text-sm text-red-400" role="alert">
+        <p v-if="loadMoreError" class="text-center text-sm text-danger" role="alert">
           {{ loadMoreError }}
         </p>
         <button

@@ -1,10 +1,13 @@
 <script setup lang="ts">
+import type { CsvColumn } from "~/composables/useCsvExport";
 /*
  * Fase 9.5 — gestión de inventario y productos, panel admin.
  * Api/Inventory/ProductController maneja el CRUD completo bajo
  * /inventory/products.
  */
 definePageMeta({ middleware: ["auth", "admin"], layout: "dashboard" });
+useSeoMeta({ title: 'Productos — UrbanBlade', robots: 'noindex' })
+
 
 interface ProductRow {
   id: string;
@@ -49,6 +52,17 @@ interface ProductsResponse {
     tipos: string[];
   };
 }
+
+const exportColumns: CsvColumn<ProductRow>[] = [
+  { header: "Producto", value: (p) => p.nombre },
+  { header: "Categoría", value: (p) => p.categoria },
+  { header: "Tipo", value: (p) => p.tipo },
+  { header: "Precio de compra", value: (p) => p.precio_compra },
+  { header: "Precio de venta", value: (p) => p.precio_venta },
+  { header: "Stock actual", value: (p) => p.stock_actual },
+  { header: "Stock mínimo", value: (p) => p.stock_minimo },
+  { header: "Activo", value: (p) => p.activo ?? true },
+];
 
 const { apiFetch } = useApi();
 const { confirm } = useConfirm();
@@ -255,7 +269,6 @@ async function removeProduct(product: ProductRow) {
       class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
     >
       <div>
-        <p class="text-sm uppercase tracking-widest text-muted">UrbanBlade</p>
         <h1 class="mt-1 text-2xl font-semibold text-ink">
           Gestión de <span class="text-gold">Inventario</span>
         </h1>
@@ -278,6 +291,14 @@ async function removeProduct(product: ProductRow) {
         </button>
       </div>
     </header>
+    <div class="mb-3">
+      <UiExportCsvButton
+        endpoint="/inventory/products"
+        :query="{ q: search || undefined, categoria: categoria || undefined, tipo: tipo || undefined, bajo_stock: soloBajoStock ? 1 : undefined }"
+        :columns="exportColumns"
+        filename="productos"
+      />
+    </div>
 
     <div
       v-if="actionNotice"
@@ -289,16 +310,16 @@ async function removeProduct(product: ProductRow) {
     <!-- Alerta de bajo stock -->
     <section
       v-if="lowStockItems.length"
-      class="mb-5 overflow-hidden rounded-2xl border border-amber-500/25 bg-amber-500/5"
+      class="mb-5 overflow-hidden rounded-2xl border border-warning/25 bg-warning/5"
     >
       <div
-        class="flex items-center gap-3 border-b border-amber-500/15 px-5 py-3"
+        class="flex items-center gap-3 border-b border-warning/15 px-5 py-3"
       >
-        <span class="text-sm font-black text-amber-300"
+        <span class="text-sm font-black text-warning"
           >Productos con stock bajo pendientes de atención</span
         >
       </div>
-      <ul class="divide-y divide-amber-500/10">
+      <ul class="divide-y divide-warning/10">
         <li
           v-for="item in lowStockItems"
           :key="item.id"
@@ -306,14 +327,14 @@ async function removeProduct(product: ProductRow) {
         >
           <div>
             <p class="text-sm font-bold text-ink">{{ item.nombre }}</p>
-            <p class="text-[10px] text-muted">
+            <p class="text-[11px] text-muted">
               {{ item.stock_actual }} en existencia / mín
               {{ item.stock_minimo }}
             </p>
           </div>
           <span
             v-if="item.pending_restock"
-            class="w-fit rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-emerald-400"
+            class="w-fit rounded-full border border-success/25 bg-success/10 px-3 py-1 text-[11px] font-black uppercase tracking-widest text-success"
           >
             Pedido en curso
           </span>
@@ -321,7 +342,7 @@ async function removeProduct(product: ProductRow) {
             v-else
             type="button"
             :disabled="marking === item.id"
-            class="w-fit rounded-lg border border-amber-500/30 px-3 py-1 text-xs font-bold text-amber-300 hover:bg-amber-500/10 disabled:opacity-50"
+            class="w-fit rounded-lg border border-warning/30 px-3 py-1 text-xs font-bold text-warning hover:bg-warning/10 disabled:opacity-50"
             @click="markOrdered(item)"
           >
             {{ marking === item.id ? "Marcando…" : "Marcar como pedido" }}
@@ -344,7 +365,7 @@ async function removeProduct(product: ProductRow) {
         <p class="text-xs font-semibold uppercase tracking-wider text-muted">
           Valor Inventario
         </p>
-        <p class="mt-2 text-2xl font-black text-emerald-400">
+        <p class="mt-2 text-2xl font-black text-success">
           {{ fmtMoney(stats.valor_inventario) }}
         </p>
       </div>
@@ -352,7 +373,7 @@ async function removeProduct(product: ProductRow) {
         <p class="text-xs font-semibold uppercase tracking-wider text-muted">
           Bajo Stock
         </p>
-        <p class="mt-2 text-2xl font-black text-amber-400">
+        <p class="mt-2 text-2xl font-black text-warning">
           {{ stats.bajo_stock }}
         </p>
       </div>
@@ -360,7 +381,7 @@ async function removeProduct(product: ProductRow) {
         <p class="text-xs font-semibold uppercase tracking-wider text-muted">
           Sin Stock
         </p>
-        <p class="mt-2 text-2xl font-black text-red-400">
+        <p class="mt-2 text-2xl font-black text-danger">
           {{ stats.sin_stock }}
         </p>
       </div>
@@ -416,17 +437,17 @@ async function removeProduct(product: ProductRow) {
 
     <!-- Tabla de productos -->
     <section v-if="!pending && !error" class="ui-card overflow-x-auto">
-      <table class="w-full text-left text-sm">
+      <table aria-label="Productos" class="w-full text-left text-sm">
         <thead>
           <tr
-            class="border-b border-line text-[10px] uppercase tracking-wider text-muted"
+            class="border-b border-line text-[11px] uppercase tracking-wider text-muted"
           >
-            <th class="px-4 py-3">Producto</th>
-            <th class="px-4 py-3">Categoría</th>
-            <th class="px-4 py-3 text-right">Precio</th>
-            <th class="px-4 py-3 text-center">Stock</th>
-            <th class="px-4 py-3 text-center">Tipo</th>
-            <th class="px-4 py-3 text-right">Acciones</th>
+            <th scope="col" class="px-4 py-3">Producto</th>
+            <th scope="col" class="px-4 py-3">Categoría</th>
+            <th scope="col" class="px-4 py-3 text-right">Precio</th>
+            <th scope="col" class="px-4 py-3 text-center">Stock</th>
+            <th scope="col" class="px-4 py-3 text-center">Tipo</th>
+            <th scope="col" class="px-4 py-3 text-right">Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -466,11 +487,11 @@ async function removeProduct(product: ProductRow) {
             </td>
             <td class="px-4 py-3 text-center">
               <span
-                class="rounded-full border px-2 py-0.5 text-[9px] font-black uppercase"
+                class="rounded-full border px-2 py-0.5 text-[11px] font-black uppercase"
                 :class="
                   product.stock_actual <= product.stock_minimo
-                    ? 'border-amber-500/25 bg-amber-500/10 text-amber-300'
-                    : 'border-emerald-500/25 bg-emerald-500/10 text-emerald-300'
+                    ? 'border-warning/25 bg-warning/10 text-warning'
+                    : 'border-success/25 bg-success/10 text-success'
                 "
               >
                 {{ product.stock_actual }}
@@ -478,7 +499,7 @@ async function removeProduct(product: ProductRow) {
             </td>
             <td class="px-4 py-3 text-center">
               <span
-                class="rounded-full border border-line bg-ink/5 px-2 py-0.5 text-[9px] font-black uppercase text-muted"
+                class="rounded-full border border-line bg-ink/5 px-2 py-0.5 text-[11px] font-black uppercase text-muted"
               >
                 {{ product.tipo === "venta_cliente" ? "Venta" : "Insumo" }}
               </span>
@@ -494,7 +515,7 @@ async function removeProduct(product: ProductRow) {
                 </button>
                 <button
                   type="button"
-                  class="rounded-lg border border-red-500/20 px-3 py-1 text-xs text-red-400 hover:bg-red-500/10"
+                  class="rounded-lg border border-danger/20 px-3 py-1 text-xs text-danger hover:bg-danger/10"
                   @click="removeProduct(product)"
                 >
                   Eliminar
@@ -552,11 +573,11 @@ async function removeProduct(product: ProductRow) {
               :class="[
                 'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-none',
                 fieldErrors.nombre
-                  ? 'border-red-500/60 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
+                  ? 'border-danger/60 focus:border-danger focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
                   : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]',
               ]"
             >
-            <p v-if="fieldErrors.nombre" class="mt-1 text-xs text-red-400">
+            <p v-if="fieldErrors.nombre" class="mt-1 text-xs text-danger">
               {{ fieldErrors.nombre[0] }}
             </p>
           </div>
@@ -578,14 +599,14 @@ async function removeProduct(product: ProductRow) {
                 :class="[
                   'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-none',
                   fieldErrors.categoria
-                    ? 'border-red-500/60 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
+                    ? 'border-danger/60 focus:border-danger focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
                     : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]',
                 ]"
               >
               <datalist id="prod-categories-list">
                 <option v-for="c in categorias" :key="c" :value="c" />
               </datalist>
-              <p v-if="fieldErrors.categoria" class="mt-1 text-xs text-red-400">
+              <p v-if="fieldErrors.categoria" class="mt-1 text-xs text-danger">
                 {{ fieldErrors.categoria[0] }}
               </p>
             </div>
@@ -648,13 +669,13 @@ async function removeProduct(product: ProductRow) {
                 :class="[
                   'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-none',
                   fieldErrors.precio_compra
-                    ? 'border-red-500/60 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
+                    ? 'border-danger/60 focus:border-danger focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
                     : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]',
                 ]"
               >
               <p
                 v-if="fieldErrors.precio_compra"
-                class="mt-1 text-xs text-red-400"
+                class="mt-1 text-xs text-danger"
               >
                 {{ fieldErrors.precio_compra[0] }}
               </p>
@@ -675,13 +696,13 @@ async function removeProduct(product: ProductRow) {
                 :class="[
                   'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-none',
                   fieldErrors.precio_venta
-                    ? 'border-red-500/60 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
+                    ? 'border-danger/60 focus:border-danger focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
                     : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]',
                 ]"
               >
               <p
                 v-if="fieldErrors.precio_venta"
-                class="mt-1 text-xs text-red-400"
+                class="mt-1 text-xs text-danger"
               >
                 {{ fieldErrors.precio_venta[0] }}
               </p>
@@ -704,13 +725,13 @@ async function removeProduct(product: ProductRow) {
                 :class="[
                   'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-none',
                   fieldErrors.stock_actual
-                    ? 'border-red-500/60 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
+                    ? 'border-danger/60 focus:border-danger focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
                     : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]',
                 ]"
               >
               <p
                 v-if="fieldErrors.stock_actual"
-                class="mt-1 text-xs text-red-400"
+                class="mt-1 text-xs text-danger"
               >
                 {{ fieldErrors.stock_actual[0] }}
               </p>
@@ -730,13 +751,13 @@ async function removeProduct(product: ProductRow) {
                 :class="[
                   'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-none',
                   fieldErrors.stock_minimo
-                    ? 'border-red-500/60 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
+                    ? 'border-danger/60 focus:border-danger focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
                     : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]',
                 ]"
               >
               <p
                 v-if="fieldErrors.stock_minimo"
-                class="mt-1 text-xs text-red-400"
+                class="mt-1 text-xs text-danger"
               >
                 {{ fieldErrors.stock_minimo[0] }}
               </p>
@@ -749,7 +770,7 @@ async function removeProduct(product: ProductRow) {
             description="Visible en el catálogo y la tienda"
           />
 
-          <p v-if="formError" class="text-xs text-red-400">{{ formError }}</p>
+          <p v-if="formError" class="text-xs text-danger">{{ formError }}</p>
 
           <div class="mt-6 flex justify-end gap-3 pt-2">
             <button

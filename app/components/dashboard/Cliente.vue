@@ -73,25 +73,50 @@ const safeProgress = computed(() =>
   Math.max(0, Math.min(100, Number(props.data.loyalty.progressPct) || 0)),
 );
 
+// Cuenta regresiva a la próxima cita. Se calcula en el cliente (después de montar) para que el
+// servidor y el navegador no discrepen en el texto por unos segundos de diferencia.
+const now = ref<Date | null>(null);
+onMounted(() => {
+  now.value = new Date();
+  const timer = setInterval(() => { now.value = new Date(); }, 60000);
+  onBeforeUnmount(() => clearInterval(timer));
+});
+const countdown = computed(() => {
+  const appt = props.data.nextAppointment;
+  if (!appt || !now.value) return "";
+  const at = new Date(`${String(appt.fecha).slice(0, 10)}T${appt.hora_inicio?.slice(0, 5) ?? "00:00"}:00`);
+  const minutes = Math.round((at.getTime() - now.value.getTime()) / 60000);
+  if (Number.isNaN(minutes)) return "";
+  if (minutes <= 0) return "Es hoy: ya es tu hora";
+  if (minutes < 60) return `Faltan ${minutes} minutos`;
+  if (minutes < 24 * 60) return `Faltan ${Math.floor(minutes / 60)} h ${minutes % 60} min`;
+  const days = Math.round(minutes / (24 * 60));
+
+  return days === 1 ? "Es mañana" : `Faltan ${days} días`;
+});
+
+const quickLinks = [
+  { label: "Reservar", to: "/my/appointments", icon: "M8 7V3m8 4V3M5 11h14M5 5h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2zm7 8v4m-2-2h4" },
+  { label: "Tienda", to: "/store", icon: "M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" },
+  { label: "Recibos", to: "/my/invoices", icon: "M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" },
+];
+
 const summaryCards = computed(() => {
   const k = props.data.kpis;
   const completion = Number(k.completion_rate ?? 0);
-  const cancellation = Number(k.cancellation_rate ?? 0);
 
   return [
-    { label: "Visitas", value: fmtInt(k.total_appointments), hint: `${fmtInt(k.completed_appointments)} completadas`, progress: null },
-    { label: "Asistencia", value: `${completion.toFixed(0)}%`, hint: "Citas a las que llegaste", progress: completion },
+    { label: "Visitas", value: fmtInt(k.total_appointments), hint: `${fmtInt(k.completed_appointments)} completadas` },
+    { label: "Asistencia", value: `${completion.toFixed(0)}%`, hint: "Citas a las que llegaste" },
     {
-      label: "Cancelaciones",
-      value: `${cancellation.toFixed(0)}%`,
-      hint: cancellation <= 20 ? "Dentro de lo normal" : "Cancela con tiempo para no perder beneficios",
-      progress: cancellation,
+      label: "Tu barbero",
+      value: k.favorite_barber && k.favorite_barber !== "—" ? k.favorite_barber.split(" ")[0] : "—",
+      hint: k.favorite_barber && k.favorite_barber !== "—" ? "Con quien más reservas" : "Aún sin favorito",
     },
     {
       label: "Puntos",
       value: fmtInt(props.data.loyalty.puntos),
       hint: props.data.loyalty.nextNivel ? `Rumbo a ${props.data.loyalty.nextNivelLabel}` : "Nivel máximo",
-      progress: props.data.loyalty.nextNivel ? safeProgress.value : null,
     },
   ];
 });
@@ -115,12 +140,12 @@ const benefits = computed(() => {
     },
     {
       active: isRegularOrAbove,
-      label: isRegularOrAbove ? "Reserva prio." : "Requiere Regular",
+      label: isRegularOrAbove ? "Reserva prioritaria" : "Requiere Regular",
       icon: "M13 10V3L4 14h7v7l9-11h-7z",
     },
     {
       active: nivel === "leyenda",
-      label: nivel === "leyenda" ? "Prod. gratis/mes" : "Requiere Leyenda",
+      label: nivel === "leyenda" ? "Producto gratis al mes" : "Requiere Leyenda",
       icon: "M20 12v10H4V12M22 7H2v5h20V7zM12 22V7m0 0a2 2 0 10-4 0m4 0a2 2 0 114 0",
     },
   ];
@@ -176,101 +201,108 @@ const visitChartOptions = {
 
 <template>
   <div class="space-y-5">
-    <DashboardHeader
-      label="Personal"
-      color="text-gold"
-      :today-label="data.todayLabel"
-    />
-
-    <section class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <p class="text-sm text-muted">
-        Hola, <span class="font-semibold text-ink">{{ firstName }}</span>. Aquí están tu próxima cita, tus puntos y tus beneficios.
-      </p>
-      <nav class="flex flex-wrap gap-2" aria-label="Accesos rápidos">
-        <NuxtLink to="/my/appointments" class="ui-btn min-h-10 px-4 text-sm">Reservar</NuxtLink>
-        <NuxtLink
-          v-for="a in [{ label: 'Mis citas', to: '/my/appointments' }, { label: 'Barberos', to: '/barbers' }, { label: 'Tienda', to: '/store' }]"
-          :key="a.label"
-          :to="a.to"
-          class="inline-flex min-h-10 items-center rounded-xl border border-line px-4 text-sm font-semibold text-ink transition-colors hover:border-gold/40"
-        >
-          {{ a.label }}
-        </NuxtLink>
-      </nav>
-    </section>
+    <header class="flex items-center justify-between gap-4">
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-[0.18em] text-muted">{{ data.todayLabel }}</p>
+        <h2 class="mt-1 text-2xl font-semibold text-ink">Hola, <span class="text-gold">{{ firstName }}</span></h2>
+      </div>
+      <NuxtLink to="/my/appointments" class="ui-btn hidden min-h-11 shrink-0 px-5 text-sm sm:inline-flex">Reservar cita</NuxtLink>
+    </header>
 
     <section class="grid grid-cols-1 gap-4 xl:grid-cols-12">
       <article
-        class="ub-rise overflow-hidden rounded-2xl border bg-card xl:col-span-7"
-        :class="data.nextAppointment ? 'border-gold/40' : 'border-dashed border-line'"
+        class="ub-rise rounded-2xl border bg-card p-6 xl:col-span-8"
+        :class="data.nextAppointment ? 'border-gold' : 'border-dashed border-line'"
         aria-label="Tu próxima cita"
       >
-        <div v-if="data.nextAppointment" class="grid md:grid-cols-[170px_1fr]">
-          <div class="flex items-center justify-center gap-5 bg-gold p-5 text-black md:flex-col md:gap-2">
-            <div class="text-center">
-              <p class="text-xs font-semibold opacity-70">Próxima cita</p>
-              <p class="text-4xl font-bold leading-none">{{ data.nextAppointment.day }}</p>
-              <p class="text-sm font-semibold uppercase opacity-80">{{ data.nextAppointment.monthShort }}</p>
-            </div>
-            <p class="text-2xl font-bold tabular-nums">{{ data.nextAppointment.hora_inicio?.slice(0, 5) }}</p>
-          </div>
-          <div class="flex flex-col justify-center gap-3 p-6">
-            <UiBadge :tone="appointmentStatus(data.nextAppointment.estado).tone" class="self-start">
+        <template v-if="data.nextAppointment">
+          <div class="flex items-start justify-between gap-3">
+            <p class="text-xs font-bold uppercase tracking-[0.18em] text-gold">Tu próxima cita</p>
+            <UiBadge :tone="appointmentStatus(data.nextAppointment.estado).tone">
               {{ appointmentStatus(data.nextAppointment.estado).label }}
             </UiBadge>
-            <div>
-              <h3 class="text-2xl font-semibold leading-tight text-ink">
-                {{ data.nextAppointment.service?.nombre ?? "Servicio" }}
-              </h3>
-              <p class="mt-1 text-sm text-muted">
-                Con <span class="font-semibold text-ink">{{ data.nextAppointment.barber?.user?.name ?? "tu barbero" }}</span>
-                · {{ data.nextAppointment.dateLong }}
-              </p>
-            </div>
-            <NuxtLink to="/my/appointments" class="self-start text-sm font-semibold text-gold hover:underline">
-              Ver o cambiar mi cita →
-            </NuxtLink>
           </div>
-        </div>
-        <div v-else class="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
+          <p class="mt-3 text-4xl font-semibold leading-none tracking-tight text-ink sm:text-5xl">
+            {{ data.nextAppointment.day }} <span class="uppercase">{{ data.nextAppointment.monthShort }}</span>
+            <span class="text-gold"> · {{ data.nextAppointment.hora_inicio?.slice(0, 5) }}</span>
+          </p>
+          <p class="mt-3 text-base text-muted">
+            {{ data.nextAppointment.service?.nombre ?? "Servicio" }} con
+            <span class="font-semibold text-ink">{{ data.nextAppointment.barber?.user?.name ?? "tu barbero" }}</span>
+          </p>
+          <p class="mt-0.5 text-sm text-muted">{{ data.nextAppointment.dateLong }}</p>
+          <p v-if="countdown" class="mt-4 inline-flex items-center gap-2 rounded-full border border-gold/30 bg-gold/10 px-3 py-1.5 text-sm font-semibold text-gold" role="status">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            {{ countdown }}
+          </p>
+          <div class="mt-5 flex flex-wrap gap-2">
+            <NuxtLink to="/my/appointments" class="ui-btn min-h-11 px-5 text-sm">Ver o cambiar mi cita</NuxtLink>
+            <NuxtLink to="/barbers" class="inline-flex min-h-11 items-center rounded-xl border border-line px-5 text-sm font-semibold text-ink transition-colors hover:border-gold/40">Nuestros barberos</NuxtLink>
+          </div>
+        </template>
+        <div v-else class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h3 class="text-lg font-semibold text-ink">No tienes citas próximas</h3>
+            <h3 class="text-xl font-semibold text-ink">No tienes citas próximas</h3>
             <p class="mt-1 text-sm text-muted">Reserva tu siguiente visita y mantén tu estilo.</p>
           </div>
-          <NuxtLink to="/my/appointments" class="ui-btn min-h-10 shrink-0 px-5 text-sm">Reservar</NuxtLink>
+          <NuxtLink to="/my/appointments" class="ui-btn min-h-11 shrink-0 px-5 text-sm">Reservar cita</NuxtLink>
         </div>
       </article>
 
-      <article class="ub-rise rounded-2xl border border-line bg-card p-6 xl:col-span-5" aria-label="Recomendación para ti">
-        <div class="flex items-center gap-2">
-          <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-gold/10 text-gold" aria-hidden="true">
-            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>
-          </span>
-          <p class="text-sm font-medium text-muted">Recomendación para ti</p>
-        </div>
-        <template v-if="data.recommendation">
-          <p class="mt-3 text-xl font-semibold leading-tight text-ink">{{ data.recommendation.valorDestacado }}</p>
-          <p class="mt-2 line-clamp-3 text-sm leading-relaxed text-muted">{{ data.recommendation.mensaje }}</p>
-        </template>
-        <template v-else>
-          <p class="mt-3 text-lg font-semibold text-ink">Aún conocemos poco de tus gustos</p>
-          <p class="mt-2 text-sm leading-relaxed text-muted">
-            Con algunas visitas más te sugeriremos servicios y productos según tu historial.
+      <article class="ub-rise flex flex-col justify-between rounded-2xl border border-line bg-card p-6 xl:col-span-4" aria-label="Tu nivel">
+        <div>
+          <p class="text-xs font-bold uppercase tracking-[0.18em] text-muted">Tu nivel</p>
+          <p class="mt-2 text-2xl font-semibold text-ink">{{ data.loyalty.nivelLabel }}</p>
+          <p class="mt-1 text-sm text-muted">
+            <template v-if="data.loyalty.nextNivel">
+              {{ data.loyalty.citasFaltan > 0
+                ? `Te faltan ${data.loyalty.citasFaltan} visita${data.loyalty.citasFaltan !== 1 ? "s" : ""} para ${data.loyalty.nextNivelLabel}`
+                : `Listo para subir a ${data.loyalty.nextNivelLabel}` }}
+            </template>
+            <template v-else>Tienes el nivel máximo.</template>
           </p>
-        </template>
+        </div>
+        <div class="mt-5">
+          <div class="flex items-center justify-between text-xs font-semibold text-muted">
+            <span>{{ fmtInt(data.loyalty.puntos) }} puntos</span>
+            <span class="tabular-nums text-gold">{{ Math.round(safeProgress) }}%</span>
+          </div>
+          <div class="mt-2 h-2 overflow-hidden rounded-full bg-ink/10" role="progressbar" :aria-valuenow="Math.round(safeProgress)" aria-valuemin="0" aria-valuemax="100" aria-label="Progreso al siguiente nivel">
+            <div class="h-full rounded-full bg-gold transition-[width] duration-700" :style="{ width: `${safeProgress}%` }" />
+          </div>
+        </div>
       </article>
     </section>
 
-    <section class="grid grid-cols-2 gap-3 xl:grid-cols-4" aria-label="Tu resumen">
-      <UiStatCard
-        v-for="card in summaryCards"
-        :key="card.label"
-        :label="card.label"
-        :value="card.value"
-        :hint="card.hint"
-        :progress="card.progress"
-      />
+    <nav class="grid grid-cols-3 gap-3" aria-label="Accesos rápidos">
+      <NuxtLink
+        v-for="l in quickLinks"
+        :key="l.to"
+        :to="l.to"
+        class="ub-rise flex min-h-24 flex-col items-center justify-center gap-2 rounded-2xl border border-line bg-card px-2 py-4 text-center text-sm font-semibold text-ink transition-colors hover:border-gold/50"
+      >
+        <svg class="h-6 w-6 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" :d="l.icon" /></svg>
+        {{ l.label }}
+      </NuxtLink>
+    </nav>
+
+    <section class="ub-rise grid grid-cols-2 divide-line rounded-2xl border border-line bg-card sm:grid-cols-4 sm:divide-x" aria-label="Tu resumen">
+      <div v-for="card in summaryCards" :key="card.label" class="p-4">
+        <p class="text-[11px] font-bold uppercase tracking-wide text-muted">{{ card.label }}</p>
+        <p class="mt-1 text-xl font-semibold tabular-nums text-ink">{{ card.value }}</p>
+        <p class="text-xs text-muted">{{ card.hint }}</p>
+      </div>
     </section>
+
+    <article v-if="data.recommendation" class="ub-rise flex items-start gap-3 rounded-2xl border border-gold/30 bg-gold/10 p-4" aria-label="Recomendación para ti">
+      <span class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gold/20 text-gold" aria-hidden="true">
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>
+      </span>
+      <div class="min-w-0">
+        <p class="text-sm font-semibold text-ink">{{ data.recommendation.valorDestacado }}</p>
+        <p class="mt-0.5 line-clamp-2 text-sm text-muted">{{ data.recommendation.mensaje }}</p>
+      </div>
+    </article>
 
     <section class="grid grid-cols-1 gap-4 lg:grid-cols-12">
       <UiChartCard
@@ -301,30 +333,9 @@ const visitChartOptions = {
           :download-url="data.member.downloadUrl"
         />
 
-        <section class="ub-rise space-y-4 rounded-2xl border border-line bg-card p-5" aria-labelledby="cliente-lealtad">
-          <div class="flex items-center gap-4">
-            <div
-              class="grid h-16 w-16 shrink-0 place-items-center rounded-full"
-              :style="{ background: `conic-gradient(var(--gold) ${Math.round(safeProgress)}%, rgb(var(--ink-rgb) / 0.1) 0)` }"
-              role="img"
-              :aria-label="`${Math.round(safeProgress)}% hacia el siguiente nivel`"
-            >
-              <span class="grid h-12 w-12 place-items-center rounded-full bg-card text-sm font-semibold tabular-nums text-ink">
-                {{ Math.round(safeProgress) }}%
-              </span>
-            </div>
-            <div class="min-w-0">
-              <h3 id="cliente-lealtad" class="text-base font-semibold text-ink">Nivel {{ data.loyalty.nivelLabel }}</h3>
-              <p v-if="data.loyalty.nextNivel" class="mt-0.5 text-sm text-muted">
-                {{ data.loyalty.citasFaltan > 0
-                  ? `Te faltan ${data.loyalty.citasFaltan} visita${data.loyalty.citasFaltan !== 1 ? "s" : ""} para ${data.loyalty.nextNivelLabel}`
-                  : `Listo para subir a ${data.loyalty.nextNivelLabel}` }}
-              </p>
-              <p v-else class="mt-0.5 text-sm text-muted">Tienes el nivel máximo. Sigue sumando beneficios.</p>
-            </div>
-          </div>
-
-          <ul class="grid grid-cols-2 gap-2" aria-label="Beneficios de tu nivel">
+        <section class="ub-rise space-y-4 rounded-2xl border border-line bg-card p-5" aria-labelledby="cliente-beneficios">
+          <h3 id="cliente-beneficios" class="text-base font-semibold text-ink">Beneficios de tu nivel</h3>
+          <ul class="grid grid-cols-2 gap-2">
             <li
               v-for="ben in benefits"
               :key="ben.label"
@@ -353,6 +364,18 @@ const visitChartOptions = {
               </li>
             </ul>
           </div>
+
+          <nav class="grid grid-cols-2 gap-2" aria-label="Tus beneficios y compras">
+            <NuxtLink
+              v-for="l in [{ label: 'Membresía', to: '/membership' }, { label: 'Paquetes', to: '/packages' }, { label: 'Gift Cards', to: '/gift-cards' }, { label: 'Referidos', to: '/referrals' }]"
+              :key="l.to"
+              :to="l.to"
+              class="flex min-h-11 items-center justify-between rounded-xl border border-line px-3 text-sm font-semibold text-ink transition-colors hover:border-gold/40"
+            >
+              {{ l.label }}
+              <span class="text-gold" aria-hidden="true">→</span>
+            </NuxtLink>
+          </nav>
 
           <div
             v-if="data.loyalty.wonRaffle"

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { CsvColumn } from "~/composables/useCsvExport";
 /*
  * Fase 9.5 — historial de movimientos de inventario, puerto de
  * Inventory\InventoryMovementController (web). Admin puede registrar
@@ -7,6 +8,8 @@
  * del lado servidor, aquí solo se oculta la opción para no invitar un 422.
  */
 definePageMeta({ middleware: ["auth", "staff"], layout: "dashboard" });
+useSeoMeta({ title: 'Movimientos de inventario — UrbanBlade', robots: 'noindex' })
+
 
 interface MovementRow {
   id: string;
@@ -45,6 +48,16 @@ interface LowStockItem {
   pending_restock: boolean;
 }
 
+const exportColumns: CsvColumn<MovementRow>[] = [
+  { header: "Fecha", value: (m) => m.fecha },
+  { header: "Tipo", value: (m) => m.tipo },
+  { header: "Producto", value: (m) => m.product.nombre },
+  { header: "Cantidad", value: (m) => m.cantidad },
+  { header: "Motivo", value: (m) => m.motivo },
+  { header: "Registrado por", value: (m) => m.user.name },
+  { header: "Cliente de la cita", value: (m) => m.appointment.client },
+];
+
 const { apiFetch } = useApi();
 const { hasRole } = useAuth();
 const isAdmin = computed(() => hasRole("administrador"));
@@ -53,6 +66,8 @@ const search = ref("");
 const debouncedSearch = useDebounce(search, 350);
 const tipoFilter = ref("");
 const productFilter = ref("");
+const fechaDesde = ref("");
+const fechaHasta = ref("");
 const page = ref(1);
 
 const {
@@ -65,6 +80,8 @@ const {
     q: search.value || undefined,
     tipo: tipoFilter.value || undefined,
     product_id: productFilter.value || undefined,
+    fecha_desde: fechaDesde.value || undefined,
+    fecha_hasta: fechaHasta.value || undefined,
     page: page.value,
     per_page: 15,
   }),
@@ -74,17 +91,19 @@ const {
         q: search.value || undefined,
         tipo: tipoFilter.value || undefined,
         product_id: productFilter.value || undefined,
+    fecha_desde: fechaDesde.value || undefined,
+    fecha_hasta: fechaHasta.value || undefined,
         page: page.value,
         per_page: 15,
       },
     }),
-  { watch: [debouncedSearch, tipoFilter, productFilter, page], lazy: true },
+  { watch: [debouncedSearch, tipoFilter, productFilter, fechaDesde, fechaHasta, page], lazy: true },
 );
 const movements = computed(() => response.value?.data ?? []);
 const stats = computed(() => response.value?.meta.stats);
 const pagination = computed(() => response.value?.meta);
 
-watch([debouncedSearch, tipoFilter, productFilter], () => {
+watch([debouncedSearch, tipoFilter, productFilter, fechaDesde, fechaHasta], () => {
   page.value = 1;
 });
 
@@ -109,6 +128,8 @@ function clearFilters() {
   search.value = "";
   tipoFilter.value = "";
   productFilter.value = "";
+  fechaDesde.value = "";
+  fechaHasta.value = "";
   page.value = 1;
 }
 
@@ -210,7 +231,6 @@ async function submitForm() {
       class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
     >
       <div>
-        <p class="text-sm uppercase tracking-widest text-muted">UrbanBlade</p>
         <h1 class="mt-1 text-2xl font-semibold text-ink">
           Movimientos de <span class="text-gold">Inventario</span>
         </h1>
@@ -234,22 +254,30 @@ async function submitForm() {
         </button>
       </div>
     </header>
-    <p v-if="actionError" role="alert" class="mb-4 text-sm text-red-400">
+    <div class="mb-3">
+      <UiExportCsvButton
+        endpoint="/inventory/movements"
+        :query="{ q: search || undefined, tipo: tipoFilter || undefined, product_id: productFilter || undefined, fecha_desde: fechaDesde || undefined, fecha_hasta: fechaHasta || undefined }"
+        :columns="exportColumns"
+        filename="movimientos-inventario"
+      />
+    </div>
+    <p v-if="actionError" role="alert" class="mb-4 text-sm text-danger">
       {{ actionError }}
     </p>
 
     <section
       v-if="lowStockItems.length"
-      class="mb-5 overflow-hidden rounded-2xl border border-amber-500/25 bg-amber-500/5"
+      class="mb-5 overflow-hidden rounded-2xl border border-warning/25 bg-warning/5"
     >
       <div
-        class="flex items-center gap-3 border-b border-amber-500/15 px-5 py-3"
+        class="flex items-center gap-3 border-b border-warning/15 px-5 py-3"
       >
-        <span class="text-sm font-black text-amber-300"
+        <span class="text-sm font-black text-warning"
           >Productos con stock bajo pendientes de atención</span
         >
       </div>
-      <ul class="divide-y divide-amber-500/10">
+      <ul class="divide-y divide-warning/10">
         <li
           v-for="item in lowStockItems"
           :key="item.id"
@@ -257,13 +285,13 @@ async function submitForm() {
         >
           <div>
             <p class="text-sm font-bold text-ink">{{ item.nombre }}</p>
-            <p class="text-[10px] text-muted">
+            <p class="text-[11px] text-muted">
               {{ item.stock_actual }} / mín {{ item.stock_minimo }}
             </p>
           </div>
           <span
             v-if="item.pending_restock"
-            class="w-fit rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-emerald-400"
+            class="w-fit rounded-full border border-success/25 bg-success/10 px-3 py-1 text-[11px] font-black uppercase tracking-widest text-success"
           >
             Pedido en curso
           </span>
@@ -271,7 +299,7 @@ async function submitForm() {
             v-else
             type="button"
             :disabled="marking === item.id"
-            class="w-fit rounded-lg border border-amber-500/30 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-amber-300 hover:bg-amber-500/10 disabled:opacity-50"
+            class="w-fit rounded-lg border border-warning/30 px-3 py-1.5 text-[11px] font-black uppercase tracking-widest text-warning hover:bg-warning/10 disabled:opacity-50"
             @click="markOrdered(item)"
           >
             Marcar como pedido
@@ -283,7 +311,7 @@ async function submitForm() {
     <section v-if="stats" class="mb-5 grid grid-cols-2 gap-4 sm:grid-cols-4">
       <div class="rounded-2xl border border-line bg-card p-4">
         <p
-          class="mb-1 text-[10px] font-black uppercase tracking-wider text-muted"
+          class="mb-1 text-[11px] font-black uppercase tracking-wider text-muted"
         >
           Total
         </p>
@@ -291,23 +319,23 @@ async function submitForm() {
       </div>
       <div class="rounded-2xl border border-line bg-card p-4">
         <p
-          class="mb-1 text-[10px] font-black uppercase tracking-wider text-muted"
+          class="mb-1 text-[11px] font-black uppercase tracking-wider text-muted"
         >
           Entradas
         </p>
-        <p class="text-2xl font-black text-emerald-400">{{ stats.entradas }}</p>
+        <p class="text-2xl font-black text-success">{{ stats.entradas }}</p>
       </div>
       <div class="rounded-2xl border border-line bg-card p-4">
         <p
-          class="mb-1 text-[10px] font-black uppercase tracking-wider text-muted"
+          class="mb-1 text-[11px] font-black uppercase tracking-wider text-muted"
         >
           Salidas
         </p>
-        <p class="text-2xl font-black text-amber-400">{{ stats.salidas }}</p>
+        <p class="text-2xl font-black text-warning">{{ stats.salidas }}</p>
       </div>
       <div class="rounded-2xl border border-line bg-card p-4">
         <p
-          class="mb-1 text-[10px] font-black uppercase tracking-wider text-muted"
+          class="mb-1 text-[11px] font-black uppercase tracking-wider text-muted"
         >
           Hoy
         </p>
@@ -349,8 +377,22 @@ async function submitForm() {
           {{ p.nombre }}
         </option>
       </select>
+      <label for="movement-filter-from" class="sr-only">Desde</label>
+      <input
+        id="movement-filter-from"
+        v-model="fechaDesde"
+        type="date"
+        class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
+      >
+      <label for="movement-filter-to" class="sr-only">Hasta</label>
+      <input
+        id="movement-filter-to"
+        v-model="fechaHasta"
+        type="date"
+        class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
+      >
       <button
-        v-if="search || tipoFilter || productFilter"
+        v-if="search || tipoFilter || productFilter || fechaDesde || fechaHasta"
         type="button"
         class="text-xs font-bold uppercase tracking-widest text-muted hover:text-ink"
         @click="clearFilters"
@@ -372,17 +414,17 @@ async function submitForm() {
     />
 
     <section v-if="!pending && !error" class="ui-card overflow-x-auto">
-      <table class="w-full text-left text-sm">
+      <table aria-label="Movimientos de inventario" class="w-full text-left text-sm">
         <thead>
           <tr
-            class="border-b border-line text-[10px] uppercase tracking-wider text-muted"
+            class="border-b border-line text-[11px] uppercase tracking-wider text-muted"
           >
-            <th class="px-4 py-3">Fecha</th>
-            <th class="px-4 py-3">Producto</th>
-            <th class="px-4 py-3">Tipo</th>
-            <th class="px-4 py-3 text-right">Cantidad</th>
-            <th class="px-4 py-3">Motivo</th>
-            <th class="px-4 py-3">Responsable</th>
+            <th scope="col" class="px-4 py-3">Fecha</th>
+            <th scope="col" class="px-4 py-3">Producto</th>
+            <th scope="col" class="px-4 py-3">Tipo</th>
+            <th scope="col" class="px-4 py-3 text-right">Cantidad</th>
+            <th scope="col" class="px-4 py-3">Motivo</th>
+            <th scope="col" class="px-4 py-3">Responsable</th>
           </tr>
         </thead>
         <tbody>
@@ -399,11 +441,11 @@ async function submitForm() {
             </td>
             <td class="px-4 py-3">
               <span
-                class="rounded-full border px-2 py-0.5 text-[9px] font-black uppercase"
+                class="rounded-full border px-2 py-0.5 text-[11px] font-black uppercase"
                 :class="
                   movement.tipo === 'entrada'
-                    ? 'border-emerald-500/25 bg-emerald-500/10 text-emerald-300'
-                    : 'border-amber-500/25 bg-amber-500/10 text-amber-300'
+                    ? 'border-success/25 bg-success/10 text-success'
+                    : 'border-warning/25 bg-warning/10 text-warning'
                 "
               >
                 {{ movement.tipo }}
@@ -438,7 +480,7 @@ async function submitForm() {
 
     <UiModal v-if="showForm" title="Nuevo movimiento" :busy="saving" @close="closeForm">
       <div class="mb-6 rounded-xl border border-gold/20 bg-gold/5 p-4">
-        <p class="text-[10px] font-black uppercase tracking-[0.2em] text-gold">Control de inventario</p>
+        <p class="text-[11px] font-black uppercase tracking-[0.2em] text-gold">Control de inventario</p>
         <p class="mt-1 text-sm leading-relaxed text-muted">Registra una entrada o salida con los datos que admite el sistema.</p>
       </div>
         <form class="space-y-3" @submit.prevent="submitForm">
@@ -456,7 +498,7 @@ async function submitForm() {
               "
               :class="[
                 'ui-input w-full',
-                fieldErrors.product_id ? 'border-red-500/60' : 'border-line',
+                fieldErrors.product_id ? 'border-danger/60' : 'border-line',
               ]"
             >
               <option value="" disabled>Selecciona…</option>
@@ -467,7 +509,7 @@ async function submitForm() {
             <p
               v-if="fieldErrors.product_id"
               id="movement-product-error"
-              class="mt-1 text-xs text-red-400"
+              class="mt-1 text-xs text-danger"
             >
               {{ fieldErrors.product_id[0] }}
             </p>
@@ -485,7 +527,7 @@ async function submitForm() {
               "
               :class="[
                 'ui-input w-full',
-                fieldErrors.tipo ? 'border-red-500/60' : 'border-line',
+                fieldErrors.tipo ? 'border-danger/60' : 'border-line',
               ]"
             >
               <option value="salida">Salida (consumo)</option>
@@ -496,11 +538,11 @@ async function submitForm() {
             <p
               v-if="fieldErrors.tipo"
               id="movement-type-error"
-              class="mt-1 text-xs text-red-400"
+              class="mt-1 text-xs text-danger"
             >
               {{ fieldErrors.tipo[0] }}
             </p>
-            <p v-if="!isAdmin" class="mt-1 text-[10px] italic text-muted">
+            <p v-if="!isAdmin" class="mt-1 text-[11px] italic text-muted">
               Recepción solo puede registrar salidas.
             </p>
           </div>
@@ -520,13 +562,13 @@ async function submitForm() {
               "
               :class="[
                 'ui-input w-full',
-                fieldErrors.cantidad ? 'border-red-500/60' : 'border-line',
+                fieldErrors.cantidad ? 'border-danger/60' : 'border-line',
               ]"
             >
             <p
               v-if="fieldErrors.cantidad"
               id="movement-quantity-error"
-              class="mt-1 text-xs text-red-400"
+              class="mt-1 text-xs text-danger"
             >
               {{ fieldErrors.cantidad[0] }}
             </p>
@@ -546,13 +588,13 @@ async function submitForm() {
               "
               :class="[
                 'ui-input w-full',
-                fieldErrors.motivo ? 'border-red-500/60' : 'border-line',
+                fieldErrors.motivo ? 'border-danger/60' : 'border-line',
               ]"
             >
             <p
               v-if="fieldErrors.motivo"
               id="movement-reason-error"
-              class="mt-1 text-xs text-red-400"
+              class="mt-1 text-xs text-danger"
             >
               {{ fieldErrors.motivo[0] }}
             </p>
@@ -560,18 +602,18 @@ async function submitForm() {
           <div class="grid gap-3 sm:grid-cols-2">
             <div>
               <label for="movement-appointment" class="mb-1 block text-xs text-muted">Cita asociada (opcional)</label>
-              <input id="movement-appointment" v-model="form.appointment_id" type="text" placeholder="ID de la cita" :aria-invalid="!!fieldErrors.appointment_id" :class="['ui-input w-full', fieldErrors.appointment_id ? 'border-red-500/60' : '']">
-              <p class="mt-1 text-[10px] text-muted">Úsalo si corresponde al consumo de una cita.</p>
-              <p v-if="fieldErrors.appointment_id" class="mt-1 text-xs text-red-400">{{ fieldErrors.appointment_id[0] }}</p>
+              <input id="movement-appointment" v-model="form.appointment_id" type="text" placeholder="ID de la cita" :aria-invalid="!!fieldErrors.appointment_id" :class="['ui-input w-full', fieldErrors.appointment_id ? 'border-danger/60' : '']">
+              <p class="mt-1 text-[11px] text-muted">Úsalo si corresponde al consumo de una cita.</p>
+              <p v-if="fieldErrors.appointment_id" class="mt-1 text-xs text-danger">{{ fieldErrors.appointment_id[0] }}</p>
             </div>
             <div>
               <label for="movement-date" class="mb-1 block text-xs text-muted">Fecha del movimiento (opcional)</label>
-              <input id="movement-date" v-model="form.fecha" type="date" :aria-invalid="!!fieldErrors.fecha" :class="['ui-input w-full', fieldErrors.fecha ? 'border-red-500/60' : '']">
-              <p class="mt-1 text-[10px] text-muted">Vacío = fecha actual.</p>
-              <p v-if="fieldErrors.fecha" class="mt-1 text-xs text-red-400">{{ fieldErrors.fecha[0] }}</p>
+              <input id="movement-date" v-model="form.fecha" type="date" :aria-invalid="!!fieldErrors.fecha" :class="['ui-input w-full', fieldErrors.fecha ? 'border-danger/60' : '']">
+              <p class="mt-1 text-[11px] text-muted">Vacío = fecha actual.</p>
+              <p v-if="fieldErrors.fecha" class="mt-1 text-xs text-danger">{{ fieldErrors.fecha[0] }}</p>
             </div>
           </div>
-          <p v-if="formError" role="alert" class="text-sm text-red-400">
+          <p v-if="formError" role="alert" class="text-sm text-danger">
             {{ formError }}
           </p>
           <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row">

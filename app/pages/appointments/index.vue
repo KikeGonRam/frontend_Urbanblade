@@ -15,6 +15,8 @@
 import type { ApiAppointment } from "~/types/contract";
 
 definePageMeta({ middleware: ["auth", "staff"], layout: "dashboard" });
+useSeoMeta({ title: 'Citas — UrbanBlade', robots: 'noindex' })
+
 
 // Derivado del OpenAPI de barber (npm run contract:types), no escrito a mano.
 type AppointmentRow = ApiAppointment;
@@ -28,12 +30,12 @@ const ESTADO_LABEL: Record<string, string> = {
   no_asistio: "No Asistió",
 };
 const ESTADO_CLASS: Record<string, string> = {
-  pendiente: "border-amber-500/25 bg-amber-500/10 text-amber-300",
-  confirmada: "border-blue-500/25 bg-blue-500/10 text-blue-300",
-  en_proceso: "border-sky-500/25 bg-sky-500/10 text-sky-300",
-  completada: "border-emerald-500/25 bg-emerald-500/10 text-emerald-300",
-  cancelada: "border-red-500/25 bg-red-500/10 text-red-400",
-  no_asistio: "border-orange-500/25 bg-orange-500/10 text-orange-300",
+  pendiente: "border-warning/25 bg-warning/10 text-warning",
+  confirmada: "border-info/25 bg-info/10 text-info",
+  en_proceso: "border-info/25 bg-info/10 text-info",
+  completada: "border-success/25 bg-success/10 text-success",
+  cancelada: "border-danger/25 bg-danger/10 text-danger",
+  no_asistio: "border-warning/25 bg-warning/10 text-warning",
 };
 const ESTADOS = Object.keys(ESTADO_LABEL);
 
@@ -163,6 +165,9 @@ watch(clientQuery, (q) => {
     }
   }, 350);
 });
+
+// Cita abierta en la ventana de detalle (se toca el nombre del cliente).
+const detailCode = ref("");
 
 // ── Crear / editar ───────────────────────────────────────────────────────
 const showForm = ref(false);
@@ -386,7 +391,6 @@ onBeforeUnmount(() => {
       class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
     >
       <div>
-        <p class="text-sm uppercase tracking-widest text-muted">UrbanBlade</p>
         <h1 class="mt-1 text-2xl font-semibold text-ink">
           Citas & <span class="text-gold">Reservas</span>
         </h1>
@@ -405,7 +409,8 @@ onBeforeUnmount(() => {
 
     <section class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center">
       <select
-        v-model="estadoFilter"
+v-model="estadoFilter"
+        aria-label="Filtrar por estado"
         class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
       >
         <option value="">Todos los estados</option>
@@ -414,7 +419,8 @@ onBeforeUnmount(() => {
         </option>
       </select>
       <select
-        v-model="barberFilter"
+v-model="barberFilter"
+        aria-label="Filtrar por barbero"
         class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
       >
         <option value="">Todos los barberos</option>
@@ -440,7 +446,7 @@ onBeforeUnmount(() => {
 
     <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando citas…" />
     <BrandStatePanel v-else-if="error" mascot="bruno" state="error" tone="danger" title="No se pudo cargar la lista de citas" description="Inténtalo nuevamente en unos minutos." />
-    <p v-if="actionError" role="alert" class="mb-4 text-sm text-red-400">
+    <p v-if="actionError" role="alert" class="mb-4 text-sm text-danger">
       {{ actionError }}
     </p>
 
@@ -448,7 +454,7 @@ onBeforeUnmount(() => {
       <table class="w-full text-left text-sm">
         <thead>
           <tr
-            class="border-b border-line text-[10px] uppercase tracking-wider text-muted"
+            class="border-b border-line text-[11px] uppercase tracking-wider text-muted"
           >
             <th class="px-4 py-3">Fecha</th>
             <th class="px-4 py-3">Hora</th>
@@ -470,7 +476,14 @@ onBeforeUnmount(() => {
               {{ appt.hora_inicio?.slice(0, 5) }}
             </td>
             <td class="px-4 py-3 font-bold text-ink">
-              {{ appt.client.user.name ?? "—" }}
+              <button
+                type="button"
+                class="rounded text-left underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+                :aria-label="`Ver detalle de la cita de ${appt.client.user.name ?? 'este cliente'}`"
+                @click="detailCode = appt.code"
+              >
+                {{ appt.client.user.name ?? "—" }}
+              </button>
             </td>
             <td class="px-4 py-3 text-muted">
               {{ appt.service.nombre ?? "—" }}
@@ -480,7 +493,7 @@ onBeforeUnmount(() => {
             </td>
             <td class="px-4 py-3 text-center">
               <span
-                class="rounded-full border px-2 py-0.5 text-[10px] font-black"
+                class="rounded-full border px-2 py-0.5 text-[11px] font-black"
                 :class="ESTADO_CLASS[appt.estado]"
                 >{{ ESTADO_LABEL[appt.estado] ?? appt.estado }}</span
               >
@@ -514,7 +527,7 @@ onBeforeUnmount(() => {
                 <NuxtLink
                   v-if="COBRABLES.includes(appt.estado)"
                   :to="`/payments?cita=${appt.id}`"
-                  class="flex min-h-9 items-center rounded-lg border border-emerald-500/30 px-3 py-1 text-xs font-bold text-emerald-300 transition-colors hover:bg-emerald-500/10"
+                  class="flex min-h-9 items-center rounded-lg border border-success/30 px-3 py-1 text-xs font-bold text-success transition-colors hover:bg-success/10"
                 >
                   Cobrar
                 </NuxtLink>
@@ -528,7 +541,7 @@ onBeforeUnmount(() => {
                 <button
                   v-if="TRANSICIONES[appt.estado]?.includes('cancelada')"
                   type="button"
-                  class="min-h-9 rounded-lg border border-red-500/20 px-3 py-1 text-xs text-red-400 hover:bg-red-500/10"
+                  class="min-h-9 rounded-lg border border-danger/20 px-3 py-1 text-xs text-danger hover:bg-danger/10"
                   @click="cancelAppointment(appt)"
                 >
                   Cancelar
@@ -538,7 +551,7 @@ onBeforeUnmount(() => {
                    transferencia o aún no es la hora. Cobrar se hace con el botón de arriba. -->
               <p
                 v-if="appt.estado === 'confirmada' && appt.puede_iniciar === false && appt.motivo_no_iniciar"
-                class="mt-1 text-right text-[11px] text-amber-300"
+                class="mt-1 text-right text-[11px] text-warning"
               >
                 {{ appt.motivo_no_iniciar }}
               </p>
@@ -580,7 +593,8 @@ onBeforeUnmount(() => {
             </div>
             <template v-else>
               <input
-                v-model="clientQuery"
+v-model="clientQuery"
+                aria-label="Buscar cliente por nombre o correo"
                 type="text"
                 placeholder="Buscar por nombre o email…"
                 class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
@@ -605,7 +619,8 @@ onBeforeUnmount(() => {
             <div>
               <label class="mb-1 block text-xs text-muted">Barbero</label>
               <select
-                v-model="form.barber_id"
+v-model="form.barber_id"
+                aria-label="Barbero"
                 required
                 class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
               >
@@ -618,7 +633,8 @@ onBeforeUnmount(() => {
             <div>
               <label class="mb-1 block text-xs text-muted">Servicio</label>
               <select
-                v-model="form.service_id"
+v-model="form.service_id"
+                aria-label="Servicio"
                 required
                 class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
               >
@@ -633,7 +649,8 @@ onBeforeUnmount(() => {
             <div>
               <label class="mb-1 block text-xs text-muted">Fecha</label>
               <input
-                v-model="form.fecha"
+v-model="form.fecha"
+                aria-label="Fecha"
                 type="date"
                 required
                 class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
@@ -642,7 +659,8 @@ onBeforeUnmount(() => {
             <div>
               <label class="mb-1 block text-xs text-muted">Hora</label>
               <input
-                v-model="form.hora_inicio"
+v-model="form.hora_inicio"
+                aria-label="Hora de inicio"
                 type="time"
                 required
                 list="horarios-libres"
@@ -657,7 +675,7 @@ onBeforeUnmount(() => {
                   {{ slot.label }}
                 </option>
               </datalist>
-              <p v-if="horaOcupada" class="mt-1 text-xs text-amber-400">
+              <p v-if="horaOcupada" class="mt-1 text-xs text-warning">
                 Ese horario no aparece libre para este barbero. Puedes
                 continuar; el sistema lo rechazará si ya está tomado.
               </p>
@@ -669,7 +687,8 @@ onBeforeUnmount(() => {
           <div>
             <label class="mb-1 block text-xs text-muted">Estado</label>
             <select
-              v-model="form.estado"
+v-model="form.estado"
+              aria-label="Estado de la cita"
               class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
             >
               <option v-for="e in ESTADOS" :key="e" :value="e">
@@ -680,12 +699,13 @@ onBeforeUnmount(() => {
           <div>
             <label class="mb-1 block text-xs text-muted">Notas</label>
             <textarea
-              v-model="form.notas"
+v-model="form.notas"
+              aria-label="Notas"
               rows="2"
               class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
             />
           </div>
-          <p v-if="formError" class="text-sm text-red-400">{{ formError }}</p>
+          <p v-if="formError" class="text-sm text-danger">{{ formError }}</p>
           <div class="mt-5 flex gap-3">
             <button
               type="submit"
@@ -704,5 +724,7 @@ onBeforeUnmount(() => {
           </div>
         </form>
     </UiModal>
+
+    <UiAppointmentDetailModal v-if="detailCode" :code="detailCode" @close="detailCode = ''" />
   </div>
 </template>

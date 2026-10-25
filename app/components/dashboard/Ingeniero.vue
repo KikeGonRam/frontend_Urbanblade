@@ -18,8 +18,9 @@ import {
   chartTooltip,
   fmtInt,
   fmtMoney,
+  chartColor,
+  chartSeries,
   goldRgba,
-  goldSeries,
 } from "~/utils/chartTheme";
 import { untilToday } from "~/utils/chartBuckets";
 import { ensureChartjsRegistered } from "~/utils/registerChartjs";
@@ -211,15 +212,15 @@ const appointmentTrendData = computed(() => ({
     {
       label: "Citas",
       data: appointmentTrend.value.values,
-      borderColor: goldRgba(0.95),
-      backgroundColor: goldRgba(0.1),
+      borderColor: chartColor(1, 0.95),
+      backgroundColor: chartColor(1, 0.1),
       borderWidth: 2.5,
       fill: true,
       cubicInterpolationMode: "monotone" as const,
       pointRadius: 2.5,
       pointHoverRadius: 5,
-      pointBackgroundColor: goldRgba(1),
-      pointBorderColor: goldRgba(1),
+      pointBackgroundColor: chartColor(1, 1),
+      pointBorderColor: chartColor(1, 1),
       pointBorderWidth: 2,
     },
   ],
@@ -284,7 +285,7 @@ const servicesData = computed(() => ({
     {
       label: "Citas",
       data: servicesSorted.value.map((s) => s.value),
-      backgroundColor: goldSeries(servicesSorted.value.length),
+      backgroundColor: chartSeries(servicesSorted.value.length),
       borderRadius: 6,
       maxBarThickness: 18,
     },
@@ -363,7 +364,7 @@ const barberRanking = computed(() => {
           />
           <div>
             <p
-              class="text-[10px] font-black uppercase tracking-[0.2em] text-ink/45"
+              class="text-[11px] font-black uppercase tracking-[0.2em] text-ink/45"
             >
               Centro de observabilidad
             </p>
@@ -606,7 +607,7 @@ const barberRanking = computed(() => {
         </div>
         <p
           v-if="data.kpis.top_barber_name"
-          class="mt-3 text-[10px] font-bold text-ink/50"
+          class="mt-3 text-[11px] font-bold text-ink/50"
         >
           Top del mes:
           <span class="text-gold">{{ data.kpis.top_barber_name }}</span> ({{
@@ -715,7 +716,7 @@ const barberRanking = computed(() => {
             />
           </svg>
         </div>
-        <p class="mt-3 text-[10px] leading-relaxed text-ink/50">
+        <p class="mt-3 text-[11px] leading-relaxed text-ink/50">
           Indicador agregado; el detalle de productos permanece fuera de este
           rol.
         </p>
@@ -845,7 +846,7 @@ const barberRanking = computed(() => {
             <p class="text-[11px] font-black uppercase text-ink/45">Clics</p>
           </div>
         </div>
-        <p class="mt-3 text-[10px] text-ink/50">
+        <p class="mt-3 text-[11px] text-ink/50">
           {{ fmtInt(moduleTelemetry.campaigns.recipients) }} destinatarios
           acumulados en la ventana.
         </p>
@@ -914,7 +915,7 @@ const barberRanking = computed(() => {
             <p class="text-[11px] font-black uppercase text-ink/45">Guardados</p>
           </div>
         </div>
-        <p class="mt-3 text-[10px] leading-relaxed text-ink/50">
+        <p class="mt-3 text-[11px] leading-relaxed text-ink/50">
           Sólo comportamiento agregado; el feed y sus acciones siguen fuera de
           este rol.
         </p>

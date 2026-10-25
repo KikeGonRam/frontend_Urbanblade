@@ -22,7 +22,7 @@ function goHome() { clearError({ redirect: '/' }) }
 </script>
 <template>
   <main class="ub-error-page">
-    <NuxtLink to="/" class="ub-error-brand"><BrandBrandMark /><span>Urban<strong>Blade</strong></span></NuxtLink>
+    <NuxtLink to="/" class="ub-error-brand"><BrandMark /><span>Urban<strong>Blade</strong></span></NuxtLink>
     <section class="ub-error-shell"><div class="ub-error-copy"><span class="ub-error-eyebrow">{{ profile.eyebrow }}</span><p class="ub-error-code">{{ status }}</p><h1>{{ profile.title }} <span>{{ profile.accent }}</span></h1><p class="ub-error-message">{{ profile.message }} {{ profile.name }} te acompaña.</p><button type="button" class="ub-error-action" @click="goHome">Volver a UrbanBlade</button></div><figure class="ub-error-mascot"><span aria-hidden="true" /><img :src="`/images/mascots/${profile.image}`" :alt="`${profile.name}, mascota de UrbanBlade`"><figcaption>{{ profile.name }} está aquí para ayudarte</figcaption></figure></section>
   </main>
 </template>

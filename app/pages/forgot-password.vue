@@ -1,4 +1,5 @@
 <script setup lang="ts">
+useSeoMeta({ robots: 'noindex' })
 definePageMeta({ middleware: 'guest', pageTransition: { name: 'auth', mode: 'out-in' } })
 
 const email = ref('')
@@ -57,8 +58,8 @@ async function onSubmit() {
         >
       </div>
 
-      <p v-if="secondsLeft > 0" class="text-sm text-amber-400">Demasiados intentos. Espera {{ secondsLeft }}s para volver a intentar.</p>
-      <p v-else-if="errorMessage" class="text-sm text-red-400">{{ errorMessage }}</p>
+      <p v-if="secondsLeft > 0" class="text-sm text-warning">Demasiados intentos. Espera {{ secondsLeft }}s para volver a intentar.</p>
+      <p v-else-if="errorMessage" class="text-sm text-danger">{{ errorMessage }}</p>
 
       <button
         type="submit" :disabled="loading || secondsLeft > 0"

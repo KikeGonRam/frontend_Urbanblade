@@ -5,6 +5,8 @@
  */
 definePageMeta({ middleware: ['auth', 'admin'], layout: 'dashboard' })
 
+useSeoMeta({ title: 'Sorteos — UrbanBlade', robots: 'noindex' })
+
 interface RaffleRow {
   id: string
   mes: string
@@ -36,25 +38,24 @@ function fmtDate(iso: string | null) {
 }
 
 function statusOf(r: RaffleRow) {
-  if (r.is_claimed) return { label: 'Reclamado', class: 'border-emerald-500/25 bg-emerald-500/10 text-emerald-300' }
-  if (r.is_expired) return { label: 'Caducado', class: 'border-red-500/25 bg-red-500/10 text-red-400' }
+  if (r.is_claimed) return { label: 'Reclamado', class: 'border-success/25 bg-success/10 text-success' }
+  if (r.is_expired) return { label: 'Caducado', class: 'border-danger/25 bg-danger/10 text-danger' }
 
-  return { label: `Vigente hasta ${fmtDate(r.vence_en)}`, class: 'border-amber-500/25 bg-amber-500/10 text-amber-300' }
+  return { label: `Vigente hasta ${fmtDate(r.vence_en)}`, class: 'border-warning/25 bg-warning/10 text-warning' }
 }
 </script>
 
 <template>
   <div class="p-4 sm:p-6 lg:p-8">
     <header class="mb-6">
-      <p class="text-sm uppercase tracking-widest text-muted">UrbanBlade</p>
       <h1 class="mt-1 text-2xl font-semibold text-ink">Historial de <span class="text-gold">Sorteos</span></h1>
       <p class="mt-1 text-sm text-muted">Ganadores mensuales del sorteo de lealtad y estado de sus premios.</p>
     </header>
 
     <section v-if="!pending && !error" class="mb-6 grid grid-cols-1 gap-3 sm:w-fit sm:grid-cols-3">
-      <div class="ui-card p-4"><p class="text-[10px] font-bold uppercase text-muted">Total</p><p class="mt-1 text-xl font-black text-ink">{{ stats.total }}</p></div>
-      <div class="ui-card p-4"><p class="text-[10px] font-bold uppercase text-muted">Reclamados</p><p class="mt-1 text-xl font-black text-emerald-400">{{ stats.reclamados }}</p></div>
-      <div class="ui-card p-4"><p class="text-[10px] font-bold uppercase text-muted">Vigentes</p><p class="mt-1 text-xl font-black text-gold">{{ stats.vigentes }}</p></div>
+      <div class="ui-card p-4"><p class="text-[11px] font-bold uppercase text-muted">Total</p><p class="mt-1 text-xl font-black text-ink">{{ stats.total }}</p></div>
+      <div class="ui-card p-4"><p class="text-[11px] font-bold uppercase text-muted">Reclamados</p><p class="mt-1 text-xl font-black text-success">{{ stats.reclamados }}</p></div>
+      <div class="ui-card p-4"><p class="text-[11px] font-bold uppercase text-muted">Vigentes</p><p class="mt-1 text-xl font-black text-gold">{{ stats.vigentes }}</p></div>
     </section>
 
     <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando sorteos…" />
@@ -62,14 +63,14 @@ function statusOf(r: RaffleRow) {
     <BrandStatePanel v-else-if="!raffles.length" mascot="nava" state="empty" title="Todavía no hay resultados de sorteos" description="Los próximos resultados aparecerán aquí." />
 
     <section v-else class="ui-card overflow-x-auto">
-      <table class="w-full min-w-[42rem] text-left text-sm">
+      <table aria-label="Sorteos" class="w-full min-w-[42rem] text-left text-sm">
         <thead>
-          <tr class="border-b border-line text-[10px] uppercase tracking-wider text-muted">
-            <th class="px-4 py-3">Mes</th>
-            <th class="px-4 py-3">Ganador</th>
-            <th class="px-4 py-3">Nivel</th>
-            <th class="px-4 py-3">Premio</th>
-            <th class="px-4 py-3 text-right">Estado</th>
+          <tr class="border-b border-line text-[11px] uppercase tracking-wider text-muted">
+            <th scope="col" class="px-4 py-3">Mes</th>
+            <th scope="col" class="px-4 py-3">Ganador</th>
+            <th scope="col" class="px-4 py-3">Nivel</th>
+            <th scope="col" class="px-4 py-3">Premio</th>
+            <th scope="col" class="px-4 py-3 text-right">Estado</th>
           </tr>
         </thead>
         <tbody>
@@ -79,7 +80,7 @@ function statusOf(r: RaffleRow) {
             <td class="px-4 py-3 text-muted">{{ r.nivel_ganador ?? '—' }}</td>
             <td class="px-4 py-3 text-muted">{{ r.premio }}</td>
             <td class="px-4 py-3 text-right">
-              <span class="rounded-full border px-2 py-0.5 text-[10px] font-black" :class="statusOf(r).class">{{ statusOf(r).label }}</span>
+              <span class="rounded-full border px-2 py-0.5 text-[11px] font-black" :class="statusOf(r).class">{{ statusOf(r).label }}</span>
             </td>
           </tr>
         </tbody>

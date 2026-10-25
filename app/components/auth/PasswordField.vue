@@ -44,10 +44,11 @@ const visible = ref(false);
       :placeholder="placeholder"
       :aria-invalid="invalid || undefined"
       :aria-describedby="describedBy"
+      data-clarity-mask="true"
       :class="[
         'ui-input w-full pr-10',
         invalid
-          ? 'border-red-500/60 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.12)]'
+          ? 'border-danger/60 focus:border-danger focus:shadow-[0_0_0_3px_rgba(239,68,68,0.12)]'
           : '',
       ]"
       @input="

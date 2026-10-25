@@ -46,13 +46,13 @@ const mailto = `mailto:${LEGAL.contactEmail}`
       <li><strong>Cuenta:</strong> nombre, correo electrónico y contraseña (se guarda cifrada con un algoritmo de un solo sentido; nadie puede leerla). Si entras con Google, recibimos de tu cuenta de Google tu nombre, correo y foto de perfil.</li>
       <li><strong>Perfil de cliente:</strong> teléfono, fecha de nacimiento (para tu regalo de cumpleaños) y, si lo indicas, sexo; tu foto de perfil, tema visual y preferencias de notificación.</li>
       <li><strong>Citas:</strong> servicio, barbero, fecha, hora, estado de la cita y las notas que escribas para tu barbero.</li>
-      <li><strong>Notas internas:</strong> el personal de la barbería puede anotar en tu ficha datos útiles para atenderte (por ejemplo, el corte que prefieres o una alergia). Solo el personal las ve; nunca se muestran en público.</li>
+      <li><strong>Notas internas:</strong> el personal de la barbería puede anotar en tu ficha preferencias útiles para atenderte (por ejemplo, el corte que prefieres o la bebida que te gusta al esperar). Solo el personal las ve; nunca se muestran en público. No se deben escribir ahí datos de salud (ver más abajo).</li>
       <li><strong>Pagos:</strong> monto, método (efectivo, transferencia o tarjeta), propina y estado. <strong>El número completo de tu tarjeta nunca llega a nuestros servidores</strong>: lo captura y procesa Stripe. Si decides guardar una tarjeta, Stripe la conserva y nosotros solo recibimos la marca, los últimos 4 dígitos y la fecha de vencimiento para mostrártela.</li>
       <li><strong>Comprobantes de transferencia:</strong> la imagen que subes y el texto que se lee automáticamente de ella (reconocimiento de caracteres) para ayudar al personal a verificar el pago.</li>
       <li><strong>Programa de lealtad y beneficios:</strong> nivel, puntos y su historial, código para invitar amigos, membresías, paquetes, tarjetas de regalo y pedidos de la tienda.</li>
       <li><strong>Contenido que publicas:</strong> reseñas y calificaciones de barberos, y comentarios, reacciones y guardados en el Muro de Inspiración.</li>
       <li><strong>Chat con Bladebot:</strong> si usas el asistente con tu sesión iniciada, guardamos tus mensajes y sus respuestas para mostrarte tu historial y mejorar las respuestas.</li>
-      <li><strong>Datos técnicos:</strong> el identificador de tu teléfono para enviarte notificaciones, la dirección IP de cada petición (para limitar intentos de acceso y detectar abusos) y la fecha de uso de tu sesión.</li>
+      <li><strong>Datos técnicos:</strong> el identificador de tu teléfono para enviarte notificaciones, la dirección IP de cada petición (para limitar intentos de acceso, detectar abusos y bloquear de forma temporal a quien manda un número excesivo de solicitudes; cuando el servicio de red lo informa, también el país, la región y la ciudad aproximados de esa IP) y la fecha de uso de tu sesión.</li>
       <li><strong>Solo en la app Android:</strong> estadísticas de uso sin datos de identificación (qué pantallas se abren y en qué paso de la reserva se avanza), reportes de fallos de la app y mediciones de rendimiento, con modelo del teléfono, versión de Android y un identificador de instalación de la app.</li>
     </ul>
     <p>
@@ -94,6 +94,7 @@ const mailto = `mailto:${LEGAL.contactEmail}`
       <li><strong>Amazon Web Services</strong>: servidores donde corre la plataforma, almacenamiento de fotos y comprobantes, y protección de claves.</li>
       <li><strong>MongoDB Atlas</strong>: base de datos donde se guarda tu información.</li>
       <li><strong>Stripe</strong>: pagos con tarjeta, tarjetas guardadas y cobro de membresías.</li>
+      <li><strong>Google y Microsoft</strong>: estadísticas de uso del sitio (Google Tag Manager, Google Analytics y Microsoft Clarity), solo si aceptas las cookies de analítica.</li>
       <li><strong>Google</strong>: inicio de sesión con Google y, en la app Android, Firebase (envío de notificaciones, estadísticas de uso, reportes de fallos y rendimiento, y configuración remota).</li>
       <li><strong>Wikipedia</strong>: para algunas preguntas generales (por ejemplo, sobre un estilo de corte), Bladebot consulta el texto de la pregunta en Wikipedia; no se envía tu nombre ni ningún otro dato de tu cuenta.</li>
     </ul>
@@ -132,17 +133,28 @@ const mailto = `mailto:${LEGAL.contactEmail}`
       ningún otro fin; si quieres que también se elimine, pídelo por correo.
     </p>
 
-    <h2>7. Cookies y almacenamiento en el navegador</h2>
-    <p>En el sitio web solo usamos lo necesario para que funcione:</p>
+    <h2 id="cookies">7. Cookies y almacenamiento en el navegador</h2>
+    <p><strong>Necesarias</strong> (siempre activas, no requieren consentimiento):</p>
     <ul>
       <li><strong>ub_token</strong>: mantiene tu sesión iniciada.</li>
       <li><strong>ub_theme</strong>: recuerda el tema visual que elegiste.</li>
+      <li><strong>ub_consent</strong>: recuerda tu elección sobre las cookies de analítica (180 días).</li>
       <li><strong>sidebarRail</strong> (almacenamiento local): recuerda si contrajiste el menú lateral.</li>
     </ul>
+    <p><strong>De analítica</strong> (solo si las aceptas en el aviso de cookies):</p>
+    <ul>
+      <li><strong>Google Tag Manager</strong>: carga las etiquetas de medición del sitio.</li>
+      <li><strong>Microsoft Clarity</strong> (cookies <em>_clck</em> y <em>_clsk</em>) y <strong>Google Analytics</strong>: estadísticas de uso del sitio, como páginas visitadas y clics. Esos proveedores reciben tu dirección IP y datos del navegador.</li>
+    </ul>
     <p>
-      El sitio web no usa cookies de publicidad ni herramientas de rastreo de terceros. Cuando pagas con tarjeta,
-      el formulario de Stripe puede usar sus propias cookies para prevenir fraudes, según la política de
-      privacidad de Stripe. Si borras las cookies se cerrará tu sesión.
+      Hasta que aceptas, el sitio no carga estas herramientas ni envía información a esos proveedores. Si las
+      rechazas, no se cargan. Puedes cambiar tu elección en cualquier momento desde «Preferencias de cookies», en
+      el pie de página.
+    </p>
+    <p>
+      <strong>Stripe</strong> solo se carga cuando abres un formulario de pago con tarjeta; puede usar sus propias
+      cookies para prevenir fraudes, según la política de privacidad de Stripe. Si borras las cookies se cerrará
+      tu sesión.
     </p>
 
     <h2>8. Cuánto tiempo guardamos tus datos</h2>

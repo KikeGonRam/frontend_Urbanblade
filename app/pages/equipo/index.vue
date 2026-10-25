@@ -78,10 +78,16 @@ function initials(name?: string | null) {
             <span class="text-4xl font-black uppercase tracking-tighter text-gold/50">{{ initials(barber.user?.name) }}</span>
           </div>
           <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+          <span v-if="barber.avg_rating && barber.total_reviews > 0" class="absolute left-4 top-4 rounded-full bg-black/60 px-3 py-1.5 text-[11px] font-bold text-gold backdrop-blur-sm">
+            ★ {{ Number(barber.avg_rating).toFixed(1) }} · {{ barber.total_reviews }}
+          </span>
           <div class="absolute bottom-0 left-0 right-0 translate-y-1 p-6 transition-transform duration-400 group-hover:translate-y-0">
             <h2 class="text-base font-black uppercase text-white">{{ barber.user?.name }}</h2>
             <p class="mt-1 text-[9px] font-bold uppercase tracking-widest text-gold">{{ barber.especialidades || 'Master Groomer' }}</p>
-            <p v-if="barber.avg_rating" class="mt-2 text-[9px] font-black uppercase tracking-widest text-white/70">★ {{ barber.avg_rating }} ({{ barber.total_reviews }} reseñas)</p>
+            <p class="mt-3 flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-white/50 transition-colors duration-400 group-hover:text-gold/80">
+              Ver perfil y reservar
+              <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+            </p>
           </div>
         </div>
       </NuxtLink>

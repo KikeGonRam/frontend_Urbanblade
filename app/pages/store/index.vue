@@ -9,6 +9,8 @@
  */
 definePageMeta({ middleware: ["auth", "client"], layout: "dashboard" });
 
+useSeoMeta({ title: 'Tienda — UrbanBlade', robots: 'noindex' })
+
 interface StoreProduct {
   id: string;
   nombre: string;
@@ -90,7 +92,6 @@ onBeforeUnmount(() => {
       class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
     >
       <div>
-        <p class="text-sm uppercase tracking-widest text-muted">UrbanBlade</p>
         <h1 class="mt-1 text-2xl font-semibold text-ink">
           Tienda <span class="text-gold">UrbanBlade</span>
         </h1>
@@ -105,7 +106,7 @@ onBeforeUnmount(() => {
         Ver carrito
         <span
           v-if="cart.count.value > 0"
-          class="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-black px-1 text-[10px] font-black text-gold"
+          class="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-black px-1 text-[11px] font-black text-gold"
           >{{ cart.count.value }}</span
         >
       </NuxtLink>
@@ -113,13 +114,15 @@ onBeforeUnmount(() => {
 
     <section class="mb-5 flex flex-wrap items-center gap-3">
       <input
-        v-model="search"
+v-model="search"
+        aria-label="Buscar producto"
         type="text"
         placeholder="Buscar producto…"
         class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink sm:max-w-xs"
       >
       <select
-        v-model="categoria"
+v-model="categoria"
+        aria-label="Filtrar por categoría"
         class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
       >
         <option value="">Todas las categorías</option>
@@ -161,7 +164,7 @@ onBeforeUnmount(() => {
           <span v-else class="text-3xl text-ink/15">✂</span>
         </div>
         <div class="flex flex-1 flex-col gap-2 p-4">
-          <p class="text-[9px] font-black uppercase tracking-widest text-gold">
+          <p class="text-[11px] font-black uppercase tracking-widest text-gold">
             {{ product.categoria ?? "General" }}
           </p>
           <p class="line-clamp-2 flex-1 text-sm font-bold text-ink">
@@ -170,7 +173,7 @@ onBeforeUnmount(() => {
           <p class="text-lg font-black text-ink">
             {{ fmtMoney(product.precio_venta) }}
           </p>
-          <p class="text-[10px] text-muted">
+          <p class="text-[11px] text-muted">
             {{ product.stock_actual }} disponibles<span
               v-if="inCart(product.id)"
             >

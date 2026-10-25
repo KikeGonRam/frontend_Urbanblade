@@ -10,6 +10,8 @@
  */
 definePageMeta({ middleware: ['auth', 'client'], layout: 'dashboard' })
 
+useSeoMeta({ title: 'Carrito — UrbanBlade', robots: 'noindex' })
+
 const { apiFetch } = useApi()
 const router = useRouter()
 const cart = useCart()
@@ -45,7 +47,6 @@ async function checkout() {
   <div class="p-4 sm:p-6 lg:p-8">
     <header class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <p class="text-sm uppercase tracking-widest text-muted">UrbanBlade</p>
         <h1 class="mt-1 text-2xl font-semibold text-ink">Tu <span class="text-gold">Carrito</span></h1>
         <p class="mt-1 text-sm text-muted">Revisa tu pedido antes de pagar y recoger en sucursal.</p>
       </div>
@@ -71,12 +72,12 @@ async function checkout() {
             <p class="text-sm text-muted">{{ fmtMoney(item.precio) }} c/u</p>
           </div>
           <div class="flex items-center gap-2">
-            <button type="button" class="h-7 w-7 rounded-lg border border-line text-ink hover:bg-ink/5" @click="cart.updateQty(item.product_id, item.cantidad - 1)">−</button>
-            <span class="w-6 text-center text-sm text-ink">{{ item.cantidad }}</span>
-            <button type="button" class="h-7 w-7 rounded-lg border border-line text-ink hover:bg-ink/5 disabled:opacity-30" :disabled="item.cantidad >= item.stockActual" @click="cart.updateQty(item.product_id, item.cantidad + 1)">+</button>
+            <button type="button" class="h-11 w-11 rounded-lg border border-line text-ink hover:bg-ink/5" :aria-label="`Quitar una unidad de ${item.nombre}`" @click="cart.updateQty(item.product_id, item.cantidad - 1)">−</button>
+            <span class="w-6 text-center text-sm text-ink" aria-live="polite">{{ item.cantidad }}</span>
+            <button type="button" class="h-11 w-11 rounded-lg border border-line text-ink hover:bg-ink/5 disabled:opacity-30" :aria-label="item.cantidad >= item.stockActual ? `No hay más stock de ${item.nombre}` : `Agregar una unidad de ${item.nombre}`" :disabled="item.cantidad >= item.stockActual" @click="cart.updateQty(item.product_id, item.cantidad + 1)">+</button>
           </div>
           <p class="w-20 text-right font-black text-ink">{{ fmtMoney(item.precio * item.cantidad) }}</p>
-          <button type="button" class="text-muted hover:text-red-400" title="Quitar" @click="cart.remove(item.product_id)">✕</button>
+          <button type="button" class="flex h-11 w-11 items-center justify-center text-muted hover:text-danger" title="Quitar" :aria-label="`Quitar ${item.nombre} del carrito`" @click="cart.remove(item.product_id)">✕</button>
         </div>
       </section>
 
@@ -86,11 +87,11 @@ async function checkout() {
           <span class="text-muted">{{ cart.count.value }} artículo{{ cart.count.value === 1 ? '' : 's' }}</span>
           <span class="font-black text-gold">{{ fmtMoney(cart.total.value) }}</span>
         </div>
-        <p v-if="checkoutError" class="text-sm text-red-400">{{ checkoutError }}</p>
+        <p v-if="checkoutError" class="text-sm text-danger">{{ checkoutError }}</p>
         <button type="button" :disabled="checkingOut" class="w-full rounded-lg bg-gold py-2.5 text-sm font-semibold text-black hover:bg-gold-dim disabled:opacity-50" @click="checkout">
           {{ checkingOut ? 'Procesando…' : 'Confirmar pedido' }}
         </button>
-        <p class="text-[10px] italic text-muted">Pagas y recoges en sucursal. El total final se confirma al momento de la entrega.</p>
+        <p class="text-[11px] italic text-muted">Pagas y recoges en sucursal. El total final se confirma al momento de la entrega.</p>
       </aside>
     </div>
   </div>

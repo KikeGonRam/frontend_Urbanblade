@@ -4,9 +4,27 @@ const { railCollapsed, toggleRail } = useShellState();
 const { theme, apply, THEMES, THEME_LABELS } = useTheme();
 const { user } = useAuth();
 const avatarFailed = ref(false);
+const { sections } = useNavigation();
+// Pantallas que no están en el menú (perfil, detalle de una cita, etc.).
+const EXTRA_TITLES: Record<string, string> = {
+  profile: "Mi perfil",
+  reservar: "Reservar cita",
+  corte: "Corte de caja",
+  pending: "Pagos pendientes",
+  calendar: "Calendario",
+  feed: "Muro Inspiración",
+};
+// El título sale del nombre en español del menú (el más específico que coincida con la ruta), no de la URL:
+// antes la barra decía "Appointments" o "Feed" en inglés.
 const pageName = computed(() => {
+  const match = sections.value
+    .flatMap((s) => s.items)
+    .filter((i) => route.path === i.to || route.path.startsWith(`${i.to}/`))
+    .sort((a, b) => b.to.length - a.to.length)[0];
+  if (match) return match.label;
   const segment = route.path.split("/").filter(Boolean).at(-1) ?? "dashboard";
-  return segment.replaceAll("-", " ");
+
+  return EXTRA_TITLES[segment] ?? segment.replaceAll("-", " ");
 });
 watch(
   () => user.value?.avatar_url,

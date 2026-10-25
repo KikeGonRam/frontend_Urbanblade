@@ -6,6 +6,8 @@
  */
 definePageMeta({ middleware: ['auth', 'client'], layout: 'dashboard' })
 
+useSeoMeta({ title: 'Mis recibos — UrbanBlade', robots: 'noindex' })
+
 interface PaymentRow {
   id: string
   monto: number
@@ -58,23 +60,22 @@ async function downloadReceipt(payment: PaymentRow) {
 <template>
   <div class="p-4 sm:p-6 lg:p-8">
     <header class="mb-5">
-      <p class="text-sm uppercase tracking-widest text-muted">UrbanBlade</p>
-      <h1 class="mt-1 text-2xl font-semibold text-ink">Mis <span class="text-gold">Facturas</span></h1>
+      <h1 class="mt-1 text-2xl font-semibold text-ink">Mis <span class="text-gold">Recibos</span></h1>
       <p class="mt-1 text-sm text-muted">Historial de pagos de tus citas.</p>
     </header>
 
     <section v-if="!pending && !error" class="mb-6 grid grid-cols-2 gap-3 sm:w-fit sm:grid-cols-2">
-      <div class="ui-card p-4"><p class="text-[10px] font-bold uppercase text-muted">Total pagado</p><p class="mt-1 text-xl font-black text-gold">{{ fmtMoney(meta.total_pagado) }}</p></div>
-      <div class="ui-card p-4"><p class="text-[10px] font-bold uppercase text-muted">Citas facturadas</p><p class="mt-1 text-xl font-black text-ink">{{ meta.total_citas }}</p></div>
+      <div class="ui-card p-4"><p class="text-[11px] font-bold uppercase text-muted">Total pagado</p><p class="mt-1 text-xl font-black text-gold">{{ fmtMoney(meta.total_pagado) }}</p></div>
+      <div class="ui-card p-4"><p class="text-[11px] font-bold uppercase text-muted">Citas con recibo</p><p class="mt-1 text-xl font-black text-ink">{{ meta.total_citas }}</p></div>
     </section>
 
-    <p v-if="pending" class="text-sm text-muted">Cargando tus facturas…</p>
+    <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando tus recibos…" />
     <BrandStatePanel
       v-else-if="error"
       mascot="bruno"
       state="error"
       tone="danger"
-      title="No se pudieron cargar tus facturas"
+      title="No se pudieron cargar tus recibos"
       action-label="Reintentar"
       @action="refresh"
     />
@@ -82,12 +83,12 @@ async function downloadReceipt(payment: PaymentRow) {
       Todavía no tienes pagos registrados.
     </p>
 
-    <p v-if="downloadError" class="mb-3 text-sm text-red-400">{{ downloadError }}</p>
+    <p v-if="downloadError" class="mb-3 text-sm text-danger">{{ downloadError }}</p>
 
     <section v-if="!pending && !error && payments.length" class="ui-card overflow-x-auto">
       <table class="w-full text-left text-sm">
         <thead>
-          <tr class="border-b border-line text-[10px] uppercase tracking-wider text-muted">
+          <tr class="border-b border-line text-[11px] uppercase tracking-wider text-muted">
             <th class="px-4 py-3">Fecha</th>
             <th class="px-4 py-3">Servicio</th>
             <th class="px-4 py-3">Barbero</th>
@@ -106,7 +107,7 @@ async function downloadReceipt(payment: PaymentRow) {
             <td class="px-4 py-3 text-right">
               <button
                 type="button" :disabled="downloading === payment.id"
-                class="rounded-lg border border-line px-3 py-1 text-xs text-muted hover:text-ink disabled:opacity-50"
+                class="rounded-lg border border-line px-3 py-1 text-xs text-muted hover:text-ink disabled:opacity-50 min-h-10"
                 @click="downloadReceipt(payment)"
               >
                 {{ downloading === payment.id ? 'Generando…' : 'Descargar' }}

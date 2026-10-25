@@ -2,6 +2,10 @@
 import DesktopTopbar from '~/components/shell/DesktopTopbar.vue'
 
 const route = useRoute()
+const { hasRole } = useAuth()
+// Administración, recepción e ingeniería viven en datos y tablas: carcasa corporativa (plana, densa, sin brillos).
+// Cliente y barbero usan la carcasa amable de siempre (islas flotantes, esquinas suaves).
+const uiMode = computed(() => (hasRole('administrador') || hasRole('recepcionista') || hasRole('ingeniero') ? 'data' : 'friendly'))
 const content = ref<HTMLElement | null>(null)
 watch(() => route.path, async () => {
   await nextTick()
@@ -18,7 +22,7 @@ watch(() => route.path, async () => {
 </script>
 
 <template>
-  <div class="ub-dashboard-shell min-h-screen font-sans text-ink">
+  <div class="ub-dashboard-shell min-h-screen font-sans text-ink" :data-ui="uiMode">
     <a class="ub-skip-link" href="#dashboard-content">Saltar al contenido</a>
     <ShellAppSidebarV2 />
     <ShellMobileTopbar />
@@ -33,5 +37,6 @@ watch(() => route.path, async () => {
     <ShellMobileBottomNav />
     <ShellMobileDrawer />
     <ChatWidget />
+    <UiChartDetailModal />
   </div>
 </template>

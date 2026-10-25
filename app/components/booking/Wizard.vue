@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { loadStripe, type Stripe, type StripeCardElement, type StripeElements } from '@stripe/stripe-js'
+import { loadStripe, type Stripe, type StripeCardElement, type StripeElements } from '@stripe/stripe-js/pure'
 import type { ChoiceOption } from '~/types/choice'
 
 const props = withDefaults(defineProps<{ initialBarber?: string, embedded?: boolean }>(), { initialBarber: '', embedded: false })
@@ -564,13 +564,13 @@ function prettyDate(iso: string) {
           <dd class="text-right font-bold text-ink">{{ prettyDate(date) }} · {{ time }}</dd>
         </div>
       </dl>
-      <p v-if="productsWarning" role="alert" class="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-300">
+      <p v-if="productsWarning" role="alert" class="mt-4 rounded-xl border border-warning/30 bg-warning/10 p-3 text-xs text-warning">
         Tu cita quedó confirmada, pero no pudimos agregar los productos: {{ productsWarning }}
       </p>
-      <p v-if="paymentWarning" role="alert" class="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-300">
+      <p v-if="paymentWarning" role="alert" class="mt-4 rounded-xl border border-warning/30 bg-warning/10 p-3 text-xs text-warning">
         Tu cita quedó confirmada, pero no pudimos procesar el pago: {{ paymentWarning }} Podrás pagar en el salón.
       </p>
-      <p v-else-if="payChoice === 'ahora_tarjeta'" class="mt-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-300">
+      <p v-else-if="payChoice === 'ahora_tarjeta'" class="mt-4 rounded-xl border border-success/30 bg-success/10 p-3 text-xs text-success">
         Pago con tarjeta procesado correctamente.
       </p>
       <p v-else-if="payChoice === 'ahora_transferencia'" class="mt-4 rounded-xl border border-gold/30 bg-gold/10 p-3 text-xs text-gold">
@@ -587,7 +587,7 @@ function prettyDate(iso: string) {
 
     <template v-else>
       <header class="mb-8">
-        <p class="text-[10px] font-black uppercase tracking-[0.2em] text-gold">
+        <p class="text-[11px] font-black uppercase tracking-[0.2em] text-gold">
           {{ shop?.nombre || 'UrbanBlade' }}
         </p>
         <h1 class="mt-2 text-3xl font-black uppercase tracking-tight text-ink">
@@ -609,13 +609,13 @@ function prettyDate(iso: string) {
       <p
         v-if="submitError"
         role="alert"
-        class="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm font-bold text-red-300"
+        class="mb-6 rounded-xl border border-danger/30 bg-danger/10 p-4 text-sm font-bold text-danger"
       >
         {{ submitError }}
       </p>
 
       <!-- Progreso -->
-      <ol class="mb-6 grid grid-cols-2 gap-2 text-[10px] font-black tracking-wide sm:grid-cols-4">
+      <ol class="mb-6 grid grid-cols-2 gap-2 text-[11px] font-black tracking-wide sm:grid-cols-4">
         <li v-for="(label, i) in STEPS" :key="label" class="flex flex-1 items-center gap-1 sm:gap-2">
           <button
             type="button"
@@ -627,7 +627,7 @@ function prettyDate(iso: string) {
             :aria-current="i === step ? 'step' : undefined"
             @click="goToStep(i)"
           >
-            <span class="grid h-5 w-5 place-items-center rounded-full border border-current text-[9px]">{{ i + 1 }}</span>
+            <span class="grid h-5 w-5 place-items-center rounded-full border border-current text-[11px]">{{ i + 1 }}</span>
             <span>{{ label }}</span>
           </button>
         </li>
@@ -762,9 +762,9 @@ function prettyDate(iso: string) {
             :aria-pressed="date === d.iso"
             @click="date = d.iso; time = ''; activeStep = null"
           >
-            <span class="text-[9px] font-black uppercase tracking-widest">{{ d.isToday ? 'Hoy' : d.weekday }}</span>
+            <span class="text-[11px] font-black uppercase tracking-widest">{{ d.isToday ? 'Hoy' : d.weekday }}</span>
             <span class="text-lg font-black leading-none text-ink" :class="date === d.iso && 'text-gold'">{{ d.day }}</span>
-            <span class="text-[9px] uppercase">{{ d.month }}</span>
+            <span class="text-[11px] uppercase">{{ d.month }}</span>
           </button>
         </div>
 
@@ -785,7 +785,7 @@ function prettyDate(iso: string) {
           />
           <div v-if="canBookHere" class="ui-card mt-4 p-4 text-center">
             <template v-if="waitlistJoined">
-              <p class="text-sm font-bold text-emerald-400">
+              <p class="text-sm font-bold text-success">
                 Te anotamos en la lista de espera. Te avisaremos si se libera un horario ese día.
               </p>
             </template>
@@ -799,7 +799,7 @@ function prettyDate(iso: string) {
               >
                 {{ joiningWaitlist ? 'Anotando…' : 'Anotarme en lista de espera' }}
               </button>
-              <p v-if="waitlistError" role="alert" class="mt-2 text-xs text-red-400">{{ waitlistError }}</p>
+              <p v-if="waitlistError" role="alert" class="mt-2 text-xs text-danger">{{ waitlistError }}</p>
             </template>
           </div>
         </template>
@@ -809,7 +809,7 @@ function prettyDate(iso: string) {
             {{ prettyDate(date) }}
           </p>
           <div v-for="group in groupedSlots" :key="group.key" class="mb-5 last:mb-0">
-            <h3 class="mb-2 text-[10px] font-black uppercase tracking-widest text-muted">
+            <h3 class="mb-2 text-[11px] font-black uppercase tracking-widest text-muted">
               {{ group.label }} <span class="text-ink/40">· {{ group.slots.length }}</span>
             </h3>
             <div class="grid grid-cols-3 gap-2 sm:grid-cols-5">
@@ -850,8 +850,8 @@ function prettyDate(iso: string) {
               <dd class="text-right font-bold text-ink">{{ prettyDate(date) }} · {{ time }}</dd>
             </div>
             <div v-if="membershipDiscountPct > 0" class="flex items-start justify-between gap-4 text-xs">
-              <dt class="text-emerald-400">Descuento de membresía ({{ membershipDiscountPct }}%)</dt>
-              <dd class="text-right text-emerald-400">-{{ currency((selectedService?.precio ?? 0) - discountedServicePrice) }}</dd>
+              <dt class="text-success">Descuento de membresía ({{ membershipDiscountPct }}%)</dt>
+              <dd class="text-right text-success">-{{ currency((selectedService?.precio ?? 0) - discountedServicePrice) }}</dd>
             </div>
             <div v-for="p in selectedProducts" :key="p.id" class="flex items-start justify-between gap-4 text-xs">
               <dt class="text-muted">+ {{ p.nombre }}</dt>
@@ -881,7 +881,7 @@ function prettyDate(iso: string) {
                   v-if="p.imagen" :src="p.imagen" :alt="p.nombre"
                   class="mb-2 h-16 w-full rounded-lg object-cover"
                 >
-                <span v-else class="mb-2 flex h-16 w-full items-center justify-center rounded-lg bg-gold/10 text-[10px] text-muted">
+                <span v-else class="mb-2 flex h-16 w-full items-center justify-center rounded-lg bg-gold/10 text-[11px] text-muted">
                   Sin foto
                 </span>
                 <span class="block truncate text-xs font-bold text-ink">{{ p.nombre }}</span>
@@ -909,7 +909,8 @@ function prettyDate(iso: string) {
             <div class="mt-2 flex items-center gap-2">
               <span class="text-xs text-muted">Otro monto:</span>
               <input
-                v-model="customTip" type="number" min="0" step="10" placeholder="$"
+v-model="customTip"
+                aria-label="Propina personalizada" type="number" min="0" step="10" placeholder="$"
                 class="ui-input w-24 py-1.5 text-sm"
                 @focus="customTip = customTip || String(tipAmount || '')"
               >
@@ -928,7 +929,7 @@ function prettyDate(iso: string) {
             <div v-if="payChoice === 'ahora_tarjeta'" class="mt-3">
               <!-- Sin flex: en un contenedor flex el iframe de Stripe se colapsaba a 1px de ancho -->
               <div ref="cardElementRef" class="ui-input block w-full px-3 py-3" />
-              <p v-if="cardError" role="alert" class="mt-2 text-xs text-red-400">{{ cardError }}</p>
+              <p v-if="cardError" role="alert" class="mt-2 text-xs text-danger">{{ cardError }}</p>
               <p v-if="!stripeReady" class="mt-2 text-xs text-muted">Cargando formulario de tarjeta…</p>
             </div>
 

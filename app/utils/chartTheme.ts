@@ -78,3 +78,36 @@ export function chartAxisClean() {
     border: { display: false },
   }
 }
+
+/** Color de un token semántico del tema (success, warning, danger, info, gold, ink) para Chart.js. */
+export function tokenRgba(token: 'success' | 'warning' | 'danger' | 'info' | 'gold' | 'ink', alpha = 1): string {
+  const fallback = { success: '52 211 153', warning: '245 180 70', danger: '248 113 113', info: '96 165 250', gold: '212 175 55', ink: '242 242 242' }[token]
+
+  return `rgba(${cssVar(`--${token}-rgb`, fallback).replace(/\s+/g, ',')}, ${alpha})`
+}
+
+/** Color de cada estado de cita, igual que sus insignias (appointmentStatus). */
+export function appointmentStatusColor(estado: string): string {
+  const map: Record<string, Parameters<typeof tokenRgba>[0]> = {
+    pendiente: 'warning', confirmada: 'info', en_proceso: 'gold', completada: 'success', cancelada: 'danger', no_asistio: 'ink',
+  }
+
+  return tokenRgba(map[estado] ?? 'ink', estado === 'no_asistio' ? 0.35 : 0.9)
+}
+
+/**
+ * Color i de la paleta de series: el 0 es el oro del tema (la marca) y del 1 al 5 salen de --chart-N-rgb,
+ * que cada tema define (más profundos en libreta). Evita que toda gráfica sea del mismo color.
+ */
+export function chartColor(i: number, alpha = 0.9): string {
+  const idx = ((i % 6) + 6) % 6
+  if (idx === 0) return goldRgba(alpha)
+  const fallback = ['', '56 189 248', '45 212 191', '167 139 250', '251 113 133', '251 146 60'][idx]!
+
+  return `rgba(${cssVar(`--chart-${idx}-rgb`, fallback).replace(/\s+/g, ',')}, ${alpha})`
+}
+
+/** n colores distintos de la paleta, para barras de categorías. */
+export function chartSeries(n: number, alpha = 0.9): string[] {
+  return Array.from({ length: n }, (_, i) => chartColor(i, alpha))
+}

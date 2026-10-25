@@ -12,6 +12,12 @@
         overscroll-behavior: none;
     }
 
+    /* Saltos a #ancla con scroll suave; el margen libera la barra fija de 80 px de la landing. */
+    @media (prefers-reduced-motion: no-preference) {
+        html { scroll-behavior: smooth; }
+    }
+    section[id], header[id] { scroll-margin-top: 5rem; }
+
     body {
         overscroll-behavior: none;
     }
@@ -95,6 +101,11 @@
     --gold:          #d4af37;
     --gold-dim:      #a8842c;
     --gold-rgb:      212 175 55;
+    --chart-1-rgb:   56 189 248;
+    --chart-2-rgb:   45 212 191;
+    --chart-3-rgb:   167 139 250;
+    --chart-4-rgb:   251 113 133;
+    --chart-5-rgb:   251 146 60;
     --gold-dim-rgb:  168 132 44;
     --gold-glow:     rgba(212, 175, 55, 0.28);
 
@@ -132,6 +143,11 @@ html[data-theme="acero"] {
     --gold:          #c1703d;
     --gold-dim:      #9c5a30;
     --gold-rgb:      193 112 61;
+    --chart-1-rgb:   56 189 248;
+    --chart-2-rgb:   45 212 191;
+    --chart-3-rgb:   167 139 250;
+    --chart-4-rgb:   251 113 133;
+    --chart-5-rgb:   251 146 60;
     --gold-dim-rgb:  156 90 48;
     --gold-glow:     rgba(193, 112, 61, 0.28);
 
@@ -162,6 +178,11 @@ html[data-theme="salon"] {
     --gold:          #c9a24a;
     --gold-dim:      #a1813a;
     --gold-rgb:      201 162 74;
+    --chart-1-rgb:   56 189 248;
+    --chart-2-rgb:   45 212 191;
+    --chart-3-rgb:   167 139 250;
+    --chart-4-rgb:   251 113 133;
+    --chart-5-rgb:   251 146 60;
     --gold-dim-rgb:  161 129 58;
     --gold-glow:     rgba(201, 162, 74, 0.28);
 
@@ -192,6 +213,11 @@ html[data-theme="libreta"] {
     --gold:          #b8860b;
     --gold-dim:      #8a6608;
     --gold-rgb:      184 134 11;
+    --chart-1-rgb:   2 132 199;
+    --chart-2-rgb:   13 148 136;
+    --chart-3-rgb:   124 58 237;
+    --chart-4-rgb:   225 29 72;
+    --chart-5-rgb:   234 88 12;
     --gold-dim-rgb:  138 102 8;
     --gold-glow:     rgba(184, 134, 11, 0.20);
 
@@ -206,8 +232,8 @@ html[data-theme="libreta"] {
     --dot-color: rgba(30, 42, 60, 0.035);
 
     /* Versiones oscuras de los colores de estado: las claras no se leen sobre marfil. */
-    --success-rgb: 21 128 61;
-    --warning-rgb: 161 98 7;
+    --success-rgb: 22 101 52;
+    --warning-rgb: 133 77 14;
     --danger-rgb:  185 28 28;
     --info-rgb:    29 78 216;
 }
@@ -514,8 +540,10 @@ html[data-theme="libreta"] {
     @keyframes ub-landing-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 
     /* Reveal-on-scroll (IntersectionObserver desde useScrollReveal.ts) */
-    .reveal { opacity: 0; transform: translateY(28px); transition: opacity .65s ease, transform .65s ease; }
+    .reveal { opacity: 0; transform: translateY(18px); transition: opacity .45s ease, transform .45s ease; }
     .reveal.is-visible { opacity: 1; transform: translateY(0); }
+    /* Sin JavaScript nunca se oculta contenido. */
+    @media (scripting: none) { .reveal { opacity: 1; transform: none; } }
 
     @keyframes ub-landing-float-badge { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
     .float-badge { animation: ub-landing-float-badge 4s ease-in-out infinite; }
@@ -693,4 +721,47 @@ html[data-theme="libreta"] {
             min-width: 42rem;
         }
     }
+}
+
+/* ── Modo corporativo: administración, recepción e ingeniería ────────────────────────────────
+   Carcasa plana y densa para quien trabaja con datos todo el día: sidebar y barra superior pegadas
+   a los bordes, sin sombras ni degradados, esquinas pequeñas y cifras tabulares. Cliente y barbero
+   conservan la carcasa amable. Va fuera de @layer a propósito: tiene que ganarle a las utilidades
+   de Tailwind (rounded-2xl, etc.). */
+/* Tarjetas: un brillo suave arriba da profundidad sin recargar (también en el modo corporativo). */
+.ub-dashboard-content .bg-card.border { background-image: linear-gradient(180deg, rgb(var(--ink-rgb) / .035), transparent 60%); }
+.ub-dashboard-shell[data-ui='data'] .ub-rise { animation-duration: 300ms; }
+.ub-dashboard-shell[data-ui='data'] table { font-variant-numeric: tabular-nums; }
+.ub-dashboard-shell[data-ui='data'] tbody tr { transition: background-color .12s ease; }
+.ub-dashboard-shell[data-ui='data'] tbody tr:hover { background: rgb(var(--ink-rgb) / .035); }
+.ub-dashboard-shell[data-ui='data'] .ub-dashboard-content .rounded-3xl,
+.ub-dashboard-shell[data-ui='data'] .ub-dashboard-content .rounded-2xl { border-radius: .625rem; }
+.ub-dashboard-shell[data-ui='data'] .ub-sidebar__helper { display: none; }
+@media (min-width: 768px) {
+    .ub-dashboard-shell[data-ui='data'] { gap: 0; padding: 0; }
+    .ub-dashboard-shell[data-ui='data'] .ub-sidebar { border-width: 0 1px 0 0; border-radius: 0; box-shadow: none; background: var(--panel); }
+    .ub-dashboard-shell[data-ui='data'] .ub-desktop-topbar { min-height: 56px; border-width: 0 0 1px 0; border-radius: 0; padding: .5rem 1.25rem; box-shadow: none; background: var(--bg-card); }
+    .ub-dashboard-shell[data-ui='data'] .ub-dashboard-content { margin-top: 0; border-radius: 0; }
+    .ub-dashboard-shell[data-ui='data'] .ub-sidebar__item { min-height: 38px; border-radius: .5rem; font-size: .78rem; }
+    .ub-dashboard-shell[data-ui='data'] .ub-sidebar__item:hover { transform: none; }
+    .ub-dashboard-shell[data-ui='data'] .ub-topbar-search { border-radius: .5rem; }
+    .ub-dashboard-shell[data-ui='data'] .ub-topbar-button, .ub-dashboard-shell[data-ui='data'] .ub-theme-switcher select { border-radius: .5rem; }
+}
+
+/* ── Pulido general de todas las vistas del dashboard (sin capas: gana a las utilidades) ───────────
+   Cada bloque de la página entra con un fundido breve y escalonado; las tablas tienen encabezado
+   marcado y las tarjetas que son enlaces o botones se elevan al pasar el cursor. */
+@keyframes ub-page-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.ub-dashboard-content > * > * { animation: ub-page-in 420ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+.ub-dashboard-content > * > *:nth-child(2) { animation-delay: 60ms; }
+.ub-dashboard-content > * > *:nth-child(3) { animation-delay: 120ms; }
+.ub-dashboard-content > * > *:nth-child(4) { animation-delay: 180ms; }
+.ub-dashboard-content > * > *:nth-child(5) { animation-delay: 240ms; }
+.ub-dashboard-content > * > *:nth-child(n+6) { animation-delay: 300ms; }
+.ub-dashboard-content table thead th { background: rgb(var(--ink-rgb) / .035); color: var(--muted); font-weight: 700; letter-spacing: .06em; }
+.ub-dashboard-content a.bg-card.border, .ub-dashboard-content button.bg-card.border { transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease; }
+.ub-dashboard-content a.bg-card.border:hover, .ub-dashboard-content button.bg-card.border:hover { transform: translateY(-2px); box-shadow: 0 14px 32px rgb(0 0 0 / 0.28); }
+@media (prefers-reduced-motion: reduce) {
+    .ub-dashboard-content > * > * { animation: none; }
+    .ub-dashboard-content a.bg-card.border:hover, .ub-dashboard-content button.bg-card.border:hover { transform: none; }
 }

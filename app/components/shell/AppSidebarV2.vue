@@ -5,12 +5,10 @@ import type { NavSection } from "~/composables/useNavigation";
 const route = useRoute();
 const { sections } = useNavigation();
 const { theme, THEME_LABELS } = useTheme();
-const { themeMascot, mascots } = useBrandMascots();
 const { railCollapsed, toggleRail, openSections, initSection, toggleSection } =
   useShellState();
 const { user, logout, hasRole } = useAuth();
 const avatarFailed = ref(false);
-const activeMascot = computed(() => mascots[themeMascot.value]);
 const quickAction = computed(() =>
   hasRole("cliente")
     ? { to: "/store", label: "Explorar tienda" }
@@ -40,9 +38,6 @@ watch(
   },
   { immediate: true },
 );
-function openConcierge() {
-  window.dispatchEvent(new CustomEvent("urbanblade:open-concierge"));
-}
 async function onLogout() {
   await logout();
   await navigateTo("/login");
@@ -151,18 +146,6 @@ async function onLogout() {
         </ul>
       </section>
     </nav>
-    <button
-      v-show="!railCollapsed"
-      type="button"
-      class="ub-sidebar__helper"
-      @click="openConcierge"
-    >
-      <BrandMascot :mascot="themeMascot" state="welcome" size="sm" /><span
-        ><strong>¿Necesitas ayuda?</strong
-        ><small>{{ activeMascot.name }} · {{ activeMascot.role }}</small
-        ><em>Abrir Bladebot →</em></span
-      >
-    </button>
     <footer
       class="ub-sidebar__profile"
       :class="{ 'is-collapsed': railCollapsed }"

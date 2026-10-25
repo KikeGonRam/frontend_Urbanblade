@@ -43,7 +43,7 @@ defineEmits<{ close: [] }>()
         </div>
         <div v-if="ticket.descuentos > 0" class="flex justify-between gap-4">
           <dt class="text-muted">Descuentos</dt>
-          <dd class="text-emerald-300">−{{ money(ticket.descuentos) }}</dd>
+          <dd class="text-success">−{{ money(ticket.descuentos) }}</dd>
         </div>
         <div v-if="ticket.deposito_aplicado > 0" class="flex justify-between gap-4">
           <dt class="text-muted">Pagado al reservar</dt>

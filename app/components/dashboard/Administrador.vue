@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Bar, Line } from "vue-chartjs";
+import { Bar, Chart, Line } from "vue-chartjs";
 import type { DashboardInsight } from "~/components/dashboard/AnalyticsInsights.vue";
 import {
   chartAxisClean,
@@ -8,7 +8,9 @@ import {
   fmtInt,
   fmtMoney,
   goldRgba,
-  goldSeries,
+  chartColor,
+  chartSeries,
+  tokenRgba,
 } from "~/utils/chartTheme";
 import { appointmentStatus } from "~/utils/appointmentStatus";
 import { untilToday } from "~/utils/chartBuckets";
@@ -55,6 +57,7 @@ interface AdminData {
   };
   todayAppointments: Array<{
     id: string;
+    code: string;
     estado: string;
     hora_inicio: string;
     hora_fin: string;
@@ -64,6 +67,7 @@ interface AdminData {
   }>;
   recentAppointments: Array<{
     id: string;
+    code: string;
     estado: string;
     hora_inicio: string;
     fecha: string;
@@ -77,6 +81,8 @@ interface AdminData {
 
 const props = defineProps<{ data: AdminData }>();
 
+// Cita abierta en la ventana de detalle (se toca desde «Citas de hoy» o «Actividad»).
+const detailCode = ref<string | null>(null);
 
 const ratioActiveClients = computed(() =>
   props.data.kpis.total_clients > 0
@@ -105,19 +111,42 @@ const TABS = [
 const hasIncome = computed(() =>
   (props.data.incomeChart.values ?? []).some((v) => v),
 );
+const incomeTrend = computed(() => {
+  const vals = (props.data.incomeChart.values ?? []).map(Number);
+
+  return vals.map((_, i) => {
+    const win = vals.slice(Math.max(0, i - 2), i + 1);
+
+    return Math.round(win.reduce((sum, v) => sum + v, 0) / win.length);
+  });
+});
 const incomeData = computed(() => ({
   labels: props.data.incomeChart.labels ?? [],
   datasets: [
     {
+      type: "bar" as const,
       label: "Ingresos",
       data: props.data.incomeChart.values ?? [],
-      // La semana en curso en oro pleno; las anteriores más tenues.
-      backgroundColor: (props.data.incomeChart.values ?? []).map((_, i, all) =>
-        goldRgba(i === all.length - 1 ? 0.95 : 0.4),
+      // La semana en curso en oro; las anteriores en verde si subieron contra la semana previa y en rojo si bajaron.
+      backgroundColor: (props.data.incomeChart.values ?? []).map((v, i, all) =>
+        i === all.length - 1 ? chartColor(0, 0.95) : i === 0 || v >= all[i - 1]! ? chartColor(2, 0.8) : chartColor(4, 0.8),
       ),
       hoverBackgroundColor: goldRgba(1),
       borderRadius: 6,
       maxBarThickness: 36,
+      order: 2,
+    },
+    {
+      type: "line" as const,
+      label: "Tendencia",
+      data: incomeTrend.value,
+      borderColor: tokenRgba("ink", 0.75),
+      borderDash: [6, 4],
+      borderWidth: 2,
+      pointRadius: 0,
+      pointHoverRadius: 4,
+      cubicInterpolationMode: "monotone" as const,
+      order: 1,
     },
   ],
 }));
@@ -130,7 +159,7 @@ const incomeOptions = {
       ...chartTooltip(),
       callbacks: {
         title: (items: { label: string }[]) => `Semana del ${items[0]?.label ?? ""}`,
-        label: (ctx: { parsed: { y: number } }) => `Ingresos: ${fmtMoney(ctx.parsed.y)}`,
+        label: (ctx: { dataset: { label?: string }; parsed: { y: number } }) => `${ctx.dataset.label}: ${fmtMoney(ctx.parsed.y)}`,
       },
     },
   },
@@ -159,7 +188,7 @@ const servicesData = computed(() => ({
     {
       label: "Citas",
       data: servicesSorted.value.map((s) => s.value),
-      backgroundColor: goldSeries(servicesSorted.value.length),
+      backgroundColor: chartSeries(servicesSorted.value.length),
       borderRadius: 6,
       maxBarThickness: 22,
     },
@@ -196,6 +225,73 @@ const barberRanking = computed(() => {
     .filter((r) => r.value > 0);
 });
 
+const barberCombo = computed(() => {
+  const perf = props.data.barberPerformance;
+
+  return (perf.labels ?? [])
+    .map((label, i) => ({ label, revenue: perf.revenue?.[i] ?? 0, appointments: perf.appointments?.[i] ?? 0 }))
+    .filter((r) => r.revenue > 0 || r.appointments > 0);
+});
+const hasBarberCombo = computed(() => barberCombo.value.length > 0);
+const barberComboData = computed(() => ({
+  labels: barberCombo.value.map((r) => r.label),
+  datasets: [
+    {
+      type: "bar" as const,
+      label: "Ingresos",
+      data: barberCombo.value.map((r) => r.revenue),
+      backgroundColor: goldRgba(0.85),
+      borderRadius: 6,
+      maxBarThickness: 40,
+      yAxisID: "y",
+      order: 2,
+    },
+    {
+      type: "line" as const,
+      label: "Citas completadas",
+      data: barberCombo.value.map((r) => r.appointments),
+      borderColor: chartColor(2, 1),
+      backgroundColor: chartColor(2, 1),
+      borderWidth: 2.5,
+      pointRadius: 4,
+      pointHoverRadius: 6,
+      yAxisID: "y1",
+      order: 1,
+    },
+  ],
+}));
+const barberComboOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  interaction: { mode: "index" as const, intersect: false },
+  plugins: {
+    legend: { display: true, position: "top" as const, align: "end" as const, labels: { boxWidth: 10, boxHeight: 10, usePointStyle: true } },
+    tooltip: {
+      ...chartTooltip(),
+      displayColors: true,
+      callbacks: {
+        label: (ctx: { dataset: { label?: string }; parsed: { y: number } }) =>
+          ctx.dataset.label === "Ingresos" ? `Ingresos: ${fmtMoney(ctx.parsed.y)}` : `Citas completadas: ${fmtInt(ctx.parsed.y)}`,
+      },
+    },
+  },
+  scales: {
+    y: { ...chartScale(), beginAtZero: true, position: "left" as const, ticks: { ...chartScale().ticks, maxTicksLimit: 5, callback: (v: number | string) => fmtMoney(Number(v)) } },
+    y1: { ...chartScale(), beginAtZero: true, position: "right" as const, grid: { display: false }, ticks: { ...chartScale().ticks, precision: 0, maxTicksLimit: 5 } },
+    x: chartAxisClean(),
+  },
+};
+
+const clientBase = computed(() => {
+  const k = props.data.kpis;
+  const inactive = Math.max(0, k.total_clients - k.active_clients);
+
+  return [
+    { label: "Activos", value: k.active_clients, color: tokenRgba("success", 0.9) },
+    { label: "Inactivos", value: inactive, color: tokenRgba("ink", 0.25) },
+  ];
+});
+
 const clientTrendsUntilToday = computed(() =>
   untilToday(props.data.clientTrends.labels ?? [], props.data.clientTrends.values ?? []),
 );
@@ -209,15 +305,15 @@ const clientTrendsData = computed(() => ({
     {
       label: "Citas completadas",
       data: clientTrendsUntilToday.value.values,
-      borderColor: goldRgba(0.95),
-      backgroundColor: goldRgba(0.1),
+      borderColor: chartColor(1, 0.95),
+      backgroundColor: chartColor(1, 0.1),
       borderWidth: 2.5,
       fill: true,
       cubicInterpolationMode: "monotone" as const,
       pointRadius: 3,
       pointHoverRadius: 6,
-      pointBackgroundColor: goldRgba(1),
-      pointBorderColor: goldRgba(1),
+      pointBackgroundColor: chartColor(1, 1),
+      pointBorderColor: chartColor(1, 1),
       pointBorderWidth: 2,
     },
   ],
@@ -342,7 +438,7 @@ onMounted(async () => {
     </section>
 
     <div class="flex items-center gap-3 px-1 pt-1">
-      <span class="text-[10px] font-black uppercase tracking-[0.22em] text-gold"
+      <span class="text-[11px] font-black uppercase tracking-[0.22em] text-gold"
         >Resumen</span
       >
       <span class="h-px flex-1 bg-ink/[0.06]" />
@@ -412,12 +508,12 @@ onMounted(async () => {
       <UiChartCard
         class="lg:col-span-3"
         title="Ingresos por semana"
-        subtitle="Últimas 8 semanas"
+        subtitle="Últimas 8 semanas · verde subió, rojo bajó, dorado es la actual · línea: promedio móvil"
         height="h-80"
         :empty="!hasIncome"
         empty-text="Todavía no hay ingresos registrados."
       >
-        <Bar :data="incomeData" :options="incomeOptions" />
+        <Chart type="bar" :data="incomeData" :options="incomeOptions" />
       </UiChartCard>
       <UiChartCard
         class="lg:col-span-2"
@@ -431,14 +527,8 @@ onMounted(async () => {
       </UiChartCard>
     </section>
 
-    <DashboardAnalyticsInsights
-      :simple="data.insights"
-      :insights="data.sparkHighlights"
-      show-link
-    />
-
     <div class="flex items-center gap-3 px-1 pt-2">
-      <span class="text-[10px] font-black uppercase tracking-[0.22em] text-gold"
+      <span class="text-[11px] font-black uppercase tracking-[0.22em] text-gold"
         >Operación de hoy</span
       >
       <span class="h-px flex-1 bg-ink/[0.06]" />
@@ -477,10 +567,13 @@ onMounted(async () => {
           </p>
         </div>
         <div v-else class="space-y-2">
-          <div
+          <button
             v-for="appt in data.todayAppointments"
             :key="appt.id"
-            class="flex items-center gap-3 rounded-xl border border-ink/[0.05] p-3 transition-all hover:border-ink/10 hover:bg-ink/[0.02]"
+            type="button"
+            class="flex w-full items-center gap-3 rounded-xl border border-ink/[0.05] p-3 text-left transition-all hover:border-gold/40 hover:bg-ink/[0.02] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+            :aria-label="`Ver detalle de la cita de ${appt.cliente}`"
+            @click="detailCode = appt.code"
           >
             <div class="w-10 shrink-0 text-center">
               <p class="text-[11px] font-black text-ink">
@@ -502,7 +595,7 @@ onMounted(async () => {
             <UiBadge :tone="appointmentStatus(appt.estado).tone" class="shrink-0">
               {{ appointmentStatus(appt.estado).label }}
             </UiBadge>
-          </div>
+          </button>
         </div>
       </div>
 
@@ -529,10 +622,13 @@ onMounted(async () => {
 
           <div class="flex-1 p-5">
             <div v-if="activeTab === 'activity'" class="space-y-3">
-              <div
+              <button
                 v-for="appt in data.recentAppointments.slice(0, 6)"
                 :key="appt.id"
-                class="flex items-center gap-3"
+                type="button"
+                class="-mx-2 flex w-[calc(100%+1rem)] items-center gap-3 rounded-lg px-2 py-1 text-left transition-colors hover:bg-ink/[0.04] focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold"
+                :aria-label="`Ver detalle de la cita de ${appt.cliente}`"
+                @click="detailCode = appt.code"
               >
                 <UiAvatar :src="appt.cliente_avatar_url" :name="appt.cliente" />
                 <div class="min-w-0 flex-1">
@@ -546,7 +642,7 @@ onMounted(async () => {
                 <UiBadge :tone="appointmentStatus(appt.estado).tone" class="shrink-0">
                   {{ appointmentStatus(appt.estado).label }}
                 </UiBadge>
-              </div>
+              </button>
               <p
                 v-if="!data.recentAppointments.length"
                 class="py-8 text-center text-xs italic text-ink/45"
@@ -612,7 +708,7 @@ onMounted(async () => {
                         class="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-[#111] bg-danger"
                       />
                     </div>
-                    <p class="truncate text-[10px] font-black text-ink">
+                    <p class="truncate text-[11px] font-black text-ink">
                       {{ st.name.split(" ")[0] }}
                     </p>
                     <p class="text-[11px] font-black uppercase text-danger">
@@ -674,7 +770,7 @@ onMounted(async () => {
                           class="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-[#111] bg-success"
                         />
                       </div>
-                      <p class="truncate text-[10px] font-black text-ink">
+                      <p class="truncate text-[11px] font-black text-ink">
                         {{ st.name.split(" ")[0] }}
                       </p>
                       <p
@@ -778,6 +874,28 @@ onMounted(async () => {
           </UiChartCard>
         </section>
 
+        <section class="grid grid-cols-1 gap-5 xl:grid-cols-5">
+          <UiChartCard
+            class="xl:col-span-3"
+            title="Ingresos y citas por barbero"
+            subtitle="Barras: ingresos del mes · línea: citas completadas"
+            :empty="!hasBarberCombo"
+            empty-text="Todavía no hay actividad de barberos este mes."
+          >
+            <Chart type="bar" :data="barberComboData" :options="barberComboOptions" />
+          </UiChartCard>
+          <div class="xl:col-span-2">
+            <UiDonutCard
+              title="Base de clientes"
+              subtitle="Activos frente a inactivos"
+              :items="clientBase"
+              :center-value="`${Math.round(data.kpis.retention_rate ?? 0)}%`"
+              center-label="Retención"
+              empty-text="Todavía no hay clientes registrados."
+            />
+          </div>
+        </section>
+
         <section class="grid grid-cols-1 gap-5 lg:grid-cols-12">
           <div
             class="rounded-2xl border border-ink/[0.06] bg-card p-5 lg:col-span-5"
@@ -864,11 +982,11 @@ onMounted(async () => {
                   <div
                     class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-warning"
                   />
-                  <p class="text-[10px] text-ink/45">Cargando análisis...</p>
+                  <p class="text-[11px] text-ink/45">Cargando análisis...</p>
                 </div>
                 <p
                   v-else-if="!aiInsights.length"
-                  class="text-[10px] italic text-ink/45"
+                  class="text-[11px] italic text-ink/45"
                 >
                   Sin insights disponibles.
                 </p>
@@ -890,7 +1008,7 @@ onMounted(async () => {
                       ).dot
                     "
                   />
-                  <p class="text-[10px] text-ink/60">{{ insight.message }}</p>
+                  <p class="text-[11px] text-ink/60">{{ insight.message }}</p>
                 </div>
               </div>
             </div>
@@ -1008,5 +1126,14 @@ onMounted(async () => {
         </section>
       </div>
     </section>
+
+    <!-- Al final: es lectura de apoyo (plegada por defecto), no lo primero que el administrador necesita. -->
+    <DashboardAnalyticsInsights
+      :simple="data.insights"
+      :insights="data.sparkHighlights"
+      show-link
+    />
+
+    <UiAppointmentDetailModal v-if="detailCode" :code="detailCode" @close="detailCode = null" />
   </div>
 </template>

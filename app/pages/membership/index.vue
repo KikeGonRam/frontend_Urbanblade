@@ -15,9 +15,11 @@ import {
   type Stripe,
   type StripeCardElement,
   type StripeElements,
-} from "@stripe/stripe-js";
+} from "@stripe/stripe-js/pure";
 
 definePageMeta({ middleware: ["auth", "client"], layout: "dashboard" });
+
+useSeoMeta({ title: 'Membresía — UrbanBlade', robots: 'noindex' })
 
 interface Plan {
   id: string;
@@ -42,9 +44,9 @@ const ESTADO_LABEL: Record<string, string> = {
   cancelada: "Cancelada",
 };
 const ESTADO_CLASS: Record<string, string> = {
-  pendiente: "border-amber-500/25 bg-amber-500/10 text-amber-300",
-  activa: "border-emerald-500/25 bg-emerald-500/10 text-emerald-300",
-  pago_fallido: "border-red-500/25 bg-red-500/10 text-red-400",
+  pendiente: "border-warning/25 bg-warning/10 text-warning",
+  activa: "border-success/25 bg-success/10 text-success",
+  pago_fallido: "border-danger/25 bg-danger/10 text-danger",
   cancelada: "border-ink/15 bg-ink/5 text-ink/50",
 };
 
@@ -67,7 +69,7 @@ function fmtDate(iso: string | null) {
   });
 }
 
-const { data: plansResponse, pending: plansPending } = await useAsyncData(
+const { data: plansResponse, pending: plansPending, error: plansError, refresh: refreshPlans } = await useAsyncData(
   "membership-plans",
   () => apiFetch<{ data: Plan[] }>("/memberships/plans"),
 );
@@ -76,6 +78,7 @@ const plans = computed(() => plansResponse.value?.data ?? []);
 const {
   data: mineResponse,
   pending: minePending,
+  error: mineError,
   refresh: refreshMine,
 } = await useAsyncData("membership-mine", () =>
   apiFetch<{ data: Membership | null }>("/memberships/mine"),
@@ -224,7 +227,6 @@ async function cancelMembership() {
 <template>
   <div class="p-4 sm:p-6 lg:p-8">
     <header class="mb-6">
-      <p class="text-sm uppercase tracking-widest text-muted">UrbanBlade</p>
       <h1 class="mt-1 text-2xl font-semibold text-ink">
         Membresía <span class="text-gold">Recurrente</span>
       </h1>
@@ -233,14 +235,15 @@ async function cancelMembership() {
       </p>
     </header>
 
-    <p v-if="minePending || plansPending" class="text-sm text-muted">Cargando…</p>
+    <BrandStatePanel v-if="minePending || plansPending" mascot="bladebot" state="waiting" title="Cargando tu membresía…" />
+    <BrandStatePanel v-else-if="plansError || mineError" mascot="bruno" state="error" tone="danger" title="No pudimos cargar tu membresía" description="Revisa tu conexión e inténtalo de nuevo." action-label="Reintentar" @action="() => { refreshPlans(); refreshMine() }" />
 
     <!-- Ya tiene una membresía activa/pendiente/con pago fallido -->
     <section v-else-if="hasActiveOrPending && membership" class="ui-card max-w-lg p-6">
       <div class="flex items-center justify-between gap-2">
         <h2 class="text-lg font-black uppercase text-ink">{{ membership.plan.nombre }}</h2>
         <span
-          class="rounded-full border px-2 py-0.5 text-[10px] font-black uppercase"
+          class="rounded-full border px-2 py-0.5 text-[11px] font-black uppercase"
           :class="ESTADO_CLASS[membership.estado]"
         >{{ ESTADO_LABEL[membership.estado] ?? membership.estado }}</span>
       </div>
@@ -249,10 +252,10 @@ async function cancelMembership() {
       </p>
       <p class="mt-1 text-sm text-ink/80">{{ membership.plan.descuento_pct }}% de descuento en cada servicio</p>
 
-      <p v-if="membership.estado === 'pago_fallido'" class="mt-4 rounded-xl border border-red-500/25 bg-red-500/10 p-3 text-xs text-red-300">
+      <p v-if="membership.estado === 'pago_fallido'" class="mt-4 rounded-xl border border-danger/25 bg-danger/10 p-3 text-xs text-danger">
         Tu último cobro falló. Stripe reintentará automáticamente; si sigue fallando, actualiza tu método de pago con tu banco.
       </p>
-      <p v-else-if="membership.estado === 'pendiente'" class="mt-4 rounded-xl border border-amber-500/25 bg-amber-500/10 p-3 text-xs text-amber-300">
+      <p v-else-if="membership.estado === 'pendiente'" class="mt-4 rounded-xl border border-warning/25 bg-warning/10 p-3 text-xs text-warning">
         Confirmando tu primer pago…
       </p>
 
@@ -263,7 +266,7 @@ async function cancelMembership() {
         Próxima renovación: {{ fmtDate(membership.periodo_actual_fin) }}
       </p>
 
-      <p v-if="cancelError" role="alert" class="mt-3 text-sm text-red-400">{{ cancelError }}</p>
+      <p v-if="cancelError" role="alert" class="mt-3 text-sm text-danger">{{ cancelError }}</p>
 
       <button
         v-if="membership.estado !== 'pendiente' && !membership.cancelar_al_finalizar"
@@ -302,11 +305,11 @@ async function cancelMembership() {
     </section>
 
     <!-- Modal de contratación -->
-    <div v-if="subscribing" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+    <div v-if="subscribing" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" role="dialog" aria-modal="true" aria-labelledby="subscribe-title" @keydown.esc="closeSubscribe">
       <div class="w-full max-w-md rounded-2xl border border-line bg-card p-6">
         <div class="mb-4 flex items-center justify-between">
-          <h3 class="text-lg font-black uppercase text-ink">{{ subscribing.nombre }}</h3>
-          <button type="button" class="text-sm text-muted hover:text-ink" @click="closeSubscribe">✕</button>
+          <h3 id="subscribe-title" class="text-lg font-black uppercase text-ink">{{ subscribing.nombre }}</h3>
+          <button type="button" class="flex h-11 w-11 items-center justify-center text-sm text-muted hover:text-ink" aria-label="Cerrar" @click="closeSubscribe">✕</button>
         </div>
 
         <template v-if="subscribeSucceeded && subscribeWaiting">
@@ -315,7 +318,7 @@ async function cancelMembership() {
           </p>
         </template>
         <template v-else-if="subscribeSucceeded">
-          <p class="rounded-xl border border-emerald-500/25 bg-emerald-500/10 p-5 text-center text-sm text-emerald-300">
+          <p class="rounded-xl border border-success/25 bg-success/10 p-5 text-center text-sm text-success">
             Pago confirmado. Actualiza la página en unos momentos si todavía no ves tu membresía activa.
           </p>
         </template>
@@ -324,7 +327,7 @@ async function cancelMembership() {
             {{ fmtMoney(subscribing.precio_mensual) }}<span class="text-sm text-muted">/mes</span>
           </p>
           <div ref="cardElementRef" class="rounded-lg border border-line bg-main px-3 py-3" />
-          <p v-if="subscribeError" role="alert" class="text-sm text-red-400">{{ subscribeError }}</p>
+          <p v-if="subscribeError" role="alert" class="text-sm text-danger">{{ subscribeError }}</p>
           <button type="submit" class="ui-btn w-full justify-center" :disabled="subscribeProcessing">
             {{ subscribeProcessing ? "Procesando…" : "Contratar y pagar el primer mes" }}
           </button>

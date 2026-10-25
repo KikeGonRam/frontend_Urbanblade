@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { CsvColumn } from "~/composables/useCsvExport";
 /*
  * Fase 9.9 — Auditoría/logs de actividad, puerto de Log\ActivityLogController
  * (web). Api\Log\LogController ya existía pero solo tenía q + log_name; se
@@ -6,6 +7,8 @@
  * bloque de stats para llegar a paridad con la vista Blade.
  */
 definePageMeta({ middleware: ["auth", "engineer"], layout: "dashboard" });
+useSeoMeta({ title: 'Logs — UrbanBlade', robots: 'noindex' })
+
 
 interface LogRow {
   id: string;
@@ -40,10 +43,20 @@ const EVENT_LABEL: Record<string, string> = {
   deleted: "Eliminado",
 };
 const EVENT_CLASS: Record<string, string> = {
-  created: "border-emerald-500/25 bg-emerald-500/10 text-emerald-300",
-  updated: "border-amber-500/25 bg-amber-500/10 text-amber-300",
-  deleted: "border-red-500/25 bg-red-500/10 text-red-400",
+  created: "border-success/25 bg-success/10 text-success",
+  updated: "border-warning/25 bg-warning/10 text-warning",
+  deleted: "border-danger/25 bg-danger/10 text-danger",
 };
+
+const exportColumns: CsvColumn<LogRow>[] = [
+  { header: "Fecha", value: (l) => l.created_at },
+  { header: "Módulo", value: (l) => l.log_name },
+  { header: "Evento", value: (l) => l.event },
+  { header: "Descripción", value: (l) => l.description },
+  { header: "Usuario", value: (l) => l.causer?.name },
+  { header: "Correo", value: (l) => l.causer?.email },
+  { header: "Entidad", value: (l) => l.subject_type },
+];
 
 const { apiFetch } = useApi();
 
@@ -147,40 +160,47 @@ function fmtDate(iso: string | null) {
 <template>
   <div class="p-4 sm:p-6 lg:p-8">
     <header class="mb-6">
-      <p class="text-sm uppercase tracking-widest text-muted">UrbanBlade</p>
       <h1 class="mt-1 text-2xl font-semibold text-ink">
         Auditoría / <span class="text-gold">Logs</span>
       </h1>
       <p class="mt-1 text-sm text-muted">Historial de actividad del sistema.</p>
     </header>
+    <div class="mb-3">
+      <UiExportCsvButton
+        endpoint="/logs"
+        :query="{ q: search || undefined, log_name: logNameFilter || undefined, event: eventFilter || undefined, causer: causerFilter || undefined, fecha_desde: fechaDesde || undefined, fecha_hasta: fechaHasta || undefined }"
+        :columns="exportColumns"
+        filename="auditoria"
+      />
+    </div>
 
     <section
       v-if="!pending && !error"
       class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-5"
     >
       <div class="ui-card p-4">
-        <p class="text-[10px] font-bold uppercase text-muted">Total</p>
+        <p class="text-[11px] font-bold uppercase text-muted">Total</p>
         <p class="mt-1 text-xl font-black text-ink">{{ stats.total }}</p>
       </div>
       <div class="ui-card p-4">
-        <p class="text-[10px] font-bold uppercase text-muted">Hoy</p>
+        <p class="text-[11px] font-bold uppercase text-muted">Hoy</p>
         <p class="mt-1 text-xl font-black text-gold">{{ stats.hoy }}</p>
       </div>
       <div class="ui-card p-4">
-        <p class="text-[10px] font-bold uppercase text-muted">Creados</p>
-        <p class="mt-1 text-xl font-black text-emerald-400">
+        <p class="text-[11px] font-bold uppercase text-muted">Creados</p>
+        <p class="mt-1 text-xl font-black text-success">
           {{ stats.creates }}
         </p>
       </div>
       <div class="ui-card p-4">
-        <p class="text-[10px] font-bold uppercase text-muted">Actualizados</p>
-        <p class="mt-1 text-xl font-black text-amber-400">
+        <p class="text-[11px] font-bold uppercase text-muted">Actualizados</p>
+        <p class="mt-1 text-xl font-black text-warning">
           {{ stats.updates }}
         </p>
       </div>
       <div class="ui-card p-4">
-        <p class="text-[10px] font-bold uppercase text-muted">Eliminados</p>
-        <p class="mt-1 text-xl font-black text-red-400">{{ stats.deletes }}</p>
+        <p class="text-[11px] font-bold uppercase text-muted">Eliminados</p>
+        <p class="mt-1 text-xl font-black text-danger">{{ stats.deletes }}</p>
       </div>
     </section>
 
@@ -259,16 +279,16 @@ function fmtDate(iso: string | null) {
     </p>
 
     <section v-if="!pending && !error && logs.length" class="ui-card overflow-x-auto">
-      <table class="w-full text-left text-sm">
+      <table aria-label="Registro de auditoría" class="w-full text-left text-sm">
         <thead>
           <tr
-            class="border-b border-line text-[10px] uppercase tracking-wider text-muted"
+            class="border-b border-line text-[11px] uppercase tracking-wider text-muted"
           >
-            <th class="px-4 py-3">Fecha</th>
-            <th class="px-4 py-3">Categoría</th>
-            <th class="px-4 py-3">Evento</th>
-            <th class="px-4 py-3">Descripción</th>
-            <th class="px-4 py-3">Usuario</th>
+            <th scope="col" class="px-4 py-3">Fecha</th>
+            <th scope="col" class="px-4 py-3">Categoría</th>
+            <th scope="col" class="px-4 py-3">Evento</th>
+            <th scope="col" class="px-4 py-3">Descripción</th>
+            <th scope="col" class="px-4 py-3">Usuario</th>
           </tr>
         </thead>
         <tbody>
@@ -284,7 +304,7 @@ function fmtDate(iso: string | null) {
             <td class="px-4 py-3">
               <span
                 v-if="log.event"
-                class="rounded-full border px-2 py-0.5 text-[10px] font-black"
+                class="rounded-full border px-2 py-0.5 text-[11px] font-black"
                 :class="EVENT_CLASS[log.event]"
                 >{{ EVENT_LABEL[log.event] ?? log.event }}</span
               >

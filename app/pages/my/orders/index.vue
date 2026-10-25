@@ -7,6 +7,8 @@
  */
 definePageMeta({ middleware: ['auth', 'client'], layout: 'dashboard' })
 
+useSeoMeta({ title: 'Mis pedidos — UrbanBlade', robots: 'noindex' })
+
 interface OrderRow {
   id: string
   folio: string
@@ -18,9 +20,9 @@ interface OrderRow {
 
 const ESTADO_LABEL: Record<string, string> = { pendiente: 'Pendiente', entregado: 'Entregado', cancelado: 'Cancelado' }
 const ESTADO_CLASS: Record<string, string> = {
-  pendiente: 'border-amber-500/25 bg-amber-500/10 text-amber-300',
-  entregado: 'border-emerald-500/25 bg-emerald-500/10 text-emerald-300',
-  cancelado: 'border-red-500/25 bg-red-500/10 text-red-400',
+  pendiente: 'border-warning/25 bg-warning/10 text-warning',
+  entregado: 'border-success/25 bg-success/10 text-success',
+  cancelado: 'border-danger/25 bg-danger/10 text-danger',
 }
 
 const { apiFetch } = useApi()
@@ -73,7 +75,6 @@ async function cancelOrder(order: OrderRow) {
   <div class="p-4 sm:p-6 lg:p-8">
     <header class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <p class="text-sm uppercase tracking-widest text-muted">UrbanBlade</p>
         <h1 class="mt-1 text-2xl font-semibold text-ink">Mis <span class="text-gold">Pedidos</span></h1>
         <p class="mt-1 text-sm text-muted">Historial de tus compras en la tienda.</p>
       </div>
@@ -82,11 +83,11 @@ async function cancelOrder(order: OrderRow) {
       </NuxtLink>
     </header>
 
-    <p v-if="route.query.created" class="mb-5 rounded-xl border border-emerald-500/25 bg-emerald-500/10 p-4 text-sm text-emerald-300">
+    <p v-if="route.query.created" class="mb-5 rounded-xl border border-success/25 bg-success/10 p-4 text-sm text-success">
       Pedido {{ route.query.created }} creado. Paga y recoge en sucursal.
     </p>
 
-    <p v-if="pending" class="text-sm text-muted">Cargando pedidos…</p>
+    <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando tus pedidos…" />
     <BrandStatePanel
       v-else-if="error"
       mascot="bruno"
@@ -96,7 +97,7 @@ async function cancelOrder(order: OrderRow) {
       action-label="Reintentar"
       @action="refresh"
     />
-    <p v-if="actionError" role="alert" class="mb-4 text-sm text-red-400">{{ actionError }}</p>
+    <p v-if="actionError" role="alert" class="mb-4 text-sm text-danger">{{ actionError }}</p>
     <p v-if="!pending && !error && !orders.length" class="rounded-2xl border border-dashed border-line p-12 text-center text-sm text-muted">
       Todavía no tienes pedidos.
     </p>
@@ -106,10 +107,10 @@ async function cancelOrder(order: OrderRow) {
         <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
           <div>
             <p class="font-black text-ink">{{ order.folio }}</p>
-            <p class="text-[10px] font-bold uppercase text-muted">{{ fmtDate(order.created_at) }}</p>
+            <p class="text-[11px] font-bold uppercase text-muted">{{ fmtDate(order.created_at) }}</p>
           </div>
           <div class="flex items-center gap-3">
-            <span class="rounded-full border px-2 py-0.5 text-[10px] font-black uppercase" :class="ESTADO_CLASS[order.estado]">{{ ESTADO_LABEL[order.estado] ?? order.estado }}</span>
+            <span class="rounded-full border px-2 py-0.5 text-[11px] font-black uppercase" :class="ESTADO_CLASS[order.estado]">{{ ESTADO_LABEL[order.estado] ?? order.estado }}</span>
             <span class="font-black text-gold">{{ fmtMoney(order.total) }}</span>
           </div>
         </div>
@@ -118,7 +119,7 @@ async function cancelOrder(order: OrderRow) {
         </ul>
         <button
           v-if="order.estado === 'pendiente'" type="button" :disabled="cancelling === order.id"
-          class="rounded-lg border border-red-500/20 px-3 py-1.5 text-xs text-red-400 hover:bg-red-500/10 disabled:opacity-50"
+          class="rounded-lg border border-danger/20 px-3 py-1.5 text-xs text-danger hover:bg-danger/10 disabled:opacity-50 min-h-10"
           @click="cancelOrder(order)"
         >
           Cancelar pedido

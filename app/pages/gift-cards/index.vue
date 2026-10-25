@@ -17,9 +17,11 @@ import {
   type Stripe,
   type StripeCardElement,
   type StripeElements,
-} from "@stripe/stripe-js";
+} from "@stripe/stripe-js/pure";
 
 definePageMeta({ middleware: ["auth"], layout: "dashboard" });
+
+useSeoMeta({ title: 'Gift cards — UrbanBlade', robots: 'noindex' })
 
 interface MyGiftCard {
   code: string;
@@ -36,10 +38,10 @@ const ESTADO_LABEL: Record<string, string> = {
   cancelada: "Cancelada",
 };
 const ESTADO_CLASS: Record<string, string> = {
-  activa: "border-emerald-500/25 bg-emerald-500/10 text-emerald-300",
+  activa: "border-success/25 bg-success/10 text-success",
   agotada: "border-ink/15 bg-ink/5 text-ink/50",
-  expirada: "border-amber-500/25 bg-amber-500/10 text-amber-300",
-  cancelada: "border-red-500/25 bg-red-500/10 text-red-400",
+  expirada: "border-warning/25 bg-warning/10 text-warning",
+  cancelada: "border-danger/25 bg-danger/10 text-danger",
 };
 
 const { apiFetch } = useApi();
@@ -237,7 +239,6 @@ async function lookupBalance() {
 <template>
   <div class="p-4 sm:p-6 lg:p-8">
     <header class="mb-6">
-      <p class="text-sm uppercase tracking-widest text-muted">UrbanBlade</p>
       <h1 class="mt-1 text-2xl font-semibold text-ink">
         Tarjetas de <span class="text-gold">Regalo</span>
       </h1>
@@ -254,13 +255,13 @@ async function lookupBalance() {
           Monto entre {{ fmtMoney(MONTO_MIN) }} y {{ fmtMoney(MONTO_MAX) }}.
         </p>
 
-        <div v-if="!stripeConfigured" class="rounded-xl border border-amber-500/25 bg-amber-500/10 p-4 text-sm text-amber-300">
+        <div v-if="!stripeConfigured" class="rounded-xl border border-warning/25 bg-warning/10 p-4 text-sm text-warning">
           El cobro con tarjeta no está disponible en este momento.
         </div>
 
         <template v-else-if="revealedCode">
-          <div class="rounded-xl border border-emerald-500/25 bg-emerald-500/10 p-5 text-center">
-            <p class="text-[10px] font-black uppercase tracking-widest text-emerald-300">
+          <div class="rounded-xl border border-success/25 bg-success/10 p-5 text-center">
+            <p class="text-[11px] font-black uppercase tracking-widest text-success">
               ¡Tarjeta creada!
             </p>
             <p class="mt-2 font-mono text-2xl font-black tracking-widest text-ink">
@@ -280,7 +281,7 @@ async function lookupBalance() {
         </template>
 
         <template v-else-if="buySucceeded">
-          <div class="rounded-xl border border-emerald-500/25 bg-emerald-500/10 p-5 text-center text-sm text-emerald-300">
+          <div class="rounded-xl border border-success/25 bg-success/10 p-5 text-center text-sm text-success">
             Pago confirmado. Si la compra fue para regalar, el código llegará
             al correo indicado.
           </div>
@@ -290,7 +291,8 @@ async function lookupBalance() {
           <div>
             <label class="mb-1 block text-xs text-muted">Monto (MXN)</label>
             <input
-              v-model.number="buyForm.monto"
+v-model.number="buyForm.monto"
+              aria-label="Monto de la tarjeta de regalo"
               type="number"
               :min="MONTO_MIN"
               :max="MONTO_MAX"
@@ -301,7 +303,8 @@ async function lookupBalance() {
           <div>
             <label class="mb-1 block text-xs text-muted">Nombre de quien regala (opcional)</label>
             <input
-              v-model="buyForm.compradorNombre"
+v-model="buyForm.compradorNombre"
+              aria-label="Nombre del comprador"
               type="text"
               class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
             >
@@ -309,7 +312,8 @@ async function lookupBalance() {
           <div>
             <label class="mb-1 block text-xs text-muted">Correo de quien la recibe (opcional)</label>
             <input
-              v-model="buyForm.destinatarioEmail"
+v-model="buyForm.destinatarioEmail"
+              aria-label="Correo del destinatario"
               type="email"
               placeholder="Déjalo vacío si es para ti"
               class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
@@ -319,7 +323,7 @@ async function lookupBalance() {
             <label class="mb-1 block text-xs text-muted">Tarjeta</label>
             <div ref="cardElementRef" class="rounded-lg border border-line bg-main px-3 py-3" />
           </div>
-          <p v-if="buyError" role="alert" class="text-sm text-red-400">{{ buyError }}</p>
+          <p v-if="buyError" role="alert" class="text-sm text-danger">{{ buyError }}</p>
           <button
             type="submit"
             class="ui-btn w-full justify-center"
@@ -339,7 +343,8 @@ async function lookupBalance() {
 
         <form class="flex gap-2" @submit.prevent="lookupBalance">
           <input
-            v-model="lookupCode"
+v-model="lookupCode"
+            aria-label="Código de la tarjeta de regalo"
             type="text"
             placeholder="Ej. A1B2C3D4"
             class="flex-1 rounded-lg border border-line bg-main px-3 py-2 text-sm uppercase text-ink"
@@ -349,13 +354,13 @@ async function lookupBalance() {
           </button>
         </form>
 
-        <p v-if="lookupError" role="alert" class="mt-3 text-sm text-red-400">{{ lookupError }}</p>
+        <p v-if="lookupError" role="alert" class="mt-3 text-sm text-danger">{{ lookupError }}</p>
 
         <div v-if="lookupResult" class="mt-4 rounded-xl border border-line bg-ink/[0.03] p-4">
           <div class="flex items-center justify-between">
             <p class="font-mono text-sm font-black text-ink">{{ lookupResult.code }}</p>
             <span
-              class="rounded-full border px-2 py-0.5 text-[10px] font-black uppercase"
+              class="rounded-full border px-2 py-0.5 text-[11px] font-black uppercase"
               :class="ESTADO_CLASS[lookupResult.estado]"
             >{{ ESTADO_LABEL[lookupResult.estado] ?? lookupResult.estado }}</span>
           </div>
@@ -376,12 +381,12 @@ async function lookupBalance() {
           <div class="flex items-center justify-between gap-2">
             <p class="font-mono text-sm font-black text-ink">{{ card.code }}</p>
             <span
-              class="rounded-full border px-2 py-0.5 text-[9px] font-black uppercase"
+              class="rounded-full border px-2 py-0.5 text-[11px] font-black uppercase"
               :class="ESTADO_CLASS[card.estado]"
             >{{ ESTADO_LABEL[card.estado] ?? card.estado }}</span>
           </div>
           <p class="mt-2 text-xl font-black text-gold">{{ fmtMoney(card.saldo) }}</p>
-          <p class="text-[10px] font-bold uppercase text-muted">
+          <p class="text-[11px] font-bold uppercase text-muted">
             de {{ fmtMoney(card.monto_inicial) }} · {{ fmtDate(card.comprado_en) }}
           </p>
         </div>

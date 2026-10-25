@@ -1,6 +1,8 @@
 <script setup lang="ts">
 definePageMeta({ middleware: ['auth', 'barber'], layout: 'dashboard' })
 
+useSeoMeta({ title: 'Mi portafolio — UrbanBlade', robots: 'noindex' })
+
 interface Media {
   id: string
   url: string
@@ -141,7 +143,7 @@ async function remove(work: Work) {
         + Publicar trabajo
       </button>
     </header>
-    <p v-if="actionError" role="alert" class="mb-4 text-sm text-red-400">{{ actionError }}</p>
+    <p v-if="actionError" role="alert" class="mb-4 text-sm text-danger">{{ actionError }}</p>
 
     <!-- Métricas del portafolio -->
     <section class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -196,7 +198,7 @@ async function remove(work: Work) {
             </div>
             <button
               type="button"
-              class="rounded-lg border border-red-500/20 px-2.5 py-1 text-xs text-red-400 hover:bg-red-500/10"
+              class="rounded-lg border border-danger/20 px-2.5 py-1 text-xs text-danger hover:bg-danger/10 min-h-10"
               @click="remove(work)"
             >
               Eliminar
@@ -303,7 +305,7 @@ async function remove(work: Work) {
           </div>
         </div>
 
-        <p v-if="formError" class="mt-3 text-xs text-red-400">{{ formError }}</p>
+        <p v-if="formError" class="mt-3 text-xs text-danger">{{ formError }}</p>
 
         <div class="mt-6 flex justify-end gap-3">
           <button

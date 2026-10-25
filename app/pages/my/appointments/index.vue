@@ -18,9 +18,11 @@ import {
     type Stripe,
     type StripeCardElement,
     type StripeElements,
-} from "@stripe/stripe-js";
+} from "@stripe/stripe-js/pure";
 
 definePageMeta({ middleware: ["auth", "client"], layout: "dashboard" });
+
+useSeoMeta({ title: 'Mis citas — UrbanBlade', robots: 'noindex' })
 
 // Tipos derivados del OpenAPI de barber (npm run contract:types), no escritos a mano.
 type AppointmentRow = ApiAppointment;
@@ -35,12 +37,12 @@ const ESTADO_LABEL: Record<string, string> = {
   no_asistio: "No Asistió",
 };
 const ESTADO_CLASS: Record<string, string> = {
-  pendiente: "border-amber-500/25 bg-amber-500/10 text-amber-300",
-  confirmada: "border-blue-500/25 bg-blue-500/10 text-blue-300",
-  en_proceso: "border-sky-500/25 bg-sky-500/10 text-sky-300",
-  completada: "border-emerald-500/25 bg-emerald-500/10 text-emerald-300",
-  cancelada: "border-red-500/25 bg-red-500/10 text-red-400",
-  no_asistio: "border-orange-500/25 bg-orange-500/10 text-orange-300",
+  pendiente: "border-warning/25 bg-warning/10 text-warning",
+  confirmada: "border-info/25 bg-info/10 text-info",
+  en_proceso: "border-info/25 bg-info/10 text-info",
+  completada: "border-success/25 bg-success/10 text-success",
+  cancelada: "border-danger/25 bg-danger/10 text-danger",
+  no_asistio: "border-warning/25 bg-warning/10 text-warning",
 };
 
 const { apiFetch } = useApi();
@@ -253,7 +255,7 @@ async function submitForm() {
 
 // ── Horarios disponibles ──────────────────────────────────────────────────
 // AvailabilityController::slots() existía en el backend desde hace tiempo
-// pero no lo consumía nadie: el formulario pedía la hora con un <input
+// pero no lo consumía nadie: el formulario pedía la hora con un <input aria-label="Hora"
 // type="time"> a ciegas, así que el cliente solo descubría que el horario
 // estaba ocupado al recibir el 422. Ahora se piden los huecos reales en
 // cuanto barbero + servicio + fecha están completos.
@@ -493,7 +495,6 @@ onUnmounted(() => teardownStripe());
       class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
     >
       <div>
-        <p class="text-sm uppercase tracking-widest text-muted">UrbanBlade</p>
         <h1 class="mt-1 text-2xl font-semibold text-ink">
           Mis <span class="text-gold">Citas</span>
         </h1>
@@ -502,12 +503,6 @@ onUnmounted(() => teardownStripe());
         </p>
       </div>
       <div class="flex items-center gap-2">
-        <NuxtLink
-          to="/barbers"
-          class="rounded-lg border border-line px-4 py-2 text-sm font-semibold text-muted hover:text-ink"
-        >
-          Ver barberos
-        </NuxtLink>
         <button
           type="button"
           class="rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-black hover:bg-gold-dim"
@@ -518,37 +513,31 @@ onUnmounted(() => teardownStripe());
       </div>
     </header>
 
-    <section
-      v-if="!pending && !error"
-      class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4"
+    <!-- Resumen en una sola línea y solo si ya hay citas: cuatro tarjetas con ceros no dicen nada. -->
+    <ul
+      v-if="!pending && !error && stats.total > 0"
+      class="mb-5 flex flex-wrap gap-2"
+      aria-label="Resumen de tus citas"
     >
-      <div class="ui-card p-4">
-        <p class="text-[10px] font-bold uppercase text-muted">Total</p>
-        <p class="mt-1 text-xl font-black text-ink">{{ stats.total }}</p>
-      </div>
-      <div class="ui-card p-4">
-        <p class="text-[10px] font-bold uppercase text-muted">Próximas</p>
-        <p class="mt-1 text-xl font-black text-gold">{{ stats.proximas }}</p>
-      </div>
-      <div class="ui-card p-4">
-        <p class="text-[10px] font-bold uppercase text-muted">Completadas</p>
-        <p class="mt-1 text-xl font-black text-emerald-400">
-          {{ stats.completadas }}
-        </p>
-      </div>
-      <div class="ui-card p-4">
-        <p class="text-[10px] font-bold uppercase text-muted">Canceladas</p>
-        <p class="mt-1 text-xl font-black text-red-400">
-          {{ stats.canceladas }}
-        </p>
-      </div>
-    </section>
+      <li class="rounded-full border border-line bg-card px-3.5 py-1.5 text-sm text-muted">
+        <span class="font-black text-ink">{{ stats.total }}</span> en total
+      </li>
+      <li class="rounded-full border border-line bg-card px-3.5 py-1.5 text-sm text-muted">
+        <span class="font-black text-gold">{{ stats.proximas }}</span> próximas
+      </li>
+      <li class="rounded-full border border-line bg-card px-3.5 py-1.5 text-sm text-muted">
+        <span class="font-black text-success">{{ stats.completadas }}</span> completadas
+      </li>
+      <li v-if="stats.canceladas > 0" class="rounded-full border border-line bg-card px-3.5 py-1.5 text-sm text-muted">
+        <span class="font-black text-danger">{{ stats.canceladas }}</span> canceladas
+      </li>
+    </ul>
 
     <section
       v-if="next"
       class="mb-6 rounded-2xl border border-gold/30 bg-gold/5 p-5"
     >
-      <p class="text-[10px] font-bold uppercase tracking-widest text-gold">
+      <p class="text-[11px] font-bold uppercase tracking-widest text-gold">
         Tu próxima cita
       </p>
       <p class="mt-1 font-black text-ink">
@@ -570,14 +559,15 @@ onUnmounted(() => teardownStripe());
       action-label="Reintentar"
       @action="refresh"
     />
-    <p
+    <BrandStatePanel
       v-else-if="!appointments.length"
-      class="rounded-2xl border border-dashed border-line p-12 text-center text-sm text-muted"
-    >
-      Todavía no tienes citas.
-    </p>
+      mascot="nava"
+      state="empty"
+      title="Aún no tienes citas"
+      description="Reserva tu primera visita con el botón de arriba y aquí verás su estado, la hora y cómo reagendarla."
+    />
 
-    <p v-if="cancelError" class="mb-3 text-sm text-red-400">
+    <p v-if="cancelError" class="mb-3 text-sm text-danger">
       {{ cancelError }}
     </p>
 
@@ -585,12 +575,12 @@ onUnmounted(() => teardownStripe());
       <p
         v-if="debtTotal > 0"
         role="alert"
-        class="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-200"
+        class="rounded-xl border border-warning/30 bg-warning/10 p-4 text-sm text-warning"
       >
         Tienes un adeudo por inasistencia de <strong>{{ money(debtTotal) }}</strong>.
         Págalo en la barbería (efectivo o transferencia) para volver a reservar.
       </p>
-      <output v-if="ticketError" class="block text-sm text-red-400">
+      <output v-if="ticketError" class="block text-sm text-danger">
         {{ ticketError }}
       </output>
       <div v-for="appt in appointments" :key="appt.id" class="ui-card p-5">
@@ -606,7 +596,7 @@ onUnmounted(() => teardownStripe());
             </p>
           </div>
           <span
-            class="rounded-full border px-2 py-0.5 text-[10px] font-black uppercase"
+            class="rounded-full border px-2 py-0.5 text-[11px] font-black uppercase"
             :class="ESTADO_CLASS[appt.estado]"
             >{{ ESTADO_LABEL[appt.estado] ?? appt.estado }}</span
           >
@@ -622,7 +612,7 @@ onUnmounted(() => teardownStripe());
             v-if="appt.estado === 'completada'"
             type="button"
             :disabled="ticketBusy === appt.id"
-            class="rounded-lg border border-emerald-500/30 px-3 py-1.5 text-xs font-semibold text-emerald-300 hover:bg-emerald-500/10 disabled:opacity-50"
+            class="rounded-lg border border-success/30 px-3 py-1.5 text-xs font-semibold text-success hover:bg-success/10 disabled:opacity-50 min-h-10"
             @click="openTicket(appt)"
           >
             {{ ticketBusy === appt.id ? "Abriendo…" : "Ver ticket" }}
@@ -630,7 +620,7 @@ onUnmounted(() => teardownStripe());
           <button
             v-if="canPay(appt) && stripeConfigured"
             type="button"
-            class="rounded-lg bg-gold px-3 py-1.5 text-xs font-semibold text-black hover:bg-gold-dim"
+            class="rounded-lg bg-gold px-3 py-1.5 text-xs font-semibold text-black hover:bg-gold-dim min-h-10"
             @click="openPay(appt)"
           >
             Pagar con tarjeta
@@ -638,7 +628,7 @@ onUnmounted(() => teardownStripe());
           <template v-if="canManage(appt)">
             <button
               type="button"
-              class="rounded-lg border border-line px-3 py-1.5 text-xs text-muted hover:text-ink"
+              class="rounded-lg border border-line px-3 py-1.5 text-xs text-muted hover:text-ink min-h-10"
               @click="openReschedule(appt)"
             >
               Reagendar
@@ -646,7 +636,7 @@ onUnmounted(() => teardownStripe());
             <button
               type="button"
               :disabled="cancelling === appt.id"
-              class="rounded-lg border border-red-500/20 px-3 py-1.5 text-xs text-red-400 hover:bg-red-500/10 disabled:opacity-50"
+              class="rounded-lg border border-danger/20 px-3 py-1.5 text-xs text-danger hover:bg-danger/10 disabled:opacity-50 min-h-10"
               @click="cancelAppointment(appt)"
             >
               {{ cancelling === appt.id ? "Cancelando…" : "Cancelar" }}
@@ -673,7 +663,8 @@ onUnmounted(() => teardownStripe());
             <div>
               <label class="mb-1 block text-xs text-muted">Barbero</label>
               <select
-                v-model="form.barber_id"
+v-model="form.barber_id"
+                aria-label="Barbero"
                 required
                 class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
               >
@@ -686,7 +677,8 @@ onUnmounted(() => teardownStripe());
             <div>
               <label class="mb-1 block text-xs text-muted">Servicio</label>
               <select
-                v-model="form.service_id"
+v-model="form.service_id"
+                aria-label="Servicio"
                 required
                 class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
               >
@@ -701,7 +693,8 @@ onUnmounted(() => teardownStripe());
             <div>
               <label class="mb-1 block text-xs text-muted">Fecha</label>
               <input
-                v-model="form.fecha"
+v-model="form.fecha"
+                aria-label="Fecha"
                 type="date"
                 required
                 class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
@@ -715,15 +708,17 @@ onUnmounted(() => teardownStripe());
                 dejar al cliente sin poder reservar.
               -->
               <input
-                v-if="slotsFailed"
+v-if="slotsFailed"
                 v-model="form.hora_inicio"
+                aria-label="Hora de inicio"
                 type="time"
                 required
                 class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
               >
               <select
-                v-else
+v-else
                 v-model="form.hora_inicio"
+                aria-label="Hora de inicio"
                 required
                 :disabled="slotsPending || !slots.length"
                 class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink disabled:opacity-50"
@@ -752,12 +747,13 @@ onUnmounted(() => teardownStripe());
           <div>
             <label class="mb-1 block text-xs text-muted">Notas</label>
             <textarea
-              v-model="form.notas"
+v-model="form.notas"
+              aria-label="Notas"
               rows="2"
               class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
             />
           </div>
-          <p v-if="formError" class="text-sm text-red-400">{{ formError }}</p>
+          <p v-if="formError" class="text-sm text-danger">{{ formError }}</p>
           <div class="mt-5 flex gap-3">
             <button
               type="submit"
@@ -805,7 +801,7 @@ onUnmounted(() => teardownStripe());
             ref="cardElementRef"
             class="rounded-lg border border-line bg-main px-3 py-3"
           />
-          <p v-if="payError" class="mt-2 text-sm text-red-400">
+          <p v-if="payError" class="mt-2 text-sm text-danger">
             {{ payError }}
           </p>
           <p class="mt-2 text-[11px] text-muted">
@@ -834,7 +830,7 @@ onUnmounted(() => teardownStripe());
 
         <template v-else>
           <div
-            class="rounded-lg border border-emerald-500/25 bg-emerald-500/10 p-4 text-sm text-emerald-300"
+            class="rounded-lg border border-success/25 bg-success/10 p-4 text-sm text-success"
           >
             Pago recibido.
             {{ payConfirming ? "Confirmando con el sistema…" : "Listo." }}
