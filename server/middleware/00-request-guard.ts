@@ -15,7 +15,9 @@ export default defineEventHandler((event) => {
     throw createError({ statusCode: 405, statusMessage: 'Method Not Allowed' })
   }
 
-  if (RUTA_SOSPECHOSA.test(event.path)) {
+  // Solo la ruta: los parámetros (p. ej. /abrir?to=/\evil.com) los valida cada página.
+  const ruta = event.path.split('?')[0] ?? ''
+  if (RUTA_SOSPECHOSA.test(ruta)) {
     throw createError({ statusCode: 404, statusMessage: 'Not Found' })
   }
 })
