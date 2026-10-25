@@ -65,5 +65,5 @@ export function useConsent() {
     bannerOpen.value = true
   }
 
-  return { choice, bannerOpen, accept, reject, reopen, loadAnalytics }
+  return { choice, bannerOpen, accept, reject, reopen, loadAnalytics, clearAnalyticsCookies }
 }

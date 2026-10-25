@@ -227,6 +227,7 @@ async function confirmReject(payment: PendingPayment) {
               v-else
               :src="payment.comprobante_url"
               alt="Comprobante"
+              data-clarity-mask="true"
               class="max-h-80 w-full object-contain"
             >
           </a>

@@ -44,6 +44,7 @@ const visible = ref(false);
       :placeholder="placeholder"
       :aria-invalid="invalid || undefined"
       :aria-describedby="describedBy"
+      data-clarity-mask="true"
       :class="[
         'ui-input w-full pr-10',
         invalid
