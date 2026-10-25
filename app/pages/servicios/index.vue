@@ -9,8 +9,8 @@
 definePageMeta({ layout: 'public' })
 
 useSeoMeta({
-  title: 'Servicios — UrbanBlade',
-  description: 'Catálogo de cortes, barba y grooming de estudio en UrbanBlade.',
+  title: 'Servicios de barbería en Santa María Atarasquillo — UrbanBlade',
+  description: 'Precios y duración de cada corte, barba y tratamiento de UrbanBlade, barbería en Santa María Atarasquillo, Lerma. Reserva el que necesites en un paso.',
 })
 
 interface ServiceRow {
