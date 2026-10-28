@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { makeUser, mockApi } from "./support/api-mock";
+import { makeUser, mockApi } from "../support/api-mock";
 
 /**
  * Diagnostico puntual: QUE elemento desborda y COMO esta la jerarquia de

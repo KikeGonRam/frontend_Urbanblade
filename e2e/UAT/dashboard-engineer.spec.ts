@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { ENGINEER_DASHBOARD, SYSTEM_STATUS } from "./support/dashboard-fixtures";
+import { ENGINEER_DASHBOARD, SYSTEM_STATUS } from "../support/dashboard-fixtures";
 
 /** Dashboard del ingeniero con el kit: estado del sistema y módulos del negocio, solo lectura. */
 test("el ingeniero ve el estado del sistema y los módulos sin datos de clientes", async ({ page }) => {

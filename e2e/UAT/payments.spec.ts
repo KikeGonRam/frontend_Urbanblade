@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { makeUser, mockApi } from "./support/api-mock";
+import { makeUser, mockApi } from "../support/api-mock";
 
 test("el cobro con tarjeta conserva el contrato seguro con Stripe", async ({ page }) => {
   await page.addInitScript(() => {

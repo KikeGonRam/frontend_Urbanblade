@@ -78,7 +78,7 @@ demo que le queda bien al diseño.
   extremos es solo de desarrollo y no se publica.
 - **Reporta antes de corregir**: algunos fallos son decisiones de diseño (¿se trunca o se
   parte?). Lista cada uno con su propuesta y detente; corrige cuando lo pidan. La herramienta
-  de medición ya existe: `e2e/auditoria-ui.spec.ts` y `docs/AUDITORIA_UI_UX.md`.
+  de medición ya existe: `e2e/SIT/auditoria-ui.spec.ts` y `docs/AUDITORIA_UI_UX.md`.
 
 | Si ves | Casi siempre es | Arreglo |
 | --- | --- | --- |

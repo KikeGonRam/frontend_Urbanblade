@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { makeUser, mockApi } from "./support/api-mock";
+import { makeUser, mockApi } from "../support/api-mock";
 
 /**
  * Regresiones de seguridad del frontend.

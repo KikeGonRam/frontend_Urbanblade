@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { BARBER_DASHBOARD, CLIENT_DASHBOARD } from "./support/dashboard-fixtures";
+import { BARBER_DASHBOARD, CLIENT_DASHBOARD } from "../support/dashboard-fixtures";
 
 /** Dashboards de barbero y cliente con el kit: mismos datos de /dashboard, presentados con claridad. */
 async function open(page: Page, role: string, dashboard: unknown, from: string) {

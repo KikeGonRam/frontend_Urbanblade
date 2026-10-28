@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { mockApi } from "./support/api-mock";
+import { mockApi } from "../support/api-mock";
 
 /**
  * TT39 (HT-16): poste de barbería 3D en el hero de la portada. Solo aparece en pantallas

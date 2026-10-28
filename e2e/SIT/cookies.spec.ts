@@ -2,7 +2,7 @@ import { request as httpRequest } from "node:http";
 
 import { expect, test } from "@playwright/test";
 
-import { mockApi } from "./support/api-mock";
+import { mockApi } from "../support/api-mock";
 
 /**
  * Consentimiento de cookies: hasta que la persona acepta, no se carga Google Tag Manager ni

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { mockApi } from './support/api-mock'
+import { mockApi } from '../support/api-mock'
 
 test('el sidebar abre el centro de notificaciones sin una campana duplicada en el header', async ({ page }) => {
   await mockApi(page)

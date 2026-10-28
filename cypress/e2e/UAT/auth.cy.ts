@@ -1,4 +1,4 @@
-import { makeUser, mockApi } from '../support/api-mock'
+import { makeUser, mockApi } from '../../support/api-mock'
 
 /**
  * Recorridos críticos de sesión sobre el build de producción: guard de ruta, login con error real

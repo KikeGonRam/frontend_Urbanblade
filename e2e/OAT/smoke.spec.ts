@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { mockApi } from "./support/api-mock";
+import { mockApi } from "../support/api-mock";
 
 /**
  * Humo sobre el bundle de producción: que las páginas públicas rendericen de

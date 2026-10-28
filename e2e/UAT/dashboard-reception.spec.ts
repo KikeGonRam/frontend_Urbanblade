@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { RECEPTION_DASHBOARD } from "./support/dashboard-fixtures";
+import { RECEPTION_DASHBOARD } from "../support/dashboard-fixtures";
 
 /** Dashboard de recepción con el kit: KPIs que llevan a donde se atienden y listas legibles. */
 test("recepción ve sus pendientes y cada KPI lleva a su pantalla", async ({ page }) => {

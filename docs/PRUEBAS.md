@@ -5,6 +5,26 @@ Fuentes: [package.json](../package.json), [Vitest](../vitest.config.ts),
 Node 24 y npm ci --legacy-peer-deps reproducen la instalación de CI.
 No usar cuentas, tokens ni endpoints reales para las pruebas simuladas.
 
+## Tipos de prueba
+
+Las pruebas de comportamiento se clasifican en cuatro tipos, igual que en el
+backend ([PRUEBAS del backend](https://github.com/KikeGonRam/barber/blob/main/docs/PRUEBAS.md)).
+Cada tipo tiene su carpeta y su comando.
+
+| Tipo | Dónde | Herramienta | Qué verifica | Comando |
+| --- | --- | --- | --- | --- |
+| **UT / UIT** · Unitarias y de integración de unidades | [tests/UT](../tests/UT) | Vitest + Vue Test Utils | Funciones, stores y utilidades aisladas (carrito, reglas de negocio, protección de abuso) y páginas o formularios montados con sus colaboradores (login, recuperación, horario de barbero) con dependencias externas simuladas. | `npm run test:ut` |
+| **SIT** · Integración de sistema | [e2e/SIT](../e2e/SIT) | Playwright | La aplicación construida funcionando con la API simulada: cookies, apertura de enlaces, mapa del sistema, diseño, accesibilidad y kit de interfaz. | `npm run test:sit` |
+| **UAT** · Aceptación de usuario | [e2e/UAT](../e2e/UAT) y [cypress/e2e/UAT](../cypress/e2e/UAT) | Playwright y Cypress | Flujos por rol: autenticación, reservas, estados de citas, pagos, cierre de caja, paneles de cada rol, notificaciones. | `npm run test:uat` |
+| **OAT** · Aceptación operativa | [e2e/OAT](../e2e/OAT) y [cypress/e2e/OAT](../cypress/e2e/OAT) | Playwright y Cypress | Que el sitio se pueda operar: humo y salud, PWA instalable y sin conexión, cabeceras de seguridad HTTP. | `npm run test:oat` |
+
+`npm run test:unit` sigue ejecutando todo Vitest (los UT) y `npm run test:e2e`
+todo Playwright (SIT + UAT + OAT). Para clasificar un archivo nuevo: si no monta la
+aplicación, es UT; si recorre la aplicación construida, es OAT cuando verifica
+salud, instalación o cabeceras, UAT cuando verifica un flujo concreto de un rol
+y SIT cuando verifica una propiedad transversal de la aplicación. Los soportes
+compartidos viven en [e2e/support](../e2e/support).
+
 ## Niveles y comandos
 
 | Comando | Cobertura | Límite |
