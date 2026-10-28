@@ -7,7 +7,7 @@ import {
   money,
   remainingLabel,
   remainingTone,
-} from "../app/utils/serviceFlow";
+} from "../../app/utils/serviceFlow";
 
 /**
  * Flujo de citas V2 en las pantallas: aprobar, iniciar solo con pago resuelto, cuenta regresiva del servicio, agregar

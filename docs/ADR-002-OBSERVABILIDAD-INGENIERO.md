@@ -22,7 +22,7 @@ Mostrar u ocultar un enlace en Nuxt no constituye una barrera suficiente.
 
 La UI se mantiene en [componentes](../app/components) y
 [app/pages/system/index.vue](../app/pages/system/index.vue).
-[e2e/dashboard-engineer.spec.ts](../e2e/dashboard-engineer.spec.ts) verifica
+[e2e/UAT/dashboard-engineer.spec.ts](../e2e/UAT/dashboard-engineer.spec.ts) verifica
 el comportamiento con mocks. La disponibilidad actual y los permisos remotos
 requieren comprobarse en un entorno autorizado.
 

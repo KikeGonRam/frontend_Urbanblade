@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { mockApi } from "./support/api-mock";
+import { mockApi } from "../support/api-mock";
 
 /**
  * PWA: la web es instalable (manifiesto + íconos) y sigue funcionando sin conexión

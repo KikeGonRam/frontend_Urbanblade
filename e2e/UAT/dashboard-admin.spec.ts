@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { ADMIN_DASHBOARD } from "./support/dashboard-fixtures";
+import { ADMIN_DASHBOARD } from "../support/dashboard-fixtures";
 
 /**
  * Dashboard del administrador con el kit (skill urbanblade-ui-kit, fase 2): KPIs con variación,

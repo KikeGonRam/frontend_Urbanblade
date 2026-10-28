@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { makeUser, mockApi } from "./support/api-mock";
+import { makeUser, mockApi } from "../support/api-mock";
 
 /**
  * Fase 6: recorridos críticos de sesión sobre el BUILD DE PRODUCCIÓN.

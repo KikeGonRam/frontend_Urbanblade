@@ -5,7 +5,7 @@ import {
   buildAndroidIntent,
   isAndroid,
   safeWebPath,
-} from "../app/utils/appLinks";
+} from "../../app/utils/appLinks";
 
 /**
  * Enlaces inteligentes de los correos (/abrir): celular Android -> app; computadora, iPhone o ruta sin

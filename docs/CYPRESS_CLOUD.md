@@ -11,8 +11,8 @@ contra la API simulada de `e2e/support/mock-api.mjs`; no hace falta Laravel, Mon
 
 | Archivo | Qué comprueba |
 |---|---|
-| `cypress/e2e/smoke.cy.ts` | La landing renderiza (título, Acceso y Reservar, sin `console.error`), las páginas legales cargan y el catálogo público muestra los servicios de la API. |
-| `cypress/e2e/auth.cy.ts` | Una ruta protegida manda a `/login?redirect=/dashboard`; el login rechaza credenciales inválidas sin salir de la página; un cliente con perfil completo entra al dashboard; el login declara `plataforma: web` y `device_name: Nuxt Web`. |
+| `cypress/e2e/OAT/smoke.cy.ts` | La landing renderiza (título, Acceso y Reservar, sin `console.error`), las páginas legales cargan y el catálogo público muestra los servicios de la API. |
+| `cypress/e2e/UAT/auth.cy.ts` | Una ruta protegida manda a `/login?redirect=/dashboard`; el login rechaza credenciales inválidas sin salir de la página; un cliente con perfil completo entra al dashboard; el login declara `plataforma: web` y `device_name: Nuxt Web`. |
 
 Los datos simulados del navegador están en `cypress/support/api-mock.ts` y usan el
 tipo `ApiUser` generado del OpenAPI. Verifica los tipos cuando cambia el contrato;

@@ -14,7 +14,7 @@ foco, nombres accesibles, jerarquía de encabezados y desbordes de layout, en lo
 
 | Qué | Cómo |
 |---|---|
-| Herramienta | `e2e/auditoria-ui.spec.ts` (Playwright + medición propia en el navegador) |
+| Herramienta | `e2e/SIT/auditoria-ui.spec.ts` (Playwright + medición propia en el navegador) |
 | Cobertura web | 4 temas × 8 páginas × 4 anchos (320, 375, 768, 1440) = 128 mediciones |
 | Contraste | WCAG 2.1 AA: 4.5:1 texto normal, 3:1 texto grande (≥24 px, o ≥18.66 px en negrita) |
 | Blancos táctiles | 44 px, **el mínimo que declara `design-qa.md`** |
@@ -204,14 +204,14 @@ corrigió y se verificó a mano.
 |---|---|
 | `lang="es"` en `nuxt.config.ts` (WCAG 2.1 A, 3.1.1) | fallos de idioma: **→ 0** |
 | Títulos en `login.vue`, `dashboard/index.vue`, `error.vue` (WCAG A, 2.4.2) | páginas sin `<title>`: **48 → 0** |
-| `e2e/auditoria-ui.spec.ts` con guarda `UB_AUDITORIA` | no altera la suite normal |
+| `e2e/SIT/auditoria-ui.spec.ts` con guarda `UB_AUDITORIA` | no altera la suite normal |
 
 ## Cómo reproducir
 
 ```powershell
 cd frontend-urban
 $env:UB_AUDITORIA=1
-npx playwright test e2e/auditoria-ui.spec.ts --workers=1 --reporter=list
+npx playwright test e2e/SIT/auditoria-ui.spec.ts --workers=1 --reporter=list
 ```
 
 ## Lo que deliberadamente no hice

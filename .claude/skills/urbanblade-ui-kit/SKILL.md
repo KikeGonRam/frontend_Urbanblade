@@ -102,7 +102,7 @@ leyenda abajo, tooltip con `bg-card`, colores de `useChartTheme()` (oro + neutro
 - `UiChoiceCards`: reserva ("¿Cuándo prefieres pagar?"), caja (método de pago) y entrega de
   pedidos. En pedidos el selector ofrecía "QR", que el backend rechaza (422); ahora solo
   muestra efectivo, transferencia y tarjeta.
-- Pruebas: `e2e/ui-kit.spec.ts`; `e2e/payments.spec.ts` busca la tarjeta como `radio`.
+- Pruebas: `e2e/SIT/ui-kit.spec.ts`; `e2e/UAT/payments.spec.ts` busca la tarjeta como `radio`.
 
 ## 5b. Fase 2 — dashboards (26-sep-2026)
 
@@ -130,7 +130,7 @@ leyenda abajo, tooltip con `bg-card`, colores de `useChartTheme()` (oro + neutro
 - Pendiente: `MembershipCard` conserva sus colores por nivel a propósito (es la tarjeta de socio).
 - Títulos fieles al backend: `incomeChart` = 8 semanas; `clientTrends` = citas
   completadas del mes en tramos de 3 días (no "clientes").
-- Pruebas: `e2e/dashboard-admin.spec.ts`, `e2e/dashboard-reception.spec.ts`, datos en
+- Pruebas: `e2e/UAT/dashboard-admin.spec.ts`, `e2e/UAT/dashboard-reception.spec.ts`, datos en
   `e2e/support/dashboard-fixtures.ts`. Para abrir el dashboard con `page.route` se entra
   por otra página y se hace clic en el enlace a `/dashboard` (en SSR no aplica el mock).
 - `UiStatCard` con enlace: resolver `NuxtLink` en el script; `resolveComponent` dentro de la

@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { makeUser, mockApi } from "./support/api-mock";
+import { makeUser, mockApi } from "../support/api-mock";
 
 /**
  * Auditoria UI/UX MEDIDA (herramienta de diagnostico, no prueba de regresion).
@@ -16,7 +16,7 @@ import { makeUser, mockApi } from "./support/api-mock";
  *   - foco visible al tabular
  *
  * Uso (PowerShell, desde frontend-urban/):
- *   $env:UB_AUDITORIA=1; npx playwright test e2e/auditoria-ui.spec.ts --workers=1 --reporter=list
+ *   $env:UB_AUDITORIA=1; npx playwright test e2e/SIT/auditoria-ui.spec.ts --workers=1 --reporter=list
  *
  * Sin UB_AUDITORIA la prueba se salta sola, para no colarse en la suite normal.
  */
