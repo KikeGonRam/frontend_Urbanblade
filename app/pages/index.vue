@@ -376,7 +376,7 @@ onBeforeUnmount(() => {
           <div class="flex flex-col gap-3 pt-3">
             <NuxtLink v-if="isAuthenticated" to="/dashboard" class="ui-btn w-full py-3">Mi Panel</NuxtLink>
             <template v-else>
-              <NuxtLink to="/login" class="py-2 text-center text-[11px] font-black uppercase tracking-widest text-muted">Acceso</NuxtLink>
+              <NuxtLink to="/login" class="py-2 text-center text-[11px] font-black uppercase tracking-widest text-ink transition hover:text-gold">Acceso</NuxtLink>
               <NuxtLink to="/reservar" class="ui-btn w-full py-3">Reservar Ahora</NuxtLink>
             </template>
           </div>
@@ -749,7 +749,11 @@ onBeforeUnmount(() => {
       </div>
     </Transition>
 
-    <BrandMascotCompanion :yield-space="showBar && !mobileMenuOpen" />
+    <!-- yieldSpace también cubre el tope de la página (!scrolled): ahí ya está el botón
+         "Reservar mi cita" del propio héroe, y en celulares bajos (p.ej. iPhone 375×812)
+         la fila de estadísticas ("11 Servicios disponibles"...) cae justo donde la mascota
+         flota fija, tapándola -- hallazgo real de un recorrido de usabilidad (27-oct-2026). -->
+    <BrandMascotCompanion :yield-space="(showBar || !scrolled) && !mobileMenuOpen" />
   </div>
 </template>
 
