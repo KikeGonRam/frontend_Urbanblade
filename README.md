@@ -1,202 +1,100 @@
-# UrbanBlade — frontend-urban
+# UrbanBlade · Frontend
 
-<p align="center">
-  <img src="docs/assets/landing.png" alt="Landing de UrbanBlade" width="1000" />
-</p>
+Aplicación web para gestionar una barbería: reservas, agenda, cobros, inventario,
+tienda y reportes, con experiencias para administración, recepción, barberos y clientes.
 
-<p align="center">
-  <a href="public/video/UrbanBlade.mp4"><strong>▶ Ver presentación de UrbanBlade (8 segundos)</strong></a>
-</p>
+[![CI](https://github.com/KikeGonRam/frontend_Urbanblade/actions/workflows/ci.yml/badge.svg)](https://github.com/KikeGonRam/frontend_Urbanblade/actions/workflows/ci.yml)
+[![Cypress](https://github.com/KikeGonRam/frontend_Urbanblade/actions/workflows/cypress.yml/badge.svg)](https://github.com/KikeGonRam/frontend_Urbanblade/actions/workflows/cypress.yml)
 
-Frontend real de UrbanBlade (barbería): Nuxt 4, consume la API JSON del repositorio
-hermano [`barber`](https://github.com/KikeGonRam/barber) (Laravel 13 + MongoDB) por
-Bearer token propio (`mobile_api_tokens`, **no** Sanctum). Aquí viven los 4 dashboards
-por rol (administrador, recepcionista, barbero, cliente), citas, pagos, inventario,
-tienda, campañas, reportes, analítica, muro social y reseñas — todo lo que el panel
-Blade/Inertia de `barber` tenía antes de retirarse por completo el 2026-09-06 al
-alcanzar esta app paridad funcional confirmada.
+[Sitio web](https://urbanblade.com.mx/) · [Backend](https://github.com/KikeGonRam/barber) ·
+[Documentación](docs/README.md) · [Contribuir](CONTRIBUTING.md) · [Seguridad](SECURITY.md)
 
-## ✨ Qué hace
+![Landing de UrbanBlade](docs/assets/landing.png)
 
-- **Reserva de citas con disponibilidad real**: al elegir barbero + servicio + fecha,
-  el formulario consulta `/availability/slots` y solo ofrece horarios realmente
-  libres — nunca un horario que el backend vaya a rechazar.
-- **Sitio público sin cuenta**: landing con recorrido de estilos, equipo, servicios,
-  reserva pública y promoción de la app Android (acceso anticipado con código QR).
-- **Experiencia distinta por rol**:
-  - *Administrador, recepcionista e ingeniero* — interfaz corporativa de datos (plana y
-    densa): KPIs, tablas, reportes y sistema.
-  - *Cliente* — la próxima cita en grande con cuenta regresiva, nivel de lealtad, accesos
-    rápidos (reservar, tienda, recibos) y membresía digital.
-  - *Barbero* — avance del día, aprobaciones pendientes y agenda en tarjetas con un
-    botón de un toque por cita (iniciar, terminar con ticket, no asistió).
-- **Gráficas que se pueden explorar**: paletas de varios colores, animación de entrada y
-  una ventana de detalle al tocar cualquier barra, punto o porción
-  (`ub:chart-detail`). Incluye un **mapa de calor de horas pico** (demanda real de citas
-  por día y hora) en el Centro de Reportes.
-- **Reportes exportables**: CSV desde las pantallas y PDF/Excel corporativos desde el
-  backend (portada, introducción, resumen ejecutivo, hallazgos y detalle).
-- **Pagos reales**: Stripe (tarjeta, beta), transferencia con comprobante, efectivo —
-  todo con el monto recalculado server-side, nunca confiando en lo que el cliente envía.
-- **4 temas visuales** (Sastrería Nocturna / Taller de Acero / Salón Inglés / Libreta
-  de Barbero) intercambiables en vivo, con mascotas contextuales (Nava, Bladebot,
-  Bruno) que guían estados vacíos, errores y ayuda.
-- **Programa de lealtad**: puntos, niveles, descuentos automáticos y tarjeta de
-  membresía digital con QR.
+## Funcionalidades
 
-## 📸 Vista previa
+- Reservas con consulta de disponibilidad por barbero, servicio y fecha.
+- Agenda y paneles por rol; el ingeniero tiene acceso de solo lectura.
+- Cobros con efectivo, transferencia y tarjeta mediante Stripe.
+- Inventario, pedidos, recibos, lealtad y membresía digital.
+- Reportes, gráficas, analítica, reseñas y muro social.
+- Sitio público con SSR, PWA y cuatro temas visuales.
 
-<p align="center">
-  <img src="docs/assets/login.png" alt="Login de UrbanBlade" width="1000" />
-</p>
+Las capturas son ilustrativas; los permisos y estados los valida también la API.
 
-<p align="center"><em>Acceso — correo/contraseña o Google, con mascota de bienvenida (Nava) y los cuatro temas disponibles desde el primer momento.</em></p>
+## Stack y arquitectura
 
-<p align="center">
-  <img src="docs/assets/dashboard-admin.png" alt="Panel administrativo" width="1000" />
-</p>
+Nuxt 4, Vue 3, TypeScript y Tailwind CSS 4. Chart.js y FullCalendar cubren
+gráficas y agenda; Vitest, Playwright y Cypress cubren distintos niveles de pruebas.
 
-<p align="center"><em>Panel administrativo — KPIs del día (citas, ingresos, clientes, retención), accesos rápidos y agenda del día, con el sidebar de navegación completo por módulo (Operación, Gestión, Análisis, Sistema).</em></p>
+Consume la API de [`barber`](https://github.com/KikeGonRam/barber) mediante
+tokens Bearer propios (`mobile_api_tokens`).
+El contrato está en [contract/openapi.yaml](contract/openapi.yaml);
+los tipos generados, en [app/types/api.d.ts](app/types/api.d.ts).
 
-<p align="center">
-  <img src="docs/assets/appointments-admin.png" alt="Gestión de citas" width="1000" />
-</p>
+## Desarrollo local
 
-<p align="center"><em>Citas &amp; Reservas — alta de citas para administración/recepción, con los mismos campos de barbero/servicio/fecha/hora que usa el cliente.</em></p>
+Requisitos: Node.js 24, npm y el backend local para datos y autenticación reales.
 
-<p align="center">
-  <img src="docs/assets/dashboard-cliente.png" alt="Panel del cliente" width="1000" />
-</p>
-
-<p align="center"><em>Panel del cliente — próxima cita, ritmo de visitas, recomendaciones y tarjeta de membresía digital, todo desde la cuenta del propio cliente. (Captura anterior al rediseño actual: hoy la próxima cita va en grande con cuenta regresiva y accesos rápidos.)</em></p>
-
-<p align="center">
-  <img src="docs/assets/booking-modal-cliente.png" alt="Modal de reserva del cliente" width="1000" />
-</p>
-
-<p align="center"><em>Reservar cita (cliente) — en cuanto se elige barbero y servicio, el campo de hora se llena solo con los horarios que ese barbero de verdad tiene libres ese día; si no hay ninguno, lo dice en vez de dejar elegir cualquier hora.</em></p>
-
-## 🏗️ Stack
-
-- Nuxt 4 + Vue 3 + TypeScript
-- Tailwind CSS 4 (`@tailwindcss/vite`), 4 temas por tokens CSS (`app/assets/css/main.css`)
-- Chart.js 4 + `vue-chartjs` (métricas; plugin propio de degradados y ventana de detalle en
-  `app/utils/registerChartjs.ts`), FullCalendar (agenda/citas)
-- Stripe Elements (cobro con tarjeta, beta)
-- Playwright para E2E, contra el **build de producción**, no `nuxt dev`; Cypress para
-  flujos de interfaz
-- Contrato de API: tipos generados desde `contract/openapi.yaml` (copia del spec de `barber`)
-
-## 🧭 Roles del sistema
-
-| Rol | Visión principal |
-| --- | --- |
-| Administrador | Dashboard global, reportes, KPIs, clientes, pagos, inventario y control operativo. |
-| Recepcionista | Agenda del día, atención rápida, cobros y gestión de clientes. |
-| Barbero | Horario personal, citas, perfil, portafolio y seguimiento de actividad. |
-| Cliente | Reservas, historial, tienda, carrito, recibos y membresía. |
-| Ingeniero | Solo lectura: reportes, logs y estado del sistema (`/pulse`), nunca gestión. |
-
-## 🚀 Requisitos
-
-- Node 24 (ver `.github/workflows/ci.yml`)
-- El backend (`barber`) corriendo en `http://127.0.0.1:8000` — ver ese repo para
-  levantarlo con Docker Compose (incluye MongoDB, Redis, colas y el worker de
-  notificaciones)
-
-## Arranque local
-
-```bash
-npm install --legacy-peer-deps
+```powershell
+git clone https://github.com/KikeGonRam/frontend_Urbanblade.git frontend-urban
+cd frontend-urban
+npm ci --legacy-peer-deps
+Copy-Item .env.example .env
 npm run dev
 ```
 
-Sirve en `http://localhost:3000` (a veces solo en `http://[::1]:3000` — el servidor
-de Nuxt puede quedarse escuchando únicamente en IPv6 según el entorno; un navegador
-normal lo resuelve igual, solo afecta a diagnósticos por `curl`). Por defecto apunta
-a `http://127.0.0.1:8000/api/v1` — configurable con `NUXT_PUBLIC_API_BASE`.
+Abre [localhost:3000](http://localhost:3000). La API predeterminada es
+`http://127.0.0.1:8000/api/v1`.
+Revisa [.env.example](.env.example): `NUXT_PUBLIC_API_BASE` y la clave
+**publicable** `NUXT_PUBLIC_STRIPE_KEY`. Todo valor `NUXT_PUBLIC_*` es visible
+al cliente; las claves secretas pertenecen al backend.
 
-`--legacy-peer-deps` es necesario por un bug conocido de npm con el grafo de
-peer-dependencies de Nuxt 4 (ver `.claude/skills/nuxt-migration-plan/SKILL.md`).
+El flag `--legacy-peer-deps` coincide con CI. Conserva el lockfile y evita
+actualizar dependencias como parte de una corrección documental.
+Las cuentas se explican en
+[la guía de acceso del backend](https://github.com/KikeGonRam/barber/blob/main/docs/ACCESOS.md).
 
-Cuentas y cómo crear nuevas: ver `docs/ACCESOS.md` en `barber` (ya no contiene
-contraseñas; no se duplican aquí).
+## Validación
 
-## 🧪 Pruebas y validación
+| Comando | Qué comprueba |
+| --- | --- |
+| `npx eslint . --max-warnings=0` | Estilo con la misma exigencia de CI. |
+| `npm run test:unit` | Utilidades y componentes con Vitest. |
+| `npm run contract:check` | Tipos generados frente al contrato local. |
+| `npm run build` | Compilación; no despliega. |
+| `npm run test:e2e -- --workers=1` | Playwright, con build y servidores de API simulada propios. |
+| `npm run audit:gate` | Auditoría con excepciones que caducan. |
+| `python scripts/check_docs.py` | Enlaces locales de la documentación de entrada. |
 
-```bash
-npm run lint                       # eslint
-npm run build                      # build de producción
-npm run test:unit                  # Vitest + Vue Test Utils: formularios y utilidades, sin navegador ni servidor (tests/)
-npm run test:e2e                   # Playwright, contra el build ya compilado
-npm run cypress:run                # Cypress, contra el build y la API simulada (cypress:open para depurar)
-npm run audit:gate                 # npm audit con lista de excepciones que caducan (ver scripts/audit-gate.mjs)
-npm run contract:check             # los tipos de app/types/api.d.ts siguen a contract/openapi.yaml
-npm run contract:sync              # copia el spec de barber y regenera los tipos
-```
+Playwright usa los puertos 3100 y 8099 y no reutiliza servidores.
+Las pruebas con API simulada verifican el frontend; no certifican la integración
+con una cuenta real ni el funcionamiento de producción.
 
-`e2e/security.spec.ts` fija las regresiones de seguridad: que el build emita la CSP
-(sin `unsafe-inline` en `script-src`, con `object-src 'none'`, `base-uri` y
-`frame-ancestors`), que un texto con HTML que venga de la API se pinte escapado y no se
-ejecute, y que el token no acabe en `localStorage`.
+Cypress necesita el build y los servidores activos. Consulta el procedimiento
+completo en [docs/CYPRESS_CLOUD.md](docs/CYPRESS_CLOUD.md).
+`npm run cypress:run` por sí solo no los levanta.
 
-CI corre en cada push/PR a `main`. Los jobs de `.github/workflows/ci.yml`:
+Si cambia la API, revisa `npm run contract:sync` y su diff.
+No regeneres el contrato para un cambio de documentación.
 
-- **Frontend**: `eslint . --max-warnings=0` (más estricto que `npm run lint` local —
-  probar siempre con el flag exacto antes de pushear), `npm run build`, `npm audit
-  --audit-level=high` (con la lista de excepciones de `audit:gate`).
-- **Contrato de API**: falla si `app/types/api.d.ts` no corresponde a
-  `contract/openapi.yaml`; además avisa (sin fallar) si la copia quedó atrás del spec de
-  `barber@main`. Si cambia la API del backend: `npm run contract:sync` y commitear.
-- **E2E**: Playwright contra `nuxt build && nuxt preview` (puerto 3100, no 3000 — no
-  reutiliza un `npm run dev` que pueda estar corriendo). La API de `barber` se
-  intercepta en el navegador (`e2e/support/api-mock.ts` + `e2e/support/mock-api.mjs`
-  para las peticiones que Nuxt resuelve en SSR), así que este job no necesita
-  Laravel/Mongo/Redis corriendo.
+## CI y publicación
 
-Además, `.github/workflows/cypress.yml` corre Cypress en dos contenedores en paralelo
-(registrado en Cypress Cloud si existe el secreto; ver `docs/CYPRESS_CLOUD.md`), y el PR
-pasa por SonarCloud (calidad, duplicación y fiabilidad) y GitGuardian (secretos).
+[CI](.github/workflows/ci.yml) ejecuta lint, build, auditoría, Vitest, contrato,
+Playwright y construcción/arranque de Docker.
+[Cypress](.github/workflows/cypress.yml) corre en su workflow propio.
+[Documentación](.github/workflows/documentation.yml) valida los enlaces de entrada.
 
-### Tres cosas que conviene saber antes de correrlas
+Estos workflows corren con PR y push a `main` y no contienen publicación ni
+despliegue. Los servicios externos conectados a GitHub requieren su propia
+revisión antes de fusionar. Consulta [CI/CD](docs/CI_CD.md).
 
-Las descubrió el sandbox del workspace (`barber/scripts/verificacion/`), que corre esto
-mismo más los otros tres proyectos:
+## Documentación y colaboración
 
-1. **La suite es sensible a la carga de la máquina.** Con el paralelismo por defecto
-   (`fullyParallel`, ~CPU/2 workers) falló 1 de 55 el 2026-10-02: `auth.spec.ts:38` se
-   pasó del timeout de 5 s de `toHaveURL`, mientras que en solitario tarda ~2.5 s y pasa
-   24/24 (`--repeat-each=3`). **Ya está mitigado**: `playwright.config.ts` fija
-   `expect: { timeout: 10_000 }`. El CI además usa `workers: 1` y `retries: 2`; el
-   sandbox usa `--workers=1` sin reintentos, a propósito, para que la inestabilidad se
-   vea en vez de esconderse.
-2. **El build no verifica tipos, así que hay que comprobarlos aparte.** `tsc` encontró 3
-   errores el 2026-10-02 que ni `eslint` ni el build detectaban; **ya están corregidos**.
-   Para revisarlos:
-   ```bash
-   npx tsc --noEmit -p .nuxt/tsconfig.json
-   ```
-   El sandbox lo hace y **ahora es bloqueante**. Sigue siendo parcial: sin `vue-tsc` los
-   archivos `.vue` no se revisan, solo el TypeScript suelto.
-3. **`npm run lint` local no es lo que corre el CI**: el CI usa
-   `npx eslint . --max-warnings=0`, más estricto.
+El [índice documental](docs/README.md) reúne las guías de interfaz, pruebas y
+arquitectura. El historial de migración permanece en sus guías existentes.
+Consulta [CONTRIBUTING.md](CONTRIBUTING.md) para preparar un cambio y
+[SECURITY.md](SECURITY.md) para comunicar vulnerabilidades sin exponer datos.
 
-## 📚 Documentación relacionada
-
-- `.claude/skills/urbanblade-completion-roadmap/SKILL.md` (y su copia en
-  `.agents/skills/`) — historial completo de las 6 fases del roadmap coordinado con
-  `barber`: hallazgos, commits, verificación.
-- `.claude/skills/nuxt-migration-plan/SKILL.md` — arquitectura y decisiones de la
-  migración original desde el panel Blade/Inertia.
-- `.claude/skills/git-commit-conventions/SKILL.md` — convención de mensajes de commit
-  (español, un solo autor humano).
-- `design-qa.md` — notas de auditoría visual/UX del sidebar y los 4 temas.
-- `docs/AUDITORIA_UI_UX.md` — auditoría de interfaz y accesibilidad.
-- `docs/CYPRESS_CLOUD.md` — cómo se registran las corridas de Cypress.
-- `contract/openapi.yaml` — copia versionada del contrato de la API de `barber`.
-- `docs/IDENTITY_MASCOT_SIDEBAR_PLAN.md` — sistema de identidad, mascotas y temas.
-- `docs/ENGINEER_OBSERVABILITY_DASHBOARD_PLAN.md` — ADR del panel de solo lectura
-  para el rol ingeniero.
-- En `barber`: `.claude/skills/urbanblade-guardrails/SKILL.md` — reglas de seguridad y
-  el historial de incidentes que afectan a ambos repos (base de datos compartida,
-  contrato de API, etc.).
+No se declara una licencia nueva en esta actualización. Revisa los términos del
+repositorio y sus dependencias antes de redistribuirlo.

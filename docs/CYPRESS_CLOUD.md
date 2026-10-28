@@ -1,8 +1,8 @@
 # Cypress y Cypress Cloud
 
-Las pruebas E2E principales de `frontend-urban` siguen siendo las de **Playwright** (`e2e/`, 64
-pruebas). Cypress se agregó para registrar corridas en **Cypress Cloud** durante su periodo de
-prueba (organización «kike», proyecto `1dpyzb`) con recorridos reales, no con una prueba de relleno.
+Las pruebas E2E de `frontend-urban` se ejecutan con **Playwright** (`e2e/`) y
+**Cypress** (`cypress/e2e/`). Cypress puede registrar las corridas en Cypress Cloud
+(proyecto `1dpyzb`) cuando está configurada su clave de registro.
 
 ## Qué cubre
 
@@ -14,8 +14,9 @@ contra la API simulada de `e2e/support/mock-api.mjs`; no hace falta Laravel, Mon
 | `cypress/e2e/smoke.cy.ts` | La landing renderiza (título, Acceso y Reservar, sin `console.error`), las páginas legales cargan y el catálogo público muestra los servicios de la API. |
 | `cypress/e2e/auth.cy.ts` | Una ruta protegida manda a `/login?redirect=/dashboard`; el login rechaza credenciales inválidas sin salir de la página; un cliente con perfil completo entra al dashboard; el login declara `plataforma: web` y `device_name: Nuxt Web`. |
 
-Los datos simulados del navegador están en `cypress/support/api-mock.ts` y usan el tipo `ApiUser`
-generado del OpenAPI: si el contrato cambia y el mock deja de caber, deja de compilar.
+Los datos simulados del navegador están en `cypress/support/api-mock.ts` y usan el
+tipo `ApiUser` generado del OpenAPI. Verifica los tipos cuando cambia el contrato;
+el build de Nuxt por sí solo no es una comprobación completa de TypeScript.
 
 ## Correrlas en local
 
@@ -23,7 +24,8 @@ Dos terminales, desde la raíz de `frontend-urban` (en PowerShell las variables 
 
 ```powershell
 # 1. Build con la API simulada y servidores (API simulada en :8099 y build en :3100)
-$env:NUXT_PUBLIC_API_BASE = "http://127.0.0.1:8099/api/v1"; $env:NUXT_PUBLIC_STRIPE_KEY = "pk_test_e2e_fake"
+$env:NUXT_PUBLIC_API_BASE = "http://127.0.0.1:8099/api/v1"
+$env:NUXT_PUBLIC_STRIPE_KEY = "pk_test_e2e_fake"
 npm run build
 npm run e2e:servers
 
@@ -38,8 +40,9 @@ Sin `CYPRESS_RECORD_KEY` en el entorno las pruebas corren y no se registran.
 `.github/workflows/cypress.yml` corre en cada PR y en cada push a `main`, con dos contenedores en
 paralelo y permisos mínimos (`contents: read`). Si existe el secreto `CYPRESS_RECORD_KEY`, registra
 las corridas en Cypress Cloud y reparte las pruebas entre los contenedores; si no existe (forks,
-PR de Dependabot o antes de configurarlo) corre igual sin registrar. No es un check obligatorio de
-`main`: los obligatorios siguen siendo los de `ci.yml`.
+PR de Dependabot o antes de configurarlo) corre igual sin registrar. Los checks
+obligatorios dependen de las reglas de protección configuradas en GitHub;
+consulta esas reglas antes de fusionar, no deduzcas sus requisitos de esta guía.
 
 ## Configurar el secreto (lo hace el dueño del repositorio)
 
@@ -49,9 +52,9 @@ PR de Dependabot o antes de configurarlo) corre igual sin registrar. No es un ch
 
 La llave nunca se escribe en el repositorio, en este documento ni en un mensaje de commit.
 
-## Qué tareas del trial cubre y cuáles no
+## Cuenta de Cypress Cloud
 
-Cubre registrar corridas desde CI, desde varias ramas (PR y `main`) y la paralelización. No cubre
-invitar al equipo, el SSO ni las integraciones: esas se configuran en la web de Cypress Cloud.
-El periodo de prueba vence alrededor del 5 de noviembre de 2026; después hay que quitar el secreto
-(el workflow vuelve a correr sin registrar) o contratar el plan.
+El workflow permite registrar corridas desde PR y `main` y repartir specs cuando
+Cloud está habilitado. Invitaciones, SSO, cuota y facturación se administran en
+Cypress Cloud. Verifica allí la vigencia del plan y el coste antes de cambiarlo;
+este documento no certifica el estado actual de la suscripción.

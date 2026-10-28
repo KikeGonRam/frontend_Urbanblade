@@ -1,36 +1,35 @@
 ## Qué cambia y por qué
 
-<!-- Una o dos frases. Enlaza la tarea o historia (por ejemplo T077 / HT-26). -->
+<!-- Describe el problema y el resultado. Enlaza una tarea o issue si existe. -->
 
-## Lista de verificación del revisor (T077)
+## Alcance
 
-Marca cada punto antes de aprobar. Si no aplica, escribe «N/A» y por qué.
+- Tipo de cambio:
+- Componentes afectados:
+- ¿Cambia comportamiento, contrato, dependencias o configuración del producto?:
+- ¿Requiere migración, variables, reinicio o despliegue?:
 
-### Estándares
-- [ ] El cambio hace una sola cosa y el título del PR la describe (en español, sin créditos de herramientas).
-- [ ] El código sigue el estilo del archivo que toca: nombres, comentarios y formato.
-- [ ] No quedan código muerto, `console.log` ni comentarios de depuración.
-- [ ] Los textos que ve el usuario están en español y sin faltas.
+<!-- Para mantenimiento documental/CI, explica que no requiere despliegue.
+     Si depende de una integración externa, identifica la comprobación pendiente. -->
 
-### Seguridad
-- [ ] No hay secretos, tokens, contraseñas ni correos reales en el código, los datos de prueba ni los comentarios.
-- [ ] Toda entrada del usuario se valida; ningún HTML sin escapar.
-- [ ] Un permiso nuevo o cambiado tiene prueba de quién sí y quién no puede usarlo.
-- [ ] Una dependencia nueva está justificada y `npm audit` no empeora.
+## Validación
 
-### Pruebas
-- [ ] Hay pruebas nuevas o actualizadas que fallan sin el cambio.
-- [ ] Las pruebas pasaron en local y el CI está en verde.
-- [ ] Probé el caso feliz y al menos un caso de error.
+| Comando o comprobación | Resultado y entorno |
+| --- | --- |
+| | |
 
-### Documentación y contrato
-- [ ] El README o la documentación afectada está actualizada.
-- [ ] Si cambió la API, el contrato (`contract/openapi.yaml`) y los tipos están al día.
+<!-- Distingue local, API simulada, integración real y checks del PR.
+     Anota los fallos y lo no ejecutado; no declares CI verde antes de comprobarlo. -->
 
-### Despliegue
-- [ ] Sé si requiere migración, variable de entorno nueva o reinicio, y está anotado aquí.
-- [ ] Sé cómo volver atrás si falla.
+## Revisión
 
-## Cómo lo probé
+- [ ] El título y la descripción explican el cambio en español.
+- [ ] Revisé el diff y excluí trabajo ajeno, secretos y datos personales.
+- [ ] Actualicé la documentación responsable y revisé sus enlaces.
+- [ ] Ejecuté los controles aplicables; justifiqué lo que no aplica.
+- [ ] Si cambió comportamiento, cubrí el caso afectado y un error relevante.
+- [ ] Si cambió la API, coordiné contrato y clientes consumidores.
+- [ ] Identifiqué el impacto operativo y cómo revertir el cambio si corresponde.
 
-<!-- Comandos ejecutados y resultado, o capturas si es un cambio visual. -->
+<!-- Un cambio editorial no requiere crear pruebas de comportamiento.
+     La fusión y el despliegue son acciones separadas. -->
