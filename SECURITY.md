@@ -1,33 +1,68 @@
 # Política de seguridad
 
-## Alcance y mantenimiento
+Esta política cubre el repositorio frontend web de UrbanBlade.
+Revisión: 28 de octubre de 2026.
 
-Este frontend forma parte de UrbanBlade, en uso en producción, y consume la API
-del repositorio [barber](https://github.com/KikeGonRam/barber).
-Las correcciones se integran mediante PR hacia `main`; no se promete aquí
-soporte por versión ni un plazo de respuesta.
+## Versiones y alcance de mantenimiento
 
-## Reportar una vulnerabilidad
+Las correcciones se preparan mediante PR contra `main`. Al reportar, identifica el SHA,
+tag o versión afectada y el entorno donde observaste el problema.
+Una release histórica o un build aprobado no prueba que esa revisión siga desplegada
+ni que esté libre de vulnerabilidades. No se ofrece un plazo de respuesta o soporte
+por versión que el equipo no haya acordado.
 
-El reporte privado de vulnerabilidades del repositorio frontend no está
-habilitado en la revisión del 27 de octubre de 2026. Para un hallazgo de
-UrbanBlade, utiliza el
-[canal privado habilitado en barber](https://github.com/KikeGonRam/barber/security/advisories/new)
-e indica que afecta al frontend.
+## Reportar en privado
 
-Incluye componente, impacto y pasos mínimos con datos ficticios.
-No publiques exploits, tokens, contraseñas, datos personales ni comprobantes
-en issues, PR o capturas públicas.
+Usa [Report a vulnerability](https://github.com/KikeGonRam/frontend_Urbanblade/security/advisories/new).
+El reporte privado está habilitado en este repositorio.
 
-El reporte no autoriza pruebas contra producción, cuentas ajenas, pagos reales
-ni cambios de datos. Coordina la reproducción con el propietario.
+Si el problema está en la API, utiliza el [canal privado del backend](https://github.com/KikeGonRam/barber/security/advisories/new).
+Si afecta a varios componentes, indícalo en un solo reporte y enlaza las revisiones implicadas.
 
-## Variables y datos
+Incluye:
 
-Todo valor `NUXT_PUBLIC_*` es visible en el cliente.
-Solo se utiliza la clave publicable de Stripe en el frontend; las claves
-secretas pertenecen al backend. No subas `.env`, sesiones, cookies, exportaciones
-de datos ni logs privados.
+- Componente y versión o commit afectado.
+- Comportamiento observado, impacto y alcance estimado.
+- Pasos mínimos para reproducir en un entorno aislado, con datos ficticios.
+- Evidencia depurada y, si la tienes, una propuesta de mitigación.
 
-Las pruebas con API simulada, auditorías de dependencias y controles del CI son
-complementarios; no sustituyen una revisión de integración o autorización.
+No publiques secretos, cookies, headers Authorization, URLs firmadas, datos personales,
+comprobantes o dumps en issues, PR, logs o capturas. Tampoco pruebes la validez de una
+credencial de terceros para demostrar el hallazgo.
+Los fallos funcionales sin información sensible pueden ir a
+[Issues](https://github.com/KikeGonRam/frontend_Urbanblade/issues/new/choose).
+
+## Evaluación y corrección
+
+El equipo revisará el reporte, solicitará información cuando haga falta y coordinará
+la reproducción, mitigación y corrección por el canal privado.
+Antes de divulgar detalles técnicos, se coordinará con la persona que reportó para
+evitar exponer a usuarios. Esta política no promete recompensas ni un SLA.
+
+Reportar no autoriza pruebas sobre producción, acceso a cuentas ajenas, cobros reales,
+ingeniería social, denegación de servicio ni cambios de datos.
+Coordina cualquier reproducción que requiera salir del entorno aislado.
+
+## Si se expone una credencial
+
+Comunica en privado la ubicación y el tipo de credencial, sin reproducir el valor.
+El responsable coordinará revocación o rotación, revisión de uso y actualización de
+los servicios afectados. Eliminar un archivo o un commit actual no elimina su
+contenido del historial. No reescribir Git ni modificar cuentas como reacción automática.
+
+## Controles y dependencias
+
+Las alertas de Dependabot, secret scanning, protección de push y análisis de CI son
+controles complementarios. Un resultado verde no certifica ausencia de vulnerabilidades.
+Los hallazgos se evalúan por impacto y alcance; no se descartan para ocultar avisos.
+
+Todo valor `NUXT_PUBLIC_*` es visible al cliente. El frontend solo recibe la clave
+publicable de Stripe; los secretos de proveedores pertenecen al backend.
+No versionar .env, sesiones, cookies, exportaciones ni logs privados.
+Las pruebas con API simulada no acreditan la autorización del backend ni una
+integración real. Consulta [PRUEBAS](docs/PRUEBAS.md).
+
+## Otras políticas
+
+[Contribución](CONTRIBUTING.md) · [Código de conducta](CODE_OF_CONDUCT.md) ·
+[Licencia y alcance](LICENSING.md).

@@ -29,3 +29,9 @@ en guías breves y las revisiones anteriores siguen en Git.
 El [backend](https://github.com/KikeGonRam/barber) es dueño del contrato real,
 la persistencia y la autorización. No copiar credenciales o inventarios privados
 en la documentación del frontend.
+
+## Políticas del proyecto
+
+[Seguridad](../SECURITY.md) · [Código de conducta](../CODE_OF_CONDUCT.md) ·
+[Contribución](../CONTRIBUTING.md) · [Licencia GPL-3.0-only](../LICENSE) ·
+[Alcance de la licencia](../LICENSING.md).
