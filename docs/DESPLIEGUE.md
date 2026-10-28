@@ -5,7 +5,7 @@ Estado verificado en solo lectura el 28 de octubre de 2026. Si lo que ves en la 
 AWS no coincide con esta fecha, confía en la consola. La infraestructura compartida
 (red, balanceador, CloudFront, DNS, secretos, acceso de compañeros) se documenta una sola
 vez en la guía del backend:
-[DESPLIEGUE_AWS_STAGING.md](https://github.com/KikeGonRam/barber/blob/main/docs/DESPLIEGUE_AWS_STAGING.md).
+[DESPLIEGUE_AWS_STAGING.md](https://github.com/KikeGonRam/barber/blob/main/docs/referencia/DESPLIEGUE_AWS_STAGING.md).
 Esta página solo cubre lo propio del frontend.
 
 No contiene credenciales. Un cambio documental también puede disparar integraciones

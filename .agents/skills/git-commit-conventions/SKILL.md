@@ -24,6 +24,6 @@ No fuerces push, no reescribas historial publicado ni borres ramas del trabajo.
 No publiques credenciales o datos personales en commits, PR o logs.
 
 Los procedimientos operativos están en docs/CI_CD.md y
-barber/docs/DESPLIEGUE_AWS_STAGING.md. Las autorizaciones históricas no sustituyen el
+barber/docs/referencia/DESPLIEGUE_AWS_STAGING.md. Las autorizaciones históricas no sustituyen el
 alcance que el propietario fija para la tarea actual.
 Mantén esta guía sincronizada en .claude/skills y .agents/skills.
