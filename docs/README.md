@@ -1,26 +1,30 @@
 # Documentación del frontend
 
-Este índice enlaza las fuentes de interfaz, pruebas y arquitectura.
-Los planes y auditorías conservan su contexto y fecha; no son evidencia
-automática del estado actual del producto.
+Revisión documental: 28 de octubre de 2026.
+El código describe la implementación; las guías explican responsabilidades,
+decisiones y comprobaciones. La evidencia histórica conserva su fecha y alcance.
 
-| Necesidad | Fuente |
+| Necesidad | Fuente canónica |
 | --- | --- |
-| Presentación e instalación | [README](../README.md) |
-| Preparar un cambio | [CONTRIBUTING](../CONTRIBUTING.md) |
+| Presentación e instalación local | [README](../README.md) |
+| Arquitectura, SSR, sesión, datos y PWA | [ARQUITECTURA](ARQUITECTURA.md) |
+| Decisiones y pendientes técnicos | [DECISIONES](DECISIONES.md) |
+| Pruebas, dependencias y límites | [PRUEBAS](PRUEBAS.md) |
+| Workflows y publicación | [CI/CD](CI_CD.md) |
+| Interfaz, temas y mascotas | [INTERFAZ](INTERFAZ.md) |
+| Observabilidad del ingeniero | [ADR-002](ADR-002-OBSERVABILIDAD-INGENIERO.md) |
+| Cypress y registro opcional en Cloud | [Cypress Cloud](CYPRESS_CLOUD.md) |
+| Revisión de secretos y límites | [Seguridad documental](SEGURIDAD_DOCUMENTACION.md) |
+| Preparar cambios | [CONTRIBUTING](../CONTRIBUTING.md) |
 | Reportar vulnerabilidades | [SECURITY](../SECURITY.md) |
-| Comprobaciones y límites de publicación | [CI/CD](CI_CD.md) |
-| Ejecutar Cypress y configurar Cloud | [Cypress Cloud](CYPRESS_CLOUD.md) |
-| Auditoría de interfaz y accesibilidad | [Auditoría UI/UX](AUDITORIA_UI_UX.md) |
-| Notas de revisión visual | [Design QA](../design-qa.md) |
-| Identidad, mascotas y sidebar | [Plan de identidad](IDENTITY_MASCOT_SIDEBAR_PLAN.md) |
-| Panel del rol ingeniero | [Plan de observabilidad](ENGINEER_OBSERVABILITY_DASHBOARD_PLAN.md) |
-| Contrato versionado | [OpenAPI](../contract/openapi.yaml) |
-| Arquitectura de migración e historial | [Plan de migración Nuxt](../.claude/skills/nuxt-migration-plan/SKILL.md) |
+| Contrato versionado de API | [OpenAPI](../contract/openapi.yaml) |
+| Auditoría fechada con hallazgos | [Auditoría UI/UX](AUDITORIA_UI_UX.md) |
+| Contexto histórico del sidebar | [Design QA](../design-qa.md) |
 
-El [backend](https://github.com/KikeGonRam/barber) es la fuente del contrato de
-API y de las instrucciones de cuentas y permisos. El frontend conserva una
-copia versionada del contrato para generar sus tipos.
+Las guías .claude/.agents apoyan el mantenimiento; no sustituyen este índice ni
+conceden autorizaciones para publicar o desplegar. Los planes cerrados se consolidan
+en guías breves y las revisiones anteriores siguen en Git.
 
-Para documentar cambios, actualiza primero la fuente responsable; enlázala desde
-este índice en vez de mantener copias completas de las mismas instrucciones.
+El [backend](https://github.com/KikeGonRam/barber) es dueño del contrato real,
+la persistencia y la autorización. No copiar credenciales o inventarios privados
+en la documentación del frontend.

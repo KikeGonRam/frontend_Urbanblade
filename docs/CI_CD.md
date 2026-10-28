@@ -1,102 +1,64 @@
 # CI/CD del frontend
 
-## Comprobaciones existentes
+Fuentes: [.github/workflows](../.github/workflows), [package.json](../package.json)
+y [Dockerfile](../Dockerfile). Revisión: 28 de octubre de 2026.
+
+## Comprobaciones
 
 | Workflow | Comprobaciones |
 | --- | --- |
-| [CI](../.github/workflows/ci.yml) | ESLint estricto, build Nuxt, auditoría, Vitest, contrato, Playwright e imagen Docker con arranque y usuario sin privilegios. |
-| [Cypress](../.github/workflows/cypress.yml) | Flujos de interfaz con build y API simulada; registro/paralelización en Cloud cuando existe su secreto. |
-| [Documentación](../.github/workflows/documentation.yml) | Enlaces locales de los documentos de entrada. |
+| [CI](../.github/workflows/ci.yml) | ESLint estricto, build, audit gate, Vitest, contrato, Playwright e imagen Docker con salud y usuario sin privilegios. |
+| [Cypress](../.github/workflows/cypress.yml) | Build y flujos con API simulada; registro/paralelización en Cloud cuando existe su secreto. |
+| [Documentación](../.github/workflows/documentation.yml) | Markdown mantenido: enlaces locales, archivos vacíos y conflictos. |
 
-CI instala Node.js 24 y utiliza `npm ci --legacy-peer-deps`.
-El Dockerfile existente utiliza Node.js 22; esa diferencia se documenta y
-cualquier alineación queda para un cambio de imágenes con validación propia.
+Se ejecutan en PR y push a main con contents:read. Los timeouts limitan trabajos
+atascados; la concurrencia cancela corridas anteriores del mismo PR.
+Las reglas remotas de protección determinan qué checks son requeridos;
+consultarlas antes de fusionar, sin inferirlas de los nombres de jobs.
 
-Playwright construye y levanta los puertos 3100 y 8099 con la API simulada.
-Cypress requiere un build y `npm run e2e:servers` activos; consulta
-[CYPRESS_CLOUD.md](CYPRESS_CLOUD.md).
-Estas suites no prueban la API real ni autentican un usuario de producción.
+CI instala Node 24 y npm ci --legacy-peer-deps. Docker usa Node 22 y npm install.
+Esa diferencia queda registrada para un cambio técnico independiente.
 
-El build no equivale a una comprobación completa de tipos Vue.
-El job de contrato valida los tipos generados y la comprobación de drift remoto
-es informativa; no se presenta aquí como un typecheck completo.
+## Qué demuestra cada gate
 
-## Límites del mantenimiento
+[PRUEBAS](PRUEBAS.md) contiene los comandos y prerrequisitos. Playwright y Cypress
+usan el build con API simulada, no una cuenta de producción.
+contract:check comprueba copia local y tipos; contract:drift es informativo.
+El build no es un typecheck completo Vue.
 
-Esta actualización se limita a Markdown, plantillas, validación documental y
-configuración de CI. No cambia lógica de negocio, dependencias del producto,
-Dockerfiles, variables de entorno, contrato de API ni infraestructura.
-
-Los workflows versionados revisados se disparan con `push` a `main` o
-`pull_request` hacia `main`. Construir una imagen en un runner no la publica.
-No contienen `docker push`, actualización de ECS ni un trabajo de despliegue.
-Los cambios documentales también ejecutan la CI existente: no se añaden filtros
-que puedan dejar checks requeridos pendientes o saltarse controles de seguridad.
-
-Esto no confirma la configuración de integraciones externas como Vercel,
-webhooks o pipelines configurados fuera del repositorio. Antes de fusionar,
-revisa esas conexiones. Durante este mantenimiento no se despliega, publica
-ni ejecutan comandos de infraestructura.
-
-## Comprobación documental
-
-`python scripts/check_docs.py` comprueba README, contribución, seguridad,
-índice documental, esta guía, la plantilla de PR y la guía de Cypress.
-Detecta archivos vacíos, conflictos de merge y destinos locales inexistentes
-en enlaces Markdown en línea e imágenes/enlaces HTML.
-Omite bloques de código, URLs externas y anclas; no comprueba sintaxis Markdown
-completa, enlaces de referencia ni vigencia semántica de todas las guías.
-
-Para revisar otros documentos explícitamente:
+El validador documental puede ejecutarse con:
 
 ```powershell
-python scripts/check_docs.py docs/README.md docs/CI_CD.md
+python scripts/check_docs.py --all
+git diff --check
 ```
 
-El workflow `documentation.yml` usa Python del runner y no instala dependencias.
-Se ejecuta con PR/push a `main` para no omitir un check si se configura como requerido.
-Los workflows del producto mantienen sus nombres de jobs. Los límites de tiempo
-evitan ejecuciones atascadas; la concurrencia cancela corridas anteriores del
-mismo PR, conservando las corridas de `main`.
+Revisa Markdown en raíz, docs y .github. Omite bloques de código, anclas, enlaces
+externos y links de referencia; no valida toda la semántica de una guía.
+Las guías .claude/.agents se revisan por separado y sus copias deben ser coherentes.
 
-## Evidencia y publicación
+## Publicación
 
-En cada PR registra comandos y resultados del checkout probado. Distingue:
-validación local, checks de GitHub, fusión y publicación.
-Ninguno implica automáticamente el siguiente.
+Los workflows revisados construyen y prueban, pero no contienen docker push,
+actualizaciones de ECS ni un job de despliegue. Eso no controla integraciones
+configuradas fuera del repositorio.
 
-El badge del README enlaza al workflow del repositorio; no representa un
-certificado del commit de una rama local.
+Vercel puede crear builds también por cambios Markdown. En el merge anterior
+del PR #67 se pausaron temporalmente los builds con autorización del propietario,
+se verificó la cancelación por Ignored Build Step y se restauró Automatic.
+Es un antecedente, no una autorización para repetir la operación.
+Antes de publicar otra rama, verificar las conexiones vigentes y respetar el
+alcance de no desplegar cuando lo indique el usuario.
 
-No se modifica la licencia ni se renombran repositorios durante este mantenimiento.
+No incluir secretos en variables públicas NUXT_PUBLIC_*, logs, ejemplos, reportes
+de Cypress o trazas. Consultar [seguridad documental](SEGURIDAD_DOCUMENTACION.md).
 
-## Presentación en GitHub
+## Evidencia histórica
 
-Descripción de About:
+[PR #67](https://github.com/KikeGonRam/frontend_Urbanblade/pull/67), merge
+22e2fe7, terminó con checks de main verdes el 28 de octubre de 2026.
+La ejecución local previa reportó 56 pruebas unitarias, ESLint y contrato aprobados.
+No se presentan esos resultados como ejecuciones nuevas de esta revisión.
 
-> Frontend de UrbanBlade para barberías: reservas, agenda, pagos y paneles por rol con Nuxt, Vue y TypeScript.
-
-Temas configurados: `nuxt`, `vue`, `typescript`, `tailwindcss`, `pwa`,
-`barbershop`. El enlace del sitio ya está configurado:
-https://urbanblade.com.mx/.
-
-La revisión inicial encontró la descripción y los temas vacíos. El propietario
-autorizó actualizarlos; los valores anteriores ya se aplicaron y verificaron
-mediante la API de GitHub.
-
-## Verificación local del mantenimiento · 27 de octubre de 2026
-
-- Base revisada: `origin/main` en `c9a7570`.
-- `npm run test:unit`: 56 pruebas aprobadas en seis archivos.
-- `npx --no-install eslint . --max-warnings=0`: aprobado.
-- `npm run contract:check`: tipos al día con el contrato local.
-- Validador documental: siete documentos de entrada aprobados y 15 casos
-  positivos/negativos del validador comprobados en archivos temporales.
-- Enlaces locales: seis Markdown públicos versionados revisados sin destinos faltantes.
-- YAML: workflows y formularios de issues parseados sin errores.
-  Se compararon los jobs anteriores: solo cambian sus límites de tiempo.
-- `git diff --check`: sin errores.
-
-Esta evidencia es local. No se ejecutaron Playwright, Cypress ni un nuevo build
-durante el mantenimiento; los workflows modificados requieren validación en el PR.
-No se ejecutaron despliegues.
+Para cada cambio registrar SHA, comando, resultado, omisiones y entorno.
+Validación local, CI, fusión y despliegue son evidencias distintas.

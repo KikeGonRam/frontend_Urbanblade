@@ -1,24 +1,17 @@
-# Design QA — UrbanBlade sidebar V2
+# Registro histórico: revisión del sidebar V2
 
-## Reference and result
-Spike Admin was captured at 1440×1024 in `../barber/output/sidebar-audit/01-spike-dashboard.png`. The authenticated UrbanBlade dashboard was compared at the same desktop interaction states: expanded sidebar and collapsed rail.
+Este registro conserva el contexto de una comparación visual anterior con Spike Admin.
+No se ha repetido esa comparación en la revisión documental del 28 de octubre de 2026.
 
-- Desktop shell now uses the reference mechanism: inset floating sidebar, rounded independent topbar, visible page gutter and content reflow.
-- Expanded state is 272px; collapsed state is an 88px rail with the UB mark, centered navigation icons and profile avatar.
-- The topbar owns the persistent collapse control and includes contextual page title, search, theme selector, push status and account identity.
-- Fixed navigation, grouped sections, full-width active row and anchored profile preserve UrbanBlade's route and role model.
-- Theme details and mascots derive from `data-theme`; navigation logic is not duplicated.
-- Persistent collapse and accordions reuse `useShellState`.
-- The helper opens the existing Concierge through a scoped event.
-- Existing mobile topbar, bottom navigation and drawer remain intact.
-- Targets are at least 44px; collapsed items retain accessible titles; reduced motion is supported.
-  > Medido el 2026-10-02: **la parte de 44 px no se cumple.** Hay controles por debajo
-  > (botón de colapsar 29×29, títulos de sección 246×28, "Salir" 31×24, buscador de la
-  > topbar 286×24). Detalle y resto de la auditoría medida en `docs/AUDITORIA_UI_UX.md`.
-- `noir`, `acero`, `salon` and `libreta` were switched in the authenticated dashboard; the floating shell remained mounted and each theme applied its own sidebar surface.
-- ESLint and production build passed. Authenticated `/dashboard` was visually verified in expanded, collapsed and light-theme states.
-- Browser console: zero errors after the final reload and interactions.
+Se revisaron sidebar expandido/compacto, topbar, reflujo y cambios de tema.
+El resultado anterior “passed” se limitaba a ese recorrido; no acreditaba
+accesibilidad completa ni todos los roles, tamaños o estados con datos.
 
-Remaining P3: the dashboard's own inner cards intentionally keep UrbanBlade's denser information style instead of copying Spike's content cards.
+La [auditoría medida del 2 de octubre](docs/AUDITORIA_UI_UX.md) contradijo la
+afirmación general de blancos de interacción de 44 px y registró controles menores.
+Esos hallazgos no se declaran corregidos por esta actualización.
 
-final result: passed
+Los criterios actuales están en [INTERFAZ](docs/INTERFAZ.md) y el procedimiento
+para una nueva revisión en [PRUEBAS](docs/PRUEBAS.md).
+Las capturas externas al repositorio de aquella comparación no son artefactos
+reproducibles del checkout actual.

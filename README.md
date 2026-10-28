@@ -7,7 +7,7 @@ tienda y reportes, con experiencias para administración, recepción, barberos y
 [![Cypress](https://github.com/KikeGonRam/frontend_Urbanblade/actions/workflows/cypress.yml/badge.svg)](https://github.com/KikeGonRam/frontend_Urbanblade/actions/workflows/cypress.yml)
 
 [Sitio web](https://urbanblade.com.mx/) · [Backend](https://github.com/KikeGonRam/barber) ·
-[Documentación](docs/README.md) · [Contribuir](CONTRIBUTING.md) · [Seguridad](SECURITY.md)
+[Documentación](docs/README.md) · [Arquitectura](docs/ARQUITECTURA.md) · [Contribuir](CONTRIBUTING.md) · [Seguridad](SECURITY.md)
 
 ![Landing de UrbanBlade](docs/assets/landing.png)
 
@@ -65,7 +65,7 @@ Las cuentas se explican en
 | `npm run build` | Compilación; no despliega. |
 | `npm run test:e2e -- --workers=1` | Playwright, con build y servidores de API simulada propios. |
 | `npm run audit:gate` | Auditoría con excepciones que caducan. |
-| `python scripts/check_docs.py` | Enlaces locales de la documentación de entrada. |
+| `python scripts/check_docs.py --all` | Enlaces locales de toda la documentación mantenida. |
 
 Playwright usa los puertos 3100 y 8099 y no reutiliza servidores.
 Las pruebas con API simulada verifican el frontend; no certifican la integración
@@ -83,7 +83,7 @@ No regeneres el contrato para un cambio de documentación.
 [CI](.github/workflows/ci.yml) ejecuta lint, build, auditoría, Vitest, contrato,
 Playwright y construcción/arranque de Docker.
 [Cypress](.github/workflows/cypress.yml) corre en su workflow propio.
-[Documentación](.github/workflows/documentation.yml) valida los enlaces de entrada.
+[Documentación](.github/workflows/documentation.yml) valida los enlaces de la documentación mantenida.
 
 Estos workflows corren con PR y push a `main` y no contienen publicación ni
 despliegue. Los servicios externos conectados a GitHub requieren su propia
@@ -92,7 +92,7 @@ revisión antes de fusionar. Consulta [CI/CD](docs/CI_CD.md).
 ## Documentación y colaboración
 
 El [índice documental](docs/README.md) reúne las guías de interfaz, pruebas y
-arquitectura. El historial de migración permanece en sus guías existentes.
+arquitectura. La arquitectura, pruebas y decisiones tienen guías canónicas; los planes cerrados se conservan en Git.
 Consulta [CONTRIBUTING.md](CONTRIBUTING.md) para preparar un cambio y
 [SECURITY.md](SECURITY.md) para comunicar vulnerabilidades sin exponer datos.
 
