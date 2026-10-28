@@ -53,7 +53,7 @@ al cliente; las claves secretas pertenecen al backend.
 El flag `--legacy-peer-deps` coincide con CI. Conserva el lockfile y evita
 actualizar dependencias como parte de una corrección documental.
 Las cuentas se explican en
-[la guía de acceso del backend](https://github.com/KikeGonRam/barber/blob/main/docs/ACCESOS.md).
+[la guía de acceso del backend](https://github.com/KikeGonRam/barber/blob/main/docs/referencia/ACCESOS.md).
 
 ## Validación
 

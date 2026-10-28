@@ -8,7 +8,7 @@ No usar cuentas, tokens ni endpoints reales para las pruebas simuladas.
 ## Tipos de prueba
 
 Las pruebas de comportamiento se clasifican en cuatro tipos, igual que en el
-backend ([PRUEBAS del backend](https://github.com/KikeGonRam/barber/blob/main/docs/PRUEBAS.md)).
+backend ([PRUEBAS del backend](https://github.com/KikeGonRam/barber/blob/main/docs/referencia/PRUEBAS.md)).
 Cada tipo tiene su carpeta y su comando.
 
 | Tipo | Dónde | Herramienta | Qué verifica | Comando |
