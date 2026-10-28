@@ -6,6 +6,10 @@ mockup de referencia, esto **mide**: contraste WCAG, tamaños de blanco táctil,
 foco, nombres accesibles, jerarquía de encabezados y desbordes de layout, en los
 **4 temas** y en **4 anchos**.
 
+> Registro histórico del 2 de octubre de 2026. Esta revisión documental no repite
+> las mediciones ni acredita que los hallazgos estén resueltos. Para repetirla,
+> consultar [PRUEBAS](PRUEBAS.md) y [criterios de interfaz](INTERFAZ.md).
+
 ## Método y alcance
 
 | Qué | Cómo |

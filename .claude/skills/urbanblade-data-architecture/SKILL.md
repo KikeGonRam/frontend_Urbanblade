@@ -1,22 +1,24 @@
 ---
 name: urbanblade-data-architecture
-description: Aplica límites de datos al integrar frontend-urban con barber o al proponer bases, almacenamiento, Docker o analítica de UrbanBlade.
+description: Guía para conexiones, aislamiento y persistencia de UrbanBlade.
 ---
 
-# Arquitectura de datos de UrbanBlade
+# Arquitectura de datos
 
-La decisión canónica está en
-`../barber/docs/ADR-001-ARQUITECTURA-DE-DATOS.md` y continúa **Propuesta** hasta que el
-usuario apruebe una fase.
+Fuentes canónicas en el repositorio barber: docs/ADR-001-ARQUITECTURA-DE-DATOS.md, docs/MONGODB_ATLAS.md,
+docs/CONTINUIDAD_OPERATIVA.md y config/database.php.
 
-- Este frontend consume exclusivamente la API de `barber`; no se conecta a MongoDB,
-  SQLite ni Redis y no almacena credenciales de base.
-- No dupliques la fuente de verdad operativa en el cliente. Estado local, caché web e
-  IndexedDB, si se autorizan, son derivados revocables y no sustituyen al servidor.
-- Los cambios de contrato se coordinan con `barber` de forma aditiva y se validan de
-  extremo a extremo.
-- La analítica derivada pertenece a `urbanblade_analytics`; el frontend la recibe ya
-  autorizada y agregada desde la API, nunca desde Spark o la base directamente.
-- Git por rama y PR a `main` con el CI en verde, sin borrar la rama; la IA solo hace
-  commit, push y PR con la orden del usuario, y fusión y despliegue automáticos si todo sale bien
-  (ver `git-commit-conventions`).
+- La conexión operativa conserva barber_db como nombre predeterminado; urbanblade_core
+  es una propuesta, no un renombrado ejecutado.
+- Los derivados usan mongodb_analytics. La configuración tiene fallback a la conexión
+  operativa si faltan variables; declarar dos conexiones no garantiza aislamiento físico.
+- Spark debe leer core y escribir únicamente derivados con mínimo privilegio.
+  No se presupone que las cuentas remotas ya cumplan ese objetivo.
+- Pulse usa SQLite; Redis es soporte de caché/colas, no fuente de verdad de negocio.
+- mongo-dev es persistente; mongo-test es exclusivo de pruebas. Ambos requieren
+  replica set para transacciones. No duplicar contenedores sin revisar Compose.
+- Antes de cambiar datos: inventario, respaldo restaurable, ensayo aislado, comparación
+  y reversión. Los runbooks no autorizan por sí mismos ninguna escritura.
+- Las pruebas usan exclusivamente .\test.ps1; nunca probar contra Atlas.
+- No rotar, eliminar o alterar cuentas remotas como parte de una revisión documental.
+- Mantener este archivo sincronizado en .claude/skills y .agents/skills.

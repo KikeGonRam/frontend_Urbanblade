@@ -1,26 +1,16 @@
 ---
 name: urbanblade-profile-security
-description: "Fase 2 del roadmap UrbanBlade para perfiles y seguridad de cuenta en Nuxt. Usar antes de tocar páginas de perfil, avatar, preferencias, notificaciones o middleware de rol; coordinar siempre con barber."
+description: Mantener perfiles y autorización de interfaz coordinados con la API.
 ---
 
-# Fase 2: perfiles y seguridad de cuenta
+# Perfiles y cuentas
 
-## Alcance
+Los perfiles ya existen. Revisar páginas, composables y contrato actual antes de cambiar.
+Validar experiencia del rol afectado, propiedad de fotos, errores y campos editables.
+La API decide autorización: ocultar controles no basta.
 
-Auditar y completar las pantallas Nuxt de perfil, avatar, preferencias y notificaciones usando el contrato de `../barber`.
-
-## Reglas
-
-- No confiar en IDs o roles enviados por el navegador.
-- Mantener el token Bearer y limpiar cualquier token OAuth de la URL.
-- No mostrar iconos de fallback cuando exista una foto válida; usar iniciales solo si la imagen falla.
-- No exponer perfiles de otros usuarios en rutas propias.
-- Cada cambio debe pasar `npm run lint`, `npm run build` y pruebas backend relacionadas.
-
-## Criterios de aceptación
-
-- Formularios muestran y guardan solo campos permitidos por el backend.
-- Errores de validación se muestran por campo sin perder el mensaje general.
-- Avatar nuevo, reemplazo y fallback funcionan.
-- Middleware de rol y logout no dejan sesiones inconsistentes.
-- Publicar commit Nuxt separado del commit Laravel.
+No compartir tokens, información personal ni fotos reales en mocks o reportes.
+Cambios API requieren coordinación con barber y pruebas de autorización.
+Ver [ARQUITECTURA](../../../docs/ARQUITECTURA.md) y
+[PRUEBAS](../../../docs/PRUEBAS.md). No publicar automáticamente.
+Mantener copias sincronizadas.
