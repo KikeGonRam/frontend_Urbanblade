@@ -11,10 +11,16 @@ on:
 permissions:
   contents: read
 
+# Cancela solo ejecuciones anteriores del mismo PR; main conserva su evidencia.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   frontend:
     name: Frontend (ESLint + build + audit)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@v7
@@ -52,6 +58,7 @@ jobs:
   unitarias:
     name: Pruebas unitarias y de componente (Vitest)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@v7
@@ -76,6 +83,7 @@ jobs:
   contract:
     name: Contrato de API (tipos generados)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@v7
@@ -104,6 +112,7 @@ jobs:
   e2e:
     name: E2E (Playwright sobre build de producción)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@v7
@@ -141,6 +150,7 @@ jobs:
   imagen-docker:
     name: Imagen Docker (build y arranque)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@v7
