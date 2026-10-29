@@ -24,7 +24,10 @@ const pageName = computed(() => {
   if (match) return match.label;
   const segment = route.path.split("/").filter(Boolean).at(-1) ?? "dashboard";
 
-  return EXTRA_TITLES[segment] ?? segment.replaceAll("-", " ");
+  const texto = EXTRA_TITLES[segment] ?? segment.replaceAll("-", " ");
+
+  // Solo la primera letra en mayúscula («Lista de espera»); antes `capitalize` ponía cada palabra («Lista De Espera»).
+  return texto.charAt(0).toUpperCase() + texto.slice(1);
 });
 watch(
   () => user.value?.avatar_url,
@@ -47,7 +50,7 @@ watch(
       </button>
       <div class="ub-desktop-topbar__context">
         <small>UrbanBlade</small>
-        <strong class="capitalize">{{ pageName }}</strong>
+        <strong>{{ pageName }}</strong>
       </div>
     </div>
 
