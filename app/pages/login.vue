@@ -13,6 +13,7 @@ const loading = ref(false)
 const route = useRoute()
 const authReturn = useAuthReturn()
 onMounted(() => authReturn.remember(route.query.redirect))
+const reservaPendiente = computed(() => reservaPendienteDeRedireccion(route.query.redirect))
 const config = useRuntimeConfig()
 const { login } = useAuth()
 const { secondsLeft, handle: handleRateLimit } = useRetryCountdown()
@@ -66,6 +67,13 @@ async function onSubmit() {
       Bienvenido <span class="font-serif text-base italic normal-case text-gold">de nuevo</span>
     </h1>
     <p class="mb-6 text-center text-[10px] font-bold uppercase tracking-widest text-muted">Introduce tus credenciales para continuar</p>
+    <p
+      v-if="reservaPendiente"
+      class="mb-5 rounded-xl border border-gold/30 bg-gold/10 p-3 text-center text-xs text-ink"
+    >
+      Tu reserva del <strong>{{ reservaPendiente.fecha }}</strong> a las <strong>{{ reservaPendiente.hora }}</strong>
+      te espera: inicia sesión o crea tu cuenta y la confirmas en un paso.
+    </p>
 
     <a
       :href="googleLoginUrl"

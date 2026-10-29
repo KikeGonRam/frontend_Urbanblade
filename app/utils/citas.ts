@@ -23,3 +23,13 @@ export function motivoBloqueoPorFecha(fecha: string | null | undefined, destino:
 
   return ''
 }
+
+/** Reserva guardada en el `?redirect=/reservar?...` del inicio de sesión: fecha y hora elegidas, o null. */
+export function reservaPendienteDeRedireccion(redirect: unknown): { fecha: string, hora: string } | null {
+  if (typeof redirect !== 'string' || !redirect.startsWith('/reservar?')) return null
+  const q = new URLSearchParams(redirect.slice('/reservar?'.length))
+  const fecha = q.get('fecha') ?? ''
+  const hora = q.get('hora') ?? ''
+
+  return /^\d{4}-\d{2}-\d{2}$/.test(fecha) && /^\d{2}:\d{2}/.test(hora) ? { fecha, hora: hora.slice(0, 5) } : null
+}
