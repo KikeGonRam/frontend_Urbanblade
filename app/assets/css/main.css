@@ -717,7 +717,7 @@ html[data-theme="libreta"] {
     }
 
     @media (max-width: 640px) {
-        .ub-dashboard-content [class*='overflow-x-auto'] > table {
+        .ub-dashboard-content [class*='overflow-x-auto'] > table:not([data-mobile-cards]) {
             min-width: 42rem;
         }
     }
