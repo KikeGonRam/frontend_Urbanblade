@@ -445,7 +445,7 @@ v-model="barberFilter"
       >
     </section>
 
-    <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando citas…" />
+    <UiSkeleton v-if="pending" variant="rows" :rows="8" label="Cargando citas…" class="ui-card" />
     <BrandStatePanel v-else-if="error" mascot="bruno" state="error" tone="danger" title="No se pudo cargar la lista de citas" description="Inténtalo nuevamente en unos minutos." />
     <p v-if="actionError" role="alert" class="mb-4 text-sm text-danger">
       {{ actionError }}
