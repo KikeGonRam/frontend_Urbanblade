@@ -37,6 +37,13 @@ interface LogsResponse {
   stats: Stats;
 }
 
+const MODULO_LABEL: Record<string, string> = {
+  appointments: "Citas",
+  inventory: "Inventario",
+  payments: "Pagos",
+  products: "Productos",
+  users: "Usuarios",
+};
 const EVENT_LABEL: Record<string, string> = {
   created: "Creado",
   updated: "Actualizado",
@@ -50,7 +57,7 @@ const EVENT_CLASS: Record<string, string> = {
 
 const exportColumns: CsvColumn<LogRow>[] = [
   { header: "Fecha", value: (l) => l.created_at },
-  { header: "Módulo", value: (l) => l.log_name },
+  { header: "Módulo", value: (l) => (l.log_name ? (MODULO_LABEL[l.log_name] ?? l.log_name) : null) },
   { header: "Evento", value: (l) => l.event },
   { header: "Descripción", value: (l) => l.description },
   { header: "Usuario", value: (l) => l.causer?.name },
@@ -216,7 +223,7 @@ function fmtDate(iso: string | null) {
         class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
       >
         <option value="">Todas las categorías</option>
-        <option v-for="n in logNames" :key="n" :value="n">{{ n }}</option>
+        <option v-for="n in logNames" :key="n" :value="n">{{ MODULO_LABEL[n] ?? n }}</option>
       </select>
       <select
         v-model="eventFilter"
@@ -300,7 +307,7 @@ function fmtDate(iso: string | null) {
             <td class="px-4 py-3 whitespace-nowrap text-muted">
               {{ fmtDate(log.created_at) }}
             </td>
-            <td class="px-4 py-3 text-ink">{{ log.log_name ?? "—" }}</td>
+            <td class="px-4 py-3 text-ink">{{ log.log_name ? (MODULO_LABEL[log.log_name] ?? log.log_name) : "—" }}</td>
             <td class="px-4 py-3">
               <span
                 v-if="log.event"

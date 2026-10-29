@@ -120,6 +120,7 @@ async function cancelEntry(entry: WaitlistEntry) {
     title: "Salir de la lista de espera",
     message: `¿Cancelar tu anotación para ${entry.service.nombre ?? "este servicio"} el ${fmtDate(entry.fecha)}?`,
     confirmText: "Sí, cancelar",
+    cancelText: "Volver",
     isDanger: true,
   });
   if (!accepted) return;
