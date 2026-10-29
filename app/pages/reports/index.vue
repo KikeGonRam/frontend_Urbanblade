@@ -301,7 +301,7 @@ async function downloadReport(type: string, format: "excel" | "pdf") {
     <p v-if="anyPending" class="mb-4 text-sm text-muted" role="status">Calculando métricas…</p>
 
     <section class="mb-6 grid grid-cols-2 gap-4 xl:grid-cols-4" aria-label="Indicadores del periodo">
-      <UiStatCard label="Ingresos" :value="money(revenue?.totalRevenue)" :hint="`${fmtInt(revenue?.totalAppointments)} citas cobradas`" />
+      <UiStatCard label="Ingresos" :value="money(revenue?.totalRevenue)" :hint="`Citas cobradas del periodo: ${fmtInt(revenue?.totalAppointments)}`" />
       <UiStatCard label="Ticket promedio" :value="money(revenue?.averageRevenue)" hint="Por cita" />
       <UiStatCard label="Citas" :value="fmtInt(appt?.totalAppointments)" :hint="`${appt?.averageAppointmentsPerDay ?? 0} por día`" />
       <UiStatCard label="Finalización" :value="`${appt?.completionRate ?? 0}%`" hint="Citas completadas" :progress="Number(appt?.completionRate ?? 0)" />
