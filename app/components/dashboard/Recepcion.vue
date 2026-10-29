@@ -158,7 +158,7 @@ const flowChartOptions = {
           v-else
           class="rounded-xl border border-dashed border-line py-10 text-center text-sm text-muted"
         >
-          No hay más llegadas por hoy.
+          No hay más llegadas por hoy. Buen momento para revisar los pedidos o el corte de caja.
         </p>
       </section>
 
