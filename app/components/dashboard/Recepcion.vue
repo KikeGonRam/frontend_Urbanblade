@@ -38,6 +38,15 @@ interface ReceptionistData {
 
 const props = defineProps<{ data: ReceptionistData; firstName: string }>();
 
+// Consola de mostrador: tiempo relativo de cada llegada, al día cada minuto.
+const ahora = ref(new Date());
+let reloj: ReturnType<typeof setInterval> | undefined;
+onMounted(() => {
+  reloj = setInterval(() => { ahora.value = new Date(); }, 60_000);
+});
+onBeforeUnmount(() => { if (reloj) clearInterval(reloj); });
+const yaPaso = (hora: string) => (minutosDelDia(hora) ?? 0) < minutosAhora(ahora.value);
+
 // Cita abierta en la ventana de detalle (se toca desde «Próximas llegadas»).
 const detailCode = ref<string | null>(null);
 
@@ -136,10 +145,10 @@ const flowChartOptions = {
           <NuxtLink to="/appointments" class="text-sm font-semibold text-gold hover:underline">Ver agenda</NuxtLink>
         </header>
         <ul v-if="data.nextAppointments.length" class="divide-y divide-line">
-          <li v-for="appt in data.nextAppointments" :key="appt.id">
+          <li v-for="appt in data.nextAppointments" :key="appt.id" class="flex items-center gap-2">
             <button
               type="button"
-              class="-mx-2 flex w-[calc(100%+1rem)] items-center gap-3 rounded-lg px-2 py-3 text-left transition-colors hover:bg-ink/[0.04] focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold"
+              class="-mx-2 flex min-w-0 flex-1 items-center gap-3 rounded-lg px-2 py-3 text-left transition-colors hover:bg-ink/[0.04] focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold"
               :aria-label="`Ver detalle de la cita de ${appt.cliente}`"
               @click="detailCode = appt.code"
             >
@@ -150,8 +159,18 @@ const flowChartOptions = {
                 <p class="truncate text-sm font-semibold text-ink">{{ appt.cliente }}</p>
                 <p class="truncate text-xs text-muted">{{ appt.servicio }} · {{ appt.barbero }}</p>
               </div>
-              <span class="shrink-0 text-xs font-semibold text-gold" aria-hidden="true">Ver detalle</span>
+              <span class="shrink-0 text-xs font-semibold" :class="yaPaso(appt.hora_inicio) ? 'text-warning' : 'text-muted'">
+                {{ etiquetaRelativa(appt.hora_inicio, ahora) }}
+              </span>
             </button>
+            <!-- Cobro directo desde la llegada: abre Pagos con la cita preseleccionada. -->
+            <NuxtLink
+              :to="`/payments?cita=${appt.id}`"
+              class="flex min-h-10 shrink-0 items-center rounded-lg border border-success/30 px-3 text-xs font-bold text-success transition-colors hover:bg-success/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold"
+              :aria-label="`Cobrar la cita de ${appt.cliente}`"
+            >
+              Cobrar
+            </NuxtLink>
           </li>
         </ul>
         <p
@@ -172,6 +191,20 @@ const flowChartOptions = {
       >
         <Bar :data="flowChartData" :options="flowChartOptions" />
       </UiChartCard>
+    </section>
+
+    <section
+      v-if="data.kpis.pending_payments > 0"
+      class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-success/30 bg-success/10 px-5 py-4"
+      aria-label="Citas por cobrar"
+    >
+      <p class="text-sm text-ink">
+        <strong class="text-success">{{ data.kpis.pending_payments }}</strong>
+        cita{{ data.kpis.pending_payments !== 1 ? "s" : "" }} sin cobrar. Cobra antes de que se vayan.
+      </p>
+      <NuxtLink to="/payments" class="flex min-h-10 items-center rounded-lg bg-success px-4 text-sm font-bold text-black hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold">
+        Ir a cobrar
+      </NuxtLink>
     </section>
 
     <section class="rounded-2xl border border-line bg-card p-5">
@@ -197,6 +230,13 @@ const flowChartOptions = {
             </p>
           </div>
           <UiBadge tone="warning">Por entregar</UiBadge>
+          <NuxtLink
+            to="/orders"
+            class="flex min-h-10 shrink-0 items-center rounded-lg border border-line px-3 text-xs font-bold text-gold transition-colors hover:bg-gold/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold"
+            :aria-label="`Entregar el pedido ${order.folio}`"
+          >
+            Entregar
+          </NuxtLink>
           <p class="w-24 shrink-0 text-right text-sm font-semibold tabular-nums text-ink">
             {{ fmtMoney(order.total) }}
           </p>
