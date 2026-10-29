@@ -21,7 +21,7 @@ const trazo = computed<Trazo>(() => {
 
 const TRAZOS: Record<Trazo, string> = {
   tijeras: 'M6 3a3 3 0 1 0 0 6 3 3 0 0 0 0-6Zm0 12a3 3 0 1 0 0 6 3 3 0 0 0 0-6ZM8.1 7.9 20 18M8.1 16.1 20 6',
-  navaja: 'M3 17 12 8l4 4-9 9H3v-4Zm11-11 2-2 4 4-2 2M13 9l4 4',
+  navaja: 'M7 9c0-3.5 2-6 5-6s5 2.5 5 6H7Zm1 0h8M10 9v2m4-2v2m-5 2h6l-.8 7.5a1 1 0 0 1-1 .5h-2.4a1 1 0 0 1-1-.5L9 13Z',
   frasco: 'M9 2h6v3H9V2Zm-1 3h8l1 4v11a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V9l1-4Zm-1 7h10',
   peine: 'M3 7h18v4H3V7Zm2 4v6m3-6v6m3-6v6m3-6v6m3-6v6m3-6v6',
   marca: 'M12 3l2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5L12 3Z',
