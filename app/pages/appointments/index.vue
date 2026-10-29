@@ -452,8 +452,8 @@ v-model="barberFilter"
     </p>
 
     <section v-else class="ui-card overflow-x-auto">
-      <table class="w-full text-left text-sm">
-        <thead>
+      <table class="block w-full text-left text-sm md:table">
+        <thead class="hidden md:table-header-group">
           <tr
             class="border-b border-line text-[11px] uppercase tracking-wider text-muted"
           >
@@ -466,17 +466,17 @@ v-model="barberFilter"
             <th class="px-4 py-3 text-right">Acciones</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody class="block md:table-row-group">
           <tr
             v-for="appt in appointments"
             :key="appt.id"
-            class="border-b border-line/60 last:border-0"
+            class="block border-b border-line/60 py-2 last:border-0 md:table-row md:py-0"
           >
-            <td class="px-4 py-3 text-ink">{{ appt.fecha }}</td>
-            <td class="px-4 py-3 text-muted">
+            <td data-label="Fecha" class="flex items-center justify-between gap-3 px-4 py-1.5 before:text-[11px] before:uppercase before:tracking-wider before:text-muted before:content-[attr(data-label)] md:table-cell md:py-3 md:before:content-none text-ink">{{ appt.fecha }}</td>
+            <td data-label="Hora" class="flex items-center justify-between gap-3 px-4 py-1.5 before:text-[11px] before:uppercase before:tracking-wider before:text-muted before:content-[attr(data-label)] md:table-cell md:py-3 md:before:content-none text-muted">
               {{ appt.hora_inicio?.slice(0, 5) }}
             </td>
-            <td class="px-4 py-3 font-bold text-ink">
+            <td data-label="Cliente" class="flex items-center justify-between gap-3 px-4 py-1.5 before:text-[11px] before:uppercase before:tracking-wider before:text-muted before:content-[attr(data-label)] md:table-cell md:py-3 md:before:content-none font-bold text-ink">
               <button
                 type="button"
                 class="rounded text-left underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
@@ -486,20 +486,20 @@ v-model="barberFilter"
                 {{ appt.client.user.name ?? "—" }}
               </button>
             </td>
-            <td class="px-4 py-3 text-muted">
+            <td data-label="Servicio" class="flex items-center justify-between gap-3 px-4 py-1.5 before:text-[11px] before:uppercase before:tracking-wider before:text-muted before:content-[attr(data-label)] md:table-cell md:py-3 md:before:content-none text-muted">
               {{ appt.service.nombre ?? "—" }}
             </td>
-            <td class="px-4 py-3 text-muted">
+            <td data-label="Barbero" class="flex items-center justify-between gap-3 px-4 py-1.5 before:text-[11px] before:uppercase before:tracking-wider before:text-muted before:content-[attr(data-label)] md:table-cell md:py-3 md:before:content-none text-muted">
               {{ appt.barber.user.name ?? "—" }}
             </td>
-            <td class="px-4 py-3 text-center">
+            <td data-label="Estado" class="flex items-center justify-between gap-3 px-4 py-1.5 before:text-[11px] before:uppercase before:tracking-wider before:text-muted before:content-[attr(data-label)] md:table-cell md:py-3 md:before:content-none text-center">
               <span
                 class="rounded-full border px-2 py-0.5 text-[11px] font-black"
                 :class="ESTADO_CLASS[appt.estado]"
                 >{{ ESTADO_LABEL[appt.estado] ?? appt.estado }}</span
               >
             </td>
-            <td class="px-4 py-3">
+            <td data-label="Acciones" class="block px-4 py-1.5 md:table-cell md:py-3">
               <div class="flex flex-wrap justify-end gap-2">
                 <!-- Acciones del día: una sola pulsación por transición, en
                      vez de abrir el formulario completo para mover el estado. -->
@@ -559,8 +559,8 @@ v-model="barberFilter"
               </p>
             </td>
           </tr>
-          <tr v-if="!appointments.length">
-            <td colspan="7" class="px-4 py-6">
+          <tr v-if="!appointments.length" class="block md:table-row">
+            <td colspan="7" class="block px-4 py-6 md:table-cell">
               <BrandStatePanel mascot="nava" state="empty" title="Sin citas que mostrar" description="Las citas que coincidan con tus filtros aparecerán aquí." />
             </td>
           </tr>
