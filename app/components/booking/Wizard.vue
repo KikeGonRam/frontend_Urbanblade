@@ -396,6 +396,7 @@ const canBookHere = computed(() => !isAuthenticated.value || hasRole('cliente'))
 const saving = ref(false)
 watch(saving, value => emit('busy', value))
 const submitError = ref('')
+const submitErrorEl = ref<HTMLElement | null>(null)
 const confirmedCode = ref('')
 const productsWarning = ref('')
 // El cliente acepta el cargo por inasistencia en el último paso (el backend guarda cuándo lo aceptó).
@@ -487,6 +488,10 @@ async function confirm() {
     await loadSlots()
     time.value = ''
     activeStep.value = null
+    // El mensaje vive arriba de los pasos: si la persona estaba abajo no lo veía y solo notaba que el
+    // asistente regresaba al horario. Se lleva a la vista para que sepa por qué.
+    await nextTick()
+    submitErrorEl.value?.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }
   finally {
     saving.value = false
@@ -608,6 +613,7 @@ function prettyDate(iso: string) {
            con él y el visitante volvía al selector sin saber por qué. -->
       <p
         v-if="submitError"
+        ref="submitErrorEl"
         role="alert"
         class="mb-6 rounded-xl border border-danger/30 bg-danger/10 p-4 text-sm font-bold text-danger"
       >
