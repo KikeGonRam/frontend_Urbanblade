@@ -25,10 +25,10 @@ interface ProductRow {
 }
 
 interface Stats {
-  total_productos: number;
-  valor_inventario: number;
+  total: number;
+  valor_total: number;
   bajo_stock: number;
-  sin_stock: number;
+  sin_stock?: number;
 }
 
 interface LowStockItem {
@@ -358,7 +358,7 @@ async function removeProduct(product: ProductRow) {
           Productos
         </p>
         <p class="mt-2 text-2xl font-black text-ink">
-          {{ stats.total_productos }}
+          {{ stats.total }}
         </p>
       </div>
       <div class="ui-card p-4">
@@ -366,7 +366,7 @@ async function removeProduct(product: ProductRow) {
           Valor Inventario
         </p>
         <p class="mt-2 text-2xl font-black text-success">
-          {{ fmtMoney(stats.valor_inventario) }}
+          {{ fmtMoney(stats.valor_total) }}
         </p>
       </div>
       <div class="ui-card p-4">
@@ -382,7 +382,7 @@ async function removeProduct(product: ProductRow) {
           Sin Stock
         </p>
         <p class="mt-2 text-2xl font-black text-danger">
-          {{ stats.sin_stock }}
+          {{ stats.sin_stock ?? 0 }}
         </p>
       </div>
     </section>
