@@ -346,8 +346,8 @@ v-model="estadoFilter"
             </td>
           </tr>
           <tr v-if="!orders.length">
-            <td colspan="6" class="px-4 py-12 text-center text-sm text-muted">
-              Sin pedidos que mostrar.
+            <td colspan="6" class="px-4 py-8">
+              <BrandStatePanel mascot="nava" state="empty" title="Sin pedidos que mostrar" description="Los pedidos de la tienda aparecerán aquí cuando un cliente compre o cuando cambies el filtro." />
             </td>
           </tr>
         </tbody>

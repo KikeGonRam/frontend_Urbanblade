@@ -179,9 +179,15 @@ async function cancelEntry(entry: WaitlistEntry) {
         action-label="Reintentar"
         @action="refresh"
       />
-      <p v-else-if="!entries.length" class="rounded-2xl border border-dashed border-line p-8 text-center text-sm text-muted">
-        {{ isClient ? "No tienes anotaciones en lista de espera." : "No hay nadie en lista de espera." }}
-      </p>
+      <BrandStatePanel
+        v-else-if="!entries.length"
+        mascot="nava"
+        state="empty"
+        :title="isClient ? 'No tienes anotaciones en lista de espera' : 'No hay nadie en lista de espera'"
+        :description="isClient ? 'Cuando un horario esté lleno, anótate y te avisamos si se libera.' : 'Aquí aparece la demanda de horarios ya llenos.'"
+        :action-label="isClient ? 'Reservar una cita' : undefined"
+        :action-to="isClient ? '/my/appointments' : undefined"
+      />
       <div v-else class="space-y-2">
         <div
           v-for="entry in entries"

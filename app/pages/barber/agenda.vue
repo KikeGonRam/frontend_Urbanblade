@@ -273,7 +273,7 @@ async function openTicket(appt: Appointment) {
         </div>
       </article>
 
-      <div v-if="!appointments.length" class="ui-card py-16 text-center text-sm text-muted">No hay citas en este periodo.</div>
+      <BrandStatePanel v-if="!appointments.length" mascot="nava" state="empty" title="No hay citas en este periodo" description="Cambia el rango o el estado para ver otras citas." class="ui-card" />
     </section>
 
     <UiServiceTicketModal v-if="ticket" :ticket="ticket" @close="ticket = null" />

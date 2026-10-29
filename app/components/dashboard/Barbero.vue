@@ -328,7 +328,7 @@ const servicesOptions = {
         v-if="!data.barberToday.length"
         class="rounded-2xl border border-dashed border-line py-10 text-center text-sm text-muted"
       >
-        No tienes citas hoy. Disfruta el descanso.
+        No tienes citas hoy. Disfruta el descanso o mira tu semana en la agenda.
       </p>
       <ul v-else class="space-y-3">
         <li
