@@ -107,7 +107,7 @@ test("la ficha muestra lealtad, métricas reales e historial", async ({
   await expect(
     page.getByRole("heading", { name: "Cliente Prueba" }),
   ).toBeVisible();
-  await expect(page.getByText("Nivel oro")).toBeVisible();
+  await expect(page.getByText("Lealtad oro")).toBeVisible();
   await expect(page.getByText("120 pts")).toBeVisible();
   await expect(page.getByText("VIP")).toBeVisible();
   // Métricas que ya calculaba el backend y no se veían en ninguna parte.
@@ -207,7 +207,7 @@ test("recepción entra a la ficha del cliente desde el mostrador", async ({
   await expect(
     page.getByRole("heading", { name: "Cliente Prueba" }),
   ).toBeVisible();
-  await expect(page.getByText("Nivel oro")).toBeVisible();
+  await expect(page.getByText("Lealtad oro")).toBeVisible();
   await expect(
     page.getByLabel("Notas del equipo sobre este cliente"),
   ).toBeVisible();
