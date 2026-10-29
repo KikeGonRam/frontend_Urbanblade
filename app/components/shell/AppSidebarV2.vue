@@ -11,15 +11,24 @@ const { user, logout, hasRole } = useAuth();
 const avatarFailed = ref(false);
 const quickAction = computed(() =>
   hasRole("cliente")
-    ? { to: "/store", label: "Explorar tienda" }
+    ? { to: "/my/appointments", label: "Reservar cita" }
     : hasRole("barbero")
       ? { to: "/barber/agenda", label: "Ver mi agenda" }
       : hasRole("ingeniero")
         ? { to: "/system", label: "Revisar sistema" }
         : { to: "/appointments", label: "Nueva cita" },
 );
+// Solo el ítem con la ruta más específica queda activo: en /appointments/calendar no deben iluminarse a la vez
+// «Citas» (/appointments) y «Calendario» (/appointments/calendar).
+const activeTo = computed(() => {
+  const coinciden = sections.value
+    .flatMap((section) => section.items.map((item) => item.to))
+    .filter((to) => route.path === to || route.path.startsWith(`${to}/`));
+
+  return coinciden.sort((a, b) => b.length - a.length)[0] ?? null;
+});
 function isActive(to: string) {
-  return route.path === to || route.path.startsWith(`${to}/`);
+  return activeTo.value === to;
 }
 watch(
   () => user.value?.avatar_url,
