@@ -592,7 +592,7 @@ function prettyDate(iso: string) {
 
     <template v-else>
       <header class="mb-8">
-        <p class="text-[11px] font-black uppercase tracking-[0.2em] text-gold">
+        <p class="text-xs font-black uppercase tracking-[0.2em] text-gold">
           {{ shop?.nombre || 'UrbanBlade' }}
         </p>
         <h1 class="mt-2 text-3xl font-black uppercase tracking-tight text-ink">
@@ -621,7 +621,7 @@ function prettyDate(iso: string) {
       </p>
 
       <!-- Progreso -->
-      <ol class="mb-6 grid grid-cols-2 gap-2 text-[11px] font-black tracking-wide sm:grid-cols-4">
+      <ol class="mb-6 grid grid-cols-2 gap-2 text-xs font-black tracking-wide sm:grid-cols-4">
         <li v-for="(label, i) in STEPS" :key="label" class="flex flex-1 items-center gap-1 sm:gap-2">
           <button
             type="button"
@@ -633,7 +633,7 @@ function prettyDate(iso: string) {
             :aria-current="i === step ? 'step' : undefined"
             @click="goToStep(i)"
           >
-            <span class="grid h-5 w-5 place-items-center rounded-full border border-current text-[11px]">{{ i + 1 }}</span>
+            <span class="grid h-5 w-5 place-items-center rounded-full border border-current text-xs">{{ i + 1 }}</span>
             <span>{{ label }}</span>
           </button>
         </li>
@@ -768,9 +768,9 @@ function prettyDate(iso: string) {
             :aria-pressed="date === d.iso"
             @click="date = d.iso; time = ''; activeStep = null"
           >
-            <span class="text-[11px] font-black uppercase tracking-widest">{{ d.isToday ? 'Hoy' : d.weekday }}</span>
+            <span class="text-xs font-black uppercase tracking-widest">{{ d.isToday ? 'Hoy' : d.weekday }}</span>
             <span class="text-lg font-black leading-none text-ink" :class="date === d.iso && 'text-gold'">{{ d.day }}</span>
-            <span class="text-[11px] uppercase">{{ d.month }}</span>
+            <span class="text-xs uppercase">{{ d.month }}</span>
           </button>
         </div>
 
@@ -815,7 +815,7 @@ function prettyDate(iso: string) {
             {{ prettyDate(date) }}
           </p>
           <div v-for="group in groupedSlots" :key="group.key" class="mb-5 last:mb-0">
-            <h3 class="mb-2 text-[11px] font-black uppercase tracking-widest text-muted">
+            <h3 class="mb-2 text-xs font-black uppercase tracking-widest text-muted">
               {{ group.label }} <span class="text-ink/40">· {{ group.slots.length }}</span>
             </h3>
             <div class="grid grid-cols-3 gap-2 sm:grid-cols-5">
@@ -887,7 +887,7 @@ function prettyDate(iso: string) {
                   v-if="p.imagen" :src="p.imagen" :alt="p.nombre"
                   class="mb-2 h-16 w-full rounded-lg object-cover"
                 >
-                <span v-else class="mb-2 flex h-16 w-full items-center justify-center rounded-lg bg-gold/10 text-[11px] text-muted">
+                <span v-else class="mb-2 flex h-16 w-full items-center justify-center rounded-lg bg-gold/10 text-xs text-muted">
                   Sin foto
                 </span>
                 <span class="block truncate text-xs font-bold text-ink">{{ p.nombre }}</span>

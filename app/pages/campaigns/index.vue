@@ -201,7 +201,7 @@ async function submitCampaign() {
           <div v-for="c in campaigns" :key="c.id" class="ui-card p-4">
             <div class="mb-1 flex flex-wrap items-center justify-between gap-2">
               <p class="font-black text-ink">{{ c.titulo }}</p>
-              <span class="rounded-full border px-2 py-0.5 text-[11px] font-black uppercase" :class="ESTADO_CLASS[c.estado]">{{ ESTADO_LABEL[c.estado] ?? c.estado }}</span>
+              <span class="rounded-full border px-2 py-0.5 text-xs font-black uppercase" :class="ESTADO_CLASS[c.estado]">{{ ESTADO_LABEL[c.estado] ?? c.estado }}</span>
             </div>
             <p class="mb-2 text-sm text-muted">{{ c.cuerpo }}</p>
             <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">

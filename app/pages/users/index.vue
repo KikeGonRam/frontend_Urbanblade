@@ -247,7 +247,7 @@ async function removeUser(user: UserRow) {
       <table aria-label="Usuarios" class="w-full text-left text-sm">
         <thead>
           <tr
-            class="border-b border-line text-[11px] uppercase tracking-wider text-muted"
+            class="border-b border-line text-xs uppercase tracking-wider text-muted"
           >
             <th scope="col" class="px-4 py-3">Usuario</th>
             <th scope="col" class="px-4 py-3">Email</th>
@@ -267,7 +267,7 @@ async function removeUser(user: UserRow) {
                 <span class="font-bold text-ink">{{ user.name }}</span>
                 <span
                   v-if="currentUser && user.id === currentUser.id"
-                  class="rounded-full border border-gold/25 bg-gold/10 px-1.5 py-0.5 text-[11px] font-black uppercase text-gold"
+                  class="rounded-full border border-gold/25 bg-gold/10 px-1.5 py-0.5 text-xs font-black uppercase text-gold"
                   >Tú</span
                 >
               </div>
@@ -275,7 +275,7 @@ async function removeUser(user: UserRow) {
             <td class="px-4 py-3 text-muted">{{ user.email }}</td>
             <td class="px-4 py-3 text-center">
               <span
-                class="rounded-full border border-line bg-ink/5 px-2 py-0.5 text-[11px] font-black uppercase text-muted"
+                class="rounded-full border border-line bg-ink/5 px-2 py-0.5 text-xs font-black uppercase text-muted"
                 >{{ ROLE_LABEL[user.roles[0]] ?? user.roles[0] ?? "—" }}</span
               >
             </td>
@@ -334,7 +334,7 @@ async function removeUser(user: UserRow) {
             </h2>
             <p class="mt-2 ub-form-help">Configura la identidad, el nivel de acceso y las credenciales de esta cuenta.</p>
           </div>
-          <span class="rounded-full border border-gold/25 bg-gold/10 px-2 py-1 text-[11px] font-black uppercase tracking-wider text-gold">
+          <span class="rounded-full border border-gold/25 bg-gold/10 px-2 py-1 text-xs font-black uppercase tracking-wider text-gold">
             {{ editing ? "Edición" : "Alta" }}
           </span>
         </div>

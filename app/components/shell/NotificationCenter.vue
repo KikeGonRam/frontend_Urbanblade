@@ -125,7 +125,7 @@ onBeforeUnmount(() => {
   >
     <span class="relative shrink-0">
       <ShellNavIcon paths="<path d='M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9'/><path d='M13.73 21a2 2 0 0 1-3.46 0'/>" />
-      <span v-if="unread" aria-hidden="true" class="absolute -right-2 -top-2 grid min-h-4 min-w-4 place-items-center rounded-full bg-gold px-1 text-[9px] font-black text-black">
+      <span v-if="unread" aria-hidden="true" class="absolute -right-2 -top-2 grid min-h-4 min-w-4 place-items-center rounded-full bg-gold px-1 text-xs font-black text-black">
         {{ unread > 99 ? '99+' : unread }}
       </span>
     </span>
@@ -194,7 +194,7 @@ onBeforeUnmount(() => {
                 <span class="min-w-0 flex-1">
                   <strong class="block truncate text-sm text-ink">{{ notification.data.title ?? 'Notificación' }}</strong>
                   <span v-if="notification.data.message" class="mt-0.5 line-clamp-2 block text-xs leading-5 text-muted">{{ notification.data.message }}</span>
-                  <small class="mt-1 block text-[11px] font-semibold text-gold">{{ fmtDate(notification.created_at) }}</small>
+                  <small class="mt-1 block text-xs font-semibold text-gold">{{ fmtDate(notification.created_at) }}</small>
                 </span>
                 <span v-if="!notification.read_at" aria-hidden="true" class="mt-4 h-2.5 w-2.5 shrink-0 rounded-full bg-gold" />
               </button>

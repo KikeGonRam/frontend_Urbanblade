@@ -111,7 +111,7 @@ async function resolve(item: ReportedComment, action: Action) {
           <span
             v-for="r in item.reasons"
             :key="r"
-            class="rounded-full border border-warning/25 bg-warning/10 px-2 py-0.5 text-[11px] font-black uppercase text-warning"
+            class="rounded-full border border-warning/25 bg-warning/10 px-2 py-0.5 text-xs font-black uppercase text-warning"
           >{{ reasonLabel(r) }}</span>
           <span class="text-xs text-muted">
             {{ item.reports_count }} {{ item.reports_count === 1 ? "reporte" : "reportes" }} · primero: {{ fmtDate(item.first_reported_at) }}

@@ -543,7 +543,7 @@ onUnmounted(() => teardownStripe());
           Por Revisar
           <span
             v-if="pendingCount > 0"
-            class="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-gold px-1 text-[11px] font-black text-black"
+            class="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-gold px-1 text-xs font-black text-black"
             >{{ pendingCount }}</span
           >
         </NuxtLink>
@@ -569,7 +569,7 @@ onUnmounted(() => teardownStripe());
     <section v-if="stats" class="mb-5 grid grid-cols-2 gap-4 sm:grid-cols-4">
       <div class="rounded-2xl border border-line bg-card p-4">
         <p
-          class="mb-1 text-[11px] font-black uppercase tracking-wider text-muted"
+          class="mb-1 text-xs font-black uppercase tracking-wider text-muted"
         >
           Facturación Hoy
         </p>
@@ -579,7 +579,7 @@ onUnmounted(() => teardownStripe());
       </div>
       <div class="rounded-2xl border border-line bg-card p-4">
         <p
-          class="mb-1 text-[11px] font-black uppercase tracking-wider text-muted"
+          class="mb-1 text-xs font-black uppercase tracking-wider text-muted"
         >
           Este Mes
         </p>
@@ -589,7 +589,7 @@ onUnmounted(() => teardownStripe());
       </div>
       <div class="rounded-2xl border border-line bg-card p-4">
         <p
-          class="mb-1 text-[11px] font-black uppercase tracking-wider text-muted"
+          class="mb-1 text-xs font-black uppercase tracking-wider text-muted"
         >
           Total Cobros
         </p>
@@ -597,7 +597,7 @@ onUnmounted(() => teardownStripe());
       </div>
       <div class="rounded-2xl border border-line bg-card p-4">
         <p
-          class="mb-2 text-[11px] font-black uppercase tracking-wider text-muted"
+          class="mb-2 text-xs font-black uppercase tracking-wider text-muted"
         >
           Por Método
         </p>
@@ -605,7 +605,7 @@ onUnmounted(() => teardownStripe());
           <span
             v-for="(cnt, metodo) in stats.metodos"
             :key="metodo"
-            class="rounded-full border border-line bg-ink/5 px-2 py-0.5 text-[11px] font-black uppercase text-ink/70"
+            class="rounded-full border border-line bg-ink/5 px-2 py-0.5 text-xs font-black uppercase text-ink/70"
           >
             {{ metodo }}: {{ cnt }}
           </span>
@@ -681,7 +681,7 @@ v-model="fechaHasta"
       <table class="w-full text-left text-sm">
         <thead>
           <tr
-            class="border-b border-line text-[11px] uppercase tracking-wider text-muted"
+            class="border-b border-line text-xs uppercase tracking-wider text-muted"
           >
             <th class="px-4 py-3">Folio / Fecha</th>
             <th class="px-4 py-3">Cliente & Servicio</th>
@@ -702,7 +702,7 @@ v-model="fechaHasta"
                 <span class="font-black text-ink"
                   >#{{ String(payment.id).padStart(6, "0").slice(-6) }}</span
                 >
-                <span class="text-[11px] font-bold uppercase text-muted">{{
+                <span class="text-xs font-bold uppercase text-muted">{{
                   fmtDateTime(payment.created_at)
                 }}</span>
               </div>
@@ -713,7 +713,7 @@ v-model="fechaHasta"
                   payment.appointment.client ?? "N/A"
                 }}</span>
                 <span
-                  class="text-[11px] font-black uppercase tracking-widest text-gold"
+                  class="text-xs font-black uppercase tracking-widest text-gold"
                   >{{ payment.appointment.service ?? "General" }}</span
                 >
               </div>
@@ -723,7 +723,7 @@ v-model="fechaHasta"
             </td>
             <td class="px-4 py-3">
               <span
-                class="rounded-full border border-line bg-ink/5 px-2 py-0.5 text-[11px] font-black uppercase text-muted"
+                class="rounded-full border border-line bg-ink/5 px-2 py-0.5 text-xs font-black uppercase text-muted"
                 >{{
                   METODO_LABEL[payment.metodo_pago] ?? payment.metodo_pago
                 }}</span
@@ -736,7 +736,7 @@ v-model="fechaHasta"
                 }}</span>
                 <span
                   v-if="Number(payment.propina) > 0"
-                  class="text-[11px] font-bold uppercase text-gold"
+                  class="text-xs font-bold uppercase text-gold"
                   >+{{ fmtMoney(payment.propina) }} propina</span
                 >
               </div>
@@ -886,7 +886,7 @@ v-model.number="form.propina"
               <div class="flex items-start gap-3">
                 <span class="min-w-0 flex-1">
                   <span
-                    class="block text-[11px] font-black uppercase tracking-widest text-info"
+                    class="block text-xs font-black uppercase tracking-widest text-info"
                     >Paquete prepagado disponible</span
                   >
                   <span class="mt-0.5 block text-xs text-ink/80"
@@ -894,7 +894,7 @@ v-model.number="form.propina"
                     uso{{ selected.paquete_disponible.usos_restantes === 1 ? "" : "s" }}
                     de este servicio</span
                   >
-                  <span class="mt-1 block text-[11px] italic text-muted"
+                  <span class="mt-1 block text-xs italic text-muted"
                     >Cubre el 100% del servicio (no se combina con puntos ni
                     gift card).</span
                   >
@@ -913,7 +913,7 @@ v-model.number="form.propina"
                 placeholder="Ej. A1B2C3D4"
                 class="ui-input w-full uppercase"
               >
-              <p class="mt-1 text-[11px] italic text-muted">
+              <p class="mt-1 text-xs italic text-muted">
                 Se aplica al total antes de cobrar el resto por
                 {{ METODO_LABEL[form.metodo]?.toLowerCase() }}. Si el saldo no
                 alcanza, cubre solo una parte.
@@ -927,13 +927,13 @@ v-model.number="form.propina"
               <div class="flex items-start gap-3">
                 <span class="min-w-0 flex-1">
                   <span
-                    class="block text-[11px] font-black uppercase tracking-widest text-fuchsia-300"
+                    class="block text-xs font-black uppercase tracking-widest text-fuchsia-300"
                     >Premio de rifa disponible</span
                   >
                   <span class="mt-0.5 block text-xs text-ink/80">{{
                     selected.premio_rifa
                   }}</span>
-                  <span class="mt-1 block text-[11px] italic text-muted"
+                  <span class="mt-1 block text-xs italic text-muted"
                     >Aplica el premio como 100% de descuento (no se combina con
                     puntos).</span
                   >
@@ -948,7 +948,7 @@ v-model.number="form.propina"
               class="space-y-3 rounded-xl border border-gold/20 bg-ink/3 p-4"
             >
               <p
-                class="text-[11px] font-black uppercase tracking-widest text-gold"
+                class="text-xs font-black uppercase tracking-widest text-gold"
               >
                 Cliente {{ selected.nivel_label }}
                 <span v-if="selected.nivel_pct > 0"
@@ -969,7 +969,7 @@ v-model.number="form.propina"
                   :max="preview.maxPuntosCanjeables"
                   class="ui-input w-full"
                 >
-                <p class="mt-1 text-[11px] italic text-muted">
+                <p class="mt-1 text-xs italic text-muted">
                   1 punto = $1 MXN. Tope: 50% del total con descuento de nivel,
                   o el saldo del cliente.
                 </p>
@@ -987,7 +987,7 @@ v-model.number="form.propina"
               class="space-y-3 rounded-xl border border-gold/20 bg-ink/3 p-4"
             >
               <p
-                class="text-[11px] font-black uppercase tracking-widest text-gold"
+                class="text-xs font-black uppercase tracking-widest text-gold"
               >
                 Pago con tarjeta (beta) — procesado por Stripe
               </p>
@@ -997,7 +997,7 @@ v-model.number="form.propina"
               />
               <p
                 v-if="stripeErrors"
-                class="text-[11px] font-black uppercase text-danger"
+                class="text-xs font-black uppercase text-danger"
               >
                 {{ stripeErrors }}
               </p>
@@ -1014,19 +1014,19 @@ v-model.number="form.propina"
             <div class="rounded-xl border border-gold/30 bg-black/20 p-5">
               <div class="space-y-2 text-sm">
                 <div class="flex justify-between">
-                  <span class="text-[11px] font-bold uppercase text-muted"
+                  <span class="text-xs font-bold uppercase text-muted"
                     >Subtotal</span
                   ><span class="text-ink">{{ fmtMoney(selected.precio) }}</span>
                 </div>
                 <div v-if="form.usarPremioRifa" class="flex justify-between">
-                  <span class="text-[11px] font-bold uppercase text-muted"
+                  <span class="text-xs font-bold uppercase text-muted"
                     >Premio de rifa</span
                   ><span class="text-fuchsia-400"
                     >-{{ fmtMoney(selected.precio) }}</span
                   >
                 </div>
                 <div v-else-if="form.usarPaquete" class="flex justify-between">
-                  <span class="text-[11px] font-bold uppercase text-muted"
+                  <span class="text-xs font-bold uppercase text-muted"
                     >Paquete prepagado</span
                   ><span class="text-info"
                     >-{{ fmtMoney(selected.precio) }}</span
@@ -1036,7 +1036,7 @@ v-model.number="form.propina"
                   v-else-if="selected.nivel_pct > 0"
                   class="flex justify-between"
                 >
-                  <span class="text-[11px] font-bold uppercase text-muted"
+                  <span class="text-xs font-bold uppercase text-muted"
                     >Descuento nivel ({{ selected.nivel_pct }}%)</span
                   ><span class="text-success"
                     >-{{
@@ -1048,14 +1048,14 @@ v-model.number="form.propina"
                   v-if="preview.descuentoPuntos > 0"
                   class="flex justify-between"
                 >
-                  <span class="text-[11px] font-bold uppercase text-muted"
+                  <span class="text-xs font-bold uppercase text-muted"
                     >Puntos canjeados</span
                   ><span class="text-success"
                     >-{{ fmtMoney(preview.descuentoPuntos) }}</span
                   >
                 </div>
                 <div class="flex justify-between">
-                  <span class="text-[11px] font-bold uppercase text-muted"
+                  <span class="text-xs font-bold uppercase text-muted"
                     >Propina</span
                   ><span class="text-gold">{{ fmtMoney(form.propina) }}</span>
                 </div>

@@ -111,7 +111,7 @@ function openCell(dayIndex: number, hourIndex: number) {
     <template v-else-if="data">
       <ul class="mb-5 grid gap-3 sm:grid-cols-2" aria-label="Resumen de demanda">
         <li class="rounded-xl border border-gold/30 bg-gold/10 p-4">
-          <p class="text-[11px] font-bold uppercase tracking-wide text-gold">Más demanda</p>
+          <p class="text-xs font-bold uppercase tracking-wide text-gold">Más demanda</p>
           <ul class="mt-2 space-y-1.5">
             <li v-for="slot in data.peakSlots" :key="slot.label" class="flex items-baseline justify-between gap-3 text-sm">
               <span class="font-semibold text-ink">{{ slot.label }}</span>
@@ -120,7 +120,7 @@ function openCell(dayIndex: number, hourIndex: number) {
           </ul>
         </li>
         <li class="rounded-xl border border-line bg-ink/[0.03] p-4">
-          <p class="text-[11px] font-bold uppercase tracking-wide text-muted">Para promocionar</p>
+          <p class="text-xs font-bold uppercase tracking-wide text-muted">Para promocionar</p>
           <ul class="mt-2 space-y-1.5">
             <li v-for="slot in data.quietSlots" :key="slot.label" class="flex items-baseline justify-between gap-3 text-sm">
               <span class="font-semibold text-ink">{{ slot.label }}</span>
@@ -135,8 +135,8 @@ function openCell(dayIndex: number, hourIndex: number) {
           <thead>
             <tr>
               <th scope="col" class="w-12"><span class="sr-only">Día</span></th>
-              <th v-for="hour in data.hours" :key="hour" scope="col" class="text-[11px] font-semibold tabular-nums text-muted">{{ hourLabel(hour) }}</th>
-              <th scope="col" class="w-14 text-[11px] font-semibold text-muted">Total</th>
+              <th v-for="hour in data.hours" :key="hour" scope="col" class="text-xs font-semibold tabular-nums text-muted">{{ hourLabel(hour) }}</th>
+              <th scope="col" class="w-14 text-xs font-semibold text-muted">Total</th>
             </tr>
           </thead>
           <tbody>
@@ -158,12 +158,12 @@ function openCell(dayIndex: number, hourIndex: number) {
           </tbody>
           <tfoot>
             <tr>
-              <th scope="row" class="pr-1 text-right text-[11px] font-semibold text-muted">Hora</th>
+              <th scope="row" class="pr-1 text-right text-xs font-semibold text-muted">Hora</th>
               <td v-for="h in data.hourlyTotals" :key="h.hour" class="px-0.5 pt-2 align-bottom">
                 <div class="mx-auto flex h-14 w-full items-end" :title="`${h.label}: ${h.total} citas`">
                   <div class="peak-bar w-full rounded-t" :style="{ height: `${Math.max(6, (h.total / maxHour) * 100)}%` }" />
                 </div>
-                <span class="mt-1 block text-[10px] font-semibold tabular-nums text-muted">{{ fmtInt(h.total) }}</span>
+                <span class="mt-1 block text-xs font-semibold tabular-nums text-muted">{{ fmtInt(h.total) }}</span>
               </td>
               <td />
             </tr>

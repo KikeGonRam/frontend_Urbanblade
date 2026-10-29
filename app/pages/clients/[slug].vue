@@ -186,18 +186,18 @@ function fecha(iso: string | null) {
           <div class="flex flex-wrap items-center gap-2">
             <span
               v-if="client.segment"
-              class="rounded-full border border-gold/30 bg-gold/10 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-gold"
+              class="rounded-full border border-gold/30 bg-gold/10 px-3 py-1 text-xs font-black uppercase tracking-widest text-gold"
             >
               {{ SEGMENT_LABEL[client.segment] ?? client.segment }}
             </span>
             <span
               v-if="client.nivel"
-              class="rounded-full border border-line px-3 py-1 text-[10px] font-black uppercase tracking-widest text-ink"
+              class="rounded-full border border-line px-3 py-1 text-xs font-black uppercase tracking-widest text-ink"
             >
               Lealtad {{ client.nivel }}
             </span>
             <span
-              class="rounded-full border border-line px-3 py-1 text-[10px] font-black uppercase tracking-widest text-muted"
+              class="rounded-full border border-line px-3 py-1 text-xs font-black uppercase tracking-widest text-muted"
             >
               {{ client.puntos }} pts
             </span>
@@ -208,26 +208,26 @@ function fecha(iso: string | null) {
       <!-- Métricas reales, todas calculadas en el backend -->
       <section class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <div class="ui-card p-4">
-          <p class="text-[10px] font-bold uppercase tracking-widest text-muted">Citas</p>
+          <p class="text-xs font-bold uppercase tracking-widest text-muted">Citas</p>
           <p class="mt-1 text-xl font-black text-ink">{{ client.totalAppointments }}</p>
         </div>
         <div class="ui-card p-4">
-          <p class="text-[10px] font-bold uppercase tracking-widest text-muted">Gasto total</p>
+          <p class="text-xs font-bold uppercase tracking-widest text-muted">Gasto total</p>
           <p class="mt-1 text-xl font-black text-gold">{{ money(client.totalSpent) }}</p>
         </div>
         <div class="ui-card p-4">
-          <p class="text-[10px] font-bold uppercase tracking-widest text-muted">Ticket promedio</p>
+          <p class="text-xs font-bold uppercase tracking-widest text-muted">Ticket promedio</p>
           <p class="mt-1 text-xl font-black text-ink">{{ money(client.averageSpent) }}</p>
         </div>
         <div class="ui-card p-4">
-          <p class="text-[10px] font-bold uppercase tracking-widest text-muted">Última visita</p>
+          <p class="text-xs font-bold uppercase tracking-widest text-muted">Última visita</p>
           <p class="mt-1 text-sm font-black text-ink">{{ fecha(client.lastAppointment) }}</p>
-          <p v-if="client.daysSinceLastAppointment !== null" class="text-[10px] text-muted">
+          <p v-if="client.daysSinceLastAppointment !== null" class="text-xs text-muted">
             hace {{ client.daysSinceLastAppointment }} días
           </p>
         </div>
         <div class="ui-card p-4">
-          <p class="text-[10px] font-bold uppercase tracking-widest text-muted">Barbero preferido</p>
+          <p class="text-xs font-bold uppercase tracking-widest text-muted">Barbero preferido</p>
           <p class="mt-1 truncate text-sm font-black text-ink">{{ client.preferredBarber ?? "—" }}</p>
         </div>
       </section>
@@ -250,7 +250,7 @@ function fecha(iso: string | null) {
         <div class="mt-3 flex flex-wrap items-center gap-3">
           <button
             type="button"
-            class="ui-btn min-h-11 px-5 py-2 text-[11px] tracking-widest disabled:opacity-50"
+            class="ui-btn min-h-11 px-5 py-2 text-xs tracking-widest disabled:opacity-50"
             :disabled="savingNotas || !notasSucias"
             @click="guardarNotas"
           >
@@ -279,7 +279,7 @@ function fecha(iso: string | null) {
           description="Cuando este cliente reserve, su historial aparecerá aquí."
         />
         <table v-else class="mt-4 w-full text-left text-sm">
-          <thead class="border-b border-line text-[10px] uppercase tracking-widest text-muted">
+          <thead class="border-b border-line text-xs uppercase tracking-widest text-muted">
             <tr>
               <th class="px-5 py-3">Fecha</th>
               <th class="px-5 py-3">Hora</th>
@@ -301,7 +301,7 @@ function fecha(iso: string | null) {
               <td class="px-5 py-3 text-muted">{{ appt.barber ?? "—" }}</td>
               <td class="px-5 py-3 text-center">
                 <span
-                  class="rounded-full border px-2 py-0.5 text-[10px] font-black"
+                  class="rounded-full border px-2 py-0.5 text-xs font-black"
                   :class="ESTADO_CLASS[appt.estado]"
                 >{{ ESTADO_LABEL[appt.estado] ?? appt.estado }}</span>
               </td>

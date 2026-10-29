@@ -194,7 +194,7 @@ async function downloadReceipt(order: OrderRow) {
     <section v-if="stats" class="mb-5 grid grid-cols-3 gap-4">
       <div class="rounded-2xl border border-line bg-card p-4">
         <p
-          class="mb-1 text-[11px] font-black uppercase tracking-wider text-muted"
+          class="mb-1 text-xs font-black uppercase tracking-wider text-muted"
         >
           Pendientes
         </p>
@@ -202,7 +202,7 @@ async function downloadReceipt(order: OrderRow) {
       </div>
       <div class="rounded-2xl border border-line bg-card p-4">
         <p
-          class="mb-1 text-[11px] font-black uppercase tracking-wider text-muted"
+          class="mb-1 text-xs font-black uppercase tracking-wider text-muted"
         >
           Entregados
         </p>
@@ -212,7 +212,7 @@ async function downloadReceipt(order: OrderRow) {
       </div>
       <div class="rounded-2xl border border-line bg-card p-4">
         <p
-          class="mb-1 text-[11px] font-black uppercase tracking-wider text-muted"
+          class="mb-1 text-xs font-black uppercase tracking-wider text-muted"
         >
           Por Cobrar
         </p>
@@ -269,7 +269,7 @@ v-model="estadoFilter"
       <table class="w-full text-left text-sm">
         <thead>
           <tr
-            class="border-b border-line text-[11px] uppercase tracking-wider text-muted"
+            class="border-b border-line text-xs uppercase tracking-wider text-muted"
           >
             <th class="px-4 py-3">Folio / Fecha</th>
             <th class="px-4 py-3">Cliente</th>
@@ -288,7 +288,7 @@ v-model="estadoFilter"
             <td class="px-4 py-3">
               <div class="flex flex-col">
                 <span class="font-black text-ink">{{ order.folio }}</span>
-                <span class="text-[11px] font-bold uppercase text-muted">{{
+                <span class="text-xs font-bold uppercase text-muted">{{
                   fmtDate(order.created_at)
                 }}</span>
               </div>
@@ -301,11 +301,11 @@ v-model="estadoFilter"
             </td>
             <td class="px-4 py-3">
               <span
-                class="rounded-full border px-2 py-0.5 text-[11px] font-black uppercase"
+                class="rounded-full border px-2 py-0.5 text-xs font-black uppercase"
                 :class="ESTADO_CLASS[order.estado]"
                 >{{ ESTADO_LABEL[order.estado] ?? order.estado }}</span
               >
-              <span v-if="order.metodo_pago" class="ml-1 text-[11px] text-muted"
+              <span v-if="order.metodo_pago" class="ml-1 text-xs text-muted"
                 >({{
                   METODO_LABEL[order.metodo_pago] ?? order.metodo_pago
                 }})</span

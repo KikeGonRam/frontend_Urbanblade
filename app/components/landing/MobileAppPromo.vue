@@ -48,7 +48,7 @@ onBeforeUnmount(stop)
     <div class="pointer-events-none absolute -left-32 top-10 h-96 w-96 rounded-full bg-gold/5 blur-[120px]" />
     <div class="mx-auto grid max-w-6xl items-center gap-10 px-4 lg:grid-cols-2">
       <div class="order-2 lg:order-1">
-        <p class="mb-4 flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.4em] text-gold">
+        <p class="mb-4 flex items-center gap-3 text-xs font-black uppercase tracking-[0.4em] text-gold">
           <span class="inline-block h-px w-8 bg-gold" />
           App móvil
         </p>
@@ -78,13 +78,13 @@ onBeforeUnmount(stop)
               <img src="/images/app/qr-acceso-anticipado.svg" alt="Código QR del acceso anticipado a la app en Google Play" width="104" height="104" class="h-[104px] w-[104px]" loading="lazy">
             </a>
             <div class="min-w-0">
-              <p class="text-[9px] font-black uppercase tracking-[0.25em] text-gold">Acceso anticipado · Google Play</p>
+              <p class="text-xs font-black uppercase tracking-[0.25em] text-gold">Acceso anticipado · Google Play</p>
               <p class="mt-1 text-sm font-black text-ink">Escanea el QR desde tu Android</p>
-              <p class="mt-1 text-[11px] leading-snug text-muted">Prueba cerrada: entra con la cuenta de Google que el equipo registró. ¿Aún no la tienes? Pídela en recepción.</p>
-              <a :href="earlyAccessUrl" target="_blank" rel="noopener noreferrer" class="mt-1 inline-flex min-h-[44px] items-center text-[10px] font-black uppercase tracking-widest text-gold hover:text-ink">Abrir enlace &rarr;</a>
+              <p class="mt-1 text-xs leading-snug text-muted">Prueba cerrada: entra con la cuenta de Google que el equipo registró. ¿Aún no la tienes? Pídela en recepción.</p>
+              <a :href="earlyAccessUrl" target="_blank" rel="noopener noreferrer" class="mt-1 inline-flex min-h-[44px] items-center text-xs font-black uppercase tracking-widest text-gold hover:text-ink">Abrir enlace &rarr;</a>
             </div>
           </div>
-          <span class="text-[11px] font-bold uppercase tracking-widest text-muted">Solo Android</span>
+          <span class="text-xs font-bold uppercase tracking-widest text-muted">Solo Android</span>
         </div>
       </div>
 
@@ -100,7 +100,7 @@ onBeforeUnmount(stop)
             >
           </div>
         </div>
-        <p class="mt-6 text-[11px] font-black uppercase tracking-[0.25em] text-gold">{{ shots[active]?.label }}</p>
+        <p class="mt-6 text-xs font-black uppercase tracking-[0.25em] text-gold">{{ shots[active]?.label }}</p>
         <div class="mt-1 flex" role="tablist" aria-label="Pantallas de la app">
           <button
             v-for="(s, i) in shots" :key="s.label" type="button" role="tab" :aria-selected="i === active" :aria-label="s.label"

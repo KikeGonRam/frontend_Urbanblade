@@ -87,7 +87,7 @@ const label = (value: string | null) => (value ? value.charAt(0).toUpperCase() +
 
       <div class="grid gap-3 sm:grid-cols-2">
         <section class="rounded-xl border border-line p-4" aria-label="Cliente">
-          <p class="text-[11px] font-bold uppercase tracking-wide text-muted">Cliente</p>
+          <p class="text-xs font-bold uppercase tracking-wide text-muted">Cliente</p>
           <div class="mt-2 flex items-center gap-3">
             <UiAvatar :src="detail.client.user.avatar_url" :name="detail.client.user.name ?? 'Cliente'" />
             <p class="min-w-0 truncate text-sm font-semibold text-ink">{{ detail.client.user.name ?? "Cliente" }}</p>
@@ -99,7 +99,7 @@ const label = (value: string | null) => (value ? value.charAt(0).toUpperCase() +
         </section>
 
         <section class="rounded-xl border border-line p-4" aria-label="Barbero">
-          <p class="text-[11px] font-bold uppercase tracking-wide text-muted">Barbero</p>
+          <p class="text-xs font-bold uppercase tracking-wide text-muted">Barbero</p>
           <div class="mt-2 flex items-center gap-3">
             <UiAvatar :src="detail.barber.foto_url" :name="detail.barber.user.name ?? 'Barbero'" />
             <p class="min-w-0 truncate text-sm font-semibold text-ink">{{ detail.barber.user.name ?? "—" }}</p>
@@ -113,22 +113,22 @@ const label = (value: string | null) => (value ? value.charAt(0).toUpperCase() +
 
       <dl class="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div class="rounded-xl bg-ink/[0.03] p-3">
-          <dt class="text-[11px] font-bold uppercase tracking-wide text-muted">Cobrado</dt>
+          <dt class="text-xs font-bold uppercase tracking-wide text-muted">Cobrado</dt>
           <dd class="mt-1 text-lg font-semibold tabular-nums text-ink">{{ money(detail.precio_cobrado) }}</dd>
         </div>
         <div class="rounded-xl bg-ink/[0.03] p-3">
-          <dt class="text-[11px] font-bold uppercase tracking-wide text-muted">Propina sugerida</dt>
+          <dt class="text-xs font-bold uppercase tracking-wide text-muted">Propina sugerida</dt>
           <dd class="mt-1 text-lg font-semibold tabular-nums text-ink">{{ money(detail.propina_sugerida) }}</dd>
         </div>
         <div class="rounded-xl bg-ink/[0.03] p-3">
-          <dt class="text-[11px] font-bold uppercase tracking-wide text-muted">Depósito</dt>
+          <dt class="text-xs font-bold uppercase tracking-wide text-muted">Depósito</dt>
           <dd class="mt-1 text-lg font-semibold tabular-nums text-ink">
             {{ detail.deposito_requerido ? money(detail.deposito_monto) : "No requiere" }}
           </dd>
           <dd v-if="detail.deposito_requerido" class="text-xs text-muted">{{ label(detail.deposito_estado ?? "pendiente") }}</dd>
         </div>
         <div class="rounded-xl bg-ink/[0.03] p-3">
-          <dt class="text-[11px] font-bold uppercase tracking-wide text-muted">Código</dt>
+          <dt class="text-xs font-bold uppercase tracking-wide text-muted">Código</dt>
           <dd class="mt-1 break-all text-sm font-semibold text-ink">{{ detail.code }}</dd>
         </div>
       </dl>

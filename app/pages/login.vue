@@ -66,7 +66,7 @@ async function onSubmit() {
     <h1 class="mb-1 text-center text-lg font-black uppercase tracking-widest text-white">
       Bienvenido <span class="font-serif text-base italic normal-case text-gold">de nuevo</span>
     </h1>
-    <p class="mb-6 text-center text-[10px] font-bold uppercase tracking-widest text-muted">Introduce tus credenciales para continuar</p>
+    <p class="mb-6 text-center text-xs font-bold uppercase tracking-widest text-muted">Introduce tus credenciales para continuar</p>
     <p
       v-if="reservaPendiente"
       class="mb-5 rounded-xl border border-gold/30 bg-gold/10 p-3 text-center text-xs text-ink"
@@ -84,7 +84,7 @@ async function onSubmit() {
     </a>
 
     <div class="mb-5 flex items-center gap-3">
-      <span class="h-px flex-1 bg-line" /><span class="text-[10px] font-bold uppercase tracking-widest text-muted">o con tu correo</span><span class="h-px flex-1 bg-line" />
+      <span class="h-px flex-1 bg-line" /><span class="text-xs font-bold uppercase tracking-widest text-muted">o con tu correo</span><span class="h-px flex-1 bg-line" />
     </div>
 
     <form class="space-y-4" @submit.prevent="onSubmit">
@@ -99,7 +99,7 @@ async function onSubmit() {
       <div>
         <div class="mb-1 flex items-center justify-between">
           <label for="password" class="block text-sm text-muted">Contraseña</label>
-          <NuxtLink to="/forgot-password" class="text-[10px] font-bold uppercase tracking-widest text-muted hover:text-gold">¿Olvidaste tu contraseña?</NuxtLink>
+          <NuxtLink to="/forgot-password" class="text-xs font-bold uppercase tracking-widest text-muted hover:text-gold">¿Olvidaste tu contraseña?</NuxtLink>
         </div>
         <AuthPasswordField id="password" v-model="password" autocomplete="current-password" placeholder="••••••••" />
       </div>
@@ -114,7 +114,7 @@ async function onSubmit() {
         {{ secondsLeft > 0 ? `Espera ${secondsLeft}s…` : loading ? 'Ingresando…' : 'Ingresar' }}
       </button>
 
-      <p class="pt-2 text-center text-[10px] font-bold uppercase tracking-widest text-muted">
+      <p class="pt-2 text-center text-xs font-bold uppercase tracking-widest text-muted">
         ¿Aún no tienes cuenta? <NuxtLink :to="{ path: '/register', query: { redirect: route.query.redirect } }" class="text-gold hover:underline">Regístrate ahora</NuxtLink>
       </p>
     </form>

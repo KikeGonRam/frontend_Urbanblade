@@ -11,7 +11,7 @@ const { bannerOpen, accept, reject } = useConsent()
     class="fixed inset-x-3 bottom-3 z-[60] mx-auto max-w-3xl rounded-2xl border border-line bg-main/95 p-4 shadow-2xl backdrop-blur-xl sm:bottom-5 sm:p-5"
     data-testid="cookie-banner"
   >
-    <p id="cookie-banner-title" class="mb-1 text-[10px] font-black uppercase tracking-[0.25em] text-gold">Cookies</p>
+    <p id="cookie-banner-title" class="mb-1 text-xs font-black uppercase tracking-[0.25em] text-gold">Cookies</p>
     <p id="cookie-banner-text" class="text-sm leading-relaxed text-muted">
       Usamos cookies necesarias para que el sitio funcione. Con tu permiso también usamos cookies de analítica
       (Google Tag Manager y Microsoft Clarity) para saber cómo se usa el sitio. Puedes cambiar tu elección cuando

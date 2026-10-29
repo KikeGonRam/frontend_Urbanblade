@@ -204,7 +204,7 @@ const visitChartOptions = {
     <header class="flex items-center justify-between gap-4">
       <div>
         <p class="text-xs font-semibold uppercase tracking-[0.18em] text-muted">{{ data.todayLabel }}</p>
-        <h2 class="mt-1 text-2xl font-semibold text-ink">Hola, <span class="text-gold">{{ firstName }}</span></h2>
+        <h1 class="mt-1 text-2xl font-semibold text-ink">Hola, <span class="text-gold">{{ firstName }}</span></h1>
       </div>
       <NuxtLink to="/my/appointments" class="ui-btn hidden min-h-11 shrink-0 px-5 text-sm sm:inline-flex">Reservar cita</NuxtLink>
     </header>
@@ -288,7 +288,7 @@ const visitChartOptions = {
 
     <section class="ub-rise grid grid-cols-2 divide-line rounded-2xl border border-line bg-card sm:grid-cols-4 sm:divide-x" aria-label="Tu resumen">
       <div v-for="card in summaryCards" :key="card.label" class="p-4">
-        <p class="text-[11px] font-bold uppercase tracking-wide text-muted">{{ card.label }}</p>
+        <p class="text-xs font-bold uppercase tracking-wide text-muted">{{ card.label }}</p>
         <p class="mt-1 text-xl font-semibold tabular-nums text-ink">{{ card.value }}</p>
         <p class="text-xs text-muted">{{ card.hint }}</p>
       </div>

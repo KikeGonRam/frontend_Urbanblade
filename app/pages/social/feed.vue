@@ -195,7 +195,7 @@ async function submitComment(work: WorkRow) {
             <li v-for="c in work.comments" :key="c.id" class="text-sm">
               <span class="font-bold text-ink">{{ c.user.name ?? 'Usuario' }}</span>
               <span class="ml-1.5 text-muted">{{ c.comment }}</span>
-              <span class="ml-1.5 text-[11px] text-muted">{{ fmtDate(c.created_at) }}</span>
+              <span class="ml-1.5 text-xs text-muted">{{ fmtDate(c.created_at) }}</span>
             </li>
           </ul>
 

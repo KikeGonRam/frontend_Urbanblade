@@ -53,9 +53,9 @@ function statusOf(r: RaffleRow) {
     </header>
 
     <section v-if="!pending && !error" class="mb-6 grid grid-cols-1 gap-3 sm:w-fit sm:grid-cols-3">
-      <div class="ui-card p-4"><p class="text-[11px] font-bold uppercase text-muted">Total</p><p class="mt-1 text-xl font-black text-ink">{{ stats.total }}</p></div>
-      <div class="ui-card p-4"><p class="text-[11px] font-bold uppercase text-muted">Reclamados</p><p class="mt-1 text-xl font-black text-success">{{ stats.reclamados }}</p></div>
-      <div class="ui-card p-4"><p class="text-[11px] font-bold uppercase text-muted">Vigentes</p><p class="mt-1 text-xl font-black text-gold">{{ stats.vigentes }}</p></div>
+      <div class="ui-card p-4"><p class="text-xs font-bold uppercase text-muted">Total</p><p class="mt-1 text-xl font-black text-ink">{{ stats.total }}</p></div>
+      <div class="ui-card p-4"><p class="text-xs font-bold uppercase text-muted">Reclamados</p><p class="mt-1 text-xl font-black text-success">{{ stats.reclamados }}</p></div>
+      <div class="ui-card p-4"><p class="text-xs font-bold uppercase text-muted">Vigentes</p><p class="mt-1 text-xl font-black text-gold">{{ stats.vigentes }}</p></div>
     </section>
 
     <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando sorteos…" />
@@ -65,7 +65,7 @@ function statusOf(r: RaffleRow) {
     <section v-else class="ui-card overflow-x-auto">
       <table aria-label="Sorteos" class="w-full min-w-[42rem] text-left text-sm">
         <thead>
-          <tr class="border-b border-line text-[11px] uppercase tracking-wider text-muted">
+          <tr class="border-b border-line text-xs uppercase tracking-wider text-muted">
             <th scope="col" class="px-4 py-3">Mes</th>
             <th scope="col" class="px-4 py-3">Ganador</th>
             <th scope="col" class="px-4 py-3">Nivel</th>
@@ -80,7 +80,7 @@ function statusOf(r: RaffleRow) {
             <td class="px-4 py-3 text-muted">{{ r.nivel_ganador ?? '—' }}</td>
             <td class="px-4 py-3 text-muted">{{ r.premio }}</td>
             <td class="px-4 py-3 text-right">
-              <span class="rounded-full border px-2 py-0.5 text-[11px] font-black" :class="statusOf(r).class">{{ statusOf(r).label }}</span>
+              <span class="rounded-full border px-2 py-0.5 text-xs font-black" :class="statusOf(r).class">{{ statusOf(r).label }}</span>
             </td>
           </tr>
         </tbody>

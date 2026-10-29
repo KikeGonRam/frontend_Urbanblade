@@ -395,11 +395,11 @@ async function submitDeleteAccount() {
             <span
               v-for="role in user?.roles ?? []"
               :key="role"
-              class="rounded-full border border-gold/25 bg-gold/10 px-2.5 py-1 text-[11px] font-black uppercase tracking-wider text-gold"
+              class="rounded-full border border-gold/25 bg-gold/10 px-2.5 py-1 text-xs font-black uppercase tracking-wider text-gold"
               >{{ role }}</span
             >
             <span
-              class="rounded-full border border-line bg-main/60 px-2.5 py-1 text-[11px] font-bold text-muted"
+              class="rounded-full border border-line bg-main/60 px-2.5 py-1 text-xs font-bold text-muted"
               >{{
                 profileComplete ? "Perfil completo" : "Perfil por completar"
               }}            </span
@@ -429,7 +429,7 @@ async function submitDeleteAccount() {
       </div>
       <div class="relative mt-6 max-w-xl">
         <div
-          class="mb-2 flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-muted"
+          class="mb-2 flex items-center justify-between text-xs font-bold uppercase tracking-wider text-muted"
         >
           <span>Completitud del perfil</span>
           <span class="text-gold"

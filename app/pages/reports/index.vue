@@ -374,11 +374,11 @@ async function downloadReport(type: string, format: "excel" | "pdf") {
       </div>
       <div v-if="commissions" class="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
-          <p class="text-[11px] font-bold uppercase text-muted">Generado (precio de lista)</p>
+          <p class="text-xs font-bold uppercase text-muted">Generado (precio de lista)</p>
           <p class="mt-1 text-lg font-black text-ink">{{ fmtMoney(commissions.total_generado) }}</p>
         </div>
         <div>
-          <p class="text-[11px] font-bold uppercase text-muted">Total a pagar</p>
+          <p class="text-xs font-bold uppercase text-muted">Total a pagar</p>
           <p class="mt-1 text-lg font-black text-gold">{{ fmtMoney(commissions.total_comisiones) }}</p>
         </div>
       </div>
@@ -391,7 +391,7 @@ async function downloadReport(type: string, format: "excel" | "pdf") {
       <div v-else-if="commissions" class="overflow-x-auto">
         <table aria-label="Comisiones de barberos" class="w-full text-sm">
           <thead>
-            <tr class="text-left text-[11px] font-bold uppercase text-muted">
+            <tr class="text-left text-xs font-bold uppercase text-muted">
               <th scope="col" class="pb-2">Barbero</th>
               <th scope="col" class="pb-2 text-right">Citas</th>
               <th scope="col" class="pb-2 text-right">Generado</th>
@@ -410,7 +410,7 @@ async function downloadReport(type: string, format: "excel" | "pdf") {
           </tbody>
         </table>
       </div>
-      <p class="mt-3 text-[11px] italic text-muted">
+      <p class="mt-3 text-xs italic text-muted">
         Sobre el precio de lista del servicio, no lo que realmente entró en caja
         (descuentos, paquetes, gift cards y premios de rifa son decisión del
         negocio, no reducen lo que se le debe al barbero). Este reporte solo

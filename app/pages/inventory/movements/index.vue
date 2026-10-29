@@ -285,13 +285,13 @@ async function submitForm() {
         >
           <div>
             <p class="text-sm font-bold text-ink">{{ item.nombre }}</p>
-            <p class="text-[11px] text-muted">
+            <p class="text-xs text-muted">
               {{ item.stock_actual }} / mín {{ item.stock_minimo }}
             </p>
           </div>
           <span
             v-if="item.pending_restock"
-            class="w-fit rounded-full border border-success/25 bg-success/10 px-3 py-1 text-[11px] font-black uppercase tracking-widest text-success"
+            class="w-fit rounded-full border border-success/25 bg-success/10 px-3 py-1 text-xs font-black uppercase tracking-widest text-success"
           >
             Pedido en curso
           </span>
@@ -299,7 +299,7 @@ async function submitForm() {
             v-else
             type="button"
             :disabled="marking === item.id"
-            class="w-fit rounded-lg border border-warning/30 px-3 py-1.5 text-[11px] font-black uppercase tracking-widest text-warning hover:bg-warning/10 disabled:opacity-50"
+            class="w-fit rounded-lg border border-warning/30 px-3 py-1.5 text-xs font-black uppercase tracking-widest text-warning hover:bg-warning/10 disabled:opacity-50"
             @click="markOrdered(item)"
           >
             Marcar como pedido
@@ -311,7 +311,7 @@ async function submitForm() {
     <section v-if="stats" class="mb-5 grid grid-cols-2 gap-4 sm:grid-cols-4">
       <div class="rounded-2xl border border-line bg-card p-4">
         <p
-          class="mb-1 text-[11px] font-black uppercase tracking-wider text-muted"
+          class="mb-1 text-xs font-black uppercase tracking-wider text-muted"
         >
           Total
         </p>
@@ -319,7 +319,7 @@ async function submitForm() {
       </div>
       <div class="rounded-2xl border border-line bg-card p-4">
         <p
-          class="mb-1 text-[11px] font-black uppercase tracking-wider text-muted"
+          class="mb-1 text-xs font-black uppercase tracking-wider text-muted"
         >
           Entradas
         </p>
@@ -327,7 +327,7 @@ async function submitForm() {
       </div>
       <div class="rounded-2xl border border-line bg-card p-4">
         <p
-          class="mb-1 text-[11px] font-black uppercase tracking-wider text-muted"
+          class="mb-1 text-xs font-black uppercase tracking-wider text-muted"
         >
           Salidas
         </p>
@@ -335,7 +335,7 @@ async function submitForm() {
       </div>
       <div class="rounded-2xl border border-line bg-card p-4">
         <p
-          class="mb-1 text-[11px] font-black uppercase tracking-wider text-muted"
+          class="mb-1 text-xs font-black uppercase tracking-wider text-muted"
         >
           Hoy
         </p>
@@ -417,7 +417,7 @@ async function submitForm() {
       <table aria-label="Movimientos de inventario" class="w-full text-left text-sm">
         <thead>
           <tr
-            class="border-b border-line text-[11px] uppercase tracking-wider text-muted"
+            class="border-b border-line text-xs uppercase tracking-wider text-muted"
           >
             <th scope="col" class="px-4 py-3">Fecha</th>
             <th scope="col" class="px-4 py-3">Producto</th>
@@ -441,7 +441,7 @@ async function submitForm() {
             </td>
             <td class="px-4 py-3">
               <span
-                class="rounded-full border px-2 py-0.5 text-[11px] font-black uppercase"
+                class="rounded-full border px-2 py-0.5 text-xs font-black uppercase"
                 :class="
                   movement.tipo === 'entrada'
                     ? 'border-success/25 bg-success/10 text-success'
@@ -480,7 +480,7 @@ async function submitForm() {
 
     <UiModal v-if="showForm" title="Nuevo movimiento" :busy="saving" @close="closeForm">
       <div class="mb-6 rounded-xl border border-gold/20 bg-gold/5 p-4">
-        <p class="text-[11px] font-black uppercase tracking-[0.2em] text-gold">Control de inventario</p>
+        <p class="text-xs font-black uppercase tracking-[0.2em] text-gold">Control de inventario</p>
         <p class="mt-1 text-sm leading-relaxed text-muted">Registra una entrada o salida con los datos que admite el sistema.</p>
       </div>
         <form class="space-y-3" @submit.prevent="submitForm">
@@ -542,7 +542,7 @@ async function submitForm() {
             >
               {{ fieldErrors.tipo[0] }}
             </p>
-            <p v-if="!isAdmin" class="mt-1 text-[11px] italic text-muted">
+            <p v-if="!isAdmin" class="mt-1 text-xs italic text-muted">
               Recepción solo puede registrar salidas.
             </p>
           </div>
@@ -603,13 +603,13 @@ async function submitForm() {
             <div>
               <label for="movement-appointment" class="mb-1 block text-xs text-muted">Cita asociada (opcional)</label>
               <input id="movement-appointment" v-model="form.appointment_id" type="text" placeholder="ID de la cita" :aria-invalid="!!fieldErrors.appointment_id" :class="['ui-input w-full', fieldErrors.appointment_id ? 'border-danger/60' : '']">
-              <p class="mt-1 text-[11px] text-muted">Úsalo si corresponde al consumo de una cita.</p>
+              <p class="mt-1 text-xs text-muted">Úsalo si corresponde al consumo de una cita.</p>
               <p v-if="fieldErrors.appointment_id" class="mt-1 text-xs text-danger">{{ fieldErrors.appointment_id[0] }}</p>
             </div>
             <div>
               <label for="movement-date" class="mb-1 block text-xs text-muted">Fecha del movimiento (opcional)</label>
               <input id="movement-date" v-model="form.fecha" type="date" :aria-invalid="!!fieldErrors.fecha" :class="['ui-input w-full', fieldErrors.fecha ? 'border-danger/60' : '']">
-              <p class="mt-1 text-[11px] text-muted">Vacío = fecha actual.</p>
+              <p class="mt-1 text-xs text-muted">Vacío = fecha actual.</p>
               <p v-if="fieldErrors.fecha" class="mt-1 text-xs text-danger">{{ fieldErrors.fecha[0] }}</p>
             </div>
           </div>

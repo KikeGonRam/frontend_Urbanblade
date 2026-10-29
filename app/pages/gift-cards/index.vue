@@ -261,7 +261,7 @@ async function lookupBalance() {
 
         <template v-else-if="revealedCode">
           <div class="rounded-xl border border-success/25 bg-success/10 p-5 text-center">
-            <p class="text-[11px] font-black uppercase tracking-widest text-success">
+            <p class="text-xs font-black uppercase tracking-widest text-success">
               ¡Tarjeta creada!
             </p>
             <p class="mt-2 font-mono text-2xl font-black tracking-widest text-ink">
@@ -360,7 +360,7 @@ v-model="lookupCode"
           <div class="flex items-center justify-between">
             <p class="font-mono text-sm font-black text-ink">{{ lookupResult.code }}</p>
             <span
-              class="rounded-full border px-2 py-0.5 text-[11px] font-black uppercase"
+              class="rounded-full border px-2 py-0.5 text-xs font-black uppercase"
               :class="ESTADO_CLASS[lookupResult.estado]"
             >{{ ESTADO_LABEL[lookupResult.estado] ?? lookupResult.estado }}</span>
           </div>
@@ -381,12 +381,12 @@ v-model="lookupCode"
           <div class="flex items-center justify-between gap-2">
             <p class="font-mono text-sm font-black text-ink">{{ card.code }}</p>
             <span
-              class="rounded-full border px-2 py-0.5 text-[11px] font-black uppercase"
+              class="rounded-full border px-2 py-0.5 text-xs font-black uppercase"
               :class="ESTADO_CLASS[card.estado]"
             >{{ ESTADO_LABEL[card.estado] ?? card.estado }}</span>
           </div>
           <p class="mt-2 text-xl font-black text-gold">{{ fmtMoney(card.saldo) }}</p>
-          <p class="text-[11px] font-bold uppercase text-muted">
+          <p class="text-xs font-bold uppercase text-muted">
             de {{ fmtMoney(card.monto_inicial) }} · {{ fmtDate(card.comprado_en) }}
           </p>
         </div>

@@ -103,7 +103,7 @@ onBeforeUnmount(() => {
         <p v-if="FALLBACK_TEXT[mode]" data-testid="system-map-fallback" class="rounded-xl border border-line bg-panel px-4 py-3 text-xs text-muted">
           {{ FALLBACK_TEXT[mode] }}
         </p>
-        <ul class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[10px] font-bold uppercase tracking-widest text-muted" aria-label="Colores por estado">
+        <ul class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs font-bold uppercase tracking-widest text-muted" aria-label="Colores por estado">
           <li v-for="(label, state) in STATE_LABEL" :key="state" class="flex items-center gap-1.5">
             <span class="h-2 w-2 rounded-full" :class="STATE_DOT[state]" />{{ label }}
           </li>
@@ -122,13 +122,13 @@ onBeforeUnmount(() => {
             >
               <span class="h-2.5 w-2.5 shrink-0 rounded-full" :class="STATE_DOT[node.state]" aria-hidden="true" />
               <span class="min-w-0 flex-1 truncate font-semibold">{{ node.label }}</span>
-              <span class="shrink-0 text-[10px] uppercase tracking-wider">{{ STATE_LABEL[node.state] }}</span>
+              <span class="shrink-0 text-xs uppercase tracking-wider">{{ STATE_LABEL[node.state] }}</span>
             </button>
           </li>
         </ul>
 
         <div v-if="selected" data-testid="system-map-detail" class="rounded-xl border border-line bg-panel p-4" aria-live="polite">
-          <p class="text-[10px] font-black uppercase tracking-widest text-muted">
+          <p class="text-xs font-black uppercase tracking-widest text-muted">
             {{ selected.kind === 'tarea' ? 'Tarea programada' : selected.kind === 'api' ? 'Aplicación' : 'Servicio' }}
           </p>
           <p class="mt-1 text-base font-black text-ink">{{ selected.label }}</p>

@@ -224,7 +224,7 @@ function money(n: number | null) {
 
     <template v-else-if="cita">
       <header class="mb-6 text-center">
-        <p class="text-[10px] font-black uppercase tracking-[0.2em] text-gold">
+        <p class="text-xs font-black uppercase tracking-[0.2em] text-gold">
           Tu cita
         </p>
         <h1 class="mt-2 text-2xl font-black uppercase tracking-tight text-ink">
@@ -277,7 +277,7 @@ function money(n: number | null) {
         >
           <button
             type="button"
-            class="ui-btn min-h-11 flex-1 py-3 text-[11px] tracking-widest"
+            class="ui-btn min-h-11 flex-1 py-3 text-xs tracking-widest"
             :disabled="working"
             @click="moviendo = !moviendo; confirmandoCancelar = false"
           >
@@ -285,7 +285,7 @@ function money(n: number | null) {
           </button>
           <button
             type="button"
-            class="min-h-11 flex-1 rounded-xl border border-danger/30 py-3 text-[11px] font-black uppercase tracking-widest text-danger transition-colors hover:bg-danger/10"
+            class="min-h-11 flex-1 rounded-xl border border-danger/30 py-3 text-xs font-black uppercase tracking-widest text-danger transition-colors hover:bg-danger/10"
             :disabled="working"
             @click="confirmandoCancelar = true; moviendo = false"
           >
@@ -307,7 +307,7 @@ function money(n: number | null) {
         <div class="mt-4 flex flex-col gap-3 sm:flex-row">
           <button
             type="button"
-            class="min-h-11 flex-1 rounded-xl border border-danger/40 py-3 text-[11px] font-black uppercase tracking-widest text-danger transition-colors hover:bg-danger/10 disabled:opacity-50"
+            class="min-h-11 flex-1 rounded-xl border border-danger/40 py-3 text-xs font-black uppercase tracking-widest text-danger transition-colors hover:bg-danger/10 disabled:opacity-50"
             :disabled="working"
             @click="cancelar"
           >
@@ -315,7 +315,7 @@ function money(n: number | null) {
           </button>
           <button
             type="button"
-            class="ui-btn-secondary min-h-11 flex-1 py-3 text-[11px] tracking-widest"
+            class="ui-btn-secondary min-h-11 flex-1 py-3 text-xs tracking-widest"
             :disabled="working"
             @click="confirmandoCancelar = false"
           >
@@ -343,9 +343,9 @@ function money(n: number | null) {
             :aria-pressed="nuevaFecha === d.iso"
             @click="nuevaFecha = d.iso; nuevaHora = ''"
           >
-            <span class="text-[9px] font-black uppercase tracking-widest">{{ d.isToday ? "Hoy" : d.weekday }}</span>
+            <span class="text-xs font-black uppercase tracking-widest">{{ d.isToday ? "Hoy" : d.weekday }}</span>
             <span class="text-lg font-black leading-none text-ink" :class="nuevaFecha === d.iso && 'text-gold'">{{ d.day }}</span>
-            <span class="text-[9px] uppercase">{{ d.month }}</span>
+            <span class="text-xs uppercase">{{ d.month }}</span>
           </button>
         </div>
 
@@ -391,7 +391,7 @@ function money(n: number | null) {
 
         <button
           type="button"
-          class="ui-btn mt-5 min-h-11 w-full py-3 text-[11px] tracking-widest disabled:opacity-50"
+          class="ui-btn mt-5 min-h-11 w-full py-3 text-xs tracking-widest disabled:opacity-50"
           :disabled="working || !nuevaHora"
           @click="reagendar"
         >
@@ -404,7 +404,7 @@ function money(n: number | null) {
         <p class="text-sm text-muted">
           Esta cita ya no se puede modificar desde aquí.
         </p>
-        <NuxtLink to="/reservar" class="ui-btn mt-4 inline-flex px-8 py-3 text-[11px] tracking-widest">
+        <NuxtLink to="/reservar" class="ui-btn mt-4 inline-flex px-8 py-3 text-xs tracking-widest">
           Reservar una nueva cita
         </NuxtLink>
       </section>

@@ -111,7 +111,7 @@ onUnmounted(() => { document.removeEventListener('keydown', handleKeydown); wind
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
       </svg>
 
-      <span v-if="unread > 0 && !open" class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[11px] font-black text-white">
+      <span v-if="unread > 0 && !open" class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-black text-white">
         {{ unread }}
       </span>
     </button>
@@ -135,7 +135,7 @@ onUnmounted(() => { document.removeEventListener('keydown', handleKeydown); wind
               <h3 class="text-sm font-semibold text-ink">Bladebot</h3>
               <div class="mt-0.5 flex items-center gap-1.5">
                 <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
-                <span class="text-[11px] font-bold uppercase tracking-widest text-muted">Asistente IA · En línea</span>
+                <span class="text-xs font-bold uppercase tracking-widest text-muted">Asistente IA · En línea</span>
               </div>
             </div>
           </div>
@@ -170,10 +170,10 @@ onUnmounted(() => { document.removeEventListener('keydown', handleKeydown); wind
                 {{ msg.text }}
               </div>
               <div class="mt-1 flex items-center gap-2 px-1">
-                <span class="text-[11px] text-muted/50">{{ fmtTime(msg.timestamp) }}</span>
+                <span class="text-xs text-muted/50">{{ fmtTime(msg.timestamp) }}</span>
                 <button
                   v-if="msg.retryText" type="button"
-                  class="text-[11px] font-bold uppercase tracking-wide text-gold/80 hover:text-gold"
+                  class="text-xs font-bold uppercase tracking-wide text-gold/80 hover:text-gold"
                   @click="retryClick(msg)"
                 >
                   Reintentar
@@ -207,7 +207,7 @@ onUnmounted(() => { document.removeEventListener('keydown', handleKeydown); wind
           <div v-if="typing" class="flex justify-start gap-2">
             <div class="h-6 w-6 shrink-0 rounded-full border border-gold/20 bg-gold/10" />
             <div class="flex items-center gap-2 rounded-2xl rounded-tl-sm border border-line bg-accent px-4 py-3">
-              <span class="text-[11px] text-muted">Escribiendo</span>
+              <span class="text-xs text-muted">Escribiendo</span>
               <span class="flex items-center gap-1.5">
                 <span class="h-1.5 w-1.5 animate-bounce rounded-full bg-muted" style="animation-delay:0s" />
                 <span class="h-1.5 w-1.5 animate-bounce rounded-full bg-muted" style="animation-delay:0.15s" />
@@ -220,7 +220,7 @@ onUnmounted(() => { document.removeEventListener('keydown', handleKeydown); wind
         <div v-if="messages.length <= 2" class="flex shrink-0 flex-wrap gap-1.5 px-4 pb-3">
           <button
             v-for="chip in quickChips" :key="chip" type="button"
-            class="rounded-lg border border-line bg-accent px-3 py-1.5 text-[11px] font-black uppercase tracking-widest text-muted transition-all hover:border-gold/40 hover:bg-gold/5 hover:text-gold"
+            class="rounded-lg border border-line bg-accent px-3 py-1.5 text-xs font-black uppercase tracking-widest text-muted transition-all hover:border-gold/40 hover:bg-gold/5 hover:text-gold"
             @click="quickSend(chip)"
           >
             {{ chip.replace(/[¿?]/g, '') }}
@@ -245,7 +245,7 @@ onUnmounted(() => { document.removeEventListener('keydown', handleKeydown); wind
               </svg>
             </button>
           </div>
-          <p class="mt-2 text-center text-[11px] font-bold uppercase tracking-widest text-muted/50">
+          <p class="mt-2 text-center text-xs font-bold uppercase tracking-widest text-muted/50">
             Enter para enviar · Shift+Enter nueva línea
           </p>
         </div>

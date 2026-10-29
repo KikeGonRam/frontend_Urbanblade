@@ -428,7 +428,7 @@ onMounted(async () => {
         :to="a.to"
         class="flex items-center gap-3 rounded-[8px] border border-ink/[0.06] bg-card px-4 py-3.5 transition hover:border-gold/30"
       >
-        <span class="text-[11px] font-black uppercase tracking-wide text-ink">{{
+        <span class="text-xs font-black uppercase tracking-wide text-ink">{{
           a.label
         }}</span>
         <svg class="ml-auto h-3.5 w-3.5 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
@@ -438,7 +438,7 @@ onMounted(async () => {
     </section>
 
     <div class="flex items-center gap-3 px-1 pt-1">
-      <span class="text-[11px] font-black uppercase tracking-[0.22em] text-gold"
+      <span class="text-xs font-black uppercase tracking-[0.22em] text-gold"
         >Resumen</span
       >
       <span class="h-px flex-1 bg-ink/[0.06]" />
@@ -528,7 +528,7 @@ onMounted(async () => {
     </section>
 
     <div class="flex items-center gap-3 px-1 pt-2">
-      <span class="text-[11px] font-black uppercase tracking-[0.22em] text-gold"
+      <span class="text-xs font-black uppercase tracking-[0.22em] text-gold"
         >Operación de hoy</span
       >
       <span class="h-px flex-1 bg-ink/[0.06]" />
@@ -576,10 +576,10 @@ onMounted(async () => {
             @click="detailCode = appt.code"
           >
             <div class="w-10 shrink-0 text-center">
-              <p class="text-[11px] font-black text-ink">
+              <p class="text-xs font-black text-ink">
                 {{ appt.hora_inicio?.slice(0, 5) ?? "--:--" }}
               </p>
-              <p class="text-[11px] font-bold text-ink/45">
+              <p class="text-xs font-bold text-ink/45">
                 {{ appt.hora_fin?.slice(0, 5) }}
               </p>
             </div>
@@ -632,7 +632,7 @@ onMounted(async () => {
               >
                 <UiAvatar :src="appt.cliente_avatar_url" :name="appt.cliente" />
                 <div class="min-w-0 flex-1">
-                  <p class="truncate text-[11px] font-bold text-ink">
+                  <p class="truncate text-xs font-bold text-ink">
                     {{ appt.cliente }}
                   </p>
                   <p class="truncate text-xs text-ink/50">
@@ -659,7 +659,7 @@ onMounted(async () => {
                   Ocupación en tiempo real
                 </p>
                 <span
-                  class="flex items-center gap-1 text-[11px] font-black uppercase text-success"
+                  class="flex items-center gap-1 text-xs font-black uppercase text-success"
                 >
                   <span
                     class="h-1.5 w-1.5 animate-pulse rounded-full bg-success"
@@ -674,7 +674,7 @@ onMounted(async () => {
                     <p class="text-lg font-black text-danger">
                       {{ busyStatuses.length }}
                     </p>
-                    <p class="text-[11px] font-black uppercase text-danger/80">
+                    <p class="text-xs font-black uppercase text-danger/80">
                       Ocupados
                     </p>
                   </div>
@@ -685,7 +685,7 @@ onMounted(async () => {
                       {{ freeStatuses.length }}
                     </p>
                     <p
-                      class="text-[11px] font-black uppercase text-success/80"
+                      class="text-xs font-black uppercase text-success/80"
                     >
                       Libres
                     </p>
@@ -700,7 +700,7 @@ onMounted(async () => {
                   >
                     <div class="relative mb-2 inline-flex">
                       <div
-                        class="flex h-9 w-9 items-center justify-center rounded-lg border border-ink/[0.08] bg-ink/[0.05] text-[11px] font-black text-gold"
+                        class="flex h-9 w-9 items-center justify-center rounded-lg border border-ink/[0.08] bg-ink/[0.05] text-xs font-black text-gold"
                       >
                         {{ st.name.slice(0, 2).toUpperCase() }}
                       </div>
@@ -708,10 +708,10 @@ onMounted(async () => {
                         class="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-[#111] bg-danger"
                       />
                     </div>
-                    <p class="truncate text-[11px] font-black text-ink">
+                    <p class="truncate text-xs font-black text-ink">
                       {{ st.name.split(" ")[0] }}
                     </p>
-                    <p class="text-[11px] font-black uppercase text-danger">
+                    <p class="text-xs font-black uppercase text-danger">
                       Ocupado
                     </p>
                     <div
@@ -762,7 +762,7 @@ onMounted(async () => {
                     >
                       <div class="relative mb-2 inline-flex">
                         <div
-                          class="flex h-9 w-9 items-center justify-center rounded-lg border border-ink/[0.08] bg-ink/[0.05] text-[11px] font-black text-gold"
+                          class="flex h-9 w-9 items-center justify-center rounded-lg border border-ink/[0.08] bg-ink/[0.05] text-xs font-black text-gold"
                         >
                           {{ st.name.slice(0, 2).toUpperCase() }}
                         </div>
@@ -770,11 +770,11 @@ onMounted(async () => {
                           class="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-[#111] bg-success"
                         />
                       </div>
-                      <p class="truncate text-[11px] font-black text-ink">
+                      <p class="truncate text-xs font-black text-ink">
                         {{ st.name.split(" ")[0] }}
                       </p>
                       <p
-                        class="text-[11px] font-black uppercase text-success"
+                        class="text-xs font-black uppercase text-success"
                       >
                         Libre
                       </p>
@@ -911,7 +911,7 @@ onMounted(async () => {
               >
                 Predicciones IA
                 <span
-                  class="rounded-full border border-gold/30 bg-gold/10 px-1.5 py-0.5 text-[11px] font-black uppercase tracking-widest text-gold"
+                  class="rounded-full border border-gold/30 bg-gold/10 px-1.5 py-0.5 text-xs font-black uppercase tracking-widest text-gold"
                   >Beta</span
                 >
               </h3>
@@ -982,11 +982,11 @@ onMounted(async () => {
                   <div
                     class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-warning"
                   />
-                  <p class="text-[11px] text-ink/45">Cargando análisis...</p>
+                  <p class="text-xs text-ink/45">Cargando análisis...</p>
                 </div>
                 <p
                   v-else-if="!aiInsights.length"
-                  class="text-[11px] italic text-ink/45"
+                  class="text-xs italic text-ink/45"
                 >
                   Sin insights disponibles.
                 </p>
@@ -1008,7 +1008,7 @@ onMounted(async () => {
                       ).dot
                     "
                   />
-                  <p class="text-[11px] text-ink/60">{{ insight.message }}</p>
+                  <p class="text-xs text-ink/60">{{ insight.message }}</p>
                 </div>
               </div>
             </div>
@@ -1029,7 +1029,7 @@ onMounted(async () => {
                 >
                   Uso de Bladebot
                   <span
-                    class="flex items-center gap-1 text-[11px] font-black uppercase text-success"
+                    class="flex items-center gap-1 text-xs font-black uppercase text-success"
                   >
                     <span
                       class="h-1.5 w-1.5 animate-pulse rounded-full bg-success"

@@ -124,7 +124,7 @@ async function deactivate(plan: Plan) {
         <div class="flex items-center justify-between gap-2">
           <h3 class="font-black uppercase text-ink">{{ plan.nombre }}</h3>
           <span
-            class="rounded-full border px-2 py-0.5 text-[11px] font-black uppercase"
+            class="rounded-full border px-2 py-0.5 text-xs font-black uppercase"
             :class="plan.activo ? 'border-success/25 bg-success/10 text-success' : 'border-ink/15 bg-ink/5 text-ink/50'"
           >{{ plan.activo ? "Activo" : "Desactivado" }}</span>
         </div>

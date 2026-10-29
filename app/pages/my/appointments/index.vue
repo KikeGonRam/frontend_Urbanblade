@@ -538,7 +538,7 @@ onUnmounted(() => teardownStripe());
       v-if="next"
       class="mb-6 rounded-2xl border border-gold/30 bg-gold/5 p-5"
     >
-      <p class="text-[11px] font-bold uppercase tracking-widest text-gold">
+      <p class="text-xs font-bold uppercase tracking-widest text-gold">
         Tu próxima cita
       </p>
       <p class="mt-1 font-black text-ink">
@@ -597,7 +597,7 @@ onUnmounted(() => teardownStripe());
             </p>
           </div>
           <span
-            class="rounded-full border px-2 py-0.5 text-[11px] font-black uppercase"
+            class="rounded-full border px-2 py-0.5 text-xs font-black uppercase"
             :class="ESTADO_CLASS[appt.estado]"
             >{{ ESTADO_LABEL[appt.estado] ?? appt.estado }}</span
           >
@@ -805,7 +805,7 @@ v-model="form.notas"
           <p v-if="payError" class="mt-2 text-sm text-danger">
             {{ payError }}
           </p>
-          <p class="mt-2 text-[11px] text-muted">
+          <p class="mt-2 text-xs text-muted">
             Beta: el monto se calcula del lado del servidor, nunca se envía
             desde aquí.
           </p>

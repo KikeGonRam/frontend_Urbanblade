@@ -48,7 +48,7 @@ const toneClass = (tone?: string) => (tone === "up" ? "text-success" : tone === 
       <div class="p-5 sm:p-6">
         <header class="mb-4 flex items-start justify-between gap-4">
           <div class="min-w-0">
-            <p class="text-[11px] font-black uppercase tracking-[0.2em] text-gold">{{ detail.chartTitle }}</p>
+            <p class="text-xs font-black uppercase tracking-[0.2em] text-gold">{{ detail.chartTitle }}</p>
             <h2 id="ub-chart-detail-title" class="mt-1 text-xl font-bold leading-tight text-ink">{{ detail.title }}</h2>
           </div>
           <button type="button" class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-line text-muted transition-colors hover:text-ink" aria-label="Cerrar detalle" @click="close">✕</button>
@@ -63,7 +63,7 @@ const toneClass = (tone?: string) => (tone === "up" ? "text-success" : tone === 
 
         <dl v-if="detail.facts.length" class="mt-4 grid gap-2 sm:grid-cols-2">
           <div v-for="fact in detail.facts" :key="fact.label" class="rounded-xl bg-ink/[0.03] px-4 py-3">
-            <dt class="text-[11px] font-bold uppercase tracking-wide text-muted">{{ fact.label }}</dt>
+            <dt class="text-xs font-bold uppercase tracking-wide text-muted">{{ fact.label }}</dt>
             <dd class="mt-0.5 text-sm font-bold" :class="toneClass(fact.tone)">{{ fact.value }}</dd>
           </div>
         </dl>

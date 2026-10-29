@@ -11,7 +11,7 @@ defineEmits<{ close: [] }>()
   <UiModal title="Ticket del servicio" @close="$emit('close')">
     <div class="mx-auto max-w-md space-y-4">
       <div class="text-center">
-        <p class="text-[10px] font-black uppercase tracking-[0.3em] text-gold">Servicio terminado</p>
+        <p class="text-xs font-black uppercase tracking-[0.3em] text-gold">Servicio terminado</p>
         <p class="mt-1 text-sm text-muted">Folio {{ ticket.folio }}<span v-if="ticket.fecha"> · {{ ticket.fecha }}</span></p>
       </div>
 

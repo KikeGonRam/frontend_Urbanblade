@@ -42,7 +42,7 @@ const money = (n: number) => `$${Math.round(n).toLocaleString('es-MX')}`
     <div v-if="categories.length" class="mb-8 flex flex-wrap justify-center gap-2" role="tablist" aria-label="Categorías de servicio">
       <button
         v-for="c in categories" :key="c" type="button" role="tab" :aria-selected="category === c"
-        class="min-h-[44px] rounded-full border px-5 text-[10px] font-black uppercase tracking-[0.2em] transition-colors"
+        class="min-h-[44px] rounded-full border px-5 text-xs font-black uppercase tracking-[0.2em] transition-colors"
         :class="category === c ? 'border-gold bg-gold text-black' : 'border-line text-muted hover:border-gold/50 hover:text-gold'"
         @click="category = c"
       >{{ c }}</button>
@@ -61,12 +61,12 @@ const money = (n: number) => `$${Math.round(n).toLocaleString('es-MX')}`
             <div v-else class="h-full w-full bg-gradient-to-br from-gold/15 via-card to-main" />
             <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent" />
             <div class="absolute inset-x-0 bottom-0 p-6 sm:p-8">
-              <p class="text-[10px] font-black uppercase tracking-[0.3em] text-gold">{{ selected.categoria || 'Signature' }} · {{ selected.duracion_min }} min</p>
+              <p class="text-xs font-black uppercase tracking-[0.3em] text-gold">{{ selected.categoria || 'Signature' }} · {{ selected.duracion_min }} min</p>
               <h3 class="mt-2 text-3xl font-black uppercase leading-tight text-white sm:text-4xl">{{ selected.nombre }}</h3>
               <p v-if="selected.descripcion" class="mt-3 max-w-md text-sm leading-relaxed text-white/75">{{ selected.descripcion }}</p>
               <div class="mt-6 flex flex-wrap items-center gap-5">
                 <span class="text-3xl font-black text-white">{{ money(selected.precio) }}</span>
-                <NuxtLink :to="`/reservar?servicio=${selected.id}`" class="ui-btn min-h-[44px] px-8 py-3 text-[11px] tracking-[0.15em]">Reservar cita</NuxtLink>
+                <NuxtLink :to="`/reservar?servicio=${selected.id}`" class="ui-btn min-h-[44px] px-8 py-3 text-xs tracking-[0.15em]">Reservar cita</NuxtLink>
               </div>
             </div>
           </div>
@@ -87,7 +87,7 @@ const money = (n: number) => `$${Math.round(n).toLocaleString('es-MX')}`
             </span>
             <span class="min-w-0 flex-1">
               <span class="block truncate text-sm font-black uppercase text-ink">{{ s.nombre }}</span>
-              <span class="text-[11px] text-muted">{{ s.duracion_min }} min</span>
+              <span class="text-xs text-muted">{{ s.duracion_min }} min</span>
             </span>
             <span class="text-sm font-black text-gold">{{ money(s.precio) }}</span>
           </button>

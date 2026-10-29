@@ -92,7 +92,7 @@ async function submit() {
         >
         <div>
           <p
-            class="text-[10px] font-black uppercase tracking-[0.18em] text-gold"
+            class="text-xs font-black uppercase tracking-[0.18em] text-gold"
           >
             Un último paso
           </p>

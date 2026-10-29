@@ -96,7 +96,7 @@ async function submitReview() {
   <div class="relative overflow-hidden">
     <div class="pointer-events-none absolute -top-56 left-1/2 h-[34rem] w-[34rem] -translate-x-1/2 rounded-full bg-gold/8 blur-[120px]" />
     <div class="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-16 lg:px-8">
-    <NuxtLink to="/equipo" class="mb-8 inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.25em] text-muted transition-colors hover:text-gold">
+    <NuxtLink to="/equipo" class="mb-8 inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.25em] text-muted transition-colors hover:text-gold">
       <span aria-hidden="true">←</span> Nuestro equipo
     </NuxtLink>
 
@@ -124,31 +124,31 @@ async function submitReview() {
         <div v-else class="flex h-28 w-28 items-center justify-center rounded-[1.5rem] bg-gold/10 text-4xl font-black text-gold sm:h-36 sm:w-36">
           {{ (barber.user?.name ?? '?').charAt(0) }}
         </div>
-          <span class="absolute -bottom-3 left-4 rounded-full border border-gold/30 bg-main px-3 py-1 text-[9px] font-black uppercase tracking-widest text-gold">UrbanBlade</span>
+          <span class="absolute -bottom-3 left-4 rounded-full border border-gold/30 bg-main px-3 py-1 text-xs font-black uppercase tracking-widest text-gold">UrbanBlade</span>
           </div>
           <div class="min-w-0">
-            <p class="mb-3 text-[10px] font-black uppercase tracking-[0.35em] text-gold">Maestro barbero</p>
+            <p class="mb-3 text-xs font-black uppercase tracking-[0.35em] text-gold">Maestro barbero</p>
             <h1 class="max-w-2xl text-3xl font-black uppercase leading-[0.95] tracking-tight text-ink sm:text-5xl">{{ barber.user?.name ?? 'Barbero' }}</h1>
             <div v-if="specialties.length" class="mt-5 flex flex-wrap gap-2">
-              <span v-for="specialty in specialties" :key="specialty" class="rounded-full border border-gold/20 bg-gold/8 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-gold">{{ specialty }}</span>
+              <span v-for="specialty in specialties" :key="specialty" class="rounded-full border border-gold/20 bg-gold/8 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-gold">{{ specialty }}</span>
             </div>
             <p class="mt-5 max-w-xl text-sm leading-relaxed text-muted">{{ barber.descripcion || 'Especialista en crear una experiencia de grooming precisa, personal y a tu medida.' }}</p>
           </div>
-          <NuxtLink :to="`/reservar?barbero=${barber.id}`" class="ui-btn shrink-0 px-6 py-3 text-[11px] tracking-[0.16em] md:ml-auto">
+          <NuxtLink :to="`/reservar?barbero=${barber.id}`" class="ui-btn shrink-0 px-6 py-3 text-xs tracking-[0.16em] md:ml-auto">
             Reservar cita <span aria-hidden="true">→</span>
           </NuxtLink>
         </div>
         <div class="relative z-10 mt-10 grid grid-cols-3 divide-x divide-line border-t border-line pt-6">
-          <div class="px-3 text-center first:pl-0"><p class="text-xl font-black text-ink">{{ response?.citas_completadas ?? 0 }}</p><p class="mt-1 text-[9px] font-black uppercase tracking-widest text-muted">Citas completadas</p></div>
-          <div class="px-3 text-center"><p class="text-xl font-black text-ink">{{ response?.total_reviews ?? 0 }}</p><p class="mt-1 text-[9px] font-black uppercase tracking-widest text-muted">Reseñas</p></div>
-          <div class="px-3 text-center last:pr-0"><p class="text-xl font-black text-gold">{{ response?.avg_rating ? `★ ${response.avg_rating}` : '—' }}</p><p class="mt-1 text-[9px] font-black uppercase tracking-widest text-muted">Calificación</p></div>
+          <div class="px-3 text-center first:pl-0"><p class="text-xl font-black text-ink">{{ response?.citas_completadas ?? 0 }}</p><p class="mt-1 text-xs font-black uppercase tracking-widest text-muted">Citas completadas</p></div>
+          <div class="px-3 text-center"><p class="text-xl font-black text-ink">{{ response?.total_reviews ?? 0 }}</p><p class="mt-1 text-xs font-black uppercase tracking-widest text-muted">Reseñas</p></div>
+          <div class="px-3 text-center last:pr-0"><p class="text-xl font-black text-gold">{{ response?.avg_rating ? `★ ${response.avg_rating}` : '—' }}</p><p class="mt-1 text-xs font-black uppercase tracking-widest text-muted">Calificación</p></div>
         </div>
       </header>
 
       <section class="mb-16">
         <div class="mb-6 flex items-end justify-between gap-4">
           <div>
-            <p class="mb-2 text-[10px] font-black uppercase tracking-[0.3em] text-gold">Trabajo seleccionado</p>
+            <p class="mb-2 text-xs font-black uppercase tracking-[0.3em] text-gold">Trabajo seleccionado</p>
             <h2 class="text-2xl font-black uppercase tracking-tight text-ink">Portafolio <span class="text-gold">del maestro</span></h2>
           </div>
           <span v-if="works.length" class="text-xs text-muted">{{ works.length }} {{ works.length === 1 ? 'trabajo' : 'trabajos' }}</span>
@@ -168,7 +168,7 @@ async function submitReview() {
               >
               <div v-else class="flex h-full w-full flex-col items-center justify-center gap-3 bg-gradient-to-br from-gold/10 via-card to-main p-5 text-center">
                 <svg class="h-8 w-8 text-gold/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.4" d="m3 16 5-5 4 4 3-3 6 6M15 8h.01M5 20h14a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1Z" /></svg>
-                <span class="text-[10px] font-black uppercase tracking-widest text-muted">Imagen no disponible</span>
+                <span class="text-xs font-black uppercase tracking-widest text-muted">Imagen no disponible</span>
               </div>
             </div>
             <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-4 pt-12">
@@ -181,7 +181,7 @@ async function submitReview() {
 
       <section>
         <div class="mb-6">
-          <p class="mb-2 text-[10px] font-black uppercase tracking-[0.3em] text-gold">Experiencias reales</p>
+          <p class="mb-2 text-xs font-black uppercase tracking-[0.3em] text-gold">Experiencias reales</p>
           <h2 class="text-2xl font-black uppercase tracking-tight text-ink">Lo que dicen sus <span class="text-gold">clientes</span></h2>
         </div>
 
@@ -242,7 +242,7 @@ async function submitReview() {
             </div>
             <p class="mb-1 text-gold">
               {{ '★'.repeat(review.rating) }}{{ '☆'.repeat(5 - review.rating) }}
-              <span v-if="review.service" class="ml-2 rounded-full border border-gold/30 bg-gold/10 px-2 py-0.5 text-[11px] font-semibold">{{ review.service }}</span>
+              <span v-if="review.service" class="ml-2 rounded-full border border-gold/30 bg-gold/10 px-2 py-0.5 text-xs font-semibold">{{ review.service }}</span>
             </p>
             <p v-if="review.comment" class="text-sm text-muted">{{ review.comment }}</p>
           </div>

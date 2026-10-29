@@ -128,7 +128,7 @@ async function onLogout() {
             <span v-else class="flex cursor-not-allowed items-center gap-3 rounded-lg px-2.5 py-2 text-sm text-muted/50">
               <ShellNavIcon :paths="navItem.icon" />
               {{ navItem.label }}
-              <span class="ml-auto rounded-full border border-line px-1.5 py-0.5 text-[9px] text-muted">Próx.</span>
+              <span class="ml-auto rounded-full border border-line px-1.5 py-0.5 text-xs text-muted">Próx.</span>
             </span>
           </li>
         </ul>

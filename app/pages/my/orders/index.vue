@@ -108,10 +108,10 @@ async function cancelOrder(order: OrderRow) {
         <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
           <div>
             <p class="font-black text-ink">{{ order.folio }}</p>
-            <p class="text-[11px] font-bold uppercase text-muted">{{ fmtDate(order.created_at) }}</p>
+            <p class="text-xs font-bold uppercase text-muted">{{ fmtDate(order.created_at) }}</p>
           </div>
           <div class="flex items-center gap-3">
-            <span class="rounded-full border px-2 py-0.5 text-[11px] font-black uppercase" :class="ESTADO_CLASS[order.estado]">{{ ESTADO_LABEL[order.estado] ?? order.estado }}</span>
+            <span class="rounded-full border px-2 py-0.5 text-xs font-black uppercase" :class="ESTADO_CLASS[order.estado]">{{ ESTADO_LABEL[order.estado] ?? order.estado }}</span>
             <span class="font-black text-gold">{{ fmtMoney(order.total) }}</span>
           </div>
         </div>
