@@ -264,7 +264,8 @@ function fmtDate(iso: string | null) {
         + Nuevo Cliente
       </button>
     </header>
-    <div class="mb-3">
+    <!-- Exportar saca datos personales de todos los clientes: solo administración. -->
+    <div v-if="isAdmin" class="mb-3">
       <UiExportCsvButton
         endpoint="/admin/clients"
         :query="{ search: search || undefined, segment: segment || undefined }"
