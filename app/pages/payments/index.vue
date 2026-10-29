@@ -641,18 +641,7 @@ v-model="barberoFilter"
           {{ b.name }}
         </option>
       </select>
-      <input
-v-model="fechaDesde"
-        aria-label="Fecha desde"
-        type="date"
-        class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
-      >
-      <input
-v-model="fechaHasta"
-        aria-label="Fecha hasta"
-        type="date"
-        class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
-      >
+      <UiDateRange v-model:from="fechaDesde" v-model:to="fechaHasta" />
       <button
         v-if="
           search || metodoFilter || barberoFilter || fechaDesde || fechaHasta

@@ -377,20 +377,7 @@ async function submitForm() {
           {{ p.nombre }}
         </option>
       </select>
-      <label for="movement-filter-from" class="sr-only">Desde</label>
-      <input
-        id="movement-filter-from"
-        v-model="fechaDesde"
-        type="date"
-        class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
-      >
-      <label for="movement-filter-to" class="sr-only">Hasta</label>
-      <input
-        id="movement-filter-to"
-        v-model="fechaHasta"
-        type="date"
-        class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
-      >
+      <UiDateRange v-model:from="fechaDesde" v-model:to="fechaHasta" from-label="Desde" to-label="Hasta" />
       <button
         v-if="search || tipoFilter || productFilter || fechaDesde || fechaHasta"
         type="button"
