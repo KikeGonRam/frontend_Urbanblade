@@ -67,6 +67,12 @@ watch(() => props.value, (v) => countTo(String(v)));
 onBeforeUnmount(() => cancelAnimationFrame(frame));
 
 const up = computed(() => (props.delta ?? 0) >= 0);
+// Una variación enorme sobre una base mínima («▲650 %» con 1 cita contra 0,13) confunde más de lo que informa.
+const deltaText = computed(() => {
+  const v = Math.abs(props.delta ?? 0);
+
+  return v > 300 ? ">300" : String(Math.round(v * 10) / 10);
+});
 const showDelta = computed(() => props.delta !== null && props.delta !== 0 && Number.isFinite(props.delta));
 </script>
 
@@ -101,7 +107,7 @@ const showDelta = computed(() => props.delta !== null && props.delta !== 0 && Nu
       >
         <span aria-hidden="true">{{ up ? "▲" : "▼" }}</span>
         <span class="sr-only">{{ up ? "Sube" : "Baja" }}</span>
-        {{ Math.abs(delta ?? 0) }}%
+        {{ deltaText }}%
       </span>
       <span v-if="showDelta" class="text-muted">{{ deltaLabel }}</span>
       <span v-if="hint" class="text-muted" :class="showDelta ? 'w-full' : ''">{{ hint }}</span>

@@ -216,7 +216,8 @@ const appointmentTrendData = computed(() => ({
       backgroundColor: chartColor(1, 0.1),
       borderWidth: 2.5,
       fill: true,
-      cubicInterpolationMode: "monotone" as const,
+      // Conteo de citas (valores enteros): línea recta entre puntos, sin curva que sugiera valores intermedios.
+      tension: 0,
       pointRadius: 2.5,
       pointHoverRadius: 5,
       pointBackgroundColor: chartColor(1, 1),
