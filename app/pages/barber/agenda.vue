@@ -171,14 +171,14 @@ async function openTicket(appt: Appointment) {
       </div>
     </header>
 
-    <section class="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    <section class="mb-5 grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
       <div
         v-for="card in [{ k: 'total_period', l: 'En periodo' }, { k: 'completed_period', l: 'Completadas' }, { k: 'productivity', l: 'Productividad', s: '%' }, { k: 'income_total', l: 'Ingreso histórico', s: '$' }]"
         :key="card.k"
-        class="ui-card p-4"
+        class="ui-card p-3 sm:p-4"
       >
         <p class="text-xs uppercase text-muted">{{ card.l }}</p>
-        <p class="mt-2 text-2xl font-black text-ink">{{ card.s === '$' ? '$' : '' }}{{ stats[card.k] ?? 0 }}{{ card.s === '%' ? '%' : '' }}</p>
+        <p class="mt-1 text-xl font-black text-ink sm:mt-2 sm:text-2xl">{{ card.s === '$' ? '$' : '' }}{{ stats[card.k] ?? 0 }}{{ card.s === '%' ? '%' : '' }}</p>
       </div>
     </section>
 

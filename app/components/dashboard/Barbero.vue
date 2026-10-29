@@ -290,15 +290,15 @@ const servicesOptions = {
             <p class="text-sm font-semibold tabular-nums text-ink">{{ appt.hora_inicio?.slice(0, 5) ?? "--:--" }}</p>
             <p class="text-xs text-muted">{{ appt.fecha }}</p>
           </div>
-          <div class="min-w-0 flex-1">
-            <p class="truncate text-sm font-semibold text-ink">{{ appt.cliente }}</p>
-            <p class="truncate text-xs text-muted">{{ appt.servicio }}</p>
+          <div class="min-w-[9rem] flex-1">
+            <p class="text-sm font-semibold text-ink">{{ appt.cliente }}</p>
+            <p class="text-xs text-muted">{{ appt.servicio }}</p>
           </div>
-          <div class="flex shrink-0 items-center gap-2">
+          <div class="flex w-full shrink-0 items-center gap-2 sm:w-auto">
             <button
               type="button"
               :disabled="actingOn === appt.id"
-              class="min-h-11 rounded-xl bg-gold px-4 text-sm font-semibold text-black transition-colors hover:bg-gold-dim focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold disabled:opacity-50"
+              class="min-h-11 flex-1 rounded-xl bg-gold px-4 text-sm font-semibold text-black transition-colors hover:bg-gold-dim focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold disabled:opacity-50 sm:flex-none"
               @click="setStatus(appt, 'confirmada')"
             >
               Aprobar
@@ -306,7 +306,7 @@ const servicesOptions = {
             <button
               type="button"
               :disabled="actingOn === appt.id"
-              class="min-h-11 rounded-xl border border-line px-4 text-sm font-semibold text-muted transition-colors hover:border-danger/40 hover:text-danger focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold disabled:opacity-50"
+              class="min-h-11 flex-1 rounded-xl border border-line px-4 text-sm font-semibold text-muted transition-colors hover:border-danger/40 hover:text-danger focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold disabled:opacity-50 sm:flex-none"
               @click="setStatus(appt, 'cancelada')"
             >
               Rechazar
