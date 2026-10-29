@@ -52,12 +52,35 @@ interface BarberoData {
 }
 
 const props = defineProps<{ data: BarberoData; firstName: string }>();
+
+// «Mi día»: el reloj se actualiza cada minuto para que «en 42 min» y la cita en curso sigan vigentes.
+const ahora = ref(new Date());
+let reloj: ReturnType<typeof setInterval> | undefined;
+onMounted(() => {
+  reloj = setInterval(() => { ahora.value = new Date(); }, 60_000);
+});
+onBeforeUnmount(() => { if (reloj) clearInterval(reloj); });
 const emit = defineEmits<{ refresh: [] }>();
 
 const { apiFetch } = useApi();
 const { confirm } = useConfirm();
 
 // Avance del día: citas terminadas sobre las de hoy (sin contar canceladas ni inasistencias).
+const enCurso = computed(() => props.data.barberToday.find((a) => a.estado === "en_proceso") ?? null);
+const proxima = computed(() => props.data.barberToday.find((a) => a.isNext && a.estado === "confirmada")
+  ?? props.data.barberToday.find((a) => a.estado === "confirmada" && (minutosDelDia(a.hora_inicio) ?? 0) >= minutosAhora(ahora.value)) ?? null);
+/** Minutos libres antes de cada cita (solo entre citas activas y a partir de 15 min). */
+function huecoAntes(index: number): number {
+  const lista = props.data.barberToday;
+  const actual = lista[index];
+  const previa = lista[index - 1];
+  if (!actual || !previa) return 0;
+  const inactiva = (e: string) => ["cancelada", "no_asistio"].includes(e);
+  if (inactiva(actual.estado) || inactiva(previa.estado)) return 0;
+  const hueco = huecoLibre(previa.hora_fin, actual.hora_inicio);
+
+  return hueco >= 15 ? hueco : 0;
+}
 const activeToday = computed(() => props.data.barberToday.filter((a) => !["cancelada", "no_asistio"].includes(a.estado)));
 const doneToday = computed(() => activeToday.value.filter((a) => a.estado === "completada").length);
 const dayPct = computed(() => (activeToday.value.length ? doneToday.value / activeToday.value.length : 0));
@@ -324,6 +347,22 @@ const servicesOptions = {
         </div>
         <NuxtLink to="/barber/agenda" class="text-sm font-semibold text-gold hover:underline">Abrir agenda completa</NuxtLink>
       </header>
+      <div
+        v-if="enCurso || proxima"
+        class="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-2xl border border-gold/30 bg-gold/10 px-4 py-3 text-sm"
+        role="status"
+      >
+        <template v-if="enCurso">
+          <span class="inline-flex items-center gap-2 font-semibold text-gold"><span class="h-2 w-2 animate-pulse rounded-full bg-gold" aria-hidden="true" />En curso</span>
+          <span class="text-ink">{{ enCurso.cliente }} · {{ enCurso.servicio }}</span>
+          <span class="text-muted">termina {{ etiquetaRelativa(enCurso.hora_fin, ahora) }}</span>
+        </template>
+        <template v-else-if="proxima">
+          <span class="font-semibold text-gold">Próxima</span>
+          <span class="text-ink">{{ proxima.hora_inicio?.slice(0, 5) }} · {{ proxima.cliente }}</span>
+          <span class="text-muted">{{ etiquetaRelativa(proxima.hora_inicio, ahora) }}</span>
+        </template>
+      </div>
       <p
         v-if="!data.barberToday.length"
         class="rounded-2xl border border-dashed border-line py-10 text-center text-sm text-muted"
@@ -331,9 +370,13 @@ const servicesOptions = {
         No tienes citas hoy. Disfruta el descanso o mira tu semana en la agenda.
       </p>
       <ul v-else class="space-y-3">
+        <template v-for="(appt, index) in data.barberToday" :key="appt.id">
+        <li v-if="huecoAntes(index)" class="flex items-center gap-3 px-2 text-xs text-muted" aria-label="Tiempo libre">
+          <span class="h-px flex-1 border-t border-dashed border-line" aria-hidden="true" />
+          Libre {{ textoHueco(huecoAntes(index)) }}
+          <span class="h-px flex-1 border-t border-dashed border-line" aria-hidden="true" />
+        </li>
         <li
-          v-for="appt in data.barberToday"
-          :key="appt.id"
           class="ub-rise rounded-2xl border border-l-[5px] border-line bg-card p-4"
           :class="[EDGE[appt.estado] ?? 'border-l-line', ['completada', 'cancelada', 'no_asistio'].includes(appt.estado) ? 'opacity-70' : '']"
         >
@@ -384,6 +427,7 @@ const servicesOptions = {
             </button>
           </div>
         </li>
+        </template>
       </ul>
     </section>
 
