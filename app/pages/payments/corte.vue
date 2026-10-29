@@ -302,6 +302,9 @@ function money(n: number | null | undefined) {
         >
           {{ saving ? "Registrando…" : "Cerrar caja del día" }}
         </button>
+        <p v-if="contado === null" class="mt-2 text-xs text-muted">
+          Captura el efectivo contado para poder cerrar la caja.
+        </p>
       </section>
     </template>
   </main>

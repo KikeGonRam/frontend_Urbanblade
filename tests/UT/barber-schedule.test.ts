@@ -5,7 +5,7 @@ import SchedulePage from '~/pages/barber/schedule.vue'
 
 /*
  * Formulario «Mi Horario» del barbero (pages/barber/schedule.vue): días laborales, horas de apertura y cierre,
- * «Copiar a todos», resumen de la semana y guardado. `apiFetch` se simula; el resto es la página real.
+ * «Aplicar a todos los días», resumen de la semana y guardado. `apiFetch` se simula; el resto es la página real.
  */
 const { apiFetch } = vi.hoisted(() => ({ apiFetch: vi.fn() }))
 mockNuxtImport('useApi', () => () => ({ apiFetch }))
@@ -70,10 +70,10 @@ describe('formulario «Mi Horario»', () => {
     expect(summary(wrapper).text()).toContain('46')
   })
 
-  it('«Copiar a todos» repite las horas y el estado de ese día en toda la semana', async () => {
+  it('«Aplicar a todos los días» repite las horas y el estado de ese día en toda la semana', async () => {
     const wrapper = await mountPage()
 
-    await wrapper.findAll('article:first-of-type button').find(b => b.text() === 'Copiar a todos')!.trigger('click')
+    await wrapper.findAll('article:first-of-type button').find(b => b.text() === 'Aplicar a todos los días')!.trigger('click')
 
     for (const day of DAYS) {
       expect((wrapper.get(`#start-${day}`).element as HTMLInputElement).value).toBe('09:00')

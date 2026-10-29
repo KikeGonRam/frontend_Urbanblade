@@ -242,7 +242,7 @@ async function save() {
           class="rounded-lg border border-line px-3 py-1.5 text-xs font-semibold text-gold hover:bg-gold/10 min-h-10"
           @click="copyToAll(day)"
         >
-          Copiar a todos
+          Aplicar a todos los días
         </button>
       </article>
       </div>
