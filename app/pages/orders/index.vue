@@ -6,6 +6,7 @@
  * OrderService::cancel()).
  */
 import type { ChoiceOption } from "~/types/choice";
+import type { DataTableColumn } from "~/components/ui/DataTable.vue";
 
 definePageMeta({ middleware: ["auth", "staff"], layout: "dashboard" });
 useSeoMeta({ title: 'Pedidos — UrbanBlade', robots: 'noindex' })
@@ -77,6 +78,14 @@ const {
   { watch: [estadoFilter, debouncedSearch, page], lazy: true },
 );
 const orders = computed(() => response.value?.data ?? []);
+// Columnas de la tabla común: el contenido de cada celda se pinta con la ranura `cell-<clave>`.
+const COLUMNAS: DataTableColumn[] = [
+  { key: "folio", label: "Folio / Fecha" },
+  { key: "cliente", label: "Cliente" },
+  { key: "items", label: "Items" },
+  { key: "estado", label: "Estado" },
+  { key: "total", label: "Total", align: "right" },
+];
 const stats = computed(() => response.value?.meta.stats);
 const pagination = computed(() => response.value?.meta);
 
@@ -253,9 +262,8 @@ v-model="estadoFilter"
       </button>
     </section>
 
-    <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando pedidos…" />
     <BrandStatePanel
-      v-else-if="error"
+      v-if="error"
       mascot="bruno"
       state="error"
       tone="danger"
@@ -265,94 +273,63 @@ v-model="estadoFilter"
       @action="refresh"
     />
 
-    <section v-if="!pending && !error" class="ui-card overflow-x-auto">
-      <table class="w-full text-left text-sm">
-        <thead>
-          <tr
-            class="border-b border-line text-xs uppercase tracking-wider text-muted"
+    <UiDataTable
+      v-if="!error"
+      :columns="COLUMNAS"
+      :rows="orders"
+      :loading="pending"
+      aria-label="Pedidos"
+      empty-title="Sin pedidos que mostrar"
+      empty-description="Los pedidos de la tienda aparecerán aquí cuando un cliente compre o cuando cambies el filtro."
+    >
+      <template #cell-folio="{ row }">
+        <div class="flex flex-col">
+          <span class="font-black text-ink">{{ row.folio }}</span>
+          <span class="text-xs font-bold uppercase text-muted">{{ fmtDate(row.created_at) }}</span>
+        </div>
+      </template>
+      <template #cell-cliente="{ row }">
+        <span class="text-ink/80">{{ row.client.name ?? "—" }}</span>
+      </template>
+      <template #cell-items="{ row }">
+        <span class="text-muted">{{ row.items.reduce((s, i) => s + i.cantidad, 0) }} pzas</span>
+      </template>
+      <template #cell-estado="{ row }">
+        <span>
+          <span class="rounded-full border px-2 py-0.5 text-xs font-black uppercase" :class="ESTADO_CLASS[row.estado]">{{ ESTADO_LABEL[row.estado] ?? row.estado }}</span>
+          <span v-if="row.metodo_pago" class="ml-1 text-xs text-muted">({{ METODO_LABEL[row.metodo_pago] ?? row.metodo_pago }})</span>
+        </span>
+      </template>
+      <template #cell-total="{ row }">
+        <span class="font-black text-success">{{ fmtMoney(row.total) }}</span>
+      </template>
+      <template #actions="{ row }">
+        <div class="flex justify-end gap-2">
+          <template v-if="row.estado === 'pendiente'">
+            <button
+              type="button"
+              :disabled="busy === row.id"
+              class="min-h-10 rounded-lg bg-emerald-500 px-3 py-1 text-xs font-bold text-black hover:bg-emerald-400 disabled:opacity-50"
+              @click="openDeliver(row)"
+            >
+              Entregar
+            </button>
+            <UiRowMenu
+              :label="`Más acciones del pedido ${row.folio}`"
+              :items="[{ label: 'Cancelar pedido', danger: true, disabled: busy === row.id, onSelect: () => cancelOrder(row) }]"
+            />
+          </template>
+          <button
+            v-else-if="row.estado === 'entregado'"
+            type="button"
+            class="min-h-10 rounded-lg border border-line px-3 py-1 text-xs text-muted hover:text-gold"
+            @click="downloadReceipt(row)"
           >
-            <th class="px-4 py-3">Folio / Fecha</th>
-            <th class="px-4 py-3">Cliente</th>
-            <th class="px-4 py-3">Items</th>
-            <th class="px-4 py-3">Estado</th>
-            <th class="px-4 py-3 text-right">Total</th>
-            <th class="px-4 py-3 text-right">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="order in orders"
-            :key="order.id"
-            class="border-b border-line/60 last:border-0"
-          >
-            <td class="px-4 py-3">
-              <div class="flex flex-col">
-                <span class="font-black text-ink">{{ order.folio }}</span>
-                <span class="text-xs font-bold uppercase text-muted">{{
-                  fmtDate(order.created_at)
-                }}</span>
-              </div>
-            </td>
-            <td class="px-4 py-3 text-ink/80">
-              {{ order.client.name ?? "—" }}
-            </td>
-            <td class="px-4 py-3 text-muted">
-              {{ order.items.reduce((s, i) => s + i.cantidad, 0) }} pzas
-            </td>
-            <td class="px-4 py-3">
-              <span
-                class="rounded-full border px-2 py-0.5 text-xs font-black uppercase"
-                :class="ESTADO_CLASS[order.estado]"
-                >{{ ESTADO_LABEL[order.estado] ?? order.estado }}</span
-              >
-              <span v-if="order.metodo_pago" class="ml-1 text-xs text-muted"
-                >({{
-                  METODO_LABEL[order.metodo_pago] ?? order.metodo_pago
-                }})</span
-              >
-            </td>
-            <td class="px-4 py-3 text-right font-black text-success">
-              {{ fmtMoney(order.total) }}
-            </td>
-            <td class="px-4 py-3">
-              <div class="flex justify-end gap-2">
-                <template v-if="order.estado === 'pendiente'">
-                  <button
-                    type="button"
-                    :disabled="busy === order.id"
-                    class="rounded-lg bg-emerald-500 px-3 py-1 text-xs font-bold text-black hover:bg-emerald-400 disabled:opacity-50 min-h-10"
-                    @click="openDeliver(order)"
-                  >
-                    Entregar
-                  </button>
-                  <button
-                    type="button"
-                    :disabled="busy === order.id"
-                    class="rounded-lg border border-danger/20 px-3 py-1 text-xs text-danger hover:bg-danger/10 disabled:opacity-50 min-h-10"
-                    @click="cancelOrder(order)"
-                  >
-                    Cancelar
-                  </button>
-                </template>
-                <button
-                  v-else-if="order.estado === 'entregado'"
-                  type="button"
-                  class="rounded-lg border border-line px-3 py-1 text-xs text-muted hover:text-gold min-h-10"
-                  @click="downloadReceipt(order)"
-                >
-                  Recibo
-                </button>
-              </div>
-            </td>
-          </tr>
-          <tr v-if="!orders.length">
-            <td colspan="6" class="px-4 py-8">
-              <BrandStatePanel mascot="nava" state="empty" title="Sin pedidos que mostrar" description="Los pedidos de la tienda aparecerán aquí cuando un cliente compre o cuando cambies el filtro." />
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
+            Recibo
+          </button>
+        </div>
+      </template>
+    </UiDataTable>
 
     <UiPagination
       v-if="pagination"

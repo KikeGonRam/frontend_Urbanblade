@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { CsvColumn } from "~/composables/useCsvExport";
+import type { DataTableColumn } from "~/components/ui/DataTable.vue";
 /*
  * Fase 9.9 — Auditoría/logs de actividad, puerto de Log\ActivityLogController
  * (web). Api\Log\LogController ya existía pero solo tenía q + log_name; se
@@ -121,6 +122,15 @@ const {
 
 const logs = computed(() => response.value?.data ?? []);
 const pagination = computed(() => response.value?.meta);
+// Orden en el cliente sobre la página cargada; la fecha y la categoría son las columnas útiles para ordenar.
+const orden = ref<{ key: string, dir: "asc" | "desc" } | null>(null);
+const COLUMNAS: DataTableColumn[] = [
+  { key: "created_at", label: "Fecha", sortable: true },
+  { key: "log_name", label: "Módulo", sortable: true },
+  { key: "event", label: "Evento" },
+  { key: "description", label: "Descripción" },
+  { key: "causer", label: "Usuario" },
+];
 const logNames = computed(() => response.value?.log_names ?? []);
 const events = computed(() => response.value?.events ?? []);
 const stats = computed<Stats>(
@@ -258,9 +268,8 @@ function fmtDate(iso: string | null) {
       </button>
     </section>
 
-    <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando historial…" />
     <BrandStatePanel
-      v-else-if="error"
+      v-if="error"
       mascot="bruno"
       state="error"
       tone="danger"
@@ -269,53 +278,34 @@ function fmtDate(iso: string | null) {
       action-label="Reintentar"
       @action="refresh"
     />
-    <p
-      v-else-if="!logs.length"
-      class="rounded-2xl border border-dashed border-line p-12 text-center text-sm text-muted"
-    >
-      Sin registros que mostrar.
-    </p>
 
-    <section v-if="!pending && !error && logs.length" class="ui-card overflow-x-auto">
-      <table aria-label="Registro de auditoría" class="w-full text-left text-sm">
-        <thead>
-          <tr
-            class="border-b border-line text-xs uppercase tracking-wider text-muted"
-          >
-            <th scope="col" class="px-4 py-3">Fecha</th>
-            <th scope="col" class="px-4 py-3">Categoría</th>
-            <th scope="col" class="px-4 py-3">Evento</th>
-            <th scope="col" class="px-4 py-3">Descripción</th>
-            <th scope="col" class="px-4 py-3">Usuario</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="log in logs"
-            :key="log.id"
-            class="border-b border-line/60 last:border-0"
-          >
-            <td class="px-4 py-3 whitespace-nowrap text-muted">
-              {{ fmtDate(log.created_at) }}
-            </td>
-            <td class="px-4 py-3 text-ink">{{ log.log_name ? (MODULO_LABEL[log.log_name] ?? log.log_name) : "—" }}</td>
-            <td class="px-4 py-3">
-              <span
-                v-if="log.event"
-                class="rounded-full border px-2 py-0.5 text-xs font-black"
-                :class="EVENT_CLASS[log.event]"
-                >{{ EVENT_LABEL[log.event] ?? log.event }}</span
-              >
-              <span v-else>—</span>
-            </td>
-            <td class="px-4 py-3 text-muted">{{ log.description ?? "—" }}</td>
-            <td class="px-4 py-3 text-muted">
-              {{ log.causer?.name ?? "Sistema" }}
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
+    <UiDataTable
+      v-if="!error"
+      v-model:sort="orden"
+      :columns="COLUMNAS"
+      :rows="logs"
+      :loading="pending"
+      aria-label="Registro de auditoría"
+      empty-title="Sin registros que mostrar"
+      empty-description="Cambia los filtros o el rango de fechas para ver otra actividad."
+    >
+      <template #cell-created_at="{ row }">
+        <span class="whitespace-nowrap text-muted">{{ fmtDate(row.created_at) }}</span>
+      </template>
+      <template #cell-log_name="{ row }">
+        <span class="text-ink">{{ row.log_name ? (MODULO_LABEL[row.log_name] ?? row.log_name) : "—" }}</span>
+      </template>
+      <template #cell-event="{ row }">
+        <span v-if="row.event" class="rounded-full border px-2 py-0.5 text-xs font-black" :class="EVENT_CLASS[row.event]">{{ EVENT_LABEL[row.event] ?? row.event }}</span>
+        <span v-else>—</span>
+      </template>
+      <template #cell-description="{ row }">
+        <span class="text-muted">{{ row.description ?? "—" }}</span>
+      </template>
+      <template #cell-causer="{ row }">
+        <span class="text-muted">{{ row.causer?.name ?? "Sistema" }}</span>
+      </template>
+    </UiDataTable>
 
     <UiPagination
       v-if="pagination"
