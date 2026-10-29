@@ -525,7 +525,7 @@ html[data-theme="libreta"] {
     }
 
     .ui-badge {
-        @apply inline-flex items-center rounded-full border border-gold/30 bg-gold/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-gold;
+        @apply inline-flex items-center rounded-full border border-gold/30 bg-gold/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-gold;
     }
 
     .text-gradient-gold {
