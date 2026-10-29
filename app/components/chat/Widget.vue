@@ -100,7 +100,7 @@ onUnmounted(() => { document.removeEventListener('keydown', handleKeydown); wind
   <div>
     <button
       type="button"
-      class="fixed bottom-20 right-4 z-[200] flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-gold to-gold/70 text-black shadow-[0_8px_32px_rgba(212,175,55,0.4)] transition-all duration-300 hover:scale-110 active:scale-95 md:bottom-6 md:right-6 md:h-14 md:w-14"
+      class="fixed bottom-[4.5rem] right-3 z-[200] flex h-10 w-10 items-center justify-center rounded-full opacity-75 focus-visible:opacity-100 active:opacity-100 md:opacity-100 bg-gradient-to-br from-gold to-gold/70 text-black shadow-[0_8px_32px_rgba(212,175,55,0.4)] transition-all duration-300 hover:scale-110 active:scale-95 md:bottom-6 md:right-6 md:h-14 md:w-14"
       title="Asistente Virtual"
       @click="toggle"
     >
