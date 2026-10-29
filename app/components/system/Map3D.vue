@@ -159,4 +159,10 @@ onBeforeUnmount(() => {
 .ub-sysmap-label[data-state='caido'] { border-color: rgb(var(--danger-rgb) / 0.6); }
 .ub-sysmap-label[data-state='lento'] { border-color: rgb(var(--warning-rgb) / 0.6); }
 .ub-sysmap-label.is-selected { border-color: var(--gold); color: var(--gold); opacity: 1; }
+/* Los nombres largos de tareas (campaigns:dispatch, appointments:mark-no-show) se pisaban entre sí. */
+.ub-sysmap-label { max-width: 9rem; overflow: hidden; text-overflow: ellipsis; }
+/* En pantallas angostas solo se rotulan el nodo elegido y los que tienen problemas; la lista de al lado nombra todos. */
+@media (max-width: 640px) {
+  .ub-sysmap-label:not(.is-selected):not([data-state='caido']):not([data-state='lento']) { display: none; }
+}
 </style>
