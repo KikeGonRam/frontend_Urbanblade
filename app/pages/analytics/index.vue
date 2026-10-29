@@ -175,6 +175,9 @@ const doughnutOptions = { responsive: true, maintainAspectRatio: false, plugins:
       <p v-if="response?.ultima_actualizacion" class="text-xs text-muted">Actualizado: {{ fmtDate(response.ultima_actualizacion) }}</p>
     </header>
 
+    <!-- Tablero con gráficas y lectura automática: solo administración (usa los reportes de /admin). -->
+    <AnalyticsAdminBoard v-if="analyticsUser?.roles?.includes('administrador')" />
+
     <section v-if="!pending && !error && response?.operational" class="mb-8 space-y-4" aria-label="Análisis operativo actual">
       <div>
         <h2 class="text-lg font-bold text-ink">Operación actual</h2>
