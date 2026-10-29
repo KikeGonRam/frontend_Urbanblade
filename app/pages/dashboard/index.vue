@@ -34,7 +34,13 @@ const fullName = computed(() => user.value?.name ?? "");
 
 <template>
   <div class="p-4 sm:p-6 lg:p-8">
-    <p v-if="pending" class="text-sm text-muted">Cargando dashboard…</p>
+    <div v-if="pending" role="status" aria-live="polite" aria-busy="true">
+      <p class="mb-4 text-sm text-muted">Cargando dashboard…</p>
+      <div class="grid grid-cols-2 gap-3 lg:grid-cols-4" aria-hidden="true">
+        <div v-for="n in 4" :key="n" class="ui-card h-24 animate-pulse" />
+      </div>
+      <div class="ui-card mt-4 h-56 animate-pulse" aria-hidden="true" />
+    </div>
     <BrandStatePanel
       v-else-if="error"
       mascot="bruno"

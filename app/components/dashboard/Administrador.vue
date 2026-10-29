@@ -463,7 +463,7 @@ onMounted(async () => {
         :delta="data.kpis.income_growth"
         delta-label="vs. mes pasado"
         :spark="data.incomeChart.values"
-        :hint="`${fmtMoney(data.kpis.income_week)} esta semana · ${fmtMoney(data.kpis.income_month)} este mes`"
+        :hint="`Pagos registrados: ${fmtMoney(data.kpis.income_week)} esta semana · ${fmtMoney(data.kpis.income_month)} este mes`"
         to="/payments"
       >
         <template #icon>
