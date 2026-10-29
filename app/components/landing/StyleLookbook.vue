@@ -58,7 +58,7 @@ const money = (n: number) => `$${Math.round(n).toLocaleString('es-MX')}`
               :alt="selected.nombre" class="h-full w-full object-cover" loading="lazy" decoding="async"
               @error="broken[selected.id] = true"
             >
-            <div v-else class="h-full w-full bg-gradient-to-br from-gold/15 via-card to-main" />
+            <BrandImagePlaceholder v-else :category="selected.categoria" :label="`Sin foto de ${selected.nombre}`" />
             <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent" />
             <div class="absolute inset-x-0 bottom-0 p-6 sm:p-8">
               <p class="text-[10px] font-black uppercase tracking-[0.3em] text-gold">{{ selected.categoria || 'Signature' }} · {{ selected.duracion_min }} min</p>
@@ -84,6 +84,7 @@ const money = (n: number) => `$${Math.round(n).toLocaleString('es-MX')}`
           >
             <span class="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-main">
               <img v-if="s.imagen && !broken[s.id]" :src="publicImageUrl(s.imagen, 300) ?? undefined" alt="" class="h-full w-full object-cover" loading="lazy" @error="broken[s.id] = true">
+              <BrandImagePlaceholder v-else :category="s.categoria" />
             </span>
             <span class="min-w-0 flex-1">
               <span class="block truncate text-sm font-black uppercase text-ink">{{ s.nombre }}</span>
