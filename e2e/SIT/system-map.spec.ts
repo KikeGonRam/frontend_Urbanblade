@@ -64,6 +64,9 @@ test("un clic en un nodo de la vista 3D lo selecciona", async ({ page }) => {
   const view = page.getByTestId("system-map-3d");
   await expect(view.locator("canvas")).toBeVisible();
 
+  // Las tendencias van antes del mapa: se baja hasta la vista 3D antes de calcular dónde pulsar.
+  await view.scrollIntoViewIfNeeded();
+
   // La API está en el eje de giro de la cámara: su esfera queda siempre un poco arriba
   // del centro del lienzo, aunque la escena rote sola.
   const box = await view.locator("canvas").boundingBox();
@@ -80,7 +83,8 @@ test("con movimiento reducido no carga la vista 3D y conserva la lista", async (
 
   await expect(page.getByTestId("system-map-fallback")).toContainText("reducir el movimiento");
   await expect(page.getByTestId("system-map-3d")).toBeHidden();
-  await expect(page.locator("canvas")).toHaveCount(0);
+  // Las tendencias usan gráficas (canvas) aunque se reduzca el movimiento: lo que no debe haber es la vista 3D.
+  await expect(page.locator('[data-testid="system-map-3d"] canvas')).toHaveCount(0);
   await page.getByRole("button", { name: /MongoDB/ }).click();
   await expect(page.getByTestId("system-map-detail")).toContainText("42 ms de latencia");
   // La tabla de tareas de siempre sigue debajo.
