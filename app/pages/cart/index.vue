@@ -20,7 +20,7 @@ const checkingOut = ref(false)
 const checkoutError = ref('')
 
 function fmtMoney(n: number) {
-  return `$${Number(n ?? 0).toFixed(2)}`
+  return formatMoney(n)
 }
 
 async function checkout() {

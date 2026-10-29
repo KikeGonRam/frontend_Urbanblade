@@ -31,7 +31,7 @@ const payments = computed(() => response.value?.data ?? [])
 const meta = computed(() => response.value?.meta ?? { total_pagado: 0, total_citas: 0 })
 
 function fmtMoney(n: number) {
-  return `$${Number(n ?? 0).toFixed(2)}`
+  return formatMoney(n)
 }
 
 function fmtDate(iso: string | null) {
