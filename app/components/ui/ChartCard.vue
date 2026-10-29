@@ -33,6 +33,7 @@ const inView = useInView(root);
         {{ emptyText }}
       </div>
       <slot v-else-if="inView" />
+      <UiSkeleton v-else variant="chart" label="Preparando la gráfica…" class="h-full" />
     </div>
     <slot name="footer" />
   </section>

@@ -324,7 +324,7 @@ v-model="search"
       </div>
     </section>
 
-    <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando clientes…" />
+    <UiSkeleton v-if="pending" variant="rows" :rows="8" label="Cargando clientes…" class="ui-card" />
     <BrandStatePanel
       v-else-if="error"
       mascot="bruno"
