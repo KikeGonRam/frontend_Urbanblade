@@ -6,12 +6,13 @@
  */
 export default defineNuxtRouteMiddleware(async () => {
   const { user, hasRole, fetchMe } = useAuth()
+  const { denegar } = useAccesoDenegado()
 
   if (!user.value) {
     await fetchMe()
   }
 
   if (!hasRole('administrador')) {
-    return navigateTo('/dashboard')
+    return denegar()
   }
 })

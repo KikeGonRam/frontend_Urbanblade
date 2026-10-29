@@ -8,6 +8,7 @@
  */
 export default defineNuxtRouteMiddleware(async () => {
   const { user, hasRole, fetchMe } = useAuth()
+  const { denegar } = useAccesoDenegado()
 
   // user puede seguir null en una carga directa a esta ruta (no pasó antes
   // por /dashboard, que es quien normalmente dispara fetchMe()).
@@ -16,6 +17,6 @@ export default defineNuxtRouteMiddleware(async () => {
   }
 
   if (!hasRole('administrador') && !hasRole('recepcionista')) {
-    return navigateTo('/dashboard')
+    return denegar()
   }
 })
