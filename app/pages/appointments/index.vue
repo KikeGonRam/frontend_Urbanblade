@@ -452,7 +452,7 @@ v-model="barberFilter"
     </p>
 
     <section v-else class="ui-card overflow-x-auto">
-      <table class="block w-full text-left text-sm md:table">
+      <table data-mobile-cards class="block w-full text-left text-sm md:table">
         <thead class="hidden md:table-header-group">
           <tr
             class="border-b border-line text-[11px] uppercase tracking-wider text-muted"
