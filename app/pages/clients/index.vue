@@ -264,15 +264,6 @@ function fmtDate(iso: string | null) {
         + Nuevo Cliente
       </button>
     </header>
-    <!-- Exportar saca datos personales de todos los clientes: solo administración. -->
-    <div v-if="isAdmin" class="mb-3">
-      <UiExportCsvButton
-        endpoint="/admin/clients"
-        :query="{ search: search || undefined, segment: segment || undefined }"
-        :columns="exportColumns"
-        filename="clientes"
-      />
-    </div>
 
     <!-- Segmentación comercial: solo administración (ver authorizeAdmin()
          en ClientAdminController::getSegmentation). -->
@@ -307,7 +298,7 @@ v-model="search"
         aria-label="Nombre o email"
         type="text"
         placeholder="Nombre o email..."
-        class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink sm:max-w-xs"
+        class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink sm:max-w-md"
         @input="resetAndSearch"
       >
       <button
@@ -322,6 +313,15 @@ v-model="search"
       >
         Limpiar filtros
       </button>
+      <!-- Exportar saca datos personales de todos los clientes: solo administración. -->
+      <div v-if="isAdmin" class="sm:ml-auto">
+        <UiExportCsvButton
+          endpoint="/admin/clients"
+          :query="{ search: search || undefined, segment: segment || undefined }"
+          :columns="exportColumns"
+          filename="clientes"
+        />
+      </div>
     </section>
 
     <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando clientes…" />
@@ -397,15 +397,12 @@ v-model="search"
                   Editar
                 </button>
                 <!-- Baja de cliente: acción destructiva, solo administración
-                     (authorizeAdmin() en ClientAdminController::destroy). -->
-                <button
+                     (authorizeAdmin() en ClientAdminController::destroy). Va en el menú ⋯, no a la vista. -->
+                <UiRowMenu
                   v-if="isAdmin"
-                  type="button"
-                  class="rounded-lg border border-danger/20 px-3 py-1 text-xs text-danger hover:bg-danger/10 min-h-10"
-                  @click="removeClient(client)"
-                >
-                  Eliminar
-                </button>
+                  :label="`Más acciones de ${client.name ?? 'este cliente'}`"
+                  :items="[{ label: 'Eliminar cliente', danger: true, onSelect: () => removeClient(client) }]"
+                />
               </div>
             </td>
           </tr>
