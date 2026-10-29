@@ -13,6 +13,7 @@
  * sobre esas 50 sería un número falso, no una limitación cosmética.
  */
 import type { ApiAppointment } from "~/types/contract";
+import type { RowMenuItem } from "~/components/ui/RowMenu.vue";
 
 definePageMeta({ middleware: ["auth", "staff"], layout: "dashboard" });
 useSeoMeta({ title: 'Citas — UrbanBlade', robots: 'noindex' })
@@ -65,6 +66,15 @@ const ACCION_LABEL: Record<string, string> = {
 // Estados desde los que el backend permite cobrar
 // (AppointmentStatusService::CHARGEABLE).
 const COBRABLES = ["confirmada", "en_proceso", "completada"];
+
+function itemsMenu(appt: AppointmentRow): RowMenuItem[] {
+  const items: RowMenuItem[] = [{ label: "Editar cita", onSelect: () => openEdit(appt) }];
+  if (TRANSICIONES[appt.estado]?.includes("cancelada")) {
+    items.push({ label: "Cancelar cita", danger: true, onSelect: () => cancelAppointment(appt) });
+  }
+
+  return items;
+}
 
 function accionesDe(estado: string) {
   return (TRANSICIONES[estado] ?? []).filter((e) => e !== "cancelada");
@@ -498,6 +508,17 @@ v-model="barberFilter"
                 :class="ESTADO_CLASS[appt.estado]"
                 >{{ ESTADO_LABEL[appt.estado] ?? appt.estado }}</span
               >
+              <!-- Por qué no se puede iniciar todavía (falta cobrar, verificar la transferencia o aún no es la hora):
+                   antes era una línea ámbar que hacía irregular la altura de la fila. -->
+              <span
+                v-if="appt.estado === 'confirmada' && appt.puede_iniciar === false && appt.motivo_no_iniciar"
+                class="ml-1 cursor-help text-warning"
+                tabindex="0"
+                role="img"
+                :title="appt.motivo_no_iniciar"
+                :aria-label="`No se puede iniciar: ${appt.motivo_no_iniciar}`"
+                >ⓘ</span
+              >
             </td>
             <td data-label="Acciones" class="block px-4 py-1.5 md:table-cell md:py-3">
               <div class="flex flex-wrap justify-end gap-2">
@@ -533,30 +554,12 @@ v-model="barberFilter"
                 >
                   Cobrar
                 </NuxtLink>
-                <button
-                  type="button"
-                  class="min-h-9 rounded-lg border border-line px-3 py-1 text-xs text-muted hover:text-ink"
-                  @click="openEdit(appt)"
-                >
-                  Editar
-                </button>
-                <button
-                  v-if="TRANSICIONES[appt.estado]?.includes('cancelada')"
-                  type="button"
-                  class="min-h-9 rounded-lg border border-danger/20 px-3 py-1 text-xs text-danger hover:bg-danger/10"
-                  @click="cancelAppointment(appt)"
-                >
-                  Cancelar
-                </button>
+                <!-- Editar y Cancelar van en el menú ⋯: a la vista solo lo que se usa a diario (auditoría A-20). -->
+                <UiRowMenu
+                  :label="`Más acciones de la cita de ${appt.client.user.name ?? 'este cliente'}`"
+                  :items="itemsMenu(appt)"
+                />
               </div>
-              <!-- Por qué no se puede iniciar todavía: falta cobrar (efectivo/tarjeta), verificar la
-                   transferencia o aún no es la hora. Cobrar se hace con el botón de arriba. -->
-              <p
-                v-if="appt.estado === 'confirmada' && appt.puede_iniciar === false && appt.motivo_no_iniciar"
-                class="mt-1 text-right text-xs text-warning"
-              >
-                {{ appt.motivo_no_iniciar }}
-              </p>
             </td>
           </tr>
           <tr v-if="!appointments.length" class="block md:table-row">
