@@ -7,7 +7,7 @@
  */
 import type { BarListItem } from '~/components/ui/BarList.vue'
 import type { DonutItem } from '~/components/ui/DonutCard.vue'
-import { lecturaDelNegocio } from '~/utils/analitica'
+import { etiquetaComparacion, lecturaComparativa, lecturaDelNegocio, variacionDe, type Cohorte, type Comparacion } from '~/utils/analitica'
 import { fmtInt } from '~/utils/chartTheme'
 import { formatMoney } from '~/utils/format'
 
@@ -58,6 +58,21 @@ const { data: clientsRes, pending: clientsPending } = await useAsyncData(
   { watch: [period], lazy: true },
 )
 
+// Comparación y cohortes son un añadido: si el servidor aún no las ofrece, el tablero sigue sin ellas.
+const { data: comparisonRes } = await useAsyncData(
+  'analitica-comparison',
+  () => apiFetch<{ data: Comparacion }>('/admin/reports/comparison', { query: { period: period.value } }).catch(() => null),
+  { watch: [period], lazy: true },
+)
+const { data: cohortsRes } = await useAsyncData(
+  'analitica-cohorts',
+  () => apiFetch<{ data: { meses: number, cohortes: Cohorte[] } }>('/admin/reports/cohorts', { query: { months: 6 } }).catch(() => null),
+  { lazy: true },
+)
+const comparison = computed(() => comparisonRes.value?.data ?? null)
+const cohortes = computed(() => cohortsRes.value?.data?.cohortes ?? null)
+const contra = computed(() => etiquetaComparacion(period.value))
+
 const revenue = computed(() => revenueRes.value?.data)
 const appts = computed(() => apptRes.value?.data)
 const clients = computed(() => clientsRes.value?.data)
@@ -95,14 +110,17 @@ const clienteItems = computed<DonutItem[]>(() => [
   { label: 'Inactivos', value: clients.value?.inactiveClients ?? 0, color: 'rgb(var(--chart-5-rgb))' },
 ])
 
-const lectura = computed(() => lecturaDelNegocio({
-  totalIngresos: revenue.value?.totalRevenue ?? 0,
-  citas: appts.value?.totalAppointments ?? 0,
-  porEstado: appts.value?.appointmentsByStatus ?? {},
-  ingresosPorBarbero: barberos.value.map(b => ({ nombre: b.barber, total: b.total })),
-  retencion: clients.value?.clientRetention ?? 0,
-  clientesInactivos: clients.value?.inactiveClients ?? 0,
-}))
+const lectura = computed(() => [
+  ...lecturaComparativa(comparison.value),
+  ...lecturaDelNegocio({
+    totalIngresos: revenue.value?.totalRevenue ?? 0,
+    citas: appts.value?.totalAppointments ?? 0,
+    porEstado: appts.value?.appointmentsByStatus ?? {},
+    ingresosPorBarbero: barberos.value.map(b => ({ nombre: b.barber, total: b.total })),
+    retencion: clients.value?.clientRetention ?? 0,
+    clientesInactivos: clients.value?.inactiveClients ?? 0,
+  }),
+])
 
 const TONO = {
   bien: 'border-success/30 bg-success/10 text-success',
@@ -150,9 +168,9 @@ const ICONO = { bien: '✓', atencion: '!', info: 'i' } as const
       </ul>
 
       <div class="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <UiStatCard label="Ingresos" :value="formatMoney(revenue?.totalRevenue, 0)" :hint="`${fmtInt(revenue?.totalAppointments)} citas cobradas`" to="/reports" />
+        <UiStatCard label="Ingresos" :value="formatMoney(revenue?.totalRevenue, 0)" :delta="variacionDe(comparison?.metricas.ingresos)" :delta-label="contra" :hint="`${fmtInt(revenue?.totalAppointments)} citas cobradas`" to="/reports" />
         <UiStatCard label="Ticket promedio" :value="formatMoney(revenue?.averageRevenue, 0)" hint="Por cita cobrada" />
-        <UiStatCard label="Citas" :value="fmtInt(appts?.totalAppointments)" :hint="`${fmtInt(appts?.appointmentsByStatus?.completada)} completadas`" to="/appointments" />
+        <UiStatCard label="Citas" :value="fmtInt(appts?.totalAppointments)" :delta="variacionDe(comparison?.metricas.citas)" :delta-label="contra" :hint="`${fmtInt(appts?.appointmentsByStatus?.completada)} completadas`" to="/appointments" />
         <UiStatCard label="Finalización" :value="`${Math.round(appts?.completionRate ?? 0)}%`" :progress="appts?.completionRate ?? 0" hint="Citas completadas" />
       </div>
 
@@ -203,6 +221,8 @@ const ICONO = { bien: '✓', atencion: '!', info: 'i' } as const
           </NuxtLink>
         </section>
       </div>
+
+      <AnalyticsCohortsMatrix v-if="cohortes" :cohortes="cohortes" class="mb-4" />
 
       <UiPeakHoursHeatmap />
     </template>
