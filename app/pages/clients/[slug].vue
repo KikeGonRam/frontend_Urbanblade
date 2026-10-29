@@ -194,7 +194,7 @@ function fecha(iso: string | null) {
               v-if="client.nivel"
               class="rounded-full border border-line px-3 py-1 text-[10px] font-black uppercase tracking-widest text-ink"
             >
-              Nivel {{ client.nivel }}
+              Lealtad {{ client.nivel }}
             </span>
             <span
               class="rounded-full border border-line px-3 py-1 text-[10px] font-black uppercase tracking-widest text-muted"
