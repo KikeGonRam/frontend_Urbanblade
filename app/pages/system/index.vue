@@ -29,6 +29,8 @@ const REFRESH_MS = 30_000
 const HISTORY_SIZE = 20
 const autoRefresh = ref(true)
 const updatedAt = ref<Date | null>(null)
+// Historial persistente (24 h) para las tendencias; dbHistory/redisHistory siguen siendo las últimas lecturas de la sesión.
+const history = useSystemHistory()
 const dbHistory = ref<number[]>([])
 const redisHistory = ref<number[]>([])
 
@@ -39,6 +41,7 @@ function pushLatency(list: Ref<number[]>, ms: number | null) {
 watch(data, (value) => {
   if (!value) return
   updatedAt.value = new Date()
+  history.record(value)
   pushLatency(dbHistory, value.database.latency_ms)
   pushLatency(redisHistory, value.redis.latency_ms)
 }, { immediate: true })
@@ -145,6 +148,9 @@ function fmtDate(iso: string | null) {
           <div class="flex flex-wrap gap-2"><NuxtLink to="/dashboard" class="rounded-xl border border-line bg-card px-3 py-2 text-xs font-black uppercase tracking-widest text-muted transition hover:border-gold/40 hover:text-gold">Módulos</NuxtLink><NuxtLink to="/reports" class="rounded-xl border border-line bg-card px-3 py-2 text-xs font-black uppercase tracking-widest text-muted transition hover:border-gold/40 hover:text-gold">Reportes</NuxtLink><NuxtLink to="/logs" class="rounded-xl border border-line bg-card px-3 py-2 text-xs font-black uppercase tracking-widest text-muted transition hover:border-gold/40 hover:text-gold">Logs</NuxtLink></div>
         </div>
       </section>
+
+      <!-- Primero la información (tendencias); el mapa 3D queda como vista de topología. -->
+      <SystemTrendsBoard :samples="history.samples.value" :incidents="history.incidents.value" @clear="history.clear" />
 
       <SystemMap3D :nodes="mapNodes" />
 
