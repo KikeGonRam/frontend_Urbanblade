@@ -207,7 +207,7 @@ const doughnutOptions = { responsive: true, maintainAspectRatio: false, plugins:
       @action="refresh"
     />
     <p v-else-if="!allInsightsFlat.length" class="rounded-2xl border border-dashed border-line p-4 text-sm text-muted">
-      No hay análisis históricos publicados para tu rol. No se muestran predicciones sin resultados disponibles; los indicadores operativos, cuando corresponden, se calculan por separado.
+      Aún no hay análisis históricos publicados. No se muestran predicciones sin resultados disponibles; los indicadores del día están en tu panel.
     </p>
 
     <template v-else>
