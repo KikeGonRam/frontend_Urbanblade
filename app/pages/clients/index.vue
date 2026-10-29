@@ -215,7 +215,8 @@ async function removeClient(client: ClientRow) {
   const accepted = await confirm({
     title: "Eliminar cliente",
     message: `¿Eliminar a ${client.name ?? "este cliente"}? Esta acción no se puede deshacer.`,
-    confirmText: "Sí, eliminar",
+    confirmText: "Sí, eliminar cliente",
+    cancelText: "Volver",
     isDanger: true,
   });
   if (!accepted) return;
