@@ -509,12 +509,13 @@ v-model="barberFilter"
                   class="min-h-9 rounded-lg border border-gold/30 px-3 py-1 text-xs font-bold text-gold transition-colors hover:bg-gold/10 disabled:opacity-50"
                   :disabled="
                     statusPending === `${appt.id}:${destino}` ||
-                    (destino === 'en_proceso' && appt.puede_iniciar === false)
+                    (destino === 'en_proceso' && appt.puede_iniciar === false) ||
+                    !!motivoBloqueoPorFecha(appt.fecha, destino)
                   "
                   :title="
                     destino === 'en_proceso' && appt.puede_iniciar === false
                       ? (appt.motivo_no_iniciar ?? '')
-                      : ''
+                      : motivoBloqueoPorFecha(appt.fecha, destino)
                   "
                   @click="changeStatus(appt, destino)"
                 >
