@@ -19,10 +19,12 @@ const menu = ref<HTMLElement | null>(null)
 const position = ref({ top: 0, left: 0 })
 
 const MENU_WIDTH = 176
+let abiertoEn = 0
 
 async function toggle() {
   open.value = !open.value
   if (!open.value) return
+  abiertoEn = Date.now()
   const rect = trigger.value?.getBoundingClientRect()
   if (rect) {
     const left = Math.min(Math.max(8, rect.right - MENU_WIDTH), window.innerWidth - MENU_WIDTH - 8)
@@ -32,7 +34,8 @@ async function toggle() {
     position.value = { top, left }
   }
   await nextTick()
-  menu.value?.querySelector<HTMLButtonElement>('button:not(:disabled)')?.focus()
+  // preventScroll: enfocar el primer ítem no debe desplazar la página (cerraría el menú al instante).
+  menu.value?.querySelector<HTMLButtonElement>('button:not(:disabled)')?.focus({ preventScroll: true })
 }
 
 function close(returnFocus = false) {
@@ -66,7 +69,11 @@ function onKeydown(event: KeyboardEvent) {
   }
 }
 
-const onScroll = () => close()
+// Cerrar al desplazar, salvo en los instantes posteriores a abrirlo y si el desplazamiento es del propio menú.
+const onScroll = (event: Event) => {
+  if (Date.now() - abiertoEn < 300 || menu.value?.contains(event.target as Node)) return
+  close()
+}
 
 onMounted(() => {
   document.addEventListener('click', onDocumentClick)
