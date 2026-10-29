@@ -665,7 +665,7 @@ v-model="fechaHasta"
       </button>
     </section>
 
-    <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando pagos…" />
+    <UiSkeleton v-if="pending" variant="rows" :rows="8" label="Cargando pagos…" class="ui-card" />
     <BrandStatePanel
       v-else-if="error"
       mascot="bruno"
