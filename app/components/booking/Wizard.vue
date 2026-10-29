@@ -544,7 +544,7 @@ function prettyDate(iso: string) {
 </script>
 
 <template>
-  <div class="mx-auto w-full max-w-4xl" :class="embedded ? 'p-1' : 'px-4 py-8 sm:px-6 sm:py-12'">
+  <div class="mx-auto w-full" :class="embedded ? 'max-w-4xl p-1' : 'max-w-4xl px-4 py-8 sm:px-6 sm:py-12 lg:max-w-6xl'">
     <!-- Confirmación -->
     <section v-if="confirmedCode" class="ui-card p-6 text-center sm:p-10">
       <BrandMascot mascot="bladebot" state="success" size="md" class="mx-auto" />
@@ -639,13 +639,16 @@ function prettyDate(iso: string) {
         </li>
       </ol>
 
-      <div v-if="selectedService" class="ui-card mb-6 flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 text-xs text-muted">
+      <div v-if="selectedService" class="ui-card mb-6 flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 text-xs text-muted" :class="embedded ? '' : 'lg:hidden'">
         <strong class="text-ink">{{ selectedService.nombre }}</strong>
         <span>{{ selectedService.duracion_min }} min · {{ currency(selectedService.precio) }}</span>
         <span v-if="selectedBarber">{{ selectedBarber.user?.name }}</span>
         <span v-if="date">{{ prettyDate(date) }} {{ time }}</span>
       </div>
 
+      <!-- En escritorio: pasos a la izquierda y resumen fijo a la derecha, visible desde el primer paso. -->
+      <div :class="embedded ? '' : 'lg:grid lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-start lg:gap-8'">
+      <div class="min-w-0">
       <!-- Paso 1: servicio -->
       <section v-if="step === 0" aria-labelledby="paso-servicio">
         <h2 id="paso-servicio" class="mb-4 text-sm font-black uppercase tracking-widest text-ink">
@@ -991,6 +994,39 @@ v-model="customTip"
           </template>
         </div>
       </section>
+      </div>
+
+      <aside v-if="!embedded" class="mt-6 hidden lg:sticky lg:top-24 lg:mt-0 lg:block" aria-label="Resumen de tu reserva">
+        <div class="ui-card p-5">
+          <h2 class="text-xs font-black uppercase tracking-widest text-gold">Tu reserva</h2>
+          <dl class="mt-4 space-y-3 text-sm">
+            <div>
+              <dt class="text-xs uppercase tracking-wider text-muted">Servicio</dt>
+              <dd v-if="selectedService" class="mt-0.5 font-bold text-ink">
+                {{ selectedService.nombre }}
+                <span class="block text-xs font-normal text-muted">{{ selectedService.duracion_min }} min</span>
+              </dd>
+              <dd v-else class="mt-0.5 text-muted">Elige un servicio</dd>
+            </div>
+            <div>
+              <dt class="text-xs uppercase tracking-wider text-muted">Barbero</dt>
+              <dd v-if="selectedBarber" class="mt-0.5 font-bold text-ink">{{ selectedBarber.user?.name }}</dd>
+              <dd v-else class="mt-0.5 text-muted">Pendiente</dd>
+            </div>
+            <div>
+              <dt class="text-xs uppercase tracking-wider text-muted">Cuándo</dt>
+              <dd v-if="date && time" class="mt-0.5 font-bold text-ink">{{ prettyDate(date) }} · {{ time }}</dd>
+              <dd v-else class="mt-0.5 text-muted">Pendiente</dd>
+            </div>
+          </dl>
+          <div v-if="selectedService" class="mt-5 flex items-baseline justify-between border-t border-line pt-4">
+            <span class="text-xs uppercase tracking-wider text-muted">{{ step === 3 ? 'Total' : 'Desde' }}</span>
+            <span class="text-2xl font-black text-ink">{{ currency(step === 3 ? grandTotal : selectedService.precio) }}</span>
+          </div>
+          <p class="mt-4 text-xs leading-5 text-muted">Puedes iniciar sin cuenta; te la pedimos solo al confirmar.</p>
+        </div>
+      </aside>
+      </div>
     </template>
   </div>
 </template>
