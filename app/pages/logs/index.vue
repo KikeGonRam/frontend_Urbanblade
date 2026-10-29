@@ -240,16 +240,7 @@ function fmtDate(iso: string | null) {
         placeholder="Usuario…"
         class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
       >
-      <input
-        v-model="fechaDesde"
-        type="date"
-        class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
-      >
-      <input
-        v-model="fechaHasta"
-        type="date"
-        class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
-      >
+      <UiDateRange v-model:from="fechaDesde" v-model:to="fechaHasta" from-label="Fecha desde" to-label="Fecha hasta" />
       <button
         v-if="
           search ||
