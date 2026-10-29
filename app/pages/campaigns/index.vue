@@ -65,6 +65,7 @@ function fmtDate(iso: string | null) {
 // ── Enviar / programar ───────────────────────────────────────────────────
 const form = reactive({ titulo: '', cuerpo: '', cta_label: '', cta_url: '', segmento: 'todos', modo: 'ahora' as 'ahora' | 'programar', programada_para: '' })
 const sending = ref(false)
+const { confirm } = useConfirm()
 const formError = ref('')
 const formSuccess = ref('')
 const fieldErrors = ref<Record<string, string[]>>({})
@@ -75,6 +76,17 @@ const inputClass = (field: string) => [
 ]
 
 async function submitCampaign() {
+  // Un envío inmediato no se puede deshacer: se confirma diciendo a cuántas personas llega.
+  if (form.modo === 'ahora') {
+    const opcion = segmentOptions.value.find(o => o.value === form.segmento)
+    const aceptado = await confirm({
+      title: 'Enviar campaña ahora',
+      message: `Se enviará «${form.titulo}» a ${opcion?.label ?? form.segmento}. No se puede deshacer.`,
+      confirmText: 'Sí, enviar ahora',
+      cancelText: 'Volver',
+    })
+    if (!aceptado) return
+  }
   sending.value = true
   formError.value = ''
   formSuccess.value = ''
