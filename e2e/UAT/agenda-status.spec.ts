@@ -125,7 +125,10 @@ test("solo se ofrecen las transiciones válidas del estado actual", async ({
 
   // pendiente -> confirmada | cancelada
   await expect(page.getByRole("button", { name: "Confirmar" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Cancelar" })).toBeVisible();
+  // Editar y Cancelar viven en el menú ⋯ de la fila.
+  await page.getByRole("button", { name: /Más acciones de la cita/ }).click();
+  await expect(page.getByRole("menuitem", { name: "Cancelar cita" })).toBeVisible();
+  await page.keyboard.press("Escape");
   // ...y nada más: iniciar/completar/no-show no salen desde pendiente.
   await expect(page.getByRole("button", { name: "Iniciar" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Completar" })).toHaveCount(0);
@@ -141,8 +144,9 @@ test("una cita en estado terminal no ofrece acciones de estado", async ({
   await mockAgenda(page, "cancelada");
   await page.goto("/appointments");
 
-  await expect(page.getByRole("button", { name: "Editar" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Cancelar" })).toHaveCount(0);
+  await page.getByRole("button", { name: /Más acciones de la cita/ }).click();
+  await expect(page.getByRole("menuitem", { name: "Editar cita" })).toBeVisible();
+  await expect(page.getByRole("menuitem", { name: "Cancelar cita" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Confirmar" })).toHaveCount(0);
 });
 
