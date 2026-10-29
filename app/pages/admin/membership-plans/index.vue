@@ -31,7 +31,7 @@ const { data: response, pending, error, refresh } = await useAsyncData(
 const plans = computed(() => response.value?.data ?? []);
 
 function fmtMoney(n: number) {
-  return `$${Number(n ?? 0).toFixed(2)}`;
+  return formatMoney(n)
 }
 
 const showCreate = ref(false);

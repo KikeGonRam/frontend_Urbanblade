@@ -182,7 +182,7 @@ const barbers = computed<Barber[]>(() =>
 );
 
 function fmtMoney(n: number | string) {
-  return `$${Number(n ?? 0).toFixed(2)}`;
+  return formatMoney(n)
 }
 
 function fmtDateTime(iso: string | null) {

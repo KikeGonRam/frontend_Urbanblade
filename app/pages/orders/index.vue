@@ -81,7 +81,7 @@ const stats = computed(() => response.value?.meta.stats);
 const pagination = computed(() => response.value?.meta);
 
 function fmtMoney(n: number) {
-  return `$${Number(n ?? 0).toFixed(2)}`;
+  return formatMoney(n)
 }
 
 watch([estadoFilter, debouncedSearch], () => {
