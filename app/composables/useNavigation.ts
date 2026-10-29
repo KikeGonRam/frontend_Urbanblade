@@ -228,7 +228,6 @@ export function useNavigation() {
           item('Paquetes', '/packages', 'packages'),
           item('Gift Cards', '/gift-cards', 'gift_cards'),
           item('Referidos', '/referrals', 'referrals'),
-          item('Recomendado para ti', '/analytics', 'analytics'),
         ]),
       )
     }
