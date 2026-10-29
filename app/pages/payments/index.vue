@@ -217,9 +217,11 @@ async function viewReceipt(payment: PaymentRow) {
 }
 
 async function removePayment(payment: PaymentRow) {
+  const cliente = payment.appointment.client ?? "este cliente";
+  const servicio = payment.appointment.service ? ` (${payment.appointment.service})` : "";
   const accepted = await confirm({
     title: "Anular comprobante",
-    message: `¿Anular el cobro de ${fmtMoney(payment.monto)} de ${payment.appointment.client ?? "este cliente"}${payment.appointment.service ? ` (${payment.appointment.service})` : ""}? El comprobante se borra y no se puede deshacer.`,
+    message: `¿Anular el cobro de ${fmtMoney(payment.monto)} de ${cliente}${servicio}? El comprobante se borra y no se puede deshacer.`,
     confirmText: "Sí, anular cobro",
     cancelText: "Volver",
     isDanger: true,
