@@ -34,13 +34,13 @@ onMounted(() => {
 <template>
   <section class="mx-auto flex min-h-[60vh] max-w-md flex-col items-center justify-center px-6 py-16 text-center">
     <img src="/images/urbanblade-mark.svg" class="mb-6 h-16 w-16" alt="UrbanBlade">
-    <p class="mb-2 text-[10px] font-black uppercase tracking-[0.3em] text-gold">Abriendo</p>
+    <p class="mb-2 text-xs font-black uppercase tracking-[0.3em] text-gold">Abriendo</p>
     <h1 class="mb-3 text-2xl font-black uppercase tracking-tight text-ink">Urban<span class="text-gold">Blade</span></h1>
     <p class="mb-8 text-sm text-muted">Te llevamos a tu cuenta. Si no se abre la app, continúa en el navegador.</p>
 
     <template v-if="openInApp">
       <a :href="intentUrl" class="ui-btn mb-3 w-full px-6 py-3.5 text-center">Abrir en la app</a>
-      <NuxtLink :to="path" class="w-full rounded-xl border border-line px-6 py-3.5 text-center text-[11px] font-black uppercase tracking-[0.15em] text-muted transition hover:text-gold">
+      <NuxtLink :to="path" class="w-full rounded-xl border border-line px-6 py-3.5 text-center text-xs font-black uppercase tracking-[0.15em] text-muted transition hover:text-gold">
         Continuar en el navegador
       </NuxtLink>
     </template>

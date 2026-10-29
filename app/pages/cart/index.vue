@@ -91,7 +91,7 @@ async function checkout() {
         <button type="button" :disabled="checkingOut" class="w-full rounded-lg bg-gold py-2.5 text-sm font-semibold text-black hover:bg-gold-dim disabled:opacity-50" @click="checkout">
           {{ checkingOut ? 'Procesando…' : 'Confirmar pedido' }}
         </button>
-        <p class="text-[11px] italic text-muted">Pagas y recoges en sucursal. El total final se confirma al momento de la entrega.</p>
+        <p class="text-xs italic text-muted">Pagas y recoges en sucursal. El total final se confirma al momento de la entrega.</p>
       </aside>
     </div>
   </div>

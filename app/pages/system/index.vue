@@ -140,25 +140,25 @@ function fmtDate(iso: string | null) {
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div class="flex items-start gap-3">
             <span class="mt-1 flex h-3 w-3 shrink-0 rounded-full" :class="health.dot" />
-            <div><p class="text-[11px] font-black uppercase tracking-[0.2em] text-ink/45">Resumen de monitor</p><h2 class="mt-1 text-xl font-black text-ink">{{ health.label }}</h2><p class="mt-1 text-sm text-muted">{{ health.detail }}</p></div>
+            <div><p class="text-xs font-black uppercase tracking-[0.2em] text-ink/45">Resumen de monitor</p><h2 class="mt-1 text-xl font-black text-ink">{{ health.label }}</h2><p class="mt-1 text-sm text-muted">{{ health.detail }}</p></div>
           </div>
-          <div class="flex flex-wrap gap-2"><NuxtLink to="/dashboard" class="rounded-xl border border-line bg-card px-3 py-2 text-[11px] font-black uppercase tracking-widest text-muted transition hover:border-gold/40 hover:text-gold">Módulos</NuxtLink><NuxtLink to="/reports" class="rounded-xl border border-line bg-card px-3 py-2 text-[11px] font-black uppercase tracking-widest text-muted transition hover:border-gold/40 hover:text-gold">Reportes</NuxtLink><NuxtLink to="/logs" class="rounded-xl border border-line bg-card px-3 py-2 text-[11px] font-black uppercase tracking-widest text-muted transition hover:border-gold/40 hover:text-gold">Logs</NuxtLink></div>
+          <div class="flex flex-wrap gap-2"><NuxtLink to="/dashboard" class="rounded-xl border border-line bg-card px-3 py-2 text-xs font-black uppercase tracking-widest text-muted transition hover:border-gold/40 hover:text-gold">Módulos</NuxtLink><NuxtLink to="/reports" class="rounded-xl border border-line bg-card px-3 py-2 text-xs font-black uppercase tracking-widest text-muted transition hover:border-gold/40 hover:text-gold">Reportes</NuxtLink><NuxtLink to="/logs" class="rounded-xl border border-line bg-card px-3 py-2 text-xs font-black uppercase tracking-widest text-muted transition hover:border-gold/40 hover:text-gold">Logs</NuxtLink></div>
         </div>
       </section>
 
       <SystemMap3D :nodes="mapNodes" />
 
       <section class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <div class="rounded-2xl border border-ink/[0.06] bg-card p-4"><p class="text-[11px] font-black uppercase tracking-widest text-ink/50">Entorno</p><p class="mt-1 text-lg font-black text-ink">{{ data.app.env }}</p></div>
-        <div class="rounded-2xl border border-ink/[0.06] bg-card p-4"><p class="text-[11px] font-black uppercase tracking-widest text-ink/50">Laravel</p><p class="mt-1 text-lg font-black text-ink">{{ data.app.laravel_version }}</p></div>
-        <div class="rounded-2xl border border-ink/[0.06] bg-card p-4"><p class="text-[11px] font-black uppercase tracking-widest text-ink/50">PHP</p><p class="mt-1 text-lg font-black text-ink">{{ data.app.php_version }}</p></div>
-        <div class="rounded-2xl border border-ink/[0.06] bg-card p-4"><p class="text-[11px] font-black uppercase tracking-widest text-ink/50">Cola</p><p class="mt-1 text-lg font-black text-ink">{{ data.queue.connection }}</p></div>
+        <div class="rounded-2xl border border-ink/[0.06] bg-card p-4"><p class="text-xs font-black uppercase tracking-widest text-ink/50">Entorno</p><p class="mt-1 text-lg font-black text-ink">{{ data.app.env }}</p></div>
+        <div class="rounded-2xl border border-ink/[0.06] bg-card p-4"><p class="text-xs font-black uppercase tracking-widest text-ink/50">Laravel</p><p class="mt-1 text-lg font-black text-ink">{{ data.app.laravel_version }}</p></div>
+        <div class="rounded-2xl border border-ink/[0.06] bg-card p-4"><p class="text-xs font-black uppercase tracking-widest text-ink/50">PHP</p><p class="mt-1 text-lg font-black text-ink">{{ data.app.php_version }}</p></div>
+        <div class="rounded-2xl border border-ink/[0.06] bg-card p-4"><p class="text-xs font-black uppercase tracking-widest text-ink/50">Cola</p><p class="mt-1 text-lg font-black text-ink">{{ data.queue.connection }}</p></div>
       </section>
 
       <section class="mb-5 grid grid-cols-1 gap-5 lg:grid-cols-3">
         <div class="rounded-2xl border border-ink/[0.06] bg-card p-5">
           <div class="flex items-center justify-between">
-            <p class="text-[11px] font-black uppercase tracking-[0.25em] text-ink/50">MongoDB</p>
+            <p class="text-xs font-black uppercase tracking-[0.25em] text-ink/50">MongoDB</p>
             <span class="relative flex h-3 w-3">
               <span v-if="data.database.status === 'up'" class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
               <span class="relative inline-flex h-3 w-3 rounded-full" :class="data.database.status === 'up' ? 'bg-emerald-400' : 'bg-red-500'" />
@@ -172,7 +172,7 @@ function fmtDate(iso: string | null) {
 
         <div class="rounded-2xl border border-ink/[0.06] bg-card p-5">
           <div class="flex items-center justify-between">
-            <p class="text-[11px] font-black uppercase tracking-[0.25em] text-ink/50">Redis</p>
+            <p class="text-xs font-black uppercase tracking-[0.25em] text-ink/50">Redis</p>
             <span class="relative flex h-3 w-3">
               <span v-if="data.redis.status === 'up'" class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
               <span class="relative inline-flex h-3 w-3 rounded-full" :class="data.redis.status === 'up' ? 'bg-emerald-400' : data.redis.status === 'no_usado' ? 'bg-ink/30' : 'bg-red-500'" />
@@ -185,11 +185,11 @@ function fmtDate(iso: string | null) {
         </div>
 
         <div class="rounded-2xl border border-ink/[0.06] bg-card p-5">
-          <p class="text-[11px] font-black uppercase tracking-[0.25em] text-ink/50">Jobs en cola</p>
+          <p class="text-xs font-black uppercase tracking-[0.25em] text-ink/50">Jobs en cola</p>
           <div class="mt-3 flex items-center gap-5">
-            <div><p class="text-2xl font-black leading-none text-ink">{{ data.queue.pending ?? '—' }}</p><p class="mt-1 text-[11px] font-black uppercase text-ink/40">Pendientes</p></div>
+            <div><p class="text-2xl font-black leading-none text-ink">{{ data.queue.pending ?? '—' }}</p><p class="mt-1 text-xs font-black uppercase text-ink/40">Pendientes</p></div>
             <div class="h-8 w-px bg-ink/[0.08]" />
-            <div><p class="text-2xl font-black leading-none" :class="(data.queue.failed ?? 0) > 0 ? 'text-danger' : 'text-ink'">{{ data.queue.failed ?? '—' }}</p><p class="mt-1 text-[11px] font-black uppercase text-ink/40">Fallidos</p></div>
+            <div><p class="text-2xl font-black leading-none" :class="(data.queue.failed ?? 0) > 0 ? 'text-danger' : 'text-ink'">{{ data.queue.failed ?? '—' }}</p><p class="mt-1 text-xs font-black uppercase text-ink/40">Fallidos</p></div>
           </div>
         </div>
       </section>
@@ -200,7 +200,7 @@ function fmtDate(iso: string | null) {
         </div>
         <table aria-label="Tareas programadas" class="w-full text-left text-sm">
           <thead>
-            <tr class="border-b border-line text-[11px] uppercase tracking-wider text-muted">
+            <tr class="border-b border-line text-xs uppercase tracking-wider text-muted">
               <th scope="col" class="px-4 py-3">Tarea</th>
               <th scope="col" class="px-4 py-3">Frecuencia</th>
               <th scope="col" class="px-4 py-3">Última corrida</th>
@@ -214,7 +214,7 @@ function fmtDate(iso: string | null) {
               <td class="px-4 py-3 font-mono text-xs text-muted">{{ task.expression }}</td>
               <td class="px-4 py-3 whitespace-nowrap text-muted">{{ fmtDate(task.ran_at) }}</td>
               <td class="px-4 py-3">
-                <span class="rounded-full border px-2 py-0.5 text-[11px] font-black" :class="STATUS_CLASS[task.status]">{{ STATUS_LABEL[task.status] }}</span>
+                <span class="rounded-full border px-2 py-0.5 text-xs font-black" :class="STATUS_CLASS[task.status]">{{ STATUS_LABEL[task.status] }}</span>
               </td>
               <td class="px-4 py-3 text-muted">{{ task.runtime_ms !== null ? `${task.runtime_ms} ms` : '—' }}</td>
             </tr>

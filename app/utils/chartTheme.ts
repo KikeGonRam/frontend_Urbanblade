@@ -29,7 +29,7 @@ export const UB_CATEGORICAL = ['#3987e5', '#d95926', '#199e70', '#c98500', '#d55
 
 export function chartScale() {
   return {
-    ticks: { color: inkRgba(0.4), font: { size: 10 } },
+    ticks: { color: inkRgba(0.4), font: { size: 12 } },
     grid: { color: inkRgba(0.08) },
     border: { display: false },
   }
@@ -73,7 +73,7 @@ export function chartTooltip() {
 /** Eje sin líneas (el de categorías): la cuadrícula solo en el eje de valores. */
 export function chartAxisClean() {
   return {
-    ticks: { color: inkRgba(0.5), font: { size: 11 } },
+    ticks: { color: inkRgba(0.5), font: { size: 12 } },
     grid: { display: false },
     border: { display: false },
   }

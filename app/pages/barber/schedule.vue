@@ -255,11 +255,11 @@ async function save() {
 
         <dl class="grid grid-cols-2 gap-3">
           <div class="rounded-xl border border-line p-3">
-            <dt class="text-[11px] font-bold uppercase tracking-wide text-muted">Días con atención</dt>
+            <dt class="text-xs font-bold uppercase tracking-wide text-muted">Días con atención</dt>
             <dd class="mt-1 text-2xl font-semibold tabular-nums text-ink">{{ activeDays }}<span class="text-sm text-muted"> de 7</span></dd>
           </div>
           <div class="rounded-xl border border-line p-3">
-            <dt class="text-[11px] font-bold uppercase tracking-wide text-muted">Horas a la semana</dt>
+            <dt class="text-xs font-bold uppercase tracking-wide text-muted">Horas a la semana</dt>
             <dd class="mt-1 text-2xl font-semibold tabular-nums text-gold">{{ weeklyHours }}</dd>
           </div>
         </dl>
@@ -273,7 +273,7 @@ async function save() {
               </template>
             </span>
           </li>
-          <li class="grid grid-cols-[2.25rem_1fr] gap-2 text-[10px] text-muted" aria-hidden="true">
+          <li class="grid grid-cols-[2.25rem_1fr] gap-2 text-xs text-muted" aria-hidden="true">
             <span />
             <span class="flex justify-between"><span>6:00</span><span>12:00</span><span>18:00</span><span>24:00</span></span>
           </li>

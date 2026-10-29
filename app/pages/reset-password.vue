@@ -47,7 +47,7 @@ async function onSubmit() {
     <h1 class="mb-1 text-center text-lg font-black uppercase tracking-widest text-white">
       Nueva <span class="font-serif text-base italic normal-case text-gold">contraseña</span>
     </h1>
-    <p class="mb-6 text-center text-[10px] font-bold uppercase tracking-widest text-muted">Establece tu nueva clave de acceso premium</p>
+    <p class="mb-6 text-center text-xs font-bold uppercase tracking-widest text-muted">Establece tu nueva clave de acceso premium</p>
 
     <form class="space-y-4" @submit.prevent="onSubmit">
       <div>

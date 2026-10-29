@@ -213,7 +213,7 @@ const doughnutOptions = { responsive: true, maintainAspectRatio: false, plugins:
     <template v-else>
       <!-- Vista simple: cliente / barbero -->
       <section v-if="isSimpleView" class="space-y-4">
-        <span class="inline-block rounded-full border border-gold/25 bg-gold/10 px-3 py-1 text-[11px] font-black uppercase tracking-widest text-gold">
+        <span class="inline-block rounded-full border border-gold/25 bg-gold/10 px-3 py-1 text-xs font-black uppercase tracking-widest text-gold">
           {{ rolLabel === 'cliente' ? 'Recomendado para ti' : 'Tu analítica personal' }}
         </span>
         <div v-for="insight in allInsightsFlat" :key="insight.tipo" class="ui-card p-5">
@@ -227,9 +227,9 @@ const doughnutOptions = { responsive: true, maintainAspectRatio: false, plugins:
       <template v-else>
         <section v-if="response?.kpis.length" class="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
           <div v-for="kpi in response.kpis" :key="kpi.label" class="rounded-2xl border p-4" :class="TONE_CLASS[kpi.tone] ?? TONE_CLASS.gold">
-            <p class="text-[11px] font-bold uppercase opacity-75">{{ kpi.label }}</p>
+            <p class="text-xs font-bold uppercase opacity-75">{{ kpi.label }}</p>
             <p class="mt-1 text-xl font-black">{{ kpi.value }}</p>
-            <p class="mt-0.5 text-[11px] opacity-70">{{ kpi.detail }}</p>
+            <p class="mt-0.5 text-xs opacity-70">{{ kpi.detail }}</p>
           </div>
         </section>
 
@@ -238,11 +238,11 @@ const doughnutOptions = { responsive: true, maintainAspectRatio: false, plugins:
           <div class="grid grid-cols-1 gap-3 sm:grid-cols-5">
             <div v-for="step in response.spark_flow" :key="step.titulo">
               <p class="text-xs font-bold text-ink">{{ step.titulo }}</p>
-              <p class="mb-1.5 text-[11px] text-muted">{{ step.descripcion }}</p>
+              <p class="mb-1.5 text-xs text-muted">{{ step.descripcion }}</p>
               <div class="h-1.5 w-full overflow-hidden rounded-full bg-line/40">
                 <div class="h-full rounded-full" :class="BAR_COLOR[step.color] ?? BAR_COLOR.gold" :style="{ width: `${step.progress}%` }" />
               </div>
-              <p class="mt-1 text-[11px] text-muted">{{ step.count }}/{{ step.total }}</p>
+              <p class="mt-1 text-xs text-muted">{{ step.count }}/{{ step.total }}</p>
             </div>
           </div>
         </section>
@@ -289,7 +289,7 @@ const doughnutOptions = { responsive: true, maintainAspectRatio: false, plugins:
           <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <div v-for="family in response.visual_coverage.filter((v) => v.count > 0)" :key="family.tipo" class="rounded-xl border border-line p-3">
               <p class="text-lg font-black text-ink">{{ family.count }}</p>
-              <p class="text-[11px] font-bold text-muted">{{ family.titulo }}</p>
+              <p class="text-xs font-bold text-muted">{{ family.titulo }}</p>
             </div>
           </div>
         </section>

@@ -186,27 +186,27 @@ function fmtDate(iso: string | null) {
       class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-5"
     >
       <div class="ui-card p-4">
-        <p class="text-[11px] font-bold uppercase text-muted">Total</p>
+        <p class="text-xs font-bold uppercase text-muted">Total</p>
         <p class="mt-1 text-xl font-black text-ink">{{ stats.total }}</p>
       </div>
       <div class="ui-card p-4">
-        <p class="text-[11px] font-bold uppercase text-muted">Hoy</p>
+        <p class="text-xs font-bold uppercase text-muted">Hoy</p>
         <p class="mt-1 text-xl font-black text-gold">{{ stats.hoy }}</p>
       </div>
       <div class="ui-card p-4">
-        <p class="text-[11px] font-bold uppercase text-muted">Creados</p>
+        <p class="text-xs font-bold uppercase text-muted">Creados</p>
         <p class="mt-1 text-xl font-black text-success">
           {{ stats.creates }}
         </p>
       </div>
       <div class="ui-card p-4">
-        <p class="text-[11px] font-bold uppercase text-muted">Actualizados</p>
+        <p class="text-xs font-bold uppercase text-muted">Actualizados</p>
         <p class="mt-1 text-xl font-black text-warning">
           {{ stats.updates }}
         </p>
       </div>
       <div class="ui-card p-4">
-        <p class="text-[11px] font-bold uppercase text-muted">Eliminados</p>
+        <p class="text-xs font-bold uppercase text-muted">Eliminados</p>
         <p class="mt-1 text-xl font-black text-danger">{{ stats.deletes }}</p>
       </div>
     </section>
@@ -289,7 +289,7 @@ function fmtDate(iso: string | null) {
       <table aria-label="Registro de auditoría" class="w-full text-left text-sm">
         <thead>
           <tr
-            class="border-b border-line text-[11px] uppercase tracking-wider text-muted"
+            class="border-b border-line text-xs uppercase tracking-wider text-muted"
           >
             <th scope="col" class="px-4 py-3">Fecha</th>
             <th scope="col" class="px-4 py-3">Categoría</th>
@@ -311,7 +311,7 @@ function fmtDate(iso: string | null) {
             <td class="px-4 py-3">
               <span
                 v-if="log.event"
-                class="rounded-full border px-2 py-0.5 text-[11px] font-black"
+                class="rounded-full border px-2 py-0.5 text-xs font-black"
                 :class="EVENT_CLASS[log.event]"
                 >{{ EVENT_LABEL[log.event] ?? log.event }}</span
               >

@@ -193,14 +193,14 @@ async function cancelEntry(entry: WaitlistEntry) {
               {{ entry.service.nombre }}
               <span class="text-muted">con {{ entry.barber.name }}</span>
             </p>
-            <p class="text-[11px] font-bold uppercase text-muted">
+            <p class="text-xs font-bold uppercase text-muted">
               {{ fmtDate(entry.fecha) }}
               <span v-if="isStaff"> · {{ entry.client.name }}</span>
             </p>
           </div>
           <div class="flex items-center gap-3">
             <span
-              class="rounded-full border px-2 py-0.5 text-[11px] font-black uppercase"
+              class="rounded-full border px-2 py-0.5 text-xs font-black uppercase"
               :class="ESTADO_CLASS[entry.estado]"
             >{{ ESTADO_LABEL[entry.estado] ?? entry.estado }}</span>
             <button

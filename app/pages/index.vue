@@ -340,7 +340,7 @@ onBeforeUnmount(() => {
             <NuxtLink to="/" class="inline-flex min-h-[44px] items-center text-xl font-black uppercase tracking-tighter text-ink">Urban<span class="text-gold">Blade</span></NuxtLink>
           </div>
 
-          <div class="hidden items-center gap-5 text-[10px] font-black uppercase tracking-[0.2em] text-muted lg:flex">
+          <div class="hidden items-center gap-5 text-xs font-black uppercase tracking-[0.2em] text-muted lg:flex">
             <a href="#inicio" class="transition-colors hover:text-gold">Inicio</a>
             <a href="#servicios" class="transition-colors hover:text-gold">Servicios</a>
             <a href="#como-funciona" class="transition-colors hover:text-gold">Proceso</a>
@@ -351,7 +351,7 @@ onBeforeUnmount(() => {
             <NuxtLink v-if="isAuthenticated" to="/dashboard" class="ui-btn px-6 py-2">Mi Panel</NuxtLink>
             <template v-else>
               <NuxtLink to="/login" class="transition-colors hover:text-gold">Acceso</NuxtLink>
-              <NuxtLink to="/reservar" class="ui-btn group px-7 py-2.5 text-[11px] tracking-[0.15em] shadow-[0_0_25px_rgba(212,175,55,0.4)]">
+              <NuxtLink to="/reservar" class="ui-btn group px-7 py-2.5 text-xs tracking-[0.15em] shadow-[0_0_25px_rgba(212,175,55,0.4)]">
                 Reservar
                 <svg class="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
               </NuxtLink>
@@ -367,16 +367,16 @@ onBeforeUnmount(() => {
 
       <Transition name="mobile-menu">
         <div v-if="mobileMenuOpen" class="space-y-4 border-b border-line bg-main px-5 pb-6 pt-2 lg:hidden">
-          <a href="#inicio" class="block py-2 text-[11px] font-black uppercase tracking-widest text-ink" @click="mobileMenuOpen = false">Inicio</a>
-          <a href="#servicios" class="block py-2 text-[11px] font-black uppercase tracking-widest text-ink" @click="mobileMenuOpen = false">Servicios</a>
-          <a href="#como-funciona" class="block py-2 text-[11px] font-black uppercase tracking-widest text-ink" @click="mobileMenuOpen = false">Proceso</a>
-          <a href="#equipo" class="block py-2 text-[11px] font-black uppercase tracking-widest text-ink" @click="mobileMenuOpen = false">Maestros</a>
-          <a href="#app" class="block py-2 text-[11px] font-black uppercase tracking-widest text-ink" @click="mobileMenuOpen = false">App</a>
-          <a href="#contacto" class="block py-2 text-[11px] font-black uppercase tracking-widest text-ink" @click="mobileMenuOpen = false">Ubicación</a>
+          <a href="#inicio" class="block py-2 text-xs font-black uppercase tracking-widest text-ink" @click="mobileMenuOpen = false">Inicio</a>
+          <a href="#servicios" class="block py-2 text-xs font-black uppercase tracking-widest text-ink" @click="mobileMenuOpen = false">Servicios</a>
+          <a href="#como-funciona" class="block py-2 text-xs font-black uppercase tracking-widest text-ink" @click="mobileMenuOpen = false">Proceso</a>
+          <a href="#equipo" class="block py-2 text-xs font-black uppercase tracking-widest text-ink" @click="mobileMenuOpen = false">Maestros</a>
+          <a href="#app" class="block py-2 text-xs font-black uppercase tracking-widest text-ink" @click="mobileMenuOpen = false">App</a>
+          <a href="#contacto" class="block py-2 text-xs font-black uppercase tracking-widest text-ink" @click="mobileMenuOpen = false">Ubicación</a>
           <div class="flex flex-col gap-3 pt-3">
             <NuxtLink v-if="isAuthenticated" to="/dashboard" class="ui-btn w-full py-3">Mi Panel</NuxtLink>
             <template v-else>
-              <NuxtLink to="/login" class="py-2 text-center text-[11px] font-black uppercase tracking-widest text-ink transition hover:text-gold">Acceso</NuxtLink>
+              <NuxtLink to="/login" class="py-2 text-center text-xs font-black uppercase tracking-widest text-ink transition hover:text-gold">Acceso</NuxtLink>
               <NuxtLink to="/reservar" class="ui-btn w-full py-3">Reservar Ahora</NuxtLink>
             </template>
           </div>
@@ -406,7 +406,7 @@ onBeforeUnmount(() => {
 
       <div class="relative z-10 mx-auto max-w-7xl px-4 text-center">
         <div class="float-badge mb-8 inline-flex">
-          <span class="ui-badge px-5 py-2 text-[10px] tracking-[0.25em]">
+          <span class="ui-badge px-5 py-2 text-xs tracking-[0.25em]">
             <span class="mr-2 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-gold" />
             Reservas Disponibles Hoy
           </span>
@@ -435,7 +435,7 @@ onBeforeUnmount(() => {
         </div>
 
         <ul v-if="statItems.length" class="mt-8 flex flex-wrap items-center justify-center gap-2.5">
-          <li v-for="stat in statItems" :key="stat.label" class="rounded-full border border-line bg-main/50 px-4 py-2 text-[11px] font-bold text-muted backdrop-blur">
+          <li v-for="stat in statItems" :key="stat.label" class="rounded-full border border-line bg-main/50 px-4 py-2 text-xs font-bold text-muted backdrop-blur">
             <span class="font-black text-ink">{{ stat.value }}{{ stat.suffix }}</span> {{ stat.label }}
           </li>
         </ul>
@@ -461,7 +461,7 @@ onBeforeUnmount(() => {
     <section id="servicios" class="relative overflow-hidden bg-main py-20">
       <div class="mx-auto max-w-7xl px-4">
         <div class="mb-10 text-center">
-          <p class="mb-4 flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.4em] text-gold">
+          <p class="mb-4 flex items-center justify-center gap-3 text-xs font-black uppercase tracking-[0.4em] text-gold">
             <span class="inline-block h-px w-8 bg-gold" />
             Nuestros Servicios
             <span class="inline-block h-px w-8 bg-gold" />
@@ -483,7 +483,7 @@ onBeforeUnmount(() => {
         </ClientOnly>
 
         <div class="mt-12 text-center">
-          <NuxtLink to="/reservar" class="ui-btn-secondary px-10 py-4 text-[11px] tracking-[0.2em]">
+          <NuxtLink to="/reservar" class="ui-btn-secondary px-10 py-4 text-xs tracking-[0.2em]">
             Reservar ahora &rarr;
           </NuxtLink>
         </div>
@@ -495,14 +495,14 @@ onBeforeUnmount(() => {
       <div class="mx-auto max-w-7xl px-4">
         <div class="mb-10 flex flex-col justify-between gap-6 md:flex-row md:items-end">
           <div>
-            <p class="mb-3 flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.4em] text-gold">
+            <p class="mb-3 flex items-center gap-3 text-xs font-black uppercase tracking-[0.4em] text-gold">
               <span class="inline-block h-px w-8 bg-gold" />
               Nuestro Equipo
             </p>
             <h2 class="text-4xl font-black uppercase tracking-tight text-ink">Los <span class="text-gold">Maestros</span></h2>
             <p class="mt-2 text-sm text-muted">Arquitectos de la imagen masculina</p>
           </div>
-          <NuxtLink to="/equipo" class="flex min-h-[44px] items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-gold transition-colors hover:text-ink">
+          <NuxtLink to="/equipo" class="flex min-h-[44px] items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-gold transition-colors hover:text-ink">
             Ver equipo completo <span>&rarr;</span>
           </NuxtLink>
         </div>
@@ -532,13 +532,13 @@ onBeforeUnmount(() => {
                 <span class="text-4xl font-black uppercase tracking-tighter text-gold/50">{{ initials(barber.user?.name) }}</span>
               </div>
               <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
-              <span v-if="barber.avg_rating && (barber.total_reviews ?? 0) > 0" class="absolute left-4 top-4 rounded-full bg-black/60 px-3 py-1.5 text-[11px] font-bold text-gold backdrop-blur-sm">
+              <span v-if="barber.avg_rating && (barber.total_reviews ?? 0) > 0" class="absolute left-4 top-4 rounded-full bg-black/60 px-3 py-1.5 text-xs font-bold text-gold backdrop-blur-sm">
                 ★ {{ Number(barber.avg_rating).toFixed(1) }} · {{ barber.total_reviews }}
               </span>
               <div class="absolute bottom-0 left-0 right-0 translate-y-1 p-6 transition-transform duration-400 group-hover:translate-y-0">
                 <h3 class="text-base font-black uppercase text-white">{{ barber.user?.name }}</h3>
-                <p class="mt-1 text-[9px] font-bold uppercase tracking-widest text-gold">{{ barber.especialidades || 'Master Groomer' }}</p>
-                <div class="mt-3 flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-white/50 transition-colors duration-400 group-hover:text-gold/80">
+                <p class="mt-1 text-xs font-bold uppercase tracking-widest text-gold">{{ barber.especialidades || 'Master Groomer' }}</p>
+                <div class="mt-3 flex items-center gap-1 text-xs font-black uppercase tracking-widest text-white/50 transition-colors duration-400 group-hover:text-gold/80">
                   <span>Reservar con {{ barber.user?.name?.split(' ')[0] }}</span>
                   <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
                 </div>
@@ -549,7 +549,7 @@ onBeforeUnmount(() => {
         <div v-if="fewBarbers" class="mt-8 max-w-md lg:mt-0">
           <h3 class="text-2xl font-black uppercase tracking-tight text-ink">Reserva con quien prefieras</h3>
           <p class="mt-3 text-sm leading-relaxed text-muted">Cada maestro tiene su propia agenda: elige con quién y mira sus horarios reales, sin crear cuenta.</p>
-          <NuxtLink to="/reservar" class="ui-btn mt-6 inline-flex px-8 py-3 text-[11px] tracking-[0.15em]">Elegir horario</NuxtLink>
+          <NuxtLink to="/reservar" class="ui-btn mt-6 inline-flex px-8 py-3 text-xs tracking-[0.15em]">Elegir horario</NuxtLink>
         </div>
         </div>
         <template #fallback>
@@ -566,7 +566,7 @@ onBeforeUnmount(() => {
     <section v-if="publicStats.reviews > 0" class="relative overflow-hidden border-y border-line bg-panel py-24">
       <div class="pointer-events-none absolute -top-40 right-0 h-96 w-96 rounded-full bg-gold/4 blur-[120px]" />
       <div class="mx-auto max-w-4xl px-4 text-center">
-        <p class="mb-4 flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.4em] text-gold">
+        <p class="mb-4 flex items-center justify-center gap-3 text-xs font-black uppercase tracking-[0.4em] text-gold">
           <span class="inline-block h-px w-8 bg-gold" />
           Opiniones reales
           <span class="inline-block h-px w-8 bg-gold" />
@@ -578,7 +578,7 @@ onBeforeUnmount(() => {
             <p class="mt-1 text-gold" role="img" :aria-label="`Calificación ${publicStats.rating} de 5`">★★★★★</p>
           </div>
           <div class="h-12 w-px bg-line" />
-          <p class="text-sm font-bold text-ink">{{ publicStats.reviews }} {{ publicStats.reviews === 1 ? 'reseña' : 'reseñas' }}<br><span class="text-[11px] font-medium text-muted">de clientes con cita completada</span></p>
+          <p class="text-sm font-bold text-ink">{{ publicStats.reviews }} {{ publicStats.reviews === 1 ? 'reseña' : 'reseñas' }}<br><span class="text-xs font-medium text-muted">de clientes con cita completada</span></p>
         </div>
       </div>
     </section>
@@ -587,7 +587,7 @@ onBeforeUnmount(() => {
     <section id="contacto" class="relative overflow-hidden bg-main py-20">
       <div class="mx-auto max-w-7xl px-4">
         <div class="mb-8 text-center">
-          <p class="mb-4 flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.4em] text-gold">
+          <p class="mb-4 flex items-center justify-center gap-3 text-xs font-black uppercase tracking-[0.4em] text-gold">
             <span class="inline-block h-px w-8 bg-gold" />
             Encuéntranos
             <span class="inline-block h-px w-8 bg-gold" />
@@ -608,7 +608,7 @@ onBeforeUnmount(() => {
                     <svg v-else class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                   </div>
                   <div>
-                    <p class="mb-1 text-[10px] font-black uppercase tracking-widest text-gold">{{ info.label }}</p>
+                    <p class="mb-1 text-xs font-black uppercase tracking-widest text-gold">{{ info.label }}</p>
                     <p class="text-sm font-medium leading-relaxed text-ink">
                       <template v-for="(line, li) in info.lines" :key="line">
                         <span :class="{ 'text-muted': info.mutedLastLine && li === info.lines.length - 1 }">{{ line }}</span><br v-if="li < info.lines.length - 1">
@@ -618,7 +618,7 @@ onBeforeUnmount(() => {
                 </div>
               </div>
               <div v-if="socials.length" class="relative z-10 mt-10 border-t border-line pt-8">
-                <p class="mb-4 text-[9px] font-black uppercase tracking-widest text-muted">Síguenos</p>
+                <p class="mb-4 text-xs font-black uppercase tracking-widest text-muted">Síguenos</p>
                 <div class="flex gap-3">
                   <a
                     v-for="social in socials" :key="social.network"
@@ -643,7 +643,7 @@ onBeforeUnmount(() => {
               <a
                 :href="`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapAddress)}`"
                 target="_blank" rel="noopener noreferrer"
-                class="absolute bottom-4 right-4 flex min-h-[44px] items-center gap-2 rounded-xl border border-gold/20 bg-main/90 px-4 py-2.5 text-[9px] font-black uppercase tracking-widest text-gold backdrop-blur transition-all hover:bg-gold hover:text-black"
+                class="absolute bottom-4 right-4 flex min-h-[44px] items-center gap-2 rounded-xl border border-gold/20 bg-main/90 px-4 py-2.5 text-xs font-black uppercase tracking-widest text-gold backdrop-blur transition-all hover:bg-gold hover:text-black"
               >
                 <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                 Abrir en Google Maps
@@ -686,8 +686,8 @@ onBeforeUnmount(() => {
 
           <div class="grid grid-cols-2 gap-12 sm:grid-cols-3">
             <div>
-              <h3 class="mb-5 text-[10px] font-black uppercase tracking-widest text-ink">Navegación</h3>
-              <ul class="space-y-3 text-[11px] font-bold uppercase tracking-wider text-muted">
+              <h3 class="mb-5 text-xs font-black uppercase tracking-widest text-ink">Navegación</h3>
+              <ul class="space-y-3 text-xs font-bold uppercase tracking-wider text-muted">
                 <li><a href="#servicios" class="inline-flex min-h-[44px] items-center transition hover:text-gold">Servicios</a></li>
                 <li><a href="#como-funciona" class="inline-flex min-h-[44px] items-center transition hover:text-gold">Proceso</a></li>
                 <li><a href="#equipo" class="inline-flex min-h-[44px] items-center transition hover:text-gold">Maestros</a></li>
@@ -698,8 +698,8 @@ onBeforeUnmount(() => {
                  sección "Visítanos"): también sale de /barbershop, no de
                  literales, y cada dato se oculta si la barbería no lo capturó. -->
             <div v-if="shop?.telefono || (shop?.horario_apertura && shop?.horario_cierre)">
-              <h3 class="mb-5 text-[10px] font-black uppercase tracking-widest text-ink">Contacto</h3>
-              <ul class="space-y-3 text-[11px] font-bold tracking-wider text-muted">
+              <h3 class="mb-5 text-xs font-black uppercase tracking-widest text-ink">Contacto</h3>
+              <ul class="space-y-3 text-xs font-bold tracking-wider text-muted">
                 <li v-if="shop?.telefono">
                   <a :href="`tel:${shop.telefono.replace(/\s+/g, '')}`" class="transition hover:text-gold">{{ shop.telefono }}</a>
                 </li>
@@ -709,7 +709,7 @@ onBeforeUnmount(() => {
               </ul>
             </div>
             <div v-if="socials.length">
-              <h3 class="mb-5 text-[10px] font-black uppercase tracking-widest text-ink">Social</h3>
+              <h3 class="mb-5 text-xs font-black uppercase tracking-widest text-ink">Social</h3>
               <div class="flex gap-3">
                 <a
                   v-for="social in socials" :key="`footer-${social.network}`"
@@ -727,10 +727,10 @@ onBeforeUnmount(() => {
         </div>
 
         <div class="mt-8 flex flex-col items-center justify-between gap-2 border-t border-line pt-4 md:flex-row">
-          <p class="text-[9px] font-black uppercase tracking-[0.3em] text-muted">
+          <p class="text-xs font-black uppercase tracking-[0.3em] text-muted">
             &copy; {{ new Date().getFullYear() }} UrbanBlade. Todos los derechos reservados.
           </p>
-          <div class="flex gap-6 text-[9px] font-black uppercase tracking-[0.2em] text-muted">
+          <div class="flex gap-6 text-xs font-black uppercase tracking-[0.2em] text-muted">
             <NuxtLink to="/privacidad" class="inline-flex min-h-[44px] items-center transition hover:text-ink">Privacidad</NuxtLink>
             <NuxtLink to="/terminos" class="inline-flex min-h-[44px] items-center transition hover:text-ink">Términos</NuxtLink>
             <button type="button" class="inline-flex min-h-[44px] items-center font-black uppercase tracking-[0.2em] transition hover:text-ink" data-testid="cookie-prefs" @click="reopenConsent()">Cookies</button>

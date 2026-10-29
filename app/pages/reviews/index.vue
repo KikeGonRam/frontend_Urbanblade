@@ -90,9 +90,9 @@ function fmtDate(iso: string | null) {
     </header>
 
     <section v-if="!pending && !error" class="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
-      <div class="ui-card p-4"><p class="text-[11px] font-bold uppercase text-muted">Total</p><p class="mt-1 text-xl font-black text-ink">{{ stats.total }}</p></div>
-      <div class="ui-card p-4"><p class="text-[11px] font-bold uppercase text-muted">Promedio</p><p class="mt-1 text-xl font-black text-gold">{{ stats.promedio }} ★</p></div>
-      <div class="ui-card p-4"><p class="text-[11px] font-bold uppercase text-muted">Bajas (≤2★)</p><p class="mt-1 text-xl font-black text-danger">{{ stats.bajas }}</p></div>
+      <div class="ui-card p-4"><p class="text-xs font-bold uppercase text-muted">Total</p><p class="mt-1 text-xl font-black text-ink">{{ stats.total }}</p></div>
+      <div class="ui-card p-4"><p class="text-xs font-bold uppercase text-muted">Promedio</p><p class="mt-1 text-xl font-black text-gold">{{ stats.promedio }} ★</p></div>
+      <div class="ui-card p-4"><p class="text-xs font-bold uppercase text-muted">Bajas (≤2★)</p><p class="mt-1 text-xl font-black text-danger">{{ stats.bajas }}</p></div>
     </section>
 
     <UiPagination
@@ -139,7 +139,7 @@ function fmtDate(iso: string | null) {
     <section v-else class="ui-card overflow-x-auto">
       <table aria-label="Reseñas" class="w-full min-w-[48rem] text-left text-sm">
         <thead>
-          <tr class="border-b border-line text-[11px] uppercase tracking-wider text-muted">
+          <tr class="border-b border-line text-xs uppercase tracking-wider text-muted">
             <th scope="col" class="cursor-pointer px-4 py-3 select-none" @click="toggleSort('created_at')">
               Fecha {{ sort === 'created_at' ? (dir === 'asc' ? '↑' : '↓') : '' }}
             </th>

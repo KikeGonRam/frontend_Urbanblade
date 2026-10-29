@@ -23,7 +23,7 @@ const mailto = `mailto:${LEGAL.contactEmail}`
 
 <template>
   <article class="legal">
-    <p class="mb-3 text-[10px] font-black uppercase tracking-[0.3em] text-gold">Condiciones de uso</p>
+    <p class="mb-3 text-xs font-black uppercase tracking-[0.3em] text-gold">Condiciones de uso</p>
     <h1 class="mb-2 text-3xl font-black uppercase tracking-tight text-ink sm:text-4xl">Términos y <span class="text-gold">Condiciones</span></h1>
     <p class="mb-8 text-xs text-muted">Última actualización: {{ LEGAL.lastUpdated }}</p>
 

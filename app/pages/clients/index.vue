@@ -284,7 +284,7 @@ function fmtDate(iso: string | null) {
         "
       >
         <p
-          class="mb-1 text-[11px] font-black uppercase tracking-wider text-muted"
+          class="mb-1 text-xs font-black uppercase tracking-wider text-muted"
         >
           {{ card.label }}
         </p>
@@ -343,7 +343,7 @@ v-model="search"
       <table aria-label="Clientes" class="w-full text-left text-sm">
         <thead>
           <tr
-            class="border-b border-line text-[11px] uppercase tracking-wider text-muted"
+            class="border-b border-line text-xs uppercase tracking-wider text-muted"
           >
             <th scope="col" class="px-4 py-3">Cliente</th>
             <th scope="col" class="px-4 py-3">Email</th>
@@ -372,7 +372,7 @@ v-model="search"
             <td class="px-4 py-3 text-muted">{{ client.telefono ?? "—" }}</td>
             <td class="px-4 py-3 text-center">
               <span
-                class="rounded-full border px-2 py-0.5 text-[11px] font-black"
+                class="rounded-full border px-2 py-0.5 text-xs font-black"
                 :class="SEGMENT_CLASS[client.segment]"
                 >{{ SEGMENT_LABEL[client.segment] }}</span
               >

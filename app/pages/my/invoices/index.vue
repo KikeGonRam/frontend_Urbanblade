@@ -65,8 +65,8 @@ async function downloadReceipt(payment: PaymentRow) {
     </header>
 
     <section v-if="!pending && !error" class="mb-6 grid grid-cols-2 gap-3 sm:w-fit sm:grid-cols-2">
-      <div class="ui-card p-4"><p class="text-[11px] font-bold uppercase text-muted">Total pagado</p><p class="mt-1 text-xl font-black text-gold">{{ fmtMoney(meta.total_pagado) }}</p></div>
-      <div class="ui-card p-4"><p class="text-[11px] font-bold uppercase text-muted">Citas con recibo</p><p class="mt-1 text-xl font-black text-ink">{{ meta.total_citas }}</p></div>
+      <div class="ui-card p-4"><p class="text-xs font-bold uppercase text-muted">Total pagado</p><p class="mt-1 text-xl font-black text-gold">{{ fmtMoney(meta.total_pagado) }}</p></div>
+      <div class="ui-card p-4"><p class="text-xs font-bold uppercase text-muted">Citas con recibo</p><p class="mt-1 text-xl font-black text-ink">{{ meta.total_citas }}</p></div>
     </section>
 
     <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando tus recibos…" />
@@ -88,7 +88,7 @@ async function downloadReceipt(payment: PaymentRow) {
     <section v-if="!pending && !error && payments.length" class="ui-card overflow-x-auto">
       <table class="w-full text-left text-sm">
         <thead>
-          <tr class="border-b border-line text-[11px] uppercase tracking-wider text-muted">
+          <tr class="border-b border-line text-xs uppercase tracking-wider text-muted">
             <th class="px-4 py-3">Fecha</th>
             <th class="px-4 py-3">Servicio</th>
             <th class="px-4 py-3">Barbero</th>

@@ -69,7 +69,7 @@ async function onSubmit() {
     <h1 class="mb-1 text-center text-lg font-black uppercase tracking-widest text-white">
       Únete a la <span class="font-serif text-base italic normal-case text-gold">élite</span>
     </h1>
-    <p class="mb-6 text-center text-[10px] font-bold uppercase tracking-widest text-muted">Crea tu cuenta para gestionar tus citas premium</p>
+    <p class="mb-6 text-center text-xs font-bold uppercase tracking-widest text-muted">Crea tu cuenta para gestionar tus citas premium</p>
 
     <a
       :href="googleLoginUrl"
@@ -80,7 +80,7 @@ async function onSubmit() {
     </a>
 
     <div class="mb-5 flex items-center gap-3">
-      <span class="h-px flex-1 bg-line" /><span class="text-[10px] font-bold uppercase tracking-widest text-muted">o con tu correo</span><span class="h-px flex-1 bg-line" />
+      <span class="h-px flex-1 bg-line" /><span class="text-xs font-bold uppercase tracking-widest text-muted">o con tu correo</span><span class="h-px flex-1 bg-line" />
     </div>
 
     <form class="space-y-4" @submit.prevent="onSubmit">
@@ -134,7 +134,7 @@ async function onSubmit() {
         {{ secondsLeft > 0 ? `Espera ${secondsLeft}s…` : loading ? 'Creando cuenta…' : 'Crear mi cuenta' }}
       </button>
 
-      <p class="pt-2 text-center text-[10px] font-bold uppercase tracking-widest text-muted">
+      <p class="pt-2 text-center text-xs font-bold uppercase tracking-widest text-muted">
         ¿Ya tienes cuenta? <NuxtLink :to="{ path: '/login', query: { redirect: route.query.redirect } }" class="text-gold hover:underline">Inicia sesión aquí</NuxtLink>
       </p>
     </form>

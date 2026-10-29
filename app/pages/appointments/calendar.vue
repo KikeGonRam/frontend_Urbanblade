@@ -253,7 +253,7 @@ function onEventClick(info: EventClickArg) {
           <span
             v-for="item in legend"
             :key="item.label"
-            class="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-muted"
+            class="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-muted"
           >
             <span
               class="h-2.5 w-2.5 rounded-full"
@@ -266,7 +266,7 @@ function onEventClick(info: EventClickArg) {
         <div v-if="!ownCalendar" class="flex items-center gap-3">
           <label
             for="calendar-barbero"
-            class="text-[11px] font-black uppercase tracking-widest text-muted"
+            class="text-xs font-black uppercase tracking-widest text-muted"
             >Barbero:</label
           >
           <select
@@ -331,7 +331,7 @@ function onEventClick(info: EventClickArg) {
             {{ modal.title }}
           </h3>
           <p
-            class="mb-6 text-[11px] font-bold uppercase tracking-widest text-muted"
+            class="mb-6 text-xs font-bold uppercase tracking-widest text-muted"
           >
             {{ modal.time }}
           </p>
@@ -357,7 +357,7 @@ function onEventClick(info: EventClickArg) {
               </div>
               <div>
                 <p
-                  class="text-[11px] font-bold uppercase tracking-widest text-muted"
+                  class="text-xs font-bold uppercase tracking-widest text-muted"
                 >
                   Cliente
                 </p>
@@ -384,7 +384,7 @@ function onEventClick(info: EventClickArg) {
               </div>
               <div>
                 <p
-                  class="text-[11px] font-bold uppercase tracking-widest text-muted"
+                  class="text-xs font-bold uppercase tracking-widest text-muted"
                 >
                   Servicio
                 </p>
@@ -411,7 +411,7 @@ function onEventClick(info: EventClickArg) {
               </div>
               <div>
                 <p
-                  class="text-[11px] font-bold uppercase tracking-widest text-muted"
+                  class="text-xs font-bold uppercase tracking-widest text-muted"
                 >
                   Barbero
                 </p>
@@ -423,13 +423,13 @@ function onEventClick(info: EventClickArg) {
           <div class="mt-8 flex gap-3">
             <NuxtLink
               :to="`/appointments?edit=${modal.id}`"
-              class="flex-1 rounded-xl bg-gold py-3 text-center text-[11px] font-black uppercase tracking-widest text-black transition-all hover:bg-gold-dim"
+              class="flex-1 rounded-xl bg-gold py-3 text-center text-xs font-black uppercase tracking-widest text-black transition-all hover:bg-gold-dim"
             >
               Editar Cita
             </NuxtLink>
             <button
               type="button"
-              class="rounded-xl border border-line bg-ink/5 px-5 py-3 text-center text-[11px] font-black uppercase tracking-widest text-muted transition-all hover:text-ink"
+              class="rounded-xl border border-line bg-ink/5 px-5 py-3 text-center text-xs font-black uppercase tracking-widest text-muted transition-all hover:text-ink"
               @click="modal.open = false"
             >
               Cerrar
@@ -489,7 +489,7 @@ function onEventClick(info: EventClickArg) {
 .fc-event {
   cursor: pointer;
   border-radius: 6px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   padding: 1px 4px;
   border: none !important;
@@ -500,7 +500,7 @@ function onEventClick(info: EventClickArg) {
 }
 .fc-button {
   border-radius: 10px !important;
-  font-size: 11px !important;
+  font-size: 12px !important;
   font-weight: 900 !important;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -521,7 +521,7 @@ function onEventClick(info: EventClickArg) {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.5;
 }
 .ub-fc-event b {

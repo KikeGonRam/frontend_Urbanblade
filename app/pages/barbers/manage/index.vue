@@ -221,7 +221,7 @@ async function submitForm() {
       <table aria-label="Barberos" class="w-full min-w-[52rem] text-left text-sm">
         <thead>
           <tr
-            class="border-b border-line text-[11px] uppercase tracking-wider text-muted"
+            class="border-b border-line text-xs uppercase tracking-wider text-muted"
           >
             <th scope="col" class="px-4 py-3">Barbero</th>
             <th scope="col" class="px-4 py-3">Especialidades</th>
@@ -264,7 +264,7 @@ async function submitForm() {
             </td>
             <td class="px-4 py-3 text-center">
               <span
-                class="rounded-full border px-2 py-0.5 text-[11px] font-black uppercase"
+                class="rounded-full border px-2 py-0.5 text-xs font-black uppercase"
                 :class="
                   barber.activo
                     ? 'border-success/25 bg-success/10 text-success'

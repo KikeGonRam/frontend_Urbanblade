@@ -455,7 +455,7 @@ v-model="barberFilter"
       <table data-mobile-cards class="block w-full text-left text-sm md:table">
         <thead class="hidden md:table-header-group">
           <tr
-            class="border-b border-line text-[11px] uppercase tracking-wider text-muted"
+            class="border-b border-line text-xs uppercase tracking-wider text-muted"
           >
             <th class="px-4 py-3">Fecha</th>
             <th class="px-4 py-3">Hora</th>
@@ -472,11 +472,11 @@ v-model="barberFilter"
             :key="appt.id"
             class="block border-b border-line/60 py-2 last:border-0 md:table-row md:py-0"
           >
-            <td data-label="Fecha" class="flex items-center justify-between gap-3 px-4 py-1.5 before:text-[11px] before:uppercase before:tracking-wider before:text-muted before:content-[attr(data-label)] md:table-cell md:py-3 md:before:content-none text-ink">{{ formatShortDate(appt.fecha) }}</td>
-            <td data-label="Hora" class="flex items-center justify-between gap-3 px-4 py-1.5 before:text-[11px] before:uppercase before:tracking-wider before:text-muted before:content-[attr(data-label)] md:table-cell md:py-3 md:before:content-none text-muted">
+            <td data-label="Fecha" class="flex items-center justify-between gap-3 px-4 py-1.5 before:text-xs before:uppercase before:tracking-wider before:text-muted before:content-[attr(data-label)] md:table-cell md:py-3 md:before:content-none text-ink">{{ formatShortDate(appt.fecha) }}</td>
+            <td data-label="Hora" class="flex items-center justify-between gap-3 px-4 py-1.5 before:text-xs before:uppercase before:tracking-wider before:text-muted before:content-[attr(data-label)] md:table-cell md:py-3 md:before:content-none text-muted">
               {{ appt.hora_inicio?.slice(0, 5) }}
             </td>
-            <td data-label="Cliente" class="flex items-center justify-between gap-3 px-4 py-1.5 before:text-[11px] before:uppercase before:tracking-wider before:text-muted before:content-[attr(data-label)] md:table-cell md:py-3 md:before:content-none font-bold text-ink">
+            <td data-label="Cliente" class="flex items-center justify-between gap-3 px-4 py-1.5 before:text-xs before:uppercase before:tracking-wider before:text-muted before:content-[attr(data-label)] md:table-cell md:py-3 md:before:content-none font-bold text-ink">
               <button
                 type="button"
                 class="rounded text-left underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
@@ -486,15 +486,15 @@ v-model="barberFilter"
                 {{ appt.client.user.name ?? "—" }}
               </button>
             </td>
-            <td data-label="Servicio" class="flex items-center justify-between gap-3 px-4 py-1.5 before:text-[11px] before:uppercase before:tracking-wider before:text-muted before:content-[attr(data-label)] md:table-cell md:py-3 md:before:content-none text-muted">
+            <td data-label="Servicio" class="flex items-center justify-between gap-3 px-4 py-1.5 before:text-xs before:uppercase before:tracking-wider before:text-muted before:content-[attr(data-label)] md:table-cell md:py-3 md:before:content-none text-muted">
               {{ appt.service.nombre ?? "—" }}
             </td>
-            <td data-label="Barbero" class="flex items-center justify-between gap-3 px-4 py-1.5 before:text-[11px] before:uppercase before:tracking-wider before:text-muted before:content-[attr(data-label)] md:table-cell md:py-3 md:before:content-none text-muted">
+            <td data-label="Barbero" class="flex items-center justify-between gap-3 px-4 py-1.5 before:text-xs before:uppercase before:tracking-wider before:text-muted before:content-[attr(data-label)] md:table-cell md:py-3 md:before:content-none text-muted">
               {{ appt.barber.user.name ?? "—" }}
             </td>
-            <td data-label="Estado" class="flex items-center justify-between gap-3 px-4 py-1.5 before:text-[11px] before:uppercase before:tracking-wider before:text-muted before:content-[attr(data-label)] md:table-cell md:py-3 md:before:content-none text-center">
+            <td data-label="Estado" class="flex items-center justify-between gap-3 px-4 py-1.5 before:text-xs before:uppercase before:tracking-wider before:text-muted before:content-[attr(data-label)] md:table-cell md:py-3 md:before:content-none text-center">
               <span
-                class="rounded-full border px-2 py-0.5 text-[11px] font-black"
+                class="rounded-full border px-2 py-0.5 text-xs font-black"
                 :class="ESTADO_CLASS[appt.estado]"
                 >{{ ESTADO_LABEL[appt.estado] ?? appt.estado }}</span
               >
@@ -553,7 +553,7 @@ v-model="barberFilter"
                    transferencia o aún no es la hora. Cobrar se hace con el botón de arriba. -->
               <p
                 v-if="appt.estado === 'confirmada' && appt.puede_iniciar === false && appt.motivo_no_iniciar"
-                class="mt-1 text-right text-[11px] text-warning"
+                class="mt-1 text-right text-xs text-warning"
               >
                 {{ appt.motivo_no_iniciar }}
               </p>

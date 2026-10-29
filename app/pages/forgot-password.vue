@@ -33,7 +33,7 @@ async function onSubmit() {
     <h1 class="mb-1 text-center text-lg font-black uppercase tracking-widest text-white">
       Recuperar <span class="font-serif text-base italic normal-case text-gold">acceso</span>
     </h1>
-    <p class="mb-6 text-center text-[10px] font-bold uppercase leading-relaxed tracking-widest text-muted">
+    <p class="mb-6 text-center text-xs font-bold uppercase leading-relaxed tracking-widest text-muted">
       ¿Olvidaste tu contraseña? No hay problema. Introduce tu correo y te enviaremos un enlace para elegir una nueva.
     </p>
 
@@ -44,7 +44,7 @@ async function onSubmit() {
         </svg>
         <p class="text-sm text-gold">{{ message }}</p>
       </div>
-      <NuxtLink to="/login" class="mt-6 block text-center text-[10px] font-black uppercase tracking-widest text-muted hover:text-gold">
+      <NuxtLink to="/login" class="mt-6 block text-center text-xs font-black uppercase tracking-widest text-muted hover:text-gold">
         &larr; Volver al inicio de sesión
       </NuxtLink>
     </template>
@@ -68,7 +68,7 @@ async function onSubmit() {
         {{ secondsLeft > 0 ? `Espera ${secondsLeft}s…` : loading ? 'Enviando…' : 'Enviar enlace de recuperación' }}
       </button>
 
-      <NuxtLink to="/login" class="block pt-2 text-center text-[10px] font-black uppercase tracking-widest text-muted hover:text-gold">
+      <NuxtLink to="/login" class="block pt-2 text-center text-xs font-black uppercase tracking-widest text-muted hover:text-gold">
         &larr; Volver al inicio de sesión
       </NuxtLink>
     </form>

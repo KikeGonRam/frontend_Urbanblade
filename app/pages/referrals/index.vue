@@ -107,7 +107,7 @@ async function submitLink() {
 
     <div v-else-if="data" class="grid grid-cols-1 gap-6 lg:grid-cols-2">
       <section class="ui-card p-6 text-center">
-        <p class="text-[11px] font-black uppercase tracking-widest text-gold/70">Tu código</p>
+        <p class="text-xs font-black uppercase tracking-widest text-gold/70">Tu código</p>
         <p class="mt-2 font-mono text-4xl font-black tracking-widest text-ink">{{ data.codigo_referido }}</p>
         <button type="button" class="ui-btn-secondary mt-4" @click="copyCode">
           {{ copied ? "¡Copiado!" : "Copiar código" }}
@@ -157,12 +157,12 @@ v-model="linkCode"
           >
             <div>
               <p class="text-sm font-bold text-ink">{{ r.referido }}</p>
-              <p v-if="r.recompensa_otorgada_en" class="text-[11px] text-muted">
+              <p v-if="r.recompensa_otorgada_en" class="text-xs text-muted">
                 Puntos otorgados {{ fmtDate(r.recompensa_otorgada_en) }}
               </p>
             </div>
             <span
-              class="rounded-full border px-2 py-0.5 text-[11px] font-black uppercase"
+              class="rounded-full border px-2 py-0.5 text-xs font-black uppercase"
               :class="ESTADO_CLASS[r.estado]"
             >{{ ESTADO_LABEL[r.estado] ?? r.estado }}</span>
           </div>

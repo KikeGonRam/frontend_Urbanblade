@@ -10,7 +10,7 @@ const { reopen: reopenConsent } = useConsent()
           <img src="/images/urbanblade-mark.svg" class="h-9 w-9" alt="UrbanBlade">
           <span class="text-lg font-black uppercase tracking-tighter text-ink">Urban<span class="text-gold">Blade</span></span>
         </NuxtLink>
-        <NuxtLink to="/" class="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted transition-colors hover:text-gold">
+        <NuxtLink to="/" class="flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-muted transition-colors hover:text-gold">
           <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 17l-5-5m0 0l5-5m-5 5h12" /></svg>
           Volver al inicio
         </NuxtLink>
@@ -22,7 +22,7 @@ const { reopen: reopenConsent } = useConsent()
     </main>
 
     <footer class="border-t border-line py-10">
-      <div class="mx-auto flex max-w-3xl flex-col items-center justify-between gap-4 px-4 text-[9px] font-black uppercase tracking-[0.2em] text-muted sm:flex-row sm:px-6">
+      <div class="mx-auto flex max-w-3xl flex-col items-center justify-between gap-4 px-4 text-xs font-black uppercase tracking-[0.2em] text-muted sm:flex-row sm:px-6">
         <p>&copy; {{ new Date().getFullYear() }} UrbanBlade. Todos los derechos reservados.</p>
         <div class="flex gap-6">
           <NuxtLink to="/privacidad" class="transition hover:text-gold">Aviso de Privacidad</NuxtLink>

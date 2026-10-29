@@ -106,7 +106,7 @@ onBeforeUnmount(() => {
         Ver carrito
         <span
           v-if="cart.count.value > 0"
-          class="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-black px-1 text-[11px] font-black text-gold"
+          class="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-black px-1 text-xs font-black text-gold"
           >{{ cart.count.value }}</span
         >
       </NuxtLink>
@@ -164,7 +164,7 @@ v-model="categoria"
           <BrandImagePlaceholder v-else :category="product.categoria" :label="`Sin foto de ${product.nombre}`" />
         </div>
         <div class="flex flex-1 flex-col gap-2 p-4">
-          <p class="text-[11px] font-black uppercase tracking-widest text-gold">
+          <p class="text-xs font-black uppercase tracking-widest text-gold">
             {{ product.categoria ?? "General" }}
           </p>
           <p class="line-clamp-2 flex-1 text-sm font-bold text-ink">
@@ -173,7 +173,7 @@ v-model="categoria"
           <p class="text-lg font-black text-ink">
             {{ fmtMoney(product.precio_venta) }}
           </p>
-          <p class="text-[11px] text-muted">
+          <p class="text-xs text-muted">
             {{ product.stock_actual }} disponibles<span
               v-if="inCart(product.id)"
             >

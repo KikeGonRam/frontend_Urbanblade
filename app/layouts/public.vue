@@ -42,14 +42,14 @@ const socials = computed(() =>
           <span class="text-lg font-black uppercase tracking-tighter text-ink">Urban<span class="text-gold">Blade</span></span>
         </NuxtLink>
 
-        <div class="flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted sm:gap-6">
+        <div class="flex items-center gap-4 text-xs font-black uppercase tracking-[0.2em] text-muted sm:gap-6">
           <NuxtLink to="/servicios" class="hidden transition-colors hover:text-gold sm:inline">Servicios</NuxtLink>
           <NuxtLink to="/equipo" class="hidden transition-colors hover:text-gold sm:inline">Equipo</NuxtLink>
           <NuxtLink to="/#app" class="hidden transition-colors hover:text-gold sm:inline">App</NuxtLink>
           <NuxtLink v-if="isAuthenticated" to="/dashboard" class="ui-btn px-4 py-2 sm:px-6">Mi Panel</NuxtLink>
           <template v-else>
             <NuxtLink to="/login" class="hidden transition-colors hover:text-gold sm:inline">Acceso</NuxtLink>
-            <NuxtLink to="/reservar" class="ui-btn px-4 py-2.5 text-[11px] tracking-[0.15em] sm:px-6">Reservar</NuxtLink>
+            <NuxtLink to="/reservar" class="ui-btn px-4 py-2.5 text-xs tracking-[0.15em] sm:px-6">Reservar</NuxtLink>
           </template>
           <button type="button" class="flex h-11 w-11 items-center justify-center text-ink sm:hidden" :aria-label="menuOpen ? 'Cerrar menú' : 'Abrir menú'" :aria-expanded="menuOpen" @click="menuOpen = !menuOpen">
             <svg v-if="!menuOpen" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M4 6h16M4 12h16M4 18h16" stroke-width="2" stroke-linecap="round" /></svg>
@@ -58,7 +58,7 @@ const socials = computed(() =>
         </div>
       </div>
       <div v-if="menuOpen" class="border-t border-line bg-main px-4 pb-4 pt-2 sm:hidden">
-        <NuxtLink v-for="l in [{ to: '/servicios', t: 'Servicios' }, { to: '/equipo', t: 'Equipo' }, { to: '/#app', t: 'App móvil' }, ...(isAuthenticated ? [] : [{ to: '/login', t: 'Acceso' }])]" :key="l.to" :to="l.to" class="flex min-h-[44px] items-center text-[11px] font-black uppercase tracking-widest text-ink">{{ l.t }}</NuxtLink>
+        <NuxtLink v-for="l in [{ to: '/servicios', t: 'Servicios' }, { to: '/equipo', t: 'Equipo' }, { to: '/#app', t: 'App móvil' }, ...(isAuthenticated ? [] : [{ to: '/login', t: 'Acceso' }])]" :key="l.to" :to="l.to" class="flex min-h-[44px] items-center text-xs font-black uppercase tracking-widest text-ink">{{ l.t }}</NuxtLink>
       </div>
     </nav>
 
@@ -74,10 +74,10 @@ const socials = computed(() =>
           <a v-if="shop?.telefono" :href="`tel:${shop.telefono.replace(/\s+/g, '')}`" class="font-bold text-ink hover:text-gold">{{ shop.telefono }}</a>
         </p>
         <div class="flex gap-1">
-          <a v-for="social in socials" :key="social.network" :href="social.url" target="_blank" rel="noopener noreferrer" class="inline-flex min-h-[44px] items-center px-3 text-[10px] font-black uppercase tracking-widest hover:text-gold">{{ social.network }}</a>
+          <a v-for="social in socials" :key="social.network" :href="social.url" target="_blank" rel="noopener noreferrer" class="inline-flex min-h-[44px] items-center px-3 text-xs font-black uppercase tracking-widest hover:text-gold">{{ social.network }}</a>
         </div>
       </div>
-      <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 text-[9px] font-black uppercase tracking-[0.2em] text-muted sm:flex-row sm:px-6 lg:px-8">
+      <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 text-xs font-black uppercase tracking-[0.2em] text-muted sm:flex-row sm:px-6 lg:px-8">
         <p>&copy; {{ new Date().getFullYear() }} UrbanBlade. Todos los derechos reservados.</p>
         <div class="flex gap-6">
           <NuxtLink to="/privacidad" class="transition hover:text-gold">Aviso de Privacidad</NuxtLink>

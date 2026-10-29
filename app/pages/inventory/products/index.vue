@@ -327,14 +327,14 @@ async function removeProduct(product: ProductRow) {
         >
           <div>
             <p class="text-sm font-bold text-ink">{{ item.nombre }}</p>
-            <p class="text-[11px] text-muted">
+            <p class="text-xs text-muted">
               {{ item.stock_actual }} en existencia / mín
               {{ item.stock_minimo }}
             </p>
           </div>
           <span
             v-if="item.pending_restock"
-            class="w-fit rounded-full border border-success/25 bg-success/10 px-3 py-1 text-[11px] font-black uppercase tracking-widest text-success"
+            class="w-fit rounded-full border border-success/25 bg-success/10 px-3 py-1 text-xs font-black uppercase tracking-widest text-success"
           >
             Pedido en curso
           </span>
@@ -440,7 +440,7 @@ async function removeProduct(product: ProductRow) {
       <table aria-label="Productos" class="w-full text-left text-sm">
         <thead>
           <tr
-            class="border-b border-line text-[11px] uppercase tracking-wider text-muted"
+            class="border-b border-line text-xs uppercase tracking-wider text-muted"
           >
             <th scope="col" class="px-4 py-3">Producto</th>
             <th scope="col" class="px-4 py-3">Categoría</th>
@@ -487,7 +487,7 @@ async function removeProduct(product: ProductRow) {
             </td>
             <td class="px-4 py-3 text-center">
               <span
-                class="rounded-full border px-2 py-0.5 text-[11px] font-black uppercase"
+                class="rounded-full border px-2 py-0.5 text-xs font-black uppercase"
                 :class="
                   product.stock_actual <= product.stock_minimo
                     ? 'border-warning/25 bg-warning/10 text-warning'
@@ -499,7 +499,7 @@ async function removeProduct(product: ProductRow) {
             </td>
             <td class="px-4 py-3 text-center">
               <span
-                class="rounded-full border border-line bg-ink/5 px-2 py-0.5 text-[11px] font-black uppercase text-muted"
+                class="rounded-full border border-line bg-ink/5 px-2 py-0.5 text-xs font-black uppercase text-muted"
               >
                 {{ product.tipo === "venta_cliente" ? "Venta" : "Insumo" }}
               </span>

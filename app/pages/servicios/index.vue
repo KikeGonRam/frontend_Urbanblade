@@ -36,7 +36,7 @@ const services = computed(() => response.value?.data ?? [])
 <template>
   <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
     <header class="mb-12 text-center">
-      <p class="mb-4 flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.4em] text-gold">
+      <p class="mb-4 flex items-center justify-center gap-3 text-xs font-black uppercase tracking-[0.4em] text-gold">
         <span class="inline-block h-px w-8 bg-gold" />
         Catálogo
         <span class="inline-block h-px w-8 bg-gold" />
@@ -61,7 +61,7 @@ const services = computed(() => response.value?.data ?? [])
     <LandingStyleLookbook v-else :services="services" />
 
     <div class="mt-16 text-center">
-      <NuxtLink :to="isAuthenticated ? '/my/appointments' : '/register'" class="ui-btn px-10 py-4 text-[11px] tracking-[0.2em]">
+      <NuxtLink :to="isAuthenticated ? '/my/appointments' : '/register'" class="ui-btn px-10 py-4 text-xs tracking-[0.2em]">
         {{ isAuthenticated ? 'Reservar cita' : 'Regístrate para reservar' }} &rarr;
       </NuxtLink>
     </div>

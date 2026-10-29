@@ -13,6 +13,6 @@ const { score, label, barColor, textColor } = usePasswordStrength(passwordRef)
         :class="bar <= score ? barColor : 'bg-line'"
       />
     </div>
-    <p class="mt-1 text-[11px] font-semibold" :class="textColor">{{ label }}</p>
+    <p class="mt-1 text-xs font-semibold" :class="textColor">{{ label }}</p>
   </div>
 </template>

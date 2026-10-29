@@ -232,7 +232,7 @@ function money(n: number | null | undefined) {
           </div>
         </dl>
         <p v-if="cierre.notas" class="mt-3 text-xs leading-5 text-muted">{{ cierre.notas }}</p>
-        <p v-if="cierre.cerrado_por_nombre" class="mt-2 text-[11px] font-bold uppercase tracking-widest text-muted">
+        <p v-if="cierre.cerrado_por_nombre" class="mt-2 text-xs font-bold uppercase tracking-widest text-muted">
           Cerró {{ cierre.cerrado_por_nombre }}
         </p>
       </section>
@@ -249,7 +249,7 @@ function money(n: number | null | undefined) {
 
         <div class="mt-4 grid gap-4 sm:grid-cols-2">
           <label class="block">
-            <span class="mb-1 block text-[11px] font-bold uppercase tracking-widest text-muted">
+            <span class="mb-1 block text-xs font-bold uppercase tracking-widest text-muted">
               Efectivo contado
             </span>
             <input
@@ -263,7 +263,7 @@ function money(n: number | null | undefined) {
             >
           </label>
           <div class="rounded-xl border border-dashed border-line p-3">
-            <span class="block text-[11px] font-bold uppercase tracking-widest text-muted">
+            <span class="block text-xs font-bold uppercase tracking-widest text-muted">
               Diferencia
             </span>
             <span
@@ -278,7 +278,7 @@ function money(n: number | null | undefined) {
         </div>
 
         <label class="mt-4 block">
-          <span class="mb-1 block text-[11px] font-bold uppercase tracking-widest text-muted">
+          <span class="mb-1 block text-xs font-bold uppercase tracking-widest text-muted">
             Observaciones
           </span>
           <textarea
@@ -296,7 +296,7 @@ function money(n: number | null | undefined) {
 
         <button
           type="button"
-          class="ui-btn mt-4 min-h-11 w-full py-3 text-[11px] tracking-widest disabled:opacity-50 sm:w-auto sm:px-8"
+          class="ui-btn mt-4 min-h-11 w-full py-3 text-xs tracking-widest disabled:opacity-50 sm:w-auto sm:px-8"
           :disabled="saving || contado === null"
           @click="cerrarCaja"
         >

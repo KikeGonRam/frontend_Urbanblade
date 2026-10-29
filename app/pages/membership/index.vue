@@ -244,7 +244,7 @@ async function cancelMembership() {
       <div class="flex items-center justify-between gap-2">
         <h2 class="text-lg font-black uppercase text-ink">{{ membership.plan.nombre }}</h2>
         <span
-          class="rounded-full border px-2 py-0.5 text-[11px] font-black uppercase"
+          class="rounded-full border px-2 py-0.5 text-xs font-black uppercase"
           :class="ESTADO_CLASS[membership.estado]"
         >{{ ESTADO_LABEL[membership.estado] ?? membership.estado }}</span>
       </div>

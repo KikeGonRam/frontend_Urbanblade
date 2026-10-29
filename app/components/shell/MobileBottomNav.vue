@@ -17,7 +17,7 @@ function isActive(to: string) {
       <NuxtLink
         v-if="navItem.implemented"
         :to="navItem.to"
-        class="ub-mobile-nav-item flex flex-1 flex-col items-center justify-center gap-0.5 text-[11px] active:scale-[.98]"
+        class="ub-mobile-nav-item flex flex-1 flex-col items-center justify-center gap-0.5 text-xs active:scale-[.98]"
         :class="isActive(navItem.to) ? 'is-active text-gold' : 'text-muted'"
         :aria-current="isActive(navItem.to) ? 'page' : undefined"
       >
@@ -26,7 +26,7 @@ function isActive(to: string) {
       </NuxtLink>
       <span
         v-else
-        class="ub-mobile-nav-item flex flex-1 cursor-not-allowed flex-col items-center justify-center gap-0.5 text-[11px] text-muted/50"
+        class="ub-mobile-nav-item flex flex-1 cursor-not-allowed flex-col items-center justify-center gap-0.5 text-xs text-muted/50"
         :aria-label="`${navItem.label}, próximamente`"
         aria-disabled="true"
         title="Próximamente"
@@ -38,7 +38,7 @@ function isActive(to: string) {
 
     <button
       type="button"
-      class="ub-mobile-nav-item flex flex-1 flex-col items-center justify-center gap-0.5 text-[11px]"
+      class="ub-mobile-nav-item flex flex-1 flex-col items-center justify-center gap-0.5 text-xs"
       :class="drawerOpen ? 'is-active text-gold' : 'text-muted'"
       aria-label="Más opciones"
       :aria-expanded="drawerOpen"

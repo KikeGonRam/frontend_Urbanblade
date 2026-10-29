@@ -221,7 +221,7 @@ async function waitForPackageToAppear() {
       </p>
       <div v-else class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div v-for="pkg in catalog" :key="pkg.id" class="ui-card flex flex-col p-5">
-          <p class="text-[11px] font-black uppercase tracking-widest text-gold/70">
+          <p class="text-xs font-black uppercase tracking-widest text-gold/70">
             {{ pkg.service.nombre }}
           </p>
           <h3 class="mt-1 text-lg font-black text-ink">{{ pkg.nombre }}</h3>
@@ -239,7 +239,7 @@ async function waitForPackageToAppear() {
           >
             Comprar
           </button>
-          <p v-else class="mt-4 text-[11px] italic text-muted">
+          <p v-else class="mt-4 text-xs italic text-muted">
             El cliente compra el paquete desde su cuenta.
           </p>
         </div>
@@ -256,7 +256,7 @@ async function waitForPackageToAppear() {
           <div class="flex items-center justify-between gap-2">
             <p class="font-black text-ink">{{ pkg.nombre }}</p>
             <span
-              class="rounded-full border px-2 py-0.5 text-[11px] font-black uppercase"
+              class="rounded-full border px-2 py-0.5 text-xs font-black uppercase"
               :class="ESTADO_CLASS[pkg.estado]"
             >{{ ESTADO_LABEL[pkg.estado] ?? pkg.estado }}</span>
           </div>
@@ -264,7 +264,7 @@ async function waitForPackageToAppear() {
           <p class="mt-2 text-xl font-black text-gold">
             {{ pkg.usos_restantes }} / {{ pkg.usos_totales }} usos
           </p>
-          <p class="text-[11px] font-bold uppercase text-muted">
+          <p class="text-xs font-bold uppercase text-muted">
             Comprado {{ fmtDate(pkg.comprado_en) }}
             <span v-if="pkg.expira_en"> · vence {{ fmtDate(pkg.expira_en) }}</span>
           </p>

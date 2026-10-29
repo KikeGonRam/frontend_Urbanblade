@@ -277,7 +277,7 @@ async function removeService(service: ServiceRow) {
       <table aria-label="Servicios" class="w-full text-left text-sm">
         <thead>
           <tr
-            class="border-b border-line text-[11px] uppercase tracking-wider text-muted"
+            class="border-b border-line text-xs uppercase tracking-wider text-muted"
           >
             <th scope="col" class="px-4 py-3">Servicio</th>
             <th scope="col" class="px-4 py-3">Categoría</th>
@@ -320,7 +320,7 @@ async function removeService(service: ServiceRow) {
             </td>
             <td class="px-4 py-3">
               <span
-                class="rounded-full border border-line bg-ink/5 px-2 py-0.5 text-[11px] font-black uppercase text-muted"
+                class="rounded-full border border-line bg-ink/5 px-2 py-0.5 text-xs font-black uppercase text-muted"
               >
                 {{ service.categoria }}
               </span>
@@ -331,7 +331,7 @@ async function removeService(service: ServiceRow) {
             </td>
             <td class="px-4 py-3 text-center">
               <span
-                class="rounded-full border px-2 py-0.5 text-[11px] font-black uppercase"
+                class="rounded-full border px-2 py-0.5 text-xs font-black uppercase"
                 :class="
                   service.activo
                     ? 'border-success/25 bg-success/10 text-success'
@@ -389,7 +389,7 @@ async function removeService(service: ServiceRow) {
             </h2>
             <p class="mt-2 ub-form-help">Define cómo se mostrará, cuánto dura y qué precio tendrá al reservar.</p>
           </div>
-          <span class="rounded-full border border-gold/25 bg-gold/10 px-2 py-1 text-[11px] font-black uppercase tracking-wider text-gold">
+          <span class="rounded-full border border-gold/25 bg-gold/10 px-2 py-1 text-xs font-black uppercase tracking-wider text-gold">
             {{ editing ? "Edición" : "Nuevo" }}
           </span>
         </div>
@@ -452,7 +452,7 @@ async function removeService(service: ServiceRow) {
                 v-for="cat in categories"
                 :key="cat"
                 type="button"
-                class="rounded-md border border-line/70 bg-ink/5 px-2 py-0.5 text-[11px] text-muted hover:border-gold hover:text-gold"
+                class="rounded-md border border-line/70 bg-ink/5 px-2 py-0.5 text-xs text-muted hover:border-gold hover:text-gold"
                 @click="form.categoria = cat"
               >
                 {{ cat }}

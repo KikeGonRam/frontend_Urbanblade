@@ -242,7 +242,7 @@ const servicesOptions = {
     <header class="flex items-center justify-between gap-4">
       <div>
         <p class="text-xs font-semibold uppercase tracking-[0.18em] text-muted">{{ data.todayLabel }}</p>
-        <h2 class="mt-1 text-2xl font-semibold text-ink">Buen día, <span class="text-gold">{{ firstName }}</span></h2>
+        <h1 class="mt-1 text-2xl font-semibold text-ink">Buen día, <span class="text-gold">{{ firstName }}</span></h1>
         <p class="mt-1 text-sm text-muted">
           <template v-if="activeToday.length">
             {{ doneToday === activeToday.length ? "Terminaste todas las citas de hoy." : `Llevas ${doneToday} de ${activeToday.length} citas de hoy.` }}
@@ -389,7 +389,7 @@ const servicesOptions = {
 
     <section class="grid grid-cols-2 gap-3 xl:grid-cols-4" aria-label="Tu mes">
       <div v-for="kpi in kpiCards" :key="kpi.label" class="ub-rise rounded-2xl border border-line bg-card p-4">
-        <p class="text-[11px] font-bold uppercase tracking-wide text-muted">{{ kpi.label }}</p>
+        <p class="text-xs font-bold uppercase tracking-wide text-muted">{{ kpi.label }}</p>
         <p class="mt-1 text-xl font-semibold tabular-nums text-ink">{{ kpi.value }}</p>
         <p class="text-xs text-muted">{{ kpi.hint }}</p>
       </div>
