@@ -95,7 +95,7 @@ interface Barber {
 }
 
 const { apiFetch } = useApi();
-const { confirm } = useConfirm();
+const { hasRole } = useAuth();
 const config = useRuntimeConfig();
 
 // ── Historial + filtros ──────────────────────────────────────────────────
@@ -216,26 +216,42 @@ async function viewReceipt(payment: PaymentRow) {
   }
 }
 
-async function removePayment(payment: PaymentRow) {
-  const cliente = payment.appointment.client ?? "este cliente";
-  const servicio = payment.appointment.service ? ` (${payment.appointment.service})` : "";
-  const accepted = await confirm({
-    title: "Anular comprobante",
-    message: `¿Anular el cobro de ${fmtMoney(payment.monto)} de ${cliente}${servicio}? El comprobante se borra y no se puede deshacer.`,
-    confirmText: "Sí, anular cobro",
-    cancelText: "Volver",
-    isDanger: true,
-  });
-  if (!accepted) return;
+// Anular borra el cobro y su comprobante: solo el administrador, y con motivo (queda en la bitácora).
+const voiding = ref<PaymentRow | null>(null);
+const voidReason = ref("");
+const voidBusy = ref(false);
+const voidError = ref("");
 
+function removePayment(payment: PaymentRow) {
+  voidReason.value = "";
+  voidError.value = "";
+  voiding.value = payment;
+}
+
+async function confirmVoid() {
+  const payment = voiding.value;
+  if (!payment) return;
+  if (voidReason.value.trim().length < 5) {
+    voidError.value = "Escribe el motivo (mínimo 5 caracteres).";
+    return;
+  }
+
+  voidBusy.value = true;
+  voidError.value = "";
   actionError.value = "";
   try {
-    await apiFetch(`/payments/${payment.id}`, { method: "DELETE" });
+    await apiFetch(`/payments/${payment.id}`, {
+      method: "DELETE",
+      body: { motivo: voidReason.value.trim() },
+    });
+    voiding.value = null;
     await refresh();
   } catch (err: unknown) {
-    actionError.value =
+    voidError.value =
       (err as { data?: { message?: string } })?.data?.message ??
       "No se pudo anular el comprobante.";
+  } finally {
+    voidBusy.value = false;
   }
 }
 
@@ -735,6 +751,7 @@ v-model="fechaHasta"
                   PDF
                 </button>
                 <button
+                  v-if="hasRole('administrador')"
                   type="button"
                   class="rounded-lg border border-danger/20 px-3 py-1 text-xs text-danger hover:bg-danger/10 min-h-10"
                   @click="removePayment(payment)"
@@ -761,6 +778,39 @@ v-model="fechaHasta"
       :per-page="15"
       :busy="pending"
     />
+
+    <!-- Anular cobro: pide motivo -->
+    <UiModal
+      v-if="voiding"
+      title="Anular cobro"
+      :busy="voidBusy"
+      @close="voiding = null"
+    >
+      <form class="space-y-3" @submit.prevent="confirmVoid">
+        <p class="text-sm text-muted">
+          Se anula el cobro de {{ fmtMoney(voiding.monto) }} de {{ voiding.appointment.client ?? "este cliente" }}.
+          El comprobante se borra y no se puede deshacer; el motivo queda en la bitácora.
+        </p>
+        <div>
+          <label for="void-reason" class="mb-1 block text-xs text-muted">Motivo</label>
+          <textarea
+            id="void-reason"
+            v-model="voidReason"
+            rows="3"
+            maxlength="300"
+            required
+            class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
+          />
+        </div>
+        <p v-if="voidError" role="alert" class="text-xs text-danger">{{ voidError }}</p>
+        <div class="flex justify-end gap-2">
+          <button type="button" class="min-h-10 rounded-lg border border-line px-4 py-2 text-sm text-muted" :disabled="voidBusy" @click="voiding = null">Volver</button>
+          <button type="submit" class="min-h-10 rounded-lg bg-danger px-4 py-2 text-sm font-semibold text-white disabled:opacity-50" :disabled="voidBusy">
+            {{ voidBusy ? "Anulando…" : "Sí, anular cobro" }}
+          </button>
+        </div>
+      </form>
+    </UiModal>
 
     <!-- Nuevo Cobro -->
     <UiModal
