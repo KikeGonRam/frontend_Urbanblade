@@ -73,7 +73,7 @@ describe('formulario «Mi Horario»', () => {
   it('«Copiar a todos» repite las horas y el estado de ese día en toda la semana', async () => {
     const wrapper = await mountPage()
 
-    await wrapper.get('article:first-of-type button:not([role="switch"])').trigger('click')
+    await wrapper.findAll('article:first-of-type button').find(b => b.text() === 'Copiar a todos')!.trigger('click')
 
     for (const day of DAYS) {
       expect((wrapper.get(`#start-${day}`).element as HTMLInputElement).value).toBe('09:00')
@@ -98,6 +98,40 @@ describe('formulario «Mi Horario»', () => {
     expect(options.body.schedules[4]).toEqual({ day_of_week: 'friday', start_time: '09:00', end_time: '20:30', is_active: true })
     expect(options.body.schedules[6]).toMatchObject({ day_of_week: 'sunday', is_active: false })
     expect(wrapper.text()).toContain('Horario actualizado correctamente.')
+  })
+
+  it('permite una segunda franja por día y la guarda como otra fila', async () => {
+    const wrapper = await mountPage()
+
+    await wrapper.findAll('article:first-of-type button').find(b => b.text().includes('Agregar descanso'))!.trigger('click')
+    expect(wrapper.find('#start-monday-1').exists()).toBe(true)
+    await wrapper.get('#end-monday').setValue('14:00')
+    await wrapper.get('#start-monday-1').setValue('16:00')
+    await wrapper.get('#end-monday-1').setValue('20:00')
+    apiFetch.mockResolvedValueOnce({})
+
+    await wrapper.get('form').trigger('submit')
+    await flushPromises()
+
+    const filas = apiFetch.mock.calls[1]![1].body.schedules
+    expect(filas).toHaveLength(8)
+    expect(filas.slice(0, 2)).toEqual([
+      { day_of_week: 'monday', start_time: '09:00', end_time: '14:00', is_active: true },
+      { day_of_week: 'monday', start_time: '16:00', end_time: '20:00', is_active: true },
+    ])
+    // 5 + 4 h del lunes cuentan en el resumen: lunes 9 h, resto igual que antes.
+    expect(summary(wrapper).text()).toContain('55')
+  })
+
+  it('no ofrece una tercera franja y deja quitar la segunda', async () => {
+    const wrapper = await mountPage()
+    const primero = () => wrapper.findAll('article:first-of-type button')
+
+    await primero().find(b => b.text().includes('Agregar descanso'))!.trigger('click')
+    expect(primero().some(b => b.text().includes('Agregar descanso'))).toBe(false)
+
+    await primero().find(b => b.text() === 'Quitar')!.trigger('click')
+    expect(wrapper.find('#start-monday-1').exists()).toBe(false)
   })
 
   it('muestra el motivo del servidor si no se pudo guardar y deja el botón disponible', async () => {

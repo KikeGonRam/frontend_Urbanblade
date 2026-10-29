@@ -3,12 +3,23 @@ definePageMeta({ middleware: ['auth', 'barber'], layout: 'dashboard' })
 
 useSeoMeta({ title: 'Mi horario — UrbanBlade', robots: 'noindex' })
 
-interface Day {
+// La API guarda una fila por franja; aquí cada día agrupa hasta dos (p. ej. 09-14 y 16-20, con descanso en medio).
+interface Row {
   day_of_week: string
   start_time: string
   end_time: string
   is_active: boolean
 }
+interface Range {
+  start_time: string
+  end_time: string
+}
+interface Day {
+  day_of_week: string
+  is_active: boolean
+  ranges: Range[]
+}
+const MAX_RANGES = 2
 
 const names: Record<string, string> = {
   monday: 'Lunes',
@@ -22,7 +33,7 @@ const names: Record<string, string> = {
 const order = Object.keys(names)
 const { apiFetch } = useApi()
 
-const { data, pending, error, refresh } = await useAsyncData<{ schedules: Day[] }>(
+const { data, pending, error, refresh } = await useAsyncData<{ schedules: Row[] }>(
   'barber-schedule',
   () => apiFetch('/barber/schedule'),
   { lazy: true },
@@ -32,14 +43,21 @@ const days = ref<Day[]>([])
 
 watchEffect(() => {
   if (data.value && !days.value.length) {
-    days.value = order.map(key =>
-      data.value?.schedules.find(d => d.day_of_week === key) ?? {
+    days.value = order.map((key) => {
+      const rows = (data.value?.schedules ?? []).filter(d => d.day_of_week === key)
+      if (!rows.length) {
+        return { day_of_week: key, is_active: key !== 'sunday', ranges: [{ start_time: '09:00', end_time: '18:00' }] }
+      }
+
+      return {
         day_of_week: key,
-        start_time: '09:00',
-        end_time: '18:00',
-        is_active: key !== 'sunday',
-      },
-    )
+        is_active: rows.some(row => row.is_active),
+        ranges: rows
+          .map(row => ({ start_time: row.start_time.slice(0, 5), end_time: row.end_time.slice(0, 5) }))
+          .sort((a, b) => a.start_time.localeCompare(b.start_time))
+          .slice(0, MAX_RANGES),
+      }
+    })
   }
 })
 
@@ -58,15 +76,15 @@ function minutes(time: string): number {
 }
 
 function spanMinutes(day: Day): number {
-  return day.is_active ? Math.max(0, minutes(day.end_time) - minutes(day.start_time)) : 0
+  return day.is_active ? day.ranges.reduce((sum, r) => sum + Math.max(0, minutes(r.end_time) - minutes(r.start_time)), 0) : 0
 }
 
 const activeDays = computed(() => days.value.filter(d => d.is_active).length)
 const weeklyHours = computed(() => Math.round((days.value.reduce((sum, d) => sum + spanMinutes(d), 0) / 60) * 10) / 10)
 
-function barStyle(day: Day) {
-  const from = Math.max(AXIS_START, minutes(day.start_time))
-  const to = Math.min(AXIS_END, minutes(day.end_time))
+function barStyle(range: Range) {
+  const from = Math.max(AXIS_START, minutes(range.start_time))
+  const to = Math.min(AXIS_END, minutes(range.end_time))
   const total = AXIS_END - AXIS_START
 
   return { left: `${((from - AXIS_START) / total) * 100}%`, width: `${(Math.max(0, to - from) / total) * 100}%` }
@@ -75,10 +93,25 @@ function barStyle(day: Day) {
 function copyToAll(source: Day) {
   days.value = days.value.map(day => ({
     ...day,
-    start_time: source.start_time,
-    end_time: source.end_time,
     is_active: source.is_active,
+    ranges: source.ranges.map(range => ({ ...range })),
   }))
+}
+
+function hhmm(total: number): string {
+  return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`
+}
+
+function addRange(day: Day) {
+  if (day.ranges.length >= MAX_RANGES) return
+  const last = day.ranges[day.ranges.length - 1]
+  // Segunda franja sugerida: arranca una hora después de que termina la primera.
+  const from = Math.min(minutes(last ? last.end_time : '09:00') + 60, 22 * 60)
+  day.ranges.push({ start_time: hhmm(from), end_time: hhmm(Math.min(from + 4 * 60, 23 * 60 + 59)) })
+}
+
+function removeRange(day: Day, index: number) {
+  if (day.ranges.length > 1) day.ranges.splice(index, 1)
 }
 
 async function save() {
@@ -90,11 +123,12 @@ async function save() {
     await apiFetch('/barber/schedule', {
       method: 'PUT',
       body: {
-        schedules: days.value.map(d => ({
-          ...d,
-          start_time: d.start_time.slice(0, 5),
-          end_time: d.end_time.slice(0, 5),
-        })),
+        schedules: days.value.flatMap(d => d.ranges.map(range => ({
+          day_of_week: d.day_of_week,
+          is_active: d.is_active,
+          start_time: range.start_time.slice(0, 5),
+          end_time: range.end_time.slice(0, 5),
+        }))),
       },
     })
     message.value = 'Horario actualizado correctamente.'
@@ -138,7 +172,7 @@ async function save() {
         v-for="day in days"
         :key="day.day_of_week"
         :class="[
-          'ui-card grid gap-4 p-5 transition-opacity sm:grid-cols-[160px_1fr_1fr_auto] sm:items-center',
+          'ui-card grid gap-4 p-5 transition-opacity sm:grid-cols-[160px_1fr_auto] sm:items-start',
           { 'opacity-60': !day.is_active }
         ]"
       >
@@ -148,28 +182,59 @@ async function save() {
           :description="day.is_active ? 'Laboral' : 'Descanso'"
         />
 
-        <div>
-          <label :for="`start-${day.day_of_week}`" class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted">Apertura</label>
-          <input
-            :id="`start-${day.day_of_week}`"
-            v-model="day.start_time"
-            :disabled="!day.is_active"
-            type="time"
-            required
-            class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink disabled:opacity-50"
+        <div class="space-y-3">
+          <div
+            v-for="(range, index) in day.ranges"
+            :key="index"
+            class="grid grid-cols-[1fr_1fr_auto] items-end gap-3"
           >
-        </div>
-
-        <div>
-          <label :for="`end-${day.day_of_week}`" class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted">Cierre</label>
-          <input
-            :id="`end-${day.day_of_week}`"
-            v-model="day.end_time"
+            <div>
+              <label :for="(index === 0 ? `start-${day.day_of_week}` : `start-${day.day_of_week}-${index}`)" class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted">
+                {{ index === 0 ? 'Apertura' : 'Reapertura' }}
+              </label>
+              <input
+                :id="(index === 0 ? `start-${day.day_of_week}` : `start-${day.day_of_week}-${index}`)"
+                v-model="range.start_time"
+                :disabled="!day.is_active"
+                type="time"
+                required
+                class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink disabled:opacity-50"
+              >
+            </div>
+            <div>
+              <label :for="(index === 0 ? `end-${day.day_of_week}` : `end-${day.day_of_week}-${index}`)" class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted">
+                {{ index === 0 && day.ranges.length > 1 ? 'Descanso desde' : 'Cierre' }}
+              </label>
+              <input
+                :id="(index === 0 ? `end-${day.day_of_week}` : `end-${day.day_of_week}-${index}`)"
+                v-model="range.end_time"
+                :disabled="!day.is_active"
+                type="time"
+                required
+                class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink disabled:opacity-50"
+              >
+            </div>
+            <button
+              v-if="index > 0"
+              type="button"
+              class="min-h-10 rounded-lg border border-line px-3 py-1.5 text-xs text-muted hover:text-danger"
+              :disabled="!day.is_active"
+              :aria-label="`Quitar la segunda franja del ${names[day.day_of_week] ?? 'día'}`"
+              @click="removeRange(day, index)"
+            >
+              Quitar
+            </button>
+            <span v-else />
+          </div>
+          <button
+            v-if="day.ranges.length < MAX_RANGES"
+            type="button"
+            class="text-xs font-semibold text-gold hover:underline disabled:opacity-50"
             :disabled="!day.is_active"
-            type="time"
-            required
-            class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink disabled:opacity-50"
+            @click="addRange(day)"
           >
+            + Agregar descanso (segunda franja)
+          </button>
         </div>
 
         <button
@@ -203,7 +268,9 @@ async function save() {
           <li v-for="day in days" :key="day.day_of_week" class="grid grid-cols-[2.25rem_1fr] items-center gap-2 text-xs">
             <span class="font-semibold text-muted">{{ (names[day.day_of_week] ?? '').slice(0, 3) }}</span>
             <span class="relative block h-2.5 rounded-full bg-ink/10">
-              <span v-if="day.is_active" class="absolute inset-y-0 rounded-full bg-gold" :style="barStyle(day)" />
+              <template v-if="day.is_active">
+                <span v-for="(range, index) in day.ranges" :key="index" class="absolute inset-y-0 rounded-full bg-gold" :style="barStyle(range)" />
+              </template>
             </span>
           </li>
           <li class="grid grid-cols-[2.25rem_1fr] gap-2 text-[10px] text-muted" aria-hidden="true">
