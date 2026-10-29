@@ -100,6 +100,54 @@ const franja = computed(() => {
 const estable = computed(() => visibles.value.length ? Math.round((visibles.value.filter(s => s.health === 'ok').length / visibles.value.length) * 100) : 0)
 
 const incidentesVisibles = computed(() => props.incidents.filter(i => i.t >= ahora.value - ms.value).slice(0, 8))
+
+/*
+ * Tráfico real del servidor (peticiones, errores 5xx y latencia media por minuto). Viene del backend, así que cubre
+ * también el tiempo en que el monitor estuvo cerrado. Si el servidor aún no lo ofrece, la sección se omite.
+ */
+interface PuntoTrafico { t: string, requests: number, errors: number, avg_ms: number | null }
+interface Trafico { step: number, sample_rate: number, points: PuntoTrafico[] }
+const PASO: Record<(typeof VENTANAS)[number]['id'], { minutes: number, step: number }> = {
+  '1h': { minutes: 60, step: 1 },
+  '6h': { minutes: 360, step: 6 },
+  '24h': { minutes: 1440, step: 24 },
+}
+const { apiFetch } = useApi()
+const { data: traficoRes, refresh: refrescarTrafico } = await useAsyncData(
+  'system-traffic',
+  () => apiFetch<Trafico>('/admin/system/metrics', { query: PASO[ventana.value] }).catch(() => null),
+  { watch: [ventana], lazy: true },
+)
+const trafico = computed(() => traficoRes.value?.points ?? [])
+const hayTrafico = computed(() => trafico.value.some(p => p.requests > 0))
+const etiquetaTrafico = computed(() => trafico.value.map(p => etiqueta(new Date(p.t).getTime())))
+const traficoData = computed(() => ({
+  labels: etiquetaTrafico.value,
+  datasets: [
+    linea('Peticiones', trafico.value.map(p => p.requests), tokenRgba('gold', 0.95), true),
+    linea('Errores 5xx', trafico.value.map(p => p.errors), tokenRgba('danger', 0.95)),
+  ],
+}))
+const latenciaApiData = computed(() => ({
+  labels: etiquetaTrafico.value,
+  datasets: [linea('Latencia media (ms)', trafico.value.map(p => p.avg_ms), tokenRgba('info', 0.95), true)],
+}))
+const totalesTrafico = computed(() => {
+  const total = trafico.value.reduce((s, p) => s + p.requests, 0)
+  const errores = trafico.value.reduce((s, p) => s + p.errors, 0)
+  const ponderado = trafico.value.reduce((s, p) => s + (p.avg_ms ?? 0) * p.requests, 0)
+
+  return {
+    total,
+    errores,
+    tasa: total > 0 ? Math.round((errores / total) * 1000) / 10 : 0,
+    media: total > 0 ? Math.round(ponderado / total) : null,
+  }
+})
+
+let temporizador: ReturnType<typeof setInterval> | undefined
+onMounted(() => { temporizador = setInterval(() => { void refrescarTrafico() }, 60_000) })
+onBeforeUnmount(() => clearInterval(temporizador))
 </script>
 
 <template>
@@ -130,6 +178,22 @@ const incidentesVisibles = computed(() => props.incidents.filter(i => i.t >= aho
         </button>
       </div>
     </header>
+
+    <div v-if="hayTrafico" class="mb-6 border-b border-line pb-6">
+      <div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+        <h3 class="text-sm font-semibold text-ink">Tráfico de la API</h3>
+        <p class="text-xs text-muted">
+          <strong class="text-ink">{{ fmtInt(totalesTrafico.total) }}</strong> peticiones ·
+          <strong :class="totalesTrafico.errores ? 'text-danger' : 'text-ink'">{{ totalesTrafico.tasa }} %</strong> con error 5xx ·
+          <strong class="text-ink">{{ totalesTrafico.media ?? '—' }} ms</strong> de media
+        </p>
+      </div>
+      <div class="grid grid-cols-1 gap-5 lg:grid-cols-2">
+        <div class="h-56"><Line :data="traficoData" :options="opciones('')" /></div>
+        <div class="h-56"><Line :data="latenciaApiData" :options="opciones('ms')" /></div>
+      </div>
+      <p class="mt-2 text-xs text-muted">Se mide en el servidor sobre una muestra de las peticiones y se reescala, por lo que las cifras son aproximadas. No cuenta el propio monitor.</p>
+    </div>
 
     <div v-if="!hayDatos" class="rounded-xl border border-dashed border-line py-12 text-center text-sm text-muted">
       Aún no hay suficientes lecturas. El monitor toma una cada 30 segundos; en un minuto verás la tendencia.
