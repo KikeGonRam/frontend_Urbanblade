@@ -102,7 +102,7 @@ const saving = ref(false);
 function openCreate() {
   editing.value = null;
   form.nombre = "";
-  form.categoria = categories.value[0] ?? "Cortes";
+  form.categoria = categories.value[0] ?? "corte";
   form.precio = 150;
   form.duracion_min = 30;
   form.descripcion = "";

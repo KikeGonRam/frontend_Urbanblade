@@ -856,7 +856,7 @@ function prettyDate(iso: string) {
               <dd class="text-right font-bold text-ink">{{ prettyDate(date) }} · {{ time }}</dd>
             </div>
             <div v-if="membershipDiscountPct > 0" class="flex items-start justify-between gap-4 text-xs">
-              <dt class="text-success">Descuento de membresía ({{ membershipDiscountPct }}%)</dt>
+              <dt class="text-success">Descuento por nivel ({{ membershipDiscountPct }}%)</dt>
               <dd class="text-right text-success">-{{ currency((selectedService?.precio ?? 0) - discountedServicePrice) }}</dd>
             </div>
             <div v-for="p in selectedProducts" :key="p.id" class="flex items-start justify-between gap-4 text-xs">
@@ -944,8 +944,8 @@ v-model="customTip"
                 Sube tu comprobante de transferencia
               </label>
               <input
-                id="transfer-receipt" type="file" accept=".jpg,.jpeg,.png,.pdf"
-                class="ui-input w-full text-xs" @change="onTransferFileChange"
+                id="transfer-receipt" type="file" accept=".jpg,.jpeg,.png,.pdf" lang="es"
+                class="ui-input w-full text-xs file:mr-3 file:rounded-md file:border-0 file:bg-gold file:px-3 file:py-1 file:text-xs file:font-semibold file:text-black" @change="onTransferFileChange"
               >
               <p class="mt-2 text-xs text-muted">Tu cita queda reservada mientras revisamos el comprobante.</p>
             </div>

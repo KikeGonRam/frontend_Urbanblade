@@ -322,7 +322,7 @@ const servicesOptions = {
           <h3 id="barber-today" class="text-base font-semibold text-ink">Tu agenda de hoy</h3>
           <p class="mt-0.5 text-sm text-muted">Toca el botón de cada cita para avanzarla</p>
         </div>
-        <NuxtLink to="/barber/agenda" class="text-sm font-semibold text-gold hover:underline">Ver mi agenda</NuxtLink>
+        <NuxtLink to="/barber/agenda" class="text-sm font-semibold text-gold hover:underline">Abrir agenda completa</NuxtLink>
       </header>
       <p
         v-if="!data.barberToday.length"
@@ -371,7 +371,7 @@ const servicesOptions = {
               class="min-h-11 rounded-xl bg-success px-4 text-sm font-semibold text-black transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold disabled:opacity-50"
               @click="advance(appt, 'completada')"
             >
-              Terminar servicio
+              Terminar ahora
             </button>
             <button
               v-if="appt.estado === 'confirmada'"

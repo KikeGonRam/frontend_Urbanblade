@@ -109,7 +109,7 @@ const statItems = computed(() => {
   const st = publicStats.value
   const items: { value: string | number, suffix: string, label: string }[] = []
   if (st.barbers > 0) items.push({ value: st.barbers, suffix: '', label: st.barbers === 1 ? 'Maestro activo' : 'Maestros activos' })
-  if (st.services > 0) items.push({ value: st.services, suffix: '', label: 'Servicios disponibles' })
+  if (st.services > 0) items.push({ value: st.services, suffix: '', label: st.services === 1 ? 'Servicio disponible' : 'Servicios disponibles' })
   if (st.reviews > 0) items.push({ value: st.reviews, suffix: '', label: st.reviews === 1 ? 'Reseña publicada' : 'Reseñas publicadas' })
   if (st.rating !== '—') items.push({ value: st.rating, suffix: '★', label: 'Calificación del equipo' })
   return items

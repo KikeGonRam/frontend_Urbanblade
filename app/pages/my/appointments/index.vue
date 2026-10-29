@@ -332,6 +332,7 @@ async function cancelAppointment(appt: AppointmentRow) {
     title: "Cancelar cita",
     message: "¿Cancelar esta cita?",
     confirmText: "Sí, cancelar",
+    cancelText: "Volver",
     isDanger: true,
   });
   if (!accepted) return;

@@ -205,6 +205,7 @@ async function cancelMembership() {
     title: "Cancelar membresía",
     message: "Seguirás con el beneficio hasta el final del periodo ya pagado. ¿Cancelar de todos modos?",
     confirmText: "Sí, cancelar",
+    cancelText: "Volver",
     isDanger: true,
   });
   if (!accepted) return;

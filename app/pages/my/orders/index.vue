@@ -54,6 +54,7 @@ async function cancelOrder(order: OrderRow) {
     title: 'Cancelar pedido',
     message: `¿Cancelar el pedido ${order.folio}?`,
     confirmText: 'Sí, cancelar',
+    cancelText: 'Volver',
     isDanger: true,
   })
   if (!accepted) return
