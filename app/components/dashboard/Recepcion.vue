@@ -20,6 +20,8 @@ interface ReceptionistData {
     id: string;
     code: string;
     hora_inicio: string;
+    /** Hora de llegada registrada por el check-in (ISO) o null. */
+    llegada_en?: string | null;
     cliente: string;
     servicio: string;
     barbero: string;
@@ -45,6 +47,25 @@ onMounted(() => {
   reloj = setInterval(() => { ahora.value = new Date(); }, 60_000);
 });
 onBeforeUnmount(() => { if (reloj) clearInterval(reloj); });
+// Check-in «Llegó»: POST /appointments/{code}/check-in registra la llegada sin cambiar el estado de la cita.
+const { apiFetch } = useApi();
+const llegadas = ref<Record<string, string>>({});
+const llegandoCodigo = ref<string | null>(null);
+const errorLlegada = ref("");
+const enSala = (appt: { code: string; llegada_en?: string | null }) => !!(llegadas.value[appt.code] ?? appt.llegada_en);
+
+async function marcarLlegada(appt: { code: string }) {
+  llegandoCodigo.value = appt.code;
+  errorLlegada.value = "";
+  try {
+    const res = await apiFetch<{ llegada_en: string }>(`/appointments/${appt.code}/check-in`, { method: "POST" });
+    llegadas.value = { ...llegadas.value, [appt.code]: res.llegada_en };
+  } catch (err: unknown) {
+    errorLlegada.value = (err as { data?: { message?: string } })?.data?.message ?? "No se pudo registrar la llegada.";
+  } finally {
+    llegandoCodigo.value = null;
+  }
+}
 const yaPaso = (hora: string) => (minutosDelDia(hora) ?? 0) < minutosAhora(ahora.value);
 
 // Cita abierta en la ventana de detalle (se toca desde «Próximas llegadas»).
@@ -144,6 +165,7 @@ const flowChartOptions = {
           </div>
           <NuxtLink to="/appointments" class="text-sm font-semibold text-gold hover:underline">Ver agenda</NuxtLink>
         </header>
+        <p v-if="errorLlegada" role="alert" class="mb-2 text-xs text-danger">{{ errorLlegada }}</p>
         <ul v-if="data.nextAppointments.length" class="divide-y divide-line">
           <li v-for="appt in data.nextAppointments" :key="appt.id" class="flex items-center gap-2">
             <button
@@ -162,6 +184,17 @@ const flowChartOptions = {
               <span class="shrink-0 text-xs font-semibold" :class="yaPaso(appt.hora_inicio) ? 'text-warning' : 'text-muted'">
                 {{ etiquetaRelativa(appt.hora_inicio, ahora) }}
               </span>
+            </button>
+            <span v-if="enSala(appt)" class="shrink-0 rounded-full border border-success/30 bg-success/10 px-2.5 py-1 text-xs font-bold text-success">En sala</span>
+            <button
+              v-else
+              type="button"
+              :disabled="llegandoCodigo === appt.code"
+              class="flex min-h-10 shrink-0 items-center rounded-lg bg-gold px-3 text-xs font-bold text-black transition-colors hover:bg-gold-dim disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold"
+              :aria-label="`Marcar que ${appt.cliente} llegó`"
+              @click="marcarLlegada(appt)"
+            >
+              {{ llegandoCodigo === appt.code ? "…" : "Llegó" }}
             </button>
             <!-- Cobro directo desde la llegada: abre Pagos con la cita preseleccionada. -->
             <NuxtLink
