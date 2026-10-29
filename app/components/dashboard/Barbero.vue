@@ -21,6 +21,8 @@ interface BarberAppointment {
   estado: string;
   hora_inicio: string;
   hora_fin: string;
+  /** Hora de llegada registrada por la recepción (check-in) o null. */
+  llegada_en?: string | null;
   cliente: string;
   servicio: string;
   isNext: boolean;
@@ -361,6 +363,7 @@ const servicesOptions = {
           <span class="font-semibold text-gold">Próxima</span>
           <span class="text-ink">{{ proxima.hora_inicio?.slice(0, 5) }} · {{ proxima.cliente }}</span>
           <span class="text-muted">{{ etiquetaRelativa(proxima.hora_inicio, ahora) }}</span>
+          <span v-if="proxima.llegada_en" class="font-semibold text-success">Ya llegó</span>
         </template>
       </div>
       <p
@@ -393,6 +396,7 @@ const servicesOptions = {
               </span>
               <span class="block truncate text-sm text-muted">{{ appt.servicio }} · hasta {{ appt.hora_fin?.slice(0, 5) }}</span>
             </button>
+            <span v-if="appt.llegada_en && !['en_proceso', 'completada'].includes(appt.estado)" class="shrink-0 rounded-full border border-success/30 bg-success/10 px-2.5 py-1 text-xs font-bold text-success">En sala</span>
             <UiBadge :tone="appointmentStatus(appt.estado).tone" class="shrink-0">
               {{ appt.isNext && appt.estado === "confirmada" ? "Siguiente" : appointmentStatus(appt.estado).label }}
             </UiBadge>
