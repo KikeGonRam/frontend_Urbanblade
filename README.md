@@ -96,5 +96,9 @@ arquitectura. La arquitectura, pruebas y decisiones tienen guías canónicas; lo
 Consulta [CONTRIBUTING.md](CONTRIBUTING.md) para preparar un cambio y
 [SECURITY.md](SECURITY.md) para comunicar vulnerabilidades sin exponer datos.
 
-No se declara una licencia nueva en esta actualización. Revisa los términos del
-repositorio y sus dependencias antes de redistribuirlo.
+## Políticas y licencia
+
+- [Política de seguridad y reporte privado](SECURITY.md).
+- [Código de conducta](CODE_OF_CONDUCT.md) y [contribución](CONTRIBUTING.md).
+- [GNU GPLv3, versión 3 únicamente](LICENSE) — identificador GPL-3.0-only.
+- [Alcance, autoría y componentes de terceros](LICENSING.md).
