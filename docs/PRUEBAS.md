@@ -82,6 +82,22 @@ La integración real necesita un entorno aislado y autorización de las escritur
 que produzca. Los mocks no prueban webhooks, OAuth remoto, correo ni pagos reales.
 Los tests de backend se ejecutan desde barber exclusivamente con .\test.ps1.
 
+## Análisis estático
+
+El workflow [semgrep.yml](../.github/workflows/semgrep.yml) ejecuta Semgrep con las reglas
+`p/owasp-top-ten` en cada PR y en `main`, y bloquea con cualquier hallazgo de severidad `ERROR`.
+El 29 de octubre de 2026 el escaneo local dio 0 hallazgos en 261 archivos, sin excepciones.
+
+Para correrlo en local (PowerShell, desde la raíz del repositorio):
+
+```powershell
+docker run --rm -v "${PWD}:/src" -w /src semgrep/semgrep:1.182.1 semgrep scan --config p/owasp-top-ten --severity ERROR --error --metrics=off --exclude node_modules --exclude .nuxt --exclude .output --exclude dist --exclude coverage --exclude .claude --exclude .agents --exclude docs
+```
+
+Un falso positivo o un riesgo aceptado se suprime en la propia línea con `// nosemgrep: <regla>` y una
+justificación en el comentario anterior; se registra aquí con su regla, archivo y motivo. No se suprime
+una regla completa ni se excluyen carpetas de código para que pase el CI. Hoy no hay supresiones.
+
 ## Evidencia y mantenimiento
 
 Registrar SHA, entorno, comando, resultado y omisiones. Los resultados del PR #67
