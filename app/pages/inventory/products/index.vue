@@ -127,7 +127,7 @@ function clearFilters() {
 }
 
 function fmtMoney(n: number) {
-  return `$${Number(n ?? 0).toFixed(0)}`;
+  return formatMoney(n, 0)
 }
 
 const marking = ref<string | null>(null);

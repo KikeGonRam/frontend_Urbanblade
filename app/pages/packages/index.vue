@@ -61,7 +61,7 @@ const isClient = computed(() => hasRole("cliente"));
 await callOnce("packages-fetch-me", () => (user.value ? null : fetchMe()));
 
 function fmtMoney(n: number) {
-  return `$${Number(n ?? 0).toFixed(2)}`;
+  return formatMoney(n)
 }
 
 function fmtDate(iso: string | null) {

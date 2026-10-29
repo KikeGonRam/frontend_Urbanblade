@@ -37,7 +37,7 @@ const { data: response, pending, error, refresh } = await useAsyncData(
 const orders = computed(() => response.value?.data ?? [])
 
 function fmtMoney(n: number) {
-  return `$${Number(n ?? 0).toFixed(2)}`
+  return formatMoney(n)
 }
 
 function fmtDate(iso: string | null) {

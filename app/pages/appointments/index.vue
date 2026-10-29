@@ -472,7 +472,7 @@ v-model="barberFilter"
             :key="appt.id"
             class="block border-b border-line/60 py-2 last:border-0 md:table-row md:py-0"
           >
-            <td data-label="Fecha" class="flex items-center justify-between gap-3 px-4 py-1.5 before:text-xs before:uppercase before:tracking-wider before:text-muted before:content-[attr(data-label)] md:table-cell md:py-3 md:before:content-none text-ink">{{ appt.fecha }}</td>
+            <td data-label="Fecha" class="flex items-center justify-between gap-3 px-4 py-1.5 before:text-xs before:uppercase before:tracking-wider before:text-muted before:content-[attr(data-label)] md:table-cell md:py-3 md:before:content-none text-ink">{{ formatShortDate(appt.fecha) }}</td>
             <td data-label="Hora" class="flex items-center justify-between gap-3 px-4 py-1.5 before:text-xs before:uppercase before:tracking-wider before:text-muted before:content-[attr(data-label)] md:table-cell md:py-3 md:before:content-none text-muted">
               {{ appt.hora_inicio?.slice(0, 5) }}
             </td>

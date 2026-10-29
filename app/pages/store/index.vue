@@ -154,14 +154,14 @@ v-model="categoria"
         :key="product.id"
         class="ui-card flex flex-col overflow-hidden"
       >
-        <div class="flex aspect-square items-center justify-center bg-ink/5">
+        <div class="aspect-square overflow-hidden bg-ink/5">
           <img
             v-if="product.imagen"
             :src="product.imagen"
             :alt="product.nombre"
             class="h-full w-full object-cover"
           >
-          <span v-else class="text-3xl text-ink/15">✂</span>
+          <BrandImagePlaceholder v-else :category="product.categoria" :label="`Sin foto de ${product.nombre}`" />
         </div>
         <div class="flex flex-1 flex-col gap-2 p-4">
           <p class="text-xs font-black uppercase tracking-widest text-gold">

@@ -309,7 +309,8 @@ const clientTrendsData = computed(() => ({
       backgroundColor: chartColor(1, 0.1),
       borderWidth: 2.5,
       fill: true,
-      cubicInterpolationMode: "monotone" as const,
+      // Conteo de citas (valores enteros): línea recta entre puntos; la curva sugería valores intermedios que no existen.
+      tension: 0,
       pointRadius: 3,
       pointHoverRadius: 6,
       pointBackgroundColor: chartColor(1, 1),

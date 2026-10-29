@@ -56,7 +56,7 @@ const config = useRuntimeConfig();
 const stripeConfigured = Boolean(config.public.stripeKey);
 
 function fmtMoney(n: number) {
-  return `$${Number(n ?? 0).toFixed(2)}`;
+  return formatMoney(n)
 }
 
 function fmtDate(iso: string | null) {
