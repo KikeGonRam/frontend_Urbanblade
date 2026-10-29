@@ -14,12 +14,12 @@ describe('menú de fila', () => {
   it('empieza cerrado y se abre con el botón', async () => {
     const wrapper = await montar()
 
-    expect(wrapper.find('[role="menu"]').exists()).toBe(false)
+    expect(!!document.querySelector('[role="menu"]')).toBe(false)
     expect(wrapper.get('button[aria-haspopup="menu"]').attributes('aria-label')).toBe('Más acciones de Ana')
 
     await wrapper.get('button[aria-haspopup="menu"]').trigger('click')
 
-    expect(wrapper.find('[role="menu"]').exists()).toBe(true)
+    expect(!!document.querySelector('[role="menu"]')).toBe(true)
     expect(wrapper.get('button[aria-haspopup="menu"]').attributes('aria-expanded')).toBe('true')
     wrapper.unmount()
   })
@@ -29,10 +29,11 @@ describe('menú de fila', () => {
     const wrapper = await montar(onSelect)
     await wrapper.get('button[aria-haspopup="menu"]').trigger('click')
 
-    await wrapper.get('[role="menuitem"]').trigger('click')
+    document.querySelector<HTMLButtonElement>('[role="menuitem"]')!.click()
+    await nextTick()
 
     expect(onSelect).toHaveBeenCalledOnce()
-    expect(wrapper.find('[role="menu"]').exists()).toBe(false)
+    expect(!!document.querySelector('[role="menu"]')).toBe(false)
     wrapper.unmount()
   })
 
@@ -43,7 +44,7 @@ describe('menú de fila', () => {
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
     await nextTick()
 
-    expect(wrapper.find('[role="menu"]').exists()).toBe(false)
+    expect(!!document.querySelector('[role="menu"]')).toBe(false)
     wrapper.unmount()
   })
 })

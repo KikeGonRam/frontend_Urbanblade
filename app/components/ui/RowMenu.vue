@@ -100,25 +100,28 @@ onBeforeUnmount(() => {
     >
       <span aria-hidden="true" class="text-base leading-none">⋯</span>
     </button>
-    <div
-      v-if="open"
-      ref="menu"
-      role="menu"
-      class="fixed z-50 w-44 rounded-xl border border-line bg-card p-1 shadow-2xl"
-      :style="{ top: `${position.top}px`, left: `${position.left}px` }"
-    >
-      <button
-        v-for="item in items"
-        :key="item.label"
-        type="button"
-        role="menuitem"
-        :disabled="item.disabled"
-        class="flex min-h-10 w-full items-center rounded-lg px-3 text-left text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold disabled:opacity-40"
-        :class="item.danger ? 'text-danger hover:bg-danger/10' : 'text-ink hover:bg-accent'"
-        @click="select(item)"
+    <!-- En el body: las tarjetas con animación de entrada tienen `transform` y harían que `fixed` fuera relativo a ellas. -->
+    <Teleport to="body">
+      <div
+        v-if="open"
+        ref="menu"
+        role="menu"
+        class="fixed z-50 w-44 rounded-xl border border-line bg-card p-1 shadow-2xl"
+        :style="{ top: `${position.top}px`, left: `${position.left}px` }"
       >
-        {{ item.label }}
-      </button>
-    </div>
+        <button
+          v-for="item in items"
+          :key="item.label"
+          type="button"
+          role="menuitem"
+          :disabled="item.disabled"
+          class="flex min-h-10 w-full items-center rounded-lg px-3 text-left text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold disabled:opacity-40"
+          :class="item.danger ? 'text-danger hover:bg-danger/10' : 'text-ink hover:bg-accent'"
+          @click="select(item)"
+        >
+          {{ item.label }}
+        </button>
+      </div>
+    </Teleport>
   </span>
 </template>
