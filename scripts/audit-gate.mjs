@@ -15,17 +15,9 @@
  */
 import { spawnSync } from 'node:child_process'
 
-const ALLOWLIST = [
-  {
-    id: 'GHSA-86w9-cpqp-85rv',
-    paquete: 'node-forge <=1.4.0',
-    motivo:
-      'Sin versión corregida. Entra solo por listhen (servidor de desarrollo de @nuxt/cli y '
-      + 'nitropack), que lo usa para certificados autofirmados, no para verificar firmas RSA; '
-      + 'no está en .output/.',
-    revisar: '2026-11-13',
-  },
-]
+// Vacía: node-forge 1.4.2 corrige los avisos que antes estaban exceptuados (GHSA-86w9-cpqp-85rv y los cinco que
+// aparecieron después). Una excepción nueva debe llevar `id`, `paquete`, `motivo` y `revisar` (fecha de caducidad).
+const ALLOWLIST = []
 
 const BLOQUEANTES = new Set(['high', 'critical'])
 const hoy = new Date().toISOString().slice(0, 10)
