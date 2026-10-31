@@ -15,8 +15,10 @@ description: Flujo de Git y publicación de UrbanBlade, subordinado a la instruc
    checks correspondientes al SHA actual. Conserva ramas y respeta protecciones.
 7. Separa commit local, push, CI, fusión y despliegue en el reporte.
    No ejecutes un despliegue si el usuario limita el trabajo a documentación.
-8. Antes de un push autorizado, revisa automatismos externos: un archivo .md puede
-   disparar builds de Vercel. No deduzcas ausencia de deploy solo por la extensión.
+8. Antes de fusionar, ten presente que un cambio que toque la imagen pide un despliegue a
+   staging (workflow «Desplegar a staging», con la aprobación del propietario); uno solo de
+   .md, .github/ o pruebas no lo pide. No apruebes ni lances ese despliegue si el usuario
+   limita el trabajo a documentación.
 
 Commits y PR en español, con título `tipo(alcance): descripción` y evidencia real.
 Conserva la autoría humana configurada; sin Co-Authored-By ni Generated with.

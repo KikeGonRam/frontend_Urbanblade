@@ -8,9 +8,9 @@ vez en la guía del backend:
 [DESPLIEGUE_AWS_STAGING.md](https://github.com/KikeGonRam/barber/blob/main/docs/referencia/DESPLIEGUE_AWS_STAGING.md).
 Esta página solo cubre lo propio del frontend.
 
-No contiene credenciales. Un cambio documental también puede disparar integraciones
-externas (por ejemplo una conexión automática con Vercel): no asumir que Markdown
-queda excluido.
+No contiene credenciales. El despliegue a staging corre por el workflow «Desplegar a staging» (ver
+[CI_CD.md](CI_CD.md#publicación)): arranca tras el CI de `main`, espera la aprobación del
+propietario y no se pide para cambios solo de documentación. Vercel se desconectó el 31-oct-2026.
 
 ## Qué corre hoy
 

@@ -39,16 +39,23 @@ Las guías .claude/.agents se revisan por separado y sus copias deben ser cohere
 
 ## Publicación
 
-Los workflows revisados construyen y prueban, pero no contienen docker push,
-actualizaciones de ECS ni un job de despliegue. Eso no controla integraciones
-configuradas fuera del repositorio.
+CI y Cypress construyen y prueban, pero no publican. La publicación a staging la hace el
+workflow [Desplegar a staging](../.github/workflows/desplegar-staging.yml): arranca solo cuando el
+CI de `main` termina en verde tras un push (o a mano desde Actions), solo desde `main`, y **siempre
+espera la aprobación del propietario** en el entorno `staging` de GitHub. Un job previo compara el
+commit con el anterior: si solo cambian Markdown, `.github/`, `tests/`, `cypress/` o archivos de
+agentes, no hay despliegue ni aprobación. AWS se asume por OIDC con un rol de privilegio mínimo, deja
+la etiqueta `rollback-<fecha>-pre-<sha>`, sube la imagen con `sha-<corto>` y `latest`, verifica el
+digest de las tareas y `/` y `/api/health`, y revierte sola si falla. El procedimiento completo está
+en [CI_CD.md del backend](https://github.com/KikeGonRam/barber/blob/main/docs/referencia/CI_CD.md).
 
-Vercel puede crear builds también por cambios Markdown. En el merge anterior
-del PR #67 se pausaron temporalmente los builds con autorización del propietario,
-se verificó la cancelación por Ignored Build Step y se restauró Automatic.
-Es un antecedente, no una autorización para repetir la operación.
-Antes de publicar otra rama, verificar las conexiones vigentes y respetar el
-alcance de no desplegar cuando lo indique el usuario.
+Vercel dejó de estar conectado al repositorio el 31-oct-2026. Antes creaba un despliegue «Preview»
+por cada push de PR y uno «Production» por cada fusión, aunque el sitio real no se sirve desde ahí
+(corre en AWS con el dominio propio); por eso se retiraron los entornos `Preview` y `Production` de
+GitHub. El proyecto de Vercel conserva una copia congelada en `frontend-urbanblade.vercel.app` que ya
+no se actualiza. Los antecedentes de cuando Vercel construía cambios de Markdown (PR #67) siguen más
+abajo como historia, no como procedimiento vigente. Respetar el alcance de no desplegar cuando lo
+indique el usuario.
 
 No incluir secretos en variables públicas NUXT_PUBLIC_*, logs, ejemplos, reportes
 de Cypress o trazas. Consultar [seguridad documental](SEGURIDAD_DOCUMENTACION.md).

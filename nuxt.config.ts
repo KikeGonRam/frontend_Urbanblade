@@ -1,10 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 import tailwindcss from '@tailwindcss/vite'
 
-if (process.env.VERCEL === '1' && !process.env.NUXT_PUBLIC_API_BASE) {
-  throw new Error('NUXT_PUBLIC_API_BASE es obligatorio en Vercel y debe apuntar al backend Laravel publicado.')
-}
-
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
