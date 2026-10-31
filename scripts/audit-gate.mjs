@@ -14,10 +14,12 @@
  * Uso: node scripts/audit-gate.mjs   (o `npm run audit:gate`)
  */
 import { spawnSync } from 'node:child_process'
+import { readFileSync } from 'node:fs'
 
-// Vacía: node-forge 1.4.2 corrige los avisos que antes estaban exceptuados (GHSA-86w9-cpqp-85rv y los cinco que
-// aparecieron después). Una excepción nueva debe llevar `id`, `paquete`, `motivo` y `revisar` (fecha de caducidad).
-const ALLOWLIST = []
+// Las excepciones viven en audit-allowlist.json, separadas de la lógica. Hoy está vacía: node-forge 1.4.2 corrige
+// los avisos que antes estaban exceptuados (GHSA-86w9-cpqp-85rv y los cinco que aparecieron después).
+// Cada excepción nueva lleva `id` (GHSA), `paquete`, `motivo` y `revisar` (fecha AAAA-MM-DD de caducidad).
+const ALLOWLIST = JSON.parse(readFileSync(new URL('./audit-allowlist.json', import.meta.url), 'utf8'))
 
 const BLOQUEANTES = new Set(['high', 'critical'])
 const hoy = new Date().toISOString().slice(0, 10)
