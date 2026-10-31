@@ -14,18 +14,12 @@
  * Uso: node scripts/audit-gate.mjs   (o `npm run audit:gate`)
  */
 import { spawnSync } from 'node:child_process'
+import { readFileSync } from 'node:fs'
 
-const ALLOWLIST = [
-  {
-    id: 'GHSA-86w9-cpqp-85rv',
-    paquete: 'node-forge <=1.4.0',
-    motivo:
-      'Sin versión corregida. Entra solo por listhen (servidor de desarrollo de @nuxt/cli y '
-      + 'nitropack), que lo usa para certificados autofirmados, no para verificar firmas RSA; '
-      + 'no está en .output/.',
-    revisar: '2026-11-13',
-  },
-]
+// Las excepciones viven en audit-allowlist.json, separadas de la lógica. Hoy está vacía: node-forge 1.4.2 corrige
+// los avisos que antes estaban exceptuados (GHSA-86w9-cpqp-85rv y los cinco que aparecieron después).
+// Cada excepción nueva lleva `id` (GHSA), `paquete`, `motivo` y `revisar` (fecha AAAA-MM-DD de caducidad).
+const ALLOWLIST = JSON.parse(readFileSync(new URL('./audit-allowlist.json', import.meta.url), 'utf8'))
 
 const BLOQUEANTES = new Set(['high', 'critical'])
 const hoy = new Date().toISOString().slice(0, 10)
