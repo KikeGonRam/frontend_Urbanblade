@@ -49,6 +49,8 @@ la etiqueta `rollback-<fecha>-pre-<sha>`, sube la imagen con `sha-<corto>` y `la
 digest de las tareas y `/` y `/api/health`, hace pruebas de humo de solo lectura (`/`, `/servicios` y `/equipo` con el primer servicio real de la API, y un 404 real en una ruta inexistente) y revierte sola si falla. El procedimiento completo está
 en [CI_CD.md del backend](https://github.com/KikeGonRam/barber/blob/main/docs/referencia/CI_CD.md).
 
+La lógica de despliegue es una plantilla compartida con el backend: el repositorio [KikeGonRam/urbanblade-ci](https://github.com/KikeGonRam/urbanblade-ci) (`desplegar-ecs.yml`). `desplegar-staging.yml` solo declara los disparadores, los permisos y los parámetros del frontend, y la fija por SHA de commit: un cambio en la plantilla no llega aquí sin un PR. Las pruebas de humo propias están en `.github/scripts/humo.sh`.
+
 Vercel dejó de estar conectado al repositorio el 31-oct-2026. Antes creaba un despliegue «Preview»
 por cada push de PR y uno «Production» por cada fusión, aunque el sitio real no se sirve desde ahí
 (corre en AWS con el dominio propio); por eso se retiraron los entornos `Preview` y `Production` de
