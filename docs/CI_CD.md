@@ -46,7 +46,7 @@ espera la aprobación del propietario** en el entorno `staging` de GitHub. Un jo
 commit con el anterior: si solo cambian Markdown, `.github/`, `tests/`, `cypress/` o archivos de
 agentes, no hay despliegue ni aprobación. AWS se asume por OIDC con un rol de privilegio mínimo, deja
 la etiqueta `rollback-<fecha>-pre-<sha>`, sube la imagen con `sha-<corto>` y `latest`, verifica el
-digest de las tareas y `/` y `/api/health`, y revierte sola si falla. El procedimiento completo está
+digest de las tareas y `/` y `/api/health`, hace pruebas de humo de solo lectura (`/`, `/servicios` y `/equipo` con el primer servicio real de la API, y un 404 real en una ruta inexistente) y revierte sola si falla. El procedimiento completo está
 en [CI_CD.md del backend](https://github.com/KikeGonRam/barber/blob/main/docs/referencia/CI_CD.md).
 
 Vercel dejó de estar conectado al repositorio el 31-oct-2026. Antes creaba un despliegue «Preview»
