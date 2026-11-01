@@ -27,6 +27,13 @@ ENV PORT=3000
 
 COPY --from=build --chown=node:node /app/.output ./.output
 
+# El servidor solo ejecuta `node .output/server/index.mjs`: no usa npm, npx ni corepack. Esas herramientas vienen con la imagen
+# base y traen sus propias dependencias (brace-expansion, pacote, sigstore, ip-address, picomatch), que los escaneos reportan
+# como vulnerabilidades altas aunque la app nunca las ejecute. Quitarlas elimina esa superficie de ataque (y ~18 MB).
+# La etapa de construccion si las necesita y no se toca.
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack \
+    /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack
+
 # El servidor no necesita privilegios (puerto 3000, no escribe fuera de memoria): corre
 # como el usuario `node` que ya trae la imagen, no como root, para que un fallo en la app
 # no entregue el contenedor completo.
