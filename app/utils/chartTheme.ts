@@ -36,6 +36,16 @@ export function inkRgba(alpha: number): string {
   return `rgba(${cssVar('--ink-rgb', '242 242 242').replace(/\s+/g, ',')}, ${alpha})`
 }
 
+/** Dorado para TEXTO (en el tema claro es más oscuro que --gold): títulos del globo de información. */
+export function goldTextHex(): string {
+  return cssVar('--gold-text', '#d4af37')
+}
+
+/** Sombra del globo de información: negra en los temas oscuros y tinta cálida suave en «libreta». */
+export function sombraDelGlobo(tema: string | null | undefined): string {
+  return tema === 'libreta' ? 'rgba(70, 45, 20, 0.18)' : 'rgba(0, 0, 0, 0.35)'
+}
+
 export function goldHex(): string {
   return cssVar('--gold', '#d4af37')
 }
@@ -83,9 +93,12 @@ export function chartTooltip() {
     backgroundColor: cssVar('--bg-card', '#161616'),
     borderColor: cssVar('--line', '#2c2c2c'),
     borderWidth: 1,
-    titleColor: inkRgba(0.9),
-    bodyColor: inkRgba(0.75),
-    padding: 10,
+    titleColor: goldTextHex(),
+    bodyColor: inkRgba(0.92),
+    // 12 px el título y 13 px el cuerpo, con más aire: legibles sin acercarse (auditoría UX, prioridad 3).
+    titleFont: { weight: 800 as const, size: 12 },
+    bodyFont: { weight: 600 as const, size: 13 },
+    padding: { top: 10, bottom: 10, left: 12, right: 12 },
     cornerRadius: 10,
     displayColors: false,
   }

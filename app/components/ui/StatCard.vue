@@ -80,17 +80,18 @@ const showDelta = computed(() => props.delta !== null && props.delta !== 0 && Nu
   <component
     :is="to ? NuxtLink : 'div'"
     :to="to ?? undefined"
-    class="ub-rise group flex flex-col rounded-2xl border border-line bg-card p-5 transition-colors duration-200"
-    :class="to ? 'hover:border-gold/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold' : ''"
+    class="ub-rise group flex flex-col rounded-2xl border border-line bg-card p-5 transition duration-200 lg:p-6"
+    :class="to ? 'hover:-translate-y-px hover:border-gold/45 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold motion-reduce:hover:translate-y-0' : ''"
   >
     <div class="flex items-start justify-between gap-3">
-      <p class="text-sm font-medium text-muted">{{ label }}</p>
+      <p class="text-[13px] font-semibold text-muted">{{ label }}</p>
       <span v-if="$slots.icon" class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gold/10 text-gold" aria-hidden="true">
         <slot name="icon" />
       </span>
     </div>
 
-    <p class="mt-2 text-3xl font-bold tracking-tight text-ink tabular-nums">{{ display }}</p>
+    <!-- El dato manda: 32 px y peso 800; etiqueta, variación y periodo quedan por debajo (auditoría UX, prioridad 3). -->
+    <p class="mt-2 text-[2rem] font-extrabold leading-tight tracking-[-0.02em] text-ink tabular-nums">{{ display }}</p>
 
     <svg v-if="sparkPath" viewBox="0 0 100 28" preserveAspectRatio="none" class="mt-3 h-7 w-full" aria-hidden="true">
       <path :d="sparkPath" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="text-gold" vector-effect="non-scaling-stroke" />
@@ -109,7 +110,7 @@ const showDelta = computed(() => props.delta !== null && props.delta !== 0 && Nu
         <span class="sr-only">{{ up ? "Sube" : "Baja" }}</span>
         {{ deltaText }}%
       </span>
-      <span v-if="showDelta" class="text-muted">{{ deltaLabel }}</span>
+      <span v-if="showDelta" class="whitespace-nowrap text-muted">{{ deltaLabel }}</span>
       <span v-if="hint" class="text-muted" :class="showDelta ? 'w-full' : ''">{{ hint }}</span>
     </div>
   </component>

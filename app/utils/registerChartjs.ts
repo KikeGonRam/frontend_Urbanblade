@@ -1,8 +1,14 @@
 import { Chart as ChartJS, registerables } from "chart.js";
 import { watch } from "vue";
-import { AXIS_TEXT_ALPHA, chartThemeTick, chartTooltip, goldHex, inkRgba } from "~/utils/chartTheme";
+import { AXIS_TEXT_ALPHA, chartThemeTick, chartTooltip, goldHex, goldTextHex, inkRgba, sombraDelGlobo } from "~/utils/chartTheme";
 import { THEME_PREVIEWS } from "~/composables/useTheme";
 import { buildChartDetail } from "~/utils/chartDetail";
+
+/** Solo los colores del globo, para repintarlo al cambiar de tema sin tocar sus textos ni sus callbacks. */
+function chartTooltipColors() {
+  const { backgroundColor, borderColor, titleColor, bodyColor } = chartTooltip();
+  return { backgroundColor, borderColor, titleColor, bodyColor };
+}
 
 let registered = false;
 
@@ -84,6 +90,24 @@ export function reteñir(color: unknown, tinta: [number, number, number, number]
 
 type EscalaConColores = { ticks?: { color?: unknown }; grid?: { color?: unknown } };
 
+/*
+ * Sombra suave bajo el globo de información para separarlo de la gráfica en los cuatro temas. Chart.js no tiene una
+ * opción de sombra: se activa en el lienzo justo antes de dibujar el globo y se restaura después.
+ */
+const sombraGlobo = {
+  id: "ubTooltipShadow",
+  beforeTooltipDraw(chart: ChartJS) {
+    const ctx = chart.ctx;
+    ctx.save();
+    ctx.shadowColor = sombraDelGlobo(import.meta.client ? document.documentElement.dataset.theme : null);
+    ctx.shadowBlur = 18;
+    ctx.shadowOffsetY = 6;
+  },
+  afterTooltipDraw(chart: ChartJS) {
+    chart.ctx.restore();
+  },
+};
+
 const sincronizarTema = {
   id: "ubThemeSync",
   beforeUpdate(chart: ChartJS) {
@@ -96,6 +120,9 @@ const sincronizarTema = {
     }
     const leyenda = opciones.plugins?.legend?.labels;
     if (leyenda) leyenda.color = reteñir(leyenda.color, tinta);
+    // El globo de información de cada gráfica también trae colores fijados al crearse: se alinean con el tema activo.
+    const globo = (opciones.plugins as { tooltip?: Record<string, unknown> } | undefined)?.tooltip;
+    if (globo) Object.assign(globo, chartTooltipColors());
   },
 };
 
@@ -107,7 +134,7 @@ function aplicarColoresDelTema() {
   ChartJS.defaults.color = inkRgba(AXIS_TEXT_ALPHA);
   Object.assign(ChartJS.defaults.plugins.tooltip, {
     backgroundColor: chartTooltip().backgroundColor,
-    titleColor: goldHex(),
+    titleColor: goldTextHex(),
     bodyColor: inkRgba(0.92),
     borderColor: `${goldHex()}4d`,
   });
@@ -115,7 +142,7 @@ function aplicarColoresDelTema() {
 
 export function ensureChartjsRegistered() {
   if (registered) return;
-  ChartJS.register(...registerables, premiumFills, sincronizarTema);
+  ChartJS.register(...registerables, premiumFills, sincronizarTema, sombraGlobo);
   // Chart.js no sabe interpolar un degradado entre dos estados de color y se rompe a media animación:
   // la transición de color se apaga (el crecimiento y el movimiento de barras y puntos siguen animados).
   Object.assign(ChartJS.defaults.animations, { colors: false });
@@ -148,11 +175,12 @@ export function ensureChartjsRegistered() {
       };
 
   Object.assign(ChartJS.defaults.plugins.tooltip, {
-    titleFont: { weight: "900", size: 11 },
-    bodyFont: { weight: "bold", size: 11 },
+    // 12 px el título y 13 px el cuerpo (antes 11 px ambos): legibles sin acercarse.
+    titleFont: { weight: "800", size: 12 },
+    bodyFont: { weight: "600", size: 13 },
     borderWidth: 1,
-    padding: 10,
-    cornerRadius: 8,
+    padding: { top: 10, bottom: 10, left: 12, right: 12 },
+    cornerRadius: 10,
     boxPadding: 4,
     usePointStyle: true,
   });
