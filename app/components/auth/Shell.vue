@@ -257,7 +257,7 @@ onBeforeUnmount(() => {
   background: linear-gradient(to right, transparent, rgb(var(--gold-rgb) / 0.3), transparent);
 }
 
-.auth-shell__footer { margin-top: 2rem; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: rgb(255 255 255 / 0.4); }
+.auth-shell__footer { margin-top: 2rem; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #787878; }
 
 /* Entrada escalonada: cada elemento define su propio retraso via --d
    (custom property inline) y comparte la misma animación base. */

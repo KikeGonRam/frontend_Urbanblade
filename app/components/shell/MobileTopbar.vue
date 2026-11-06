@@ -8,7 +8,8 @@ const { user } = useAuth()
       <span class="flex items-center gap-2"><BrandMark class="h-8 w-8" />Urban<span class="text-gold">Blade</span></span>
     </NuxtLink>
 
-    <div class="flex items-center gap-3">
+    <div class="flex items-center gap-2">
+      <ShellThemePicker />
       <NuxtLink
         to="/profile"
         class="flex h-11 w-11 items-center justify-center rounded-full bg-gold/20 text-xs font-semibold text-gold transition hover:bg-gold/30"
