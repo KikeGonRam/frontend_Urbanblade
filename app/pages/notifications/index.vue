@@ -36,6 +36,7 @@ const { confirm } = useConfirm()
 const { data: response, pending, error, refresh } = await useAsyncData(
   'notifications-list',
   () => apiFetch<{ data: NotificationItem[], meta: { unread: number } }>('/notifications'),
+  { lazy: true },
 )
 const notifications = computed(() => response.value?.data ?? [])
 const unread = computed(() => response.value?.meta?.unread ?? 0)
@@ -43,6 +44,7 @@ const unread = computed(() => response.value?.meta?.unread ?? 0)
 const { data: prefsResponse, refresh: refreshPrefs } = await useAsyncData(
   'notifications-preferences',
   () => apiFetch<{ data: Preferences }>('/notifications/preferences'),
+  { lazy: true },
 )
 const prefs = computed(() => prefsResponse.value?.data ?? null)
 
