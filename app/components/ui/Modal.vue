@@ -4,6 +4,8 @@ const props = withDefaults(defineProps<{ title: string; busy?: boolean }>(), {
 });
 const emit = defineEmits<{ close: [] }>();
 const dialog = ref<HTMLDialogElement | null>(null);
+// Un id por instancia: con una ventana abierta sobre otra, un id fijo repetido rompía aria-labelledby.
+const titleId = useId();
 let previous: HTMLElement | null = null;
 const focusableSelector =
   'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -48,14 +50,14 @@ function close() {
       class="ui-modal"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="ui-modal-title"
+      :aria-labelledby="titleId"
       @cancel.prevent="close"
       @keydown="trapFocus"
       @click="$event.target === dialog && close()"
     >
       <div class="p-4 sm:p-6">
         <header class="mb-4 flex items-center justify-between gap-4">
-          <h2 id="ui-modal-title" class="text-lg font-bold">{{ title }}</h2>
+          <h2 :id="titleId" class="text-lg font-bold">{{ title }}</h2>
           <button
             type="button"
             class="ui-btn-secondary min-h-11 px-3"

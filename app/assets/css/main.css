@@ -739,6 +739,9 @@ html[data-theme="libreta"] .group:hover .group-hover\:text-gold { color: #8a6408
     @media (prefers-reduced-motion: reduce) {
         dialog[open], dialog::backdrop { animation: none; }
     }
+    /* Tema claro: la sombra y el velo negros se ven pesados sobre marfil. */
+    html[data-theme='libreta'] dialog { box-shadow: 0 24px 64px rgb(70 45 20 / .28); }
+    html[data-theme='libreta'] dialog::backdrop { background: rgb(36 30 24 / .5); }
 }
 
 @layer components {
