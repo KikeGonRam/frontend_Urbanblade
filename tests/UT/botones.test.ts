@@ -51,6 +51,10 @@ describe('formularios', () => {
     expect(css).toContain(':where(input, select, textarea):disabled')
   })
 
+  it('el texto de un <select> no pisa su chevron aunque el campo traiga px-*', () => {
+    expect(css).toMatch(/select:not\(\[multiple\]\):not\(\[size\]\) \{ padding-inline-end: 2\.25rem; \}/)
+  })
+
   it('en pantallas táctiles los botones y campos llegan a 44 px', () => {
     expect(css).toMatch(/@media \(pointer: coarse\)[\s\S]*min-height: 2\.75rem/)
   })
