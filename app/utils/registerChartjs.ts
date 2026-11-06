@@ -1,5 +1,7 @@
 import { Chart as ChartJS, registerables } from "chart.js";
-import { goldHex, inkRgba } from "~/utils/chartTheme";
+import { watch } from "vue";
+import { AXIS_TEXT_ALPHA, chartThemeTick, chartTooltip, goldHex, inkRgba } from "~/utils/chartTheme";
+import { THEME_PREVIEWS } from "~/composables/useTheme";
 import { buildChartDetail } from "~/utils/chartDetail";
 
 let registered = false;
@@ -61,9 +63,59 @@ const premiumFills = {
   },
 };
 
+/*
+ * Las opciones de muchas gráficas son constantes armadas una sola vez, con el color de texto del tema de ese momento.
+ * Al cambiar de tema en caliente quedaban con la tinta vieja (texto claro sobre fondo claro en «libreta»). Antes de
+ * cada actualización, este plugin cambia cualquier color de ejes, cuadrícula o leyenda hecho con la tinta de algún tema
+ * por la tinta del tema activo, conservando su opacidad. Un color propio (rojo, verde, dorado…) no se toca.
+ */
+const TINTAS_DE_TEMA = new Set(
+  [...Object.values(THEME_PREVIEWS).map((p) => p.ink), "#f2f2f2", "#eef0f2", "#eef2ee"].map((hex) =>
+    [1, 3, 5].map((i) => Number.parseInt(hex.slice(i, i + 2), 16)).join(","),
+  ),
+);
+
+export function reteñir(color: unknown, tinta: [number, number, number, number]): unknown {
+  const c = parseRgba(color);
+  if (!c || !TINTAS_DE_TEMA.has(`${c[0]},${c[1]},${c[2]}`)) return color;
+
+  return rgba([tinta[0], tinta[1], tinta[2], c[3]], c[3]);
+}
+
+type EscalaConColores = { ticks?: { color?: unknown }; grid?: { color?: unknown } };
+
+const sincronizarTema = {
+  id: "ubThemeSync",
+  beforeUpdate(chart: ChartJS) {
+    const tinta = parseRgba(inkRgba(1));
+    const opciones = chart.config.options as { scales?: Record<string, EscalaConColores>; plugins?: { legend?: { labels?: { color?: unknown } } } } | undefined;
+    if (!tinta || !opciones) return;
+    for (const escala of Object.values(opciones.scales ?? {})) {
+      if (escala.ticks) escala.ticks.color = reteñir(escala.ticks.color, tinta);
+      if (escala.grid) escala.grid.color = reteñir(escala.grid.color, tinta);
+    }
+    const leyenda = opciones.plugins?.legend?.labels;
+    if (leyenda) leyenda.color = reteñir(leyenda.color, tinta);
+  },
+};
+
+/*
+ * Colores globales que dependen del tema: texto de ejes y leyendas, y el globo de información (fondo del tema en
+ * lugar de un negro fijo, que en el tema claro se veía como un parche). Se recalculan al cambiar de tema.
+ */
+function aplicarColoresDelTema() {
+  ChartJS.defaults.color = inkRgba(AXIS_TEXT_ALPHA);
+  Object.assign(ChartJS.defaults.plugins.tooltip, {
+    backgroundColor: chartTooltip().backgroundColor,
+    titleColor: goldHex(),
+    bodyColor: inkRgba(0.92),
+    borderColor: `${goldHex()}4d`,
+  });
+}
+
 export function ensureChartjsRegistered() {
   if (registered) return;
-  ChartJS.register(...registerables, premiumFills);
+  ChartJS.register(...registerables, premiumFills, sincronizarTema);
   // Chart.js no sabe interpolar un degradado entre dos estados de color y se rompe a media animación:
   // la transición de color se apaga (el crecimiento y el movimiento de barras y puntos siguen animados).
   Object.assign(ChartJS.defaults.animations, { colors: false });
@@ -81,7 +133,6 @@ export function ensureChartjsRegistered() {
   };
 
   ChartJS.defaults.font.family = "'Figtree', sans-serif";
-  ChartJS.defaults.color = inkRgba(0.4);
   ChartJS.defaults.font.weight = "bold";
 
   // Animación corta y con frenado suave; nada si el sistema pide reducir movimiento.
@@ -97,17 +148,19 @@ export function ensureChartjsRegistered() {
       };
 
   Object.assign(ChartJS.defaults.plugins.tooltip, {
-    backgroundColor: "rgba(10,10,10,0.96)",
-    titleColor: goldHex(),
     titleFont: { weight: "900", size: 11 },
-    bodyColor: "#ffffff",
     bodyFont: { weight: "bold", size: 11 },
-    borderColor: `${goldHex()}4d`,
     borderWidth: 1,
     padding: 10,
     cornerRadius: 8,
     boxPadding: 4,
     usePointStyle: true,
+  });
+  aplicarColoresDelTema();
+  // Al cambiar de tema se repintan los valores globales; las gráficas montadas los toman en su siguiente dibujo.
+  if (import.meta.client) watch(chartThemeTick(), () => {
+    aplicarColoresDelTema();
+    Object.values(ChartJS.instances).forEach((chart) => chart.update("none"));
   });
 
   registered = true;

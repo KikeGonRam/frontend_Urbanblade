@@ -1,15 +1,32 @@
+import { ref } from 'vue'
+
 /*
  * Portado de barber/resources/js/chart-theme.js, con un cambio deliberado:
  * el original hardcodea rgba(255,255,255,.3) para ejes/leyendas, asumiendo
  * que siempre se ve sobre fondo oscuro — ahí es cierto porque ese repo
  * nunca corrió esas gráficas bajo el tema claro "libreta". Aquí SÍ importa
  * (los 4 temas son reales y alternables), así que los colores de ejes se
- * leen de --ink-rgb/--gold en tiempo de registro del plugin en vez de ir
- * fijos. No es reactivo a un cambio de tema en caliente sobre una gráfica
- * ya montada (ver app/plugins/chart.client.ts) — límite aceptado por ahora.
+ * leen de --ink-rgb/--gold en vez de ir fijos.
+ *
+ * Cambio de tema en caliente: cada lectura depende de `chartThemeVersion`, así que las opciones y los datos de una
+ * gráfica que se arman dentro de un `computed` se recalculan solos cuando `bumpChartTheme()` avisa del cambio
+ * (lo llama useTheme().apply). Antes, al cambiar de tema, las gráficas montadas conservaban los colores viejos.
  */
+const chartThemeVersion = ref(0)
+
+/** Avisa a las gráficas montadas que cambió el tema para que relean los colores. */
+export function bumpChartTheme() {
+  chartThemeVersion.value++
+}
+
+/** Versión del tema para quien necesite reaccionar fuera de un computed (p. ej. los valores globales de Chart.js). */
+export function chartThemeTick() {
+  return chartThemeVersion
+}
+
 function cssVar(name: string, fallback: string): string {
-  if (!import.meta.client) return fallback
+  // Leer la versión hace que el computed que llama a esta función dependa del tema (nunca es negativa).
+  if (chartThemeVersion.value < 0 || !import.meta.client) return fallback
   const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim()
 
   return value || fallback
@@ -27,9 +44,13 @@ export function goldHex(): string {
 // al fondo de tarjeta #111) para gráficas con varias series del mismo tipo.
 export const UB_CATEGORICAL = ['#3987e5', '#d95926', '#199e70', '#c98500', '#d55181', '#008300']
 
+/** Opacidad del texto de ejes y leyendas: la mínima que da 4.5:1 sobre las tarjetas de los 4 temas. */
+export const AXIS_TEXT_ALPHA = 0.7
+
 export function chartScale() {
   return {
-    ticks: { color: inkRgba(0.4), font: { size: 12 } },
+    // 0.7 de opacidad: con 0.4 el texto de los ejes quedaba por debajo de 4.5:1 (en el tema claro, ~2.6:1).
+    ticks: { color: inkRgba(AXIS_TEXT_ALPHA), font: { size: 12 } },
     grid: { color: inkRgba(0.08) },
     border: { display: false },
   }
@@ -73,7 +94,7 @@ export function chartTooltip() {
 /** Eje sin líneas (el de categorías): la cuadrícula solo en el eje de valores. */
 export function chartAxisClean() {
   return {
-    ticks: { color: inkRgba(0.5), font: { size: 12 } },
+    ticks: { color: inkRgba(AXIS_TEXT_ALPHA), font: { size: 12 } },
     grid: { display: false },
     border: { display: false },
   }

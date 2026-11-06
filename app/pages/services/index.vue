@@ -345,18 +345,16 @@ async function removeService(service: ServiceRow) {
               <div v-if="service.slug" class="flex justify-end gap-2">
                 <button
                   type="button"
-                  class="rounded-lg border border-line px-3 py-1 text-xs text-muted hover:text-ink"
+                  class="min-h-10 rounded-lg border border-line px-3 py-1 text-xs text-muted hover:text-ink"
                   @click="openEdit(service)"
                 >
                   Editar
                 </button>
-                <button
-                  type="button"
-                  class="rounded-lg border border-danger/20 px-3 py-1 text-xs text-danger hover:bg-danger/10"
-                  @click="removeService(service)"
-                >
-                  Eliminar
-                </button>
+                <!-- Acción destructiva en el menú ⋯, como en Clientes: la principal queda a la vista y borrar pide dos pasos. -->
+                <UiRowMenu
+                  :label="`Más acciones de ${service.nombre ?? 'este servicio'}`"
+                  :items="[{ label: 'Eliminar servicio', danger: true, onSelect: () => removeService(service) }]"
+                />
               </div>
             </td>
           </tr>
