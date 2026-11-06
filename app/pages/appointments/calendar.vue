@@ -180,7 +180,8 @@ async function fetchEvents(
         },
       },
     );
-    successCallback(events);
+    // Sin el color fijo del backend: FullCalendar lo pondría en línea y taparía los tokens del tema que da cada estado.
+    successCallback(events.map((event) => ({ ...event, backgroundColor: undefined, borderColor: undefined })));
   } catch (err) {
     failureCallback(err as Error);
   }
@@ -206,7 +207,8 @@ function onEventClick(info: EventClickArg) {
   const end = info.event.end;
 
   modal.id = info.event.id;
-  modal.color = info.event.backgroundColor;
+  const tono = appointmentStatus(info.event.extendedProps.estado).tone;
+  modal.color = `rgb(var(--${tono === "neutral" ? "ink" : tono}-rgb))`;
   modal.title = info.event.title;
   modal.time = start
     ? start.toLocaleDateString("es", {
@@ -547,14 +549,15 @@ function onEventClick(info: EventClickArg) {
 .ub-ev--neutral { --ub-ev-rgb: var(--ink-rgb); --ub-ev-alpha: 0; }
 .fc .fc-timegrid-event.ub-ev,
 .fc .fc-daygrid-block-event.ub-ev {
-  background: rgb(var(--ub-ev-rgb) / var(--ub-ev-alpha)) !important;
-  border-left: 3px solid rgb(var(--ub-ev-rgb)) !important;
+  background-color: rgb(var(--ub-ev-rgb) / var(--ub-ev-alpha));
+  /* Franja izquierda como sombra interior: el kit quita el borde de los eventos de FullCalendar. */
+  box-shadow: inset 3px 0 0 rgb(var(--ub-ev-rgb));
   border-radius: 8px;
-  box-shadow: none;
 }
 .fc .fc-timegrid-event.ub-ev .fc-event-main,
 .fc .fc-daygrid-block-event.ub-ev .fc-event-main {
   color: var(--ink);
+  padding-left: 0.5rem;
 }
 .fc .ub-ev--gold .fc-event-main {
   font-weight: 800;
@@ -564,16 +567,20 @@ function onEventClick(info: EventClickArg) {
 }
 .fc .fc-timegrid-event.ub-ev--apagada,
 .fc .fc-daygrid-block-event.ub-ev--apagada {
-  border-left-style: dashed !important;
+  /* Franja punteada: la cita ya no va a ocurrir. */
+  box-shadow: none;
+  background-image: linear-gradient(to bottom, rgb(var(--ub-ev-rgb)) 50%, transparent 50%);
+  background-size: 3px 6px;
+  background-repeat: repeat-y;
 }
 .fc .ub-ev--apagada .fc-event-main,
 .fc .ub-ev--apagada .ub-fc-event,
 .fc .ub-ev--apagada .fc-list-event-title {
-  color: var(--muted) !important;
+  color: var(--muted);
   text-decoration: line-through;
 }
 .fc .ub-ev .fc-list-event-dot {
-  border-color: rgb(var(--ub-ev-rgb)) !important;
+  border-color: rgb(var(--ub-ev-rgb));
 }
 .ub-fc-dot--warning { background: rgb(var(--warning-rgb)); }
 .ub-fc-dot--info { background: rgb(var(--info-rgb)); }
