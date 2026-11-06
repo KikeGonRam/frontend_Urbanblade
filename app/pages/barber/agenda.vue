@@ -117,6 +117,16 @@ async function noShow(appt: Appointment) {
   if (ok) await changeStatus(appt, 'no_asistio')
 }
 
+async function cancel(appt: Appointment) {
+  const ok = await confirm({
+    title: 'Cancelar cita',
+    message: `¿Cancelar la cita de ${appt.client.user.name ?? 'este cliente'}? Se le avisará.`,
+    confirmText: 'Cancelar cita',
+    isDanger: true,
+  })
+  if (ok) await changeStatus(appt, 'cancelada')
+}
+
 async function extend(appt: Appointment, minutos: number, forzar = false) {
   busyCode.value = appt.code
   message.value = ''
@@ -210,7 +220,7 @@ async function openTicket(appt: Appointment) {
     <section v-else class="space-y-3">
       <article v-for="appt in appointments" :key="appt.id" class="ui-card flex flex-col gap-4 p-5 sm:flex-row sm:items-center">
         <div class="w-24 shrink-0">
-          <p class="font-black text-gold">{{ appt.hora_inicio.slice(0, 5) }}</p>
+          <p class="text-lg font-black tabular-nums text-gold">{{ appt.hora_inicio.slice(0, 5) }}</p>
           <p class="text-xs text-muted">{{ appt.hora_fin.slice(0, 5) }}</p>
         </div>
 
@@ -233,11 +243,12 @@ async function openTicket(appt: Appointment) {
           </p>
         </div>
 
-        <span class="rounded-full px-3 py-1 text-xs font-bold" :class="classes[appt.estado]">{{ labels[appt.estado] ?? appt.estado }}</span>
+        <span class="self-start rounded-full px-3 py-1 text-xs font-bold sm:self-auto" :class="classes[appt.estado]">{{ labels[appt.estado] ?? appt.estado }}</span>
 
-        <div class="flex flex-wrap gap-2">
+        <!-- Una acción principal por estado, ancha y abajo en el móvil (zona del pulgar); lo destructivo va al menú ⋯. -->
+        <div class="flex w-full flex-wrap items-center gap-2 sm:w-auto">
           <template v-if="appt.estado === 'pendiente'">
-            <button :disabled="busyCode === appt.code" class="rounded-lg bg-gold min-h-11 px-4 py-2 text-sm font-bold text-black disabled:opacity-50" @click="changeStatus(appt, 'confirmada')">Aprobar</button>
+            <button :disabled="busyCode === appt.code" class="flex-1 rounded-lg bg-gold min-h-12 px-4 py-2 text-sm font-bold text-black disabled:opacity-50 sm:flex-none" @click="changeStatus(appt, 'confirmada')">Aprobar</button>
             <button :disabled="busyCode === appt.code" class="rounded-lg border border-danger/20 min-h-11 px-4 py-2 text-sm text-danger disabled:opacity-50" @click="reject(appt)">Rechazar</button>
           </template>
 
@@ -245,22 +256,27 @@ async function openTicket(appt: Appointment) {
             <button
               :disabled="busyCode === appt.code || appt.puede_iniciar === false"
               :title="appt.puede_iniciar === false ? (appt.motivo_no_iniciar ?? '') : ''"
-              class="rounded-lg bg-gold min-h-11 px-4 py-2 text-sm font-bold text-black disabled:opacity-40"
+              class="flex-1 rounded-lg bg-gold min-h-12 px-4 py-2 text-sm font-bold text-black disabled:opacity-40 sm:flex-none"
               @click="changeStatus(appt, 'en_proceso')"
             >
               Iniciar
             </button>
-            <button :disabled="busyCode === appt.code" class="rounded-lg border border-warning/30 min-h-11 px-4 py-2 text-sm text-warning disabled:opacity-50" @click="noShow(appt)">No asistió</button>
-            <button :disabled="busyCode === appt.code" class="rounded-lg border border-danger/20 min-h-11 px-4 py-2 text-sm text-danger disabled:opacity-50" @click="changeStatus(appt, 'cancelada')">Cancelar</button>
+            <UiRowMenu
+              :label="`Más acciones de la cita de ${appt.client.user.name ?? 'este cliente'}`"
+              :items="[
+                { label: 'No asistió', danger: true, disabled: busyCode === appt.code, onSelect: () => noShow(appt) },
+                { label: 'Cancelar cita', danger: true, disabled: busyCode === appt.code, onSelect: () => cancel(appt) },
+              ]"
+            />
           </template>
 
           <template v-else-if="appt.estado === 'en_proceso'">
-            <button :disabled="busyCode === appt.code" class="rounded-lg bg-gold min-h-11 px-4 py-2 text-sm font-bold text-black disabled:opacity-50" @click="changeStatus(appt, 'completada')">Terminar ahora</button>
+            <button :disabled="busyCode === appt.code" class="w-full rounded-lg bg-gold min-h-12 px-4 py-2 text-sm font-bold text-black disabled:opacity-50 sm:w-auto" @click="changeStatus(appt, 'completada')">Terminar ahora</button>
             <button
               v-for="minutos in EXTEND_OPTIONS"
               :key="minutos"
               :disabled="busyCode === appt.code"
-              class="rounded-lg border border-info/30 min-h-11 px-4 py-2 text-sm font-bold text-info disabled:opacity-50"
+              class="flex-1 rounded-lg border border-info/30 min-h-11 px-4 py-2 text-sm font-bold text-info disabled:opacity-50 sm:flex-none"
               @click="extend(appt, minutos)"
             >
               +{{ minutos }} min

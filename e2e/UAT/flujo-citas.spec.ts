@@ -136,6 +136,22 @@ test.describe("agenda del barbero", () => {
     expect((await patch).postDataJSON()).toEqual({ estado: "en_proceso" });
   });
 
+  test("No asistió y Cancelar viven en el menú ⋯ y piden confirmación (auditoría UX)", async ({ page }) => {
+    await asBarber(page, [cita({ puede_iniciar: true, pago_resuelto: true })]);
+    let cambios = 0;
+    await page.route("**/api/v1/appointments/UB-1/status", (r) => {
+      cambios++;
+      return r.fulfill({ status: 200, contentType: "application/json", body: "{}" });
+    });
+
+    await expect(page.getByRole("button", { name: "No asistió" })).toHaveCount(0);
+    await page.getByRole("button", { name: /Más acciones de la cita/ }).click();
+    await page.getByRole("menuitem", { name: "Cancelar cita" }).click();
+
+    await expect(page.getByRole("dialog")).toContainText("¿Cancelar la cita");
+    expect(cambios).toBe(0);
+  });
+
   test("aprueba una cita pendiente", async ({ page }) => {
     await asBarber(page, [cita({ estado: "pendiente" })]);
     const patch = page.waitForRequest((r) => r.url().includes("/appointments/UB-1/status") && r.method() === "PATCH");
