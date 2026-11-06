@@ -28,11 +28,15 @@ function mezclarConNegro(hex: string, porcentaje: number) {
 
 describe('botón principal', () => {
   it('el degradado conserva 4.5:1 con texto negro en todo el recorrido y en los 4 temas', () => {
-    expect(css).toContain('color-mix(in srgb, var(--gold) 84%, #000)')
+    expect(css).toContain('var(--gold) 0%, var(--gold-end) 100%')
+    const extremos = [...css.matchAll(/--gold-end:\s+(#[0-9a-f]{6})/gi)].map(m => m[1]!)
+    expect(extremos).toHaveLength(THEMES.length)
     for (const tema of THEMES) {
       const oro = THEME_PREVIEWS[tema].gold
+      const fin = mezclarConNegro(oro, 84)
+      expect(extremos, `${tema}: token --gold-end`).toContain(fin)
       expect(contrasteConNegro(oro), `${tema}: inicio`).toBeGreaterThanOrEqual(4.5)
-      expect(contrasteConNegro(mezclarConNegro(oro, 84)), `${tema}: final`).toBeGreaterThanOrEqual(4.5)
+      expect(contrasteConNegro(fin), `${tema}: final`).toBeGreaterThanOrEqual(4.5)
     }
   })
 

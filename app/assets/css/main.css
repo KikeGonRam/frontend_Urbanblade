@@ -100,6 +100,7 @@
 
     --gold:          #d4af37;
     --gold-dim:      #a8842c;
+    --gold-end:      #b2932e;  /* extremo oscuro del degradado del botón: 84 % del dorado, ≥4.5:1 con texto negro */
     --gold-rgb:      212 175 55;
     --chart-1-rgb:   56 189 248;
     --chart-2-rgb:   45 212 191;
@@ -144,6 +145,7 @@ html[data-theme="acero"] {
 
     --gold:          #c57a4b;
     --gold-dim:      #9c5a30;
+    --gold-end:      #a5663f;  /* extremo oscuro del degradado del botón: 84 % del dorado, ≥4.5:1 con texto negro */
     --gold-rgb:      197 122 75;
     --chart-1-rgb:   56 189 248;
     --chart-2-rgb:   45 212 191;
@@ -179,6 +181,7 @@ html[data-theme="salon"] {
 
     --gold:          #c9a24a;
     --gold-dim:      #a1813a;
+    --gold-end:      #a9883e;  /* extremo oscuro del degradado del botón: 84 % del dorado, ≥4.5:1 con texto negro */
     --gold-rgb:      201 162 74;
     --chart-1-rgb:   56 189 248;
     --chart-2-rgb:   45 212 191;
@@ -214,6 +217,7 @@ html[data-theme="libreta"] {
 
     --gold:          #b8860b;
     --gold-dim:      #8a6608;
+    --gold-end:      #9b7109;  /* extremo oscuro del degradado del botón: 84 % del dorado, ≥4.5:1 con texto negro */
     --gold-rgb:      184 134 11;
     --chart-1-rgb:   2 132 199;
     --chart-2-rgb:   13 148 136;
@@ -512,7 +516,7 @@ html[data-theme="libreta"] .group:hover .group-hover\:text-gold { color: #8a6408
     .ui-btn,
     .ui-btn-secondary {
         @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold transition-all duration-300 active:scale-95;
-        background: linear-gradient(180deg, var(--gold) 0%, color-mix(in srgb, var(--gold) 84%, #000) 100%);
+        background: linear-gradient(180deg, var(--gold) 0%, var(--gold-end) 100%);
         color: #000;
         box-shadow: 0 4px 15px var(--gold-glow);
         border: 1px solid rgba(255, 255, 255, 0.1);
