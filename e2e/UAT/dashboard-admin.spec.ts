@@ -41,8 +41,9 @@ test("las gráficas principales están a la vista sin abrir la analítica", asyn
 
   await expect(page.getByRole("heading", { name: "Ingresos por semana" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Servicios más pedidos" })).toBeVisible();
-  // Las gráficas se dibujan al entrar en pantalla (para que su animación se vea).
-  await page.getByRole("heading", { name: "Ingresos por semana" }).scrollIntoViewIfNeeded();
+  // Las gráficas se dibujan al entrar en pantalla (para que su animación se vea), y el observador ignora el 10 % inferior
+  // de la ventana: con el título pegado al borde de abajo la gráfica no llegaba a montarse. Se centra la tarjeta.
+  await page.getByRole("heading", { name: "Ingresos por semana" }).evaluate((el) => el.scrollIntoView({ block: "center" }));
   await expect(page.locator("canvas").first()).toBeVisible();
 });
 
