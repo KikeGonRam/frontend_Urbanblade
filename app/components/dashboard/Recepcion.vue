@@ -39,6 +39,7 @@ interface ReceptionistData {
 }
 
 const props = defineProps<{ data: ReceptionistData; firstName: string }>();
+const saludo = useSaludo();
 
 // Consola de mostrador: tiempo relativo de cada llegada, al día cada minuto.
 const ahora = ref(new Date());
@@ -142,7 +143,7 @@ const flowChartOptions = {
     />
 
     <p class="text-sm text-muted">
-      Hola, <span class="font-semibold text-ink">{{ firstName }}</span>. Esto es lo que conviene atender hoy.
+      {{ saludo }}, <span class="font-semibold text-ink">{{ firstName }}</span>. Esto es lo que conviene atender hoy.
     </p>
 
     <section class="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6" aria-label="Resumen del turno">
