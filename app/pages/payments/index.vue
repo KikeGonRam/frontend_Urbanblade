@@ -816,7 +816,7 @@ v-model="barberoFilter"
 
         <form v-else class="space-y-4" @submit.prevent="submitCharge">
           <div v-if="!chargeableAppointments.length" class="rounded-xl border border-dashed border-line bg-main/40 p-6 text-center">
-            <p class="text-sm font-bold text-ink">No hay citas listas para cobrar</p>
+            <p class="text-sm font-bold text-ink">Por ahora no hay citas listas para cobrar</p>
             <p class="mt-1 text-xs leading-relaxed text-muted">Las citas aprobadas y pendientes de pago aparecerán aquí cuando estén disponibles.</p>
           </div>
           <div>

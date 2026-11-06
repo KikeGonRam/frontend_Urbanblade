@@ -362,7 +362,7 @@ async function removeService(service: ServiceRow) {
           </tr>
           <tr v-if="!services.length">
             <td colspan="6" class="px-4 py-12 text-center text-sm text-muted">
-              Sin servicios registrados.
+              Todavía no hay servicios registrados.
             </td>
           </tr>
         </tbody>

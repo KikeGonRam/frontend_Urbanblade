@@ -91,7 +91,7 @@ async function waive(fee: NoShowFee) {
 
     <output v-if="message" class="mb-3 block text-sm" :class="isError ? 'text-danger' : 'text-gold'">{{ message }}</output>
     <p v-if="pending" class="text-sm text-muted">Cargando adeudos...</p>
-    <p v-else-if="!fees.length" class="ui-card p-4 text-sm text-muted">No hay adeudos pendientes.</p>
+    <p v-else-if="!fees.length" class="ui-card p-4 text-sm text-muted">Estás al día: no hay adeudos pendientes.</p>
 
     <ul v-else class="space-y-3">
       <li v-for="fee in fees" :key="fee.id" class="ui-card p-4">

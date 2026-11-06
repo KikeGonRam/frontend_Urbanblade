@@ -372,7 +372,7 @@ function money(n: number | null) {
           class="mt-4"
           mascot="nava"
           state="empty"
-          title="Sin horarios libres ese día"
+          title="Ese día ya no tiene horarios libres"
           description="Prueba con otra fecha."
         />
         <div v-else class="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-5">

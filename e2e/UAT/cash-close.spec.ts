@@ -155,5 +155,5 @@ test("un día sin movimientos lo dice en vez de mostrar totales en cero sueltos"
 
   await page.goto("/payments/corte");
 
-  await expect(page.getByText("Sin movimientos ese día")).toBeVisible();
+  await expect(page.getByText("No hubo movimientos ese día")).toBeVisible();
 });

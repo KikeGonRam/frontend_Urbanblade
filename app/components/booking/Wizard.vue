@@ -789,7 +789,7 @@ function prettyDate(iso: string) {
         <template v-else-if="!slots.length">
           <BrandStatePanel
             mascot="nava" state="empty"
-            title="Sin horarios libres ese día"
+            title="Ese día ya no tiene horarios libres"
             description="Prueba con otra fecha o con otro barbero del equipo."
           />
           <div v-if="canBookHere" class="ui-card mt-4 p-4 text-center">

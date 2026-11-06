@@ -275,7 +275,7 @@ function fecha(iso: string | null) {
           class="m-5"
           mascot="nava"
           state="empty"
-          title="Sin citas todavía"
+          title="Todavía no tiene citas"
           description="Cuando este cliente reserve, su historial aparecerá aquí."
         />
         <table v-else class="mt-4 w-full text-left text-sm">

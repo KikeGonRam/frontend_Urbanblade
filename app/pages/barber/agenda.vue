@@ -273,7 +273,7 @@ async function openTicket(appt: Appointment) {
         </div>
       </article>
 
-      <BrandStatePanel v-if="!appointments.length" mascot="nava" state="empty" title="No hay citas en este periodo" description="Cambia el rango o el estado para ver otras citas." class="ui-card" />
+      <BrandStatePanel v-if="!appointments.length" mascot="nava" state="empty" title="Tu agenda está libre en este periodo" description="Cambia el rango o el estado para ver otras citas." class="ui-card" />
     </section>
 
     <UiServiceTicketModal v-if="ticket" :ticket="ticket" @close="ticket = null" />
