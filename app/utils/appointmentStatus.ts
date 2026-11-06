@@ -15,6 +15,17 @@ export const APPOINTMENT_STATUS: Record<string, { label: string; tone: BadgeTone
   no_asistio: { label: "No asistió", tone: "neutral" },
 };
 
+/**
+ * Clases de una cita en el calendario: el tono de su estado (los mismos tokens que las insignias, así cada tema usa sus
+ * colores en lugar del color fijo del backend) y «apagada» si ya no va a ocurrir. Auditoría UX del 6-nov-2026.
+ */
+export function appointmentEventClasses(estado: string | null | undefined): string[] {
+  const clases = ["ub-ev", `ub-ev--${appointmentStatus(estado).tone}`];
+  if (estado === "cancelada" || estado === "no_asistio") clases.push("ub-ev--apagada");
+
+  return clases;
+}
+
 export function appointmentStatus(estado: string | null | undefined): { label: string; tone: BadgeTone } {
   return APPOINTMENT_STATUS[estado ?? ""] ?? { label: estado || "Sin estado", tone: "neutral" };
 }

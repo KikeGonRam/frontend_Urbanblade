@@ -80,7 +80,8 @@ const selectedBarber = ref("");
 const fc = ref<FcHandle | null>(null);
 const calendarReady = ref(false);
 const calendarOptions = ref<CalendarOptions>({
-  initialView: "dayGridMonth",
+  // Recepción decide sobre el día: abre en la vista de día; el resto, en el mes.
+  initialView: hasRole("recepcionista") && !hasRole("administrador") ? "timeGridDay" : "dayGridMonth",
   headerToolbar: {
     left: "prev,next today",
     center: "title",
@@ -104,18 +105,22 @@ const calendarOptions = ref<CalendarOptions>({
   eventTimeFormat: { hour: "numeric", minute: "2-digit", hour12: false },
   // En el mes cada cita cabe en una línea: hora y nombre del cliente (el servicio queda en el detalle al tocarla).
   eventContent(arg) {
-    if (arg.view.type !== "dayGridMonth") return undefined;
+    // Fuera del mes, contenido estándar de FullCalendar (hora y cliente). Devolver undefined dejaba la cita vacía en
+    // semana, día y lista: solo se veía el bloque de color.
+    if (arg.view.type !== "dayGridMonth") return true;
     const line = document.createElement("span");
     line.className = "ub-fc-event";
     const dot = document.createElement("i");
-    dot.className = "ub-fc-dot";
-    dot.style.background = arg.backgroundColor || arg.borderColor || "var(--gold)";
+    dot.className = `ub-fc-dot ub-fc-dot--${appointmentStatus(arg.event.extendedProps.estado).tone}`;
     const time = document.createElement("b");
     time.textContent = arg.timeText;
     line.append(dot, time, ` ${arg.event.extendedProps.cliente ?? arg.event.title}`);
 
     return { domNodes: [line] };
   },
+  // Estado como clase con los tokens del tema (no el color fijo del backend); el alto mínimo evita citas cortadas.
+  eventClassNames: (arg) => appointmentEventClasses(arg.event.extendedProps.estado),
+  eventMinHeight: 28,
   slotMinTime: "08:00:00",
   slotMaxTime: "22:00:00",
   events: fetchEvents,
@@ -175,20 +180,15 @@ async function fetchEvents(
         },
       },
     );
-    successCallback(events);
+    // Sin el color fijo del backend: FullCalendar lo pondría en línea y taparía los tokens del tema que da cada estado.
+    successCallback(events.map((event) => ({ ...event, backgroundColor: undefined, borderColor: undefined })));
   } catch (err) {
     failureCallback(err as Error);
   }
 }
 
-const legend = [
-  { color: "#d97706", label: "Pendiente" },
-  { color: "#3b82f6", label: "Confirmada" },
-  { color: "#06b6d4", label: "En Proceso" },
-  { color: "#10b981", label: "Completada" },
-  { color: "#ef4444", label: "Cancelada" },
-  { color: "#6b7280", label: "No Asistió" },
-];
+// La leyenda sale del mismo mapa que las insignias y el calendario: un solo color por estado en toda la app.
+const legend = Object.entries(APPOINTMENT_STATUS).map(([estado, s]) => ({ estado, label: s.label, tone: s.tone }));
 
 const modal = reactive({
   open: false,
@@ -207,7 +207,8 @@ function onEventClick(info: EventClickArg) {
   const end = info.event.end;
 
   modal.id = info.event.id;
-  modal.color = info.event.backgroundColor;
+  const tono = appointmentStatus(info.event.extendedProps.estado).tone;
+  modal.color = `rgb(var(--${tono === "neutral" ? "ink" : tono}-rgb))`;
   modal.title = info.event.title;
   modal.time = start
     ? start.toLocaleDateString("es", {
@@ -255,10 +256,7 @@ function onEventClick(info: EventClickArg) {
             :key="item.label"
             class="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-muted"
           >
-            <span
-              class="h-2.5 w-2.5 rounded-full"
-              :style="{ background: item.color }"
-            />
+            <span class="ub-fc-dot" :class="`ub-fc-dot--${item.tone}`" aria-hidden="true" />
             {{ item.label }}
           </span>
         </div>
@@ -538,4 +536,56 @@ function onEventClick(info: EventClickArg) {
 .fc-daygrid-event {
   margin-bottom: 2px;
 }
+
+/*
+ * Estados de cita (auditoría UX del 6-nov-2026): en semana, día y lista, fondo translúcido y borde izquierdo con el
+ * token del tema en lugar de un bloque de color sólido. El color nunca va solo: el detalle de la cita dice su estado.
+ */
+.ub-ev--warning { --ub-ev-rgb: var(--warning-rgb); --ub-ev-alpha: 0.12; }
+.ub-ev--info { --ub-ev-rgb: var(--info-rgb); --ub-ev-alpha: 0.12; }
+.ub-ev--gold { --ub-ev-rgb: var(--gold-rgb); --ub-ev-alpha: 0.18; }
+.ub-ev--success { --ub-ev-rgb: var(--success-rgb); --ub-ev-alpha: 0.1; }
+.ub-ev--danger { --ub-ev-rgb: var(--danger-rgb); --ub-ev-alpha: 0; }
+.ub-ev--neutral { --ub-ev-rgb: var(--ink-rgb); --ub-ev-alpha: 0; }
+.fc .fc-timegrid-event.ub-ev,
+.fc .fc-daygrid-block-event.ub-ev {
+  background-color: rgb(var(--ub-ev-rgb) / var(--ub-ev-alpha));
+  /* Franja izquierda como sombra interior: el kit quita el borde de los eventos de FullCalendar. */
+  box-shadow: inset 3px 0 0 rgb(var(--ub-ev-rgb));
+  border-radius: 8px;
+}
+.fc .fc-timegrid-event.ub-ev .fc-event-main,
+.fc .fc-daygrid-block-event.ub-ev .fc-event-main {
+  color: var(--ink);
+  padding-left: 0.5rem;
+}
+.fc .ub-ev--gold .fc-event-main {
+  font-weight: 800;
+}
+.fc .ub-ev--success .fc-event-main {
+  color: var(--muted);
+}
+.fc .fc-timegrid-event.ub-ev--apagada,
+.fc .fc-daygrid-block-event.ub-ev--apagada {
+  /* Franja punteada: la cita ya no va a ocurrir. */
+  box-shadow: none;
+  background-image: linear-gradient(to bottom, rgb(var(--ub-ev-rgb)) 50%, transparent 50%);
+  background-size: 3px 6px;
+  background-repeat: repeat-y;
+}
+.fc .ub-ev--apagada .fc-event-main,
+.fc .ub-ev--apagada .ub-fc-event,
+.fc .ub-ev--apagada .fc-list-event-title {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+.fc .ub-ev .fc-list-event-dot {
+  border-color: rgb(var(--ub-ev-rgb));
+}
+.ub-fc-dot--warning { background: rgb(var(--warning-rgb)); }
+.ub-fc-dot--info { background: rgb(var(--info-rgb)); }
+.ub-fc-dot--gold { background: rgb(var(--gold-rgb)); }
+.ub-fc-dot--success { background: rgb(var(--success-rgb)); }
+.ub-fc-dot--danger { background: rgb(var(--danger-rgb)); }
+.ub-fc-dot--neutral { background: rgb(var(--ink-rgb) / 0.35); }
 </style>
