@@ -100,6 +100,7 @@
 
     --gold:          #d4af37;
     --gold-dim:      #a8842c;
+    --gold-end:      #b2932e;  /* extremo oscuro del degradado del botón: 84 % del dorado, ≥4.5:1 con texto negro */
     --gold-rgb:      212 175 55;
     --chart-1-rgb:   56 189 248;
     --chart-2-rgb:   45 212 191;
@@ -108,6 +109,8 @@
     --chart-5-rgb:   251 146 60;
     --gold-dim-rgb:  168 132 44;
     --gold-glow:     rgba(212, 175, 55, 0.28);
+    /* Dorado para TEXTO sobre fondos del tema: en los oscuros es el mismo --gold; el claro lo oscurece (AA). */
+    --gold-text:     #d4af37;
 
     --card-premium-from: #1b1b1b;
     --card-premium-to:   #0d0d0d;
@@ -142,6 +145,7 @@ html[data-theme="acero"] {
 
     --gold:          #c57a4b;
     --gold-dim:      #9c5a30;
+    --gold-end:      #a5663f;  /* extremo oscuro del degradado del botón: 84 % del dorado, ≥4.5:1 con texto negro */
     --gold-rgb:      197 122 75;
     --chart-1-rgb:   56 189 248;
     --chart-2-rgb:   45 212 191;
@@ -177,6 +181,7 @@ html[data-theme="salon"] {
 
     --gold:          #c9a24a;
     --gold-dim:      #a1813a;
+    --gold-end:      #a9883e;  /* extremo oscuro del degradado del botón: 84 % del dorado, ≥4.5:1 con texto negro */
     --gold-rgb:      201 162 74;
     --chart-1-rgb:   56 189 248;
     --chart-2-rgb:   45 212 191;
@@ -212,6 +217,7 @@ html[data-theme="libreta"] {
 
     --gold:          #b8860b;
     --gold-dim:      #8a6608;
+    --gold-end:      #9b7109;  /* extremo oscuro del degradado del botón: 84 % del dorado, ≥4.5:1 con texto negro */
     --gold-rgb:      184 134 11;
     --chart-1-rgb:   2 132 199;
     --chart-2-rgb:   13 148 136;
@@ -220,6 +226,7 @@ html[data-theme="libreta"] {
     --chart-5-rgb:   234 88 12;
     --gold-dim-rgb:  138 102 8;
     --gold-glow:     rgba(184, 134, 11, 0.20);
+    --gold-text:     #8a6408;
 
     --card-premium-from: #fffdf8;
     --card-premium-to:   #f3ede0;
@@ -241,6 +248,7 @@ html[data-theme="libreta"] {
 /* Tema claro: el dorado de marca como TEXTO se oscurece (#8a6408 = 4.6:1 sobre marfil; el #b8860b da 2.8:1).
    Bordes, iconos grandes y rellenos siguen usando --gold. Auditoría UI/UX P1. */
 html[data-theme="libreta"] .text-gold,
+html[data-theme="libreta"] .ui-title-serif,
 html[data-theme="libreta"] .hover\:text-gold:hover,
 html[data-theme="libreta"] .group:hover .group-hover\:text-gold { color: #8a6408; }
 
@@ -508,13 +516,14 @@ html[data-theme="libreta"] .group:hover .group-hover\:text-gold { color: #8a6408
     .ui-btn,
     .ui-btn-secondary {
         @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold transition-all duration-300 active:scale-95;
-        background: linear-gradient(180deg, var(--gold) 0%, var(--gold-dim) 100%);
+        background: linear-gradient(180deg, var(--gold) 0%, var(--gold-end) 100%);
         color: #000;
         box-shadow: 0 4px 15px var(--gold-glow);
         border: 1px solid rgba(255, 255, 255, 0.1);
     }
-    .ui-btn:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 8px 25px var(--gold-glow); filter: brightness(1.15); }
-    .ui-btn:active { transform: translateY(0px) scale(0.98); box-shadow: 0 2px 10px var(--gold-glow); }
+    .ui-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 22px var(--gold-glow); filter: brightness(1.08); }
+    .ui-btn:active { transform: translateY(0); box-shadow: 0 2px 10px var(--gold-glow); filter: brightness(.97); }
+    @media (prefers-reduced-motion: reduce) { .ui-btn, .ui-btn-secondary { transition: none; } .ui-btn:hover, .ui-btn:active, .ui-btn-secondary:active { transform: none; } }
     .ui-btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
     /* Ningún .ui-btn se usa hoy con :disabled, pero hover/active ya tienen
        su estado -- completar disabled evita que el primer botón deshabilitado
@@ -526,7 +535,7 @@ html[data-theme="libreta"] .group:hover .group-hover\:text-gold { color: #8a6408
     .ui-btn-secondary {
         background: var(--bg-accent);
         background-image: none;
-        color: var(--gold);
+        color: var(--gold-text);
         border: 1px solid var(--gold-dim);
         box-shadow: none;
     }
@@ -543,8 +552,20 @@ html[data-theme="libreta"] .group:hover .group-hover\:text-gold { color: #8a6408
         box-shadow: 0 0 0 3px rgb(var(--gold-rgb) / .1);
     }
 
+    :where(input:not([type='checkbox']):not([type='radio']):not([type='range']), select, textarea)[aria-invalid='true'] {
+        border-color: rgb(var(--danger-rgb));
+        box-shadow: 0 0 0 3px rgb(var(--danger-rgb) / .14);
+    }
+    :where(input, select, textarea):disabled { cursor: not-allowed; opacity: .6; background-color: var(--bg-accent); }
+    /* Pantallas táctiles: botones y campos llegan a 44 px (WCAG 2.5.8); con puntero fino se conserva la densidad. */
+    @media (pointer: coarse) {
+        .ui-btn, .ui-btn-secondary, .ui-input,
+        :where(input:not([type='checkbox']):not([type='radio']):not([type='range']), select) { min-height: 2.75rem; }
+    }
+
     .ui-badge {
-        @apply inline-flex items-center rounded-full border border-gold/30 bg-gold/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-gold;
+        @apply inline-flex items-center rounded-full border border-gold/30 bg-gold/10 px-3 py-1 text-xs font-bold uppercase tracking-widest;
+        color: var(--gold-text);
     }
 
     .text-gradient-gold {
