@@ -66,4 +66,12 @@ describe('tabla común', () => {
     expect(wrapper.findAll('th').map(th => th.text())).toContain('Acciones')
     expect(wrapper.findAll('tbody button')).toHaveLength(3)
   })
+
+  it('resalta la fila bajo el cursor o con el foco dentro, solo en modo tabla', async () => {
+    const wrapper = await mountSuspended(DataTable, { props: { columns: [...columns], rows, ariaLabel: 'Pedidos' } })
+
+    const clases = wrapper.get('tbody tr').classes()
+    expect(clases).toContain('md:hover:bg-ink/[0.04]')
+    expect(clases).toContain('md:focus-within:bg-ink/[0.04]')
+  })
 })

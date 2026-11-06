@@ -805,3 +805,6 @@ html[data-theme="libreta"] .group:hover .group-hover\:text-gold { color: #8a6408
     .ub-dashboard-content > * > * { animation: none; }
     .ub-dashboard-content a.bg-card.border:hover, .ub-dashboard-content button.bg-card.border:hover { transform: none; }
 }
+
+/* Sin capa a propósito: gana a utilidades como px-3. Un <select> nativo lleva el chevron a la derecha y el texto no debe pisarlo. */
+select:not([multiple]):not([size]) { padding-inline-end: 2.25rem; }

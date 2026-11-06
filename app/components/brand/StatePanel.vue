@@ -22,14 +22,15 @@ const emit = defineEmits<{ action: [] }>()
 
 <template>
   <section
-    class="brand-state-panel rounded-2xl border border-dashed border-line px-4 py-4 text-center"
-    aria-live="polite"
+    class="brand-state-panel rounded-2xl border border-dashed border-line px-6 py-6 text-center"
+    :role="tone === 'danger' ? 'alert' : undefined"
+    :aria-live="tone === 'danger' ? undefined : 'polite'"
   >
     <BrandMascot :mascot="mascot" :state="state" size="sm" class="mx-auto" />
-    <h2 class="mt-2 text-sm font-black" :class="tone === 'danger' ? 'text-danger' : 'text-ink'">
+    <h2 class="mt-3 text-base font-black" :class="tone === 'danger' ? 'text-danger' : 'text-ink'">
       {{ title }}
     </h2>
-    <p v-if="description" class="mx-auto mt-1 max-w-md text-xs leading-5 text-muted">
+    <p v-if="description" class="mx-auto mt-1.5 max-w-md text-sm leading-6 text-muted">
       {{ description }}
     </p>
     <NuxtLink

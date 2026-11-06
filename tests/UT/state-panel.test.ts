@@ -27,4 +27,14 @@ describe('estado vacío', () => {
 
     expect(wrapper.emitted('action')).toHaveLength(1)
   })
+
+  it('el estado de error se anuncia como alerta y el vacío como aviso cortés', async () => {
+    const error = await mountSuspended(StatePanel, { props: { ...base, tone: 'danger', title: 'No se pudo cargar' } })
+    const vacio = await mountSuspended(StatePanel, { props: base })
+
+    expect(error.attributes('role')).toBe('alert')
+    expect(error.attributes('aria-live')).toBeUndefined()
+    expect(vacio.attributes('role')).toBeUndefined()
+    expect(vacio.attributes('aria-live')).toBe('polite')
+  })
 })

@@ -118,7 +118,7 @@ function claveDe(row: T, index: number): string | number {
           <tr
             v-for="(row, index) in ordenadas"
             :key="claveDe(row, index)"
-            class="block border-b border-line/60 py-2 last:border-0 md:table-row md:py-0"
+            class="block border-b border-line/60 py-2 transition-colors last:border-0 md:table-row md:py-0 md:hover:bg-ink/[0.04] md:focus-within:bg-ink/[0.04]"
           >
             <td
               v-for="col in columns"
