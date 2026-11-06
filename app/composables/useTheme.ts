@@ -1,3 +1,5 @@
+import { bumpChartTheme } from '~/utils/chartTheme'
+
 export const THEMES = ['noir', 'acero', 'salon', 'libreta'] as const
 export type ThemeName = (typeof THEMES)[number]
 
@@ -62,6 +64,7 @@ export function useTheme() {
     if (import.meta.client) {
       document.documentElement.setAttribute('data-theme', theme)
       updateBrowserChrome(theme)
+      bumpChartTheme()
     }
   }
 
