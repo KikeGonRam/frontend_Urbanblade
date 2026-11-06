@@ -54,6 +54,7 @@ interface BarberoData {
 }
 
 const props = defineProps<{ data: BarberoData; firstName: string }>();
+const saludo = useSaludo();
 
 // «Mi día»: el reloj se actualiza cada minuto para que «en 42 min» y la cita en curso sigan vigentes.
 const ahora = ref(new Date());
@@ -267,7 +268,7 @@ const servicesOptions = {
     <header class="flex items-center justify-between gap-4">
       <div>
         <p class="text-xs font-semibold uppercase tracking-[0.18em] text-muted">{{ data.todayLabel }}</p>
-        <h1 class="mt-1 text-2xl font-semibold text-ink">Buen día, <span class="text-gold">{{ firstName }}</span></h1>
+        <h1 class="mt-1 text-2xl font-semibold text-ink">{{ saludo }}, <span class="text-gold">{{ firstName }}</span></h1>
         <p class="mt-1 text-sm text-muted">
           <template v-if="activeToday.length">
             {{ doneToday === activeToday.length ? "Terminaste todas las citas de hoy." : `Llevas ${doneToday} de ${activeToday.length} citas de hoy.` }}
