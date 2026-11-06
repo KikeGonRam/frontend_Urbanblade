@@ -20,6 +20,7 @@ decisiones y comprobaciones. La evidencia histórica conserva su fecha y alcance
 | Reportar vulnerabilidades | [SECURITY](../SECURITY.md) |
 | Contrato versionado de API | [OpenAPI](../contract/openapi.yaml) |
 | Auditoría fechada con hallazgos | [Auditoría UI/UX](AUDITORIA_UI_UX.md) |
+| Investigación de calidez, roles y accesibilidad | [Investigación UX](INVESTIGACION_UX_CALIDEZ_2026-11-06.md) |
 | Contexto histórico del sidebar | [Design QA](../design-qa.md) |
 
 Las guías .claude/.agents apoyan el mantenimiento; no sustituyen este índice ni
