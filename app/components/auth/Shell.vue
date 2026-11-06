@@ -38,7 +38,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="auth-shell">
+  <main class="auth-shell">
     <div class="auth-shell__orbit auth-shell__orbit--a" aria-hidden="true" />
     <div class="auth-shell__orbit auth-shell__orbit--b" aria-hidden="true" />
 
@@ -91,7 +91,7 @@ onBeforeUnmount(() => {
         <p class="auth-shell__footer auth-shell__reveal" style="--d: .2s">&copy; {{ new Date().getFullYear() }} UrbanBlade · Todos los derechos reservados</p>
       </section>
     </div>
-  </div>
+  </main>
 </template>
 
 <style scoped>
