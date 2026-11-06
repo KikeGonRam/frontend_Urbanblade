@@ -8,6 +8,21 @@ export const THEME_LABELS: Record<ThemeName, string> = {
   libreta: 'Libreta de Barbero',
 }
 
+/** Colores de la vista previa del selector (los mismos tokens de main.css, en hexadecimal). */
+export const THEME_PREVIEWS: Record<ThemeName, { bg: string, card: string, ink: string, gold: string, line: string }> = {
+  noir: { bg: '#0a0a0a', card: '#161616', ink: '#f2f2f2', gold: '#d4af37', line: '#2c2c2c' },
+  acero: { bg: '#111317', card: '#1a1d22', ink: '#eef0f2', gold: '#c57a4b', line: '#2a2f36' },
+  salon: { bg: '#0b1210', card: '#141c19', ink: '#eef2ee', gold: '#c9a24a', line: '#24322c' },
+  libreta: { bg: '#f3ede0', card: '#fffbf3', ink: '#241e18', gold: '#b8860b', line: '#e2d5b8' },
+}
+
+export const THEME_BLURBS: Record<ThemeName, string> = {
+  noir: 'Negro y oro',
+  acero: 'Grafito y cobre',
+  salon: 'Verde inglés y latón',
+  libreta: 'Claro: marfil y tinta',
+}
+
 const THEME_CHROME_COLORS: Record<ThemeName, string> = {
   noir: '#0a0a0a',
   acero: '#111317',
@@ -50,5 +65,5 @@ export function useTheme() {
     }
   }
 
-  return { theme: cookie, apply, THEMES, THEME_LABELS }
+  return { theme: cookie, apply, THEMES, THEME_LABELS, THEME_PREVIEWS, THEME_BLURBS }
 }

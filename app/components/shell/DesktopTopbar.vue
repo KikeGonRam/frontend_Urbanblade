@@ -1,7 +1,6 @@
 <script setup lang="ts">
 const route = useRoute();
 const { railCollapsed, toggleRail } = useShellState();
-const { theme, apply, THEMES, THEME_LABELS } = useTheme();
 const { user } = useAuth();
 const avatarFailed = ref(false);
 const { sections } = useNavigation();
@@ -57,20 +56,7 @@ watch(
     <ShellGlobalSearch />
 
     <div class="ub-desktop-topbar__actions">
-      <label class="ub-theme-switcher">
-        <span>Tema</span>
-        <select
-          :value="theme"
-          aria-label="Seleccionar tema"
-          @change="
-            apply(($event.target as HTMLSelectElement).value as typeof theme)
-          "
-        >
-          <option v-for="option in THEMES" :key="option" :value="option">
-            {{ THEME_LABELS[option] }}
-          </option>
-        </select>
-      </label>
+      <ShellThemePicker />
       <NuxtLink to="/profile" class="ub-topbar-profile" title="Mi perfil">
         <img
           v-if="user?.avatar_url && !avatarFailed"
