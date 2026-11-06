@@ -24,10 +24,10 @@ const { reopen: reopenConsent } = useConsent()
     <footer class="border-t border-line py-10">
       <div class="mx-auto flex max-w-3xl flex-col items-center justify-between gap-4 px-4 text-xs font-black uppercase tracking-[0.2em] text-muted sm:flex-row sm:px-6">
         <p>&copy; {{ new Date().getFullYear() }} UrbanBlade. Todos los derechos reservados.</p>
-        <div class="flex gap-6">
-          <NuxtLink to="/privacidad" class="transition hover:text-gold">Aviso de Privacidad</NuxtLink>
-          <NuxtLink to="/terminos" class="transition hover:text-gold">Términos y Condiciones</NuxtLink>
-          <button type="button" class="font-black uppercase tracking-[0.2em] transition hover:text-gold" data-testid="cookie-prefs" @click="reopenConsent()">Preferencias de cookies</button>
+        <div class="flex flex-wrap justify-center gap-x-6">
+          <NuxtLink to="/privacidad" class="inline-flex min-h-[44px] items-center transition hover:text-gold">Aviso de Privacidad</NuxtLink>
+          <NuxtLink to="/terminos" class="inline-flex min-h-[44px] items-center transition hover:text-gold">Términos y Condiciones</NuxtLink>
+          <button type="button" class="inline-flex min-h-[44px] items-center font-black uppercase tracking-[0.2em] transition hover:text-gold" data-testid="cookie-prefs" @click="reopenConsent()">Preferencias de cookies</button>
         </div>
       </div>
     </footer>

@@ -37,19 +37,19 @@ const socials = computed(() =>
   <div class="flex min-h-screen flex-col bg-main font-sans text-ink">
     <nav class="sticky top-0 z-50 border-b border-line bg-main/95 backdrop-blur-xl">
       <div class="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <NuxtLink to="/" class="flex items-center gap-3">
+        <NuxtLink to="/" class="flex items-center gap-2 min-[360px]:gap-3">
           <img src="/images/urbanblade-mark.svg" class="h-9 w-9" alt="UrbanBlade">
-          <span class="text-lg font-black uppercase tracking-tighter text-ink">Urban<span class="text-gold">Blade</span></span>
+          <span class="text-base font-black uppercase tracking-tighter text-ink min-[360px]:text-lg">Urban<span class="text-gold">Blade</span></span>
         </NuxtLink>
 
-        <div class="flex items-center gap-4 text-xs font-black uppercase tracking-[0.2em] text-muted sm:gap-6">
+        <div class="flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-muted min-[360px]:gap-4 sm:gap-6">
           <NuxtLink to="/servicios" class="hidden transition-colors hover:text-gold sm:inline">Servicios</NuxtLink>
           <NuxtLink to="/equipo" class="hidden transition-colors hover:text-gold sm:inline">Equipo</NuxtLink>
           <NuxtLink to="/#app" class="hidden transition-colors hover:text-gold sm:inline">App</NuxtLink>
           <NuxtLink v-if="isAuthenticated" to="/dashboard" class="ui-btn px-4 py-2 sm:px-6">Mi Panel</NuxtLink>
           <template v-else>
             <NuxtLink to="/login" class="hidden transition-colors hover:text-gold sm:inline">Acceso</NuxtLink>
-            <NuxtLink to="/reservar" class="ui-btn px-4 py-2.5 text-xs tracking-[0.15em] sm:px-6">Reservar</NuxtLink>
+            <NuxtLink to="/reservar" class="ui-btn px-3 py-2.5 text-xs tracking-[0.1em] min-[360px]:px-4 min-[360px]:tracking-[0.15em] sm:px-6">Reservar</NuxtLink>
           </template>
           <button type="button" class="flex h-11 w-11 items-center justify-center text-ink sm:hidden" :aria-label="menuOpen ? 'Cerrar menú' : 'Abrir menú'" :aria-expanded="menuOpen" @click="menuOpen = !menuOpen">
             <svg v-if="!menuOpen" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M4 6h16M4 12h16M4 18h16" stroke-width="2" stroke-linecap="round" /></svg>
@@ -79,10 +79,10 @@ const socials = computed(() =>
       </div>
       <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 text-xs font-black uppercase tracking-[0.2em] text-muted sm:flex-row sm:px-6 lg:px-8">
         <p>&copy; {{ new Date().getFullYear() }} UrbanBlade. Todos los derechos reservados.</p>
-        <div class="flex gap-6">
-          <NuxtLink to="/privacidad" class="transition hover:text-gold">Aviso de Privacidad</NuxtLink>
-          <NuxtLink to="/terminos" class="transition hover:text-gold">Términos y Condiciones</NuxtLink>
-          <button type="button" class="font-black uppercase tracking-[0.2em] transition hover:text-gold" data-testid="cookie-prefs" @click="reopenConsent()">Preferencias de cookies</button>
+        <div class="flex flex-wrap justify-center gap-x-6">
+          <NuxtLink to="/privacidad" class="inline-flex min-h-[44px] items-center transition hover:text-gold">Aviso de Privacidad</NuxtLink>
+          <NuxtLink to="/terminos" class="inline-flex min-h-[44px] items-center transition hover:text-gold">Términos y Condiciones</NuxtLink>
+          <button type="button" class="inline-flex min-h-[44px] items-center font-black uppercase tracking-[0.2em] transition hover:text-gold" data-testid="cookie-prefs" @click="reopenConsent()">Preferencias de cookies</button>
         </div>
       </div>
     </footer>
