@@ -75,15 +75,14 @@ async function onLogout() {
         aria-label="Colapsar menú"
         @click="toggleRail"
       >
-        <span aria-hidden="true">‹</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="ub-sidebar__icon"><path d="m15 6-6 6 6 6" /></svg>
       </button>
     </header>
     <NuxtLink
       :to="quickAction.to"
       class="ub-sidebar__quick"
       :class="{ 'is-collapsed': railCollapsed }"
-      ><span>＋</span
-      ><strong v-show="!railCollapsed">{{
+      ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true" class="ub-sidebar__icon"><path d="M12 5v14M5 12h14" /></svg><strong v-show="!railCollapsed">{{
         quickAction.label
       }}</strong></NuxtLink
     >
@@ -98,13 +97,15 @@ async function onLogout() {
           type="button"
           class="ub-sidebar__section-title"
           :class="{ 'is-collapsed': railCollapsed }"
+          :aria-expanded="!!openSections[section.key]"
+          :aria-controls="`nav-${section.key}`"
           @click="toggleSection(section.key)"
         >
           <span v-show="!railCollapsed">{{ section.title }}</span
           ><b
             v-show="!railCollapsed"
             :class="{ open: openSections[section.key] }"
-            >⌄</b
+            ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="ub-sidebar__icon"><path d="m6 9 6 6 6-6" /></svg></b
           >
         </button>
         <p
@@ -118,6 +119,7 @@ async function onLogout() {
           v-show="
             !section.collapsible || openSections[section.key] || railCollapsed
           "
+          :id="`nav-${section.key}`"
         >
           <li v-for="item in section.items" :key="item.to">
             <NotificationCenter
@@ -181,13 +183,14 @@ async function onLogout() {
         >
       </NuxtLink>
       <button
-        v-show="!railCollapsed"
         type="button"
+        class="ub-sidebar__logout"
         aria-label="Cerrar sesión"
         title="Cerrar sesión"
         @click="onLogout"
       >
-        Salir
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="ub-sidebar__icon"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 8l-4 4 4 4M6 12h10" /></svg>
+        <span v-show="!railCollapsed">Salir</span>
       </button>
     </footer>
   </aside>

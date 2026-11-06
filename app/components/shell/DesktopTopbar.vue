@@ -43,6 +43,7 @@ watch(
         type="button"
         class="ub-topbar-button"
         :aria-label="railCollapsed ? 'Expandir menú' : 'Colapsar menú'"
+        :aria-expanded="!railCollapsed"
         @click="toggleRail"
       >
         <ShellNavIcon paths="<path d='M4 7h16M4 12h10M4 17h16' />" />

@@ -149,7 +149,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onGlobalKey));
         @input="open = true"
         @keydown="onKeydown"
       >
-      <kbd class="hidden rounded border border-line px-1.5 text-xs text-muted lg:inline">Ctrl K</kbd>
+      <kbd class="hidden whitespace-nowrap rounded border border-line px-1.5 text-xs text-muted lg:inline">Ctrl K</kbd>
     </label>
 
     <div
