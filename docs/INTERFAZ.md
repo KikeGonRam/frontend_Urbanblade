@@ -15,6 +15,11 @@ Fuentes: [componentes](../app/components), [layouts](../app/layouts),
 - El objetivo interno de interacción es 44 px; no afirmar que todo el producto lo cumple
   sin una medición vigente.
 - Usar estados vacíos, carga y error que expliquen la acción disponible.
+- El dorado como **texto** usa `--gold-text` (en el tema claro es más oscuro que `--gold`); `--gold`
+  queda para bordes, iconos y rellenos. El degradado del botón principal usa `--gold-end`.
+- El selector de tema es `ShellThemePicker` (radios nativos); no volver a un `<select>` suelto.
+- Las páginas públicas no deben desbordar a 320 px (`e2e/SIT/publico-320.spec.ts`) y las pantallas de
+  acceso llevan `<main>`.
 - Reutilizar el kit existente antes de crear otro selector, modal, badge o tabla.
 - No sustituir datos ausentes por cifras o series inventadas.
 
