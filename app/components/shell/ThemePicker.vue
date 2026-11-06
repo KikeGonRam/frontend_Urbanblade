@@ -2,14 +2,14 @@
 /*
  * Selector de tema (Fase 0 del plan de mejora de la interfaz). Sustituye al <select> nativo de la barra:
  * un botón de paleta abre un panel con una vista previa de cada tema; el cambio es inmediato.
- * Teclado: Enter/Espacio abre, flechas/Inicio/Fin mueven, Esc cierra y devuelve el foco al botón.
+ * Las opciones son radios nativos (el navegador mueve la selección con las flechas); Esc cierra y devuelve
+ * el foco al botón.
  */
 const { theme, apply, THEMES, THEME_LABELS, THEME_PREVIEWS, THEME_BLURBS } = useTheme()
 
 const open = ref(false)
 const root = ref<HTMLElement | null>(null)
 const trigger = ref<HTMLButtonElement | null>(null)
-const options = ref<HTMLButtonElement[]>([])
 
 function close(returnFocus = true) {
   open.value = false
@@ -20,26 +20,13 @@ async function toggle() {
   open.value = !open.value
   if (!open.value) return
   await nextTick()
-  options.value[THEMES.indexOf(theme.value)]?.focus()
+  root.value?.querySelector<HTMLInputElement>('input[type="radio"]:checked')?.focus()
 }
 
 function onKeydown(event: KeyboardEvent) {
-  if (event.key === 'Escape') {
-    event.stopPropagation()
-    close()
-    return
-  }
-  const forward = event.key === 'ArrowDown' || event.key === 'ArrowRight'
-  const backward = event.key === 'ArrowUp' || event.key === 'ArrowLeft'
-  if (!forward && !backward && event.key !== 'Home' && event.key !== 'End') return
-  event.preventDefault()
-  const total = THEMES.length
-  const current = options.value.findIndex(el => el === document.activeElement)
-  let next = current
-  if (event.key === 'Home') next = 0
-  else if (event.key === 'End') next = total - 1
-  else next = (current + (forward ? 1 : -1) + total) % total
-  options.value[next]?.focus()
+  if (event.key !== 'Escape') return
+  event.stopPropagation()
+  close()
 }
 
 function onDocumentClick(event: MouseEvent) {
@@ -71,19 +58,17 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocumentClick))
     </button>
 
     <Transition name="ub-theme-pop">
-      <div v-if="open" class="ub-theme-popover" role="radiogroup" aria-label="Tema de color">
-        <p class="ub-theme-popover__title">Tema</p>
-        <button
-          v-for="(option, index) in THEMES"
-          :key="option"
-          :ref="(el) => { if (el) options[index] = el as HTMLButtonElement }"
-          type="button"
-          role="radio"
-          class="ub-theme-option"
-          :aria-checked="theme === option"
-          :tabindex="theme === option ? 0 : -1"
-          @click="apply(option)"
-        >
+      <fieldset v-if="open" class="ub-theme-popover">
+        <legend class="ub-theme-popover__title">Tema</legend>
+        <label v-for="option in THEMES" :key="option" class="ub-theme-option">
+          <input
+            type="radio"
+            name="ub-theme"
+            class="sr-only"
+            :value="option"
+            :checked="theme === option"
+            @change="apply(option)"
+          >
           <span
             class="ub-theme-option__preview"
             aria-hidden="true"
@@ -101,8 +86,8 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocumentClick))
           <svg v-if="theme === option" class="ub-theme-option__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="m5 12 4.5 4.5L19 7" />
           </svg>
-        </button>
-      </div>
+        </label>
+      </fieldset>
     </Transition>
   </div>
 </template>

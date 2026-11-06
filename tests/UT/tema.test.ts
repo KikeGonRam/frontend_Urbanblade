@@ -25,39 +25,39 @@ describe('selector de tema', () => {
 
     expect(boton.attributes('aria-label')).toContain('Tema actual')
     expect(boton.attributes('aria-expanded')).toBe('false')
-    expect(wrapper.find('[role="radiogroup"]').exists()).toBe(false)
+    expect(wrapper.find('fieldset').exists()).toBe(false)
   })
 
   it('abre un grupo de opciones con una vista previa por tema', async () => {
     const wrapper = await mountSuspended(ThemePicker)
     await wrapper.get('button[aria-haspopup]').trigger('click')
 
-    const opciones = wrapper.findAll('[role="radio"]')
+    const opciones = wrapper.findAll('label.ub-theme-option')
     expect(opciones).toHaveLength(THEMES.length)
     expect(opciones.map(o => o.text())).toEqual(expect.arrayContaining(THEMES.map(t => expect.stringContaining(THEME_LABELS[t]))))
-    expect(opciones.filter(o => o.attributes('aria-checked') === 'true')).toHaveLength(1)
+    expect(wrapper.findAll('input[type="radio"]').filter(i => (i.element as HTMLInputElement).checked)).toHaveLength(1)
   })
 
   it('cambia el tema al elegir una opción y marca solo esa', async () => {
     const wrapper = await mountSuspended(ThemePicker)
     await wrapper.get('button[aria-haspopup]').trigger('click')
 
-    await wrapper.findAll('[role="radio"]')[3]!.trigger('click')
+    await wrapper.findAll('input[type="radio"]')[3]!.setValue(true)
 
     expect(document.documentElement.getAttribute('data-theme')).toBe(THEMES[3])
-    const marcadas = wrapper.findAll('[role="radio"]').filter(o => o.attributes('aria-checked') === 'true')
+    const marcadas = wrapper.findAll('input[type="radio"]').filter(i => (i.element as HTMLInputElement).checked)
     expect(marcadas).toHaveLength(1)
-    expect(marcadas[0]!.text()).toContain(THEME_LABELS[THEMES[3]!])
+    expect((marcadas[0]!.element as HTMLInputElement).value).toBe(THEMES[3])
   })
 
   it('se cierra con Escape', async () => {
     const wrapper = await mountSuspended(ThemePicker)
     await wrapper.get('button[aria-haspopup]').trigger('click')
-    expect(wrapper.find('[role="radiogroup"]').exists()).toBe(true)
+    expect(wrapper.find('fieldset').exists()).toBe(true)
 
-    await wrapper.get('[role="radiogroup"]').trigger('keydown', { key: 'Escape' })
+    await wrapper.get('fieldset').trigger('keydown', { key: 'Escape' })
 
-    expect(wrapper.find('[role="radiogroup"]').exists()).toBe(false)
+    expect(wrapper.find('fieldset').exists()).toBe(false)
   })
 })
 
