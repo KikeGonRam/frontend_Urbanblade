@@ -116,7 +116,16 @@ async function asBarber(page: Page, citas: unknown[]) {
   await expect(page.getByRole("heading", { name: /Agenda/ })).toBeVisible();
 }
 
-test.describe("agenda del barbero", () => {
+/**
+ * Para el reporte de Playwright: ninguna respuesta de esta sección viene de barber. Las da page.route() en cada prueba
+ * (navegador) y e2e/support/mock-api.mjs (SSR), así que verifican la interfaz, no la integración con el backend.
+ */
+const API_SIMULADA = {
+  type: "Integración: simulada",
+  description: "Respuestas de la API interceptadas con page.route() y e2e/support/mock-api.mjs; no se contacta el backend real.",
+};
+
+test.describe("agenda del barbero", { annotation: API_SIMULADA }, () => {
   test("Iniciar queda bloqueado con el motivo cuando falta el pago", async ({ page }) => {
     await asBarber(page, [
       cita({ puede_iniciar: false, pago_resuelto: false, motivo_no_iniciar: "El pago de esta cita aún no está resuelto. Cóbrala en recepción." }),
@@ -189,5 +198,42 @@ test.describe("agenda del barbero", () => {
     await expect(dialog.getByText("Folio F-ABC123")).toBeVisible();
     await expect(dialog.getByText("$220.00")).toBeVisible();
     await expect(dialog.getByRole("link", { name: "Ver comprobante (PDF)" })).toBeVisible();
+  });
+
+  // T090 (HT-28), caja negra: la cita reservada nace «pendiente» (RF-10) y el barbero la aprueba (RF-13).
+  test("muestra la cita pendiente y, al aprobarla, confirmada (RF-10 y RF-13)", async ({ page }, testInfo) => {
+    // Agenda simulada con estado, como barber: después del cambio de estado devuelve la cita con el estado nuevo.
+    let estado = "pendiente";
+    const citaActual = () => cita(estado === "confirmada" ? { estado, puede_iniciar: true, pago_resuelto: true } : { estado });
+    await asBarber(page, [citaActual()]);
+    await page.route("**/api/v1/barber/agenda**", (r) =>
+      r.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ data: [citaActual()], range: { label: "Hoy" }, stats: { total_period: 1 } }),
+      }),
+    );
+    await page.route("**/api/v1/appointments/UB-1/status", (r) => {
+      estado = r.request().postDataJSON().estado;
+      return r.fulfill({ status: 200, contentType: "application/json", body: "{}" });
+    });
+    const tarjeta = page.getByRole("article").filter({ hasText: "Cliente Prueba" });
+    // Evidencia para el reporte: la agenda con la tarjeta a la vista y las animaciones de entrada ya terminadas.
+    const foto = async () => {
+      await tarjeta.scrollIntoViewIfNeeded();
+      return page.screenshot({ animations: "disabled" });
+    };
+
+    await expect(tarjeta.getByText("Pendiente", { exact: true })).toBeVisible();
+    await expect(tarjeta.getByRole("button", { name: "Aprobar" })).toBeVisible();
+    await testInfo.attach("1. Cita pendiente", { body: await foto(), contentType: "image/png" });
+
+    await tarjeta.getByRole("button", { name: "Aprobar" }).click();
+
+    await expect(page.getByText("Estado actualizado.")).toBeVisible();
+    await expect(tarjeta.getByText("Confirmada", { exact: true })).toBeVisible();
+    await expect(tarjeta.getByRole("button", { name: "Aprobar" })).toHaveCount(0);
+    await expect(tarjeta.getByRole("button", { name: "Iniciar" })).toBeVisible();
+    await testInfo.attach("2. Cita confirmada", { body: await foto(), contentType: "image/png" });
   });
 });
