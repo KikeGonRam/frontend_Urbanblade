@@ -7,7 +7,7 @@ describe('esqueleto de carga', () => {
   it('es un estado accesible con etiqueta', async () => {
     const wrapper = await mountSuspended(Skeleton, { props: { label: 'Cargando citas…' } })
 
-    expect(wrapper.attributes('role')).toBe('status')
+    expect(wrapper.element.tagName).toBe('OUTPUT')
     expect(wrapper.attributes('aria-label')).toBe('Cargando citas…')
     expect(wrapper.text()).toContain('Cargando citas…')
   })
@@ -22,5 +22,29 @@ describe('esqueleto de carga', () => {
     const wrapper = await mountSuspended(Skeleton, { props: { variant: 'chart' } })
 
     expect(wrapper.findAll('span.rounded-t-md').length).toBeGreaterThan(5)
+  })
+
+  it('dibuja los indicadores y el panel del dashboard', async () => {
+    const wrapper = await mountSuspended(Skeleton, { props: { variant: 'cards' } })
+
+    expect(wrapper.findAll('div.ui-card')).toHaveLength(5)
+  })
+
+  it('dibuja una fila por aviso en la lista', async () => {
+    const wrapper = await mountSuspended(Skeleton, { props: { variant: 'list', rows: 4 } })
+
+    expect(wrapper.findAll('li')).toHaveLength(4)
+  })
+
+  it('dibuja una tarjeta con imagen por cada elemento del muro', async () => {
+    const wrapper = await mountSuspended(Skeleton, { props: { variant: 'feed', rows: 3 } })
+
+    expect(wrapper.findAll('div.ui-card')).toHaveLength(3)
+  })
+
+  it('marca la región como ocupada para los lectores de pantalla', async () => {
+    const wrapper = await mountSuspended(Skeleton, { props: { variant: 'list' } })
+
+    expect(wrapper.attributes('aria-busy')).toBe('true')
   })
 })

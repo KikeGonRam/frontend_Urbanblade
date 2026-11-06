@@ -145,7 +145,7 @@ function fmtDate(iso: string | null) {
       </button>
     </header>
 
-    <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando notificaciones…" />
+    <UiSkeleton v-if="pending" variant="list" :rows="6" label="Cargando notificaciones…" />
     <BrandStatePanel
       v-else-if="error"
       mascot="bruno"

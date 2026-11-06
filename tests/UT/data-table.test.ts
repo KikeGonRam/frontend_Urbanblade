@@ -50,7 +50,7 @@ describe('tabla común', () => {
   it('muestra el esqueleto al cargar y el vacío sin filas', async () => {
     const cargando = await mountSuspended(DataTable, { props: { columns: [...columns], rows, ariaLabel: 'Pedidos', loading: true } })
     expect(cargando.find('table').exists()).toBe(false)
-    expect(cargando.find('[role="status"]').exists()).toBe(true)
+    expect(cargando.find('output').exists()).toBe(true)
 
     const vacia = await mountSuspended(DataTable, { props: { columns: [...columns], rows: [], ariaLabel: 'Pedidos', emptyTitle: 'Sin pedidos' } })
     expect(vacia.find('table').exists()).toBe(false)
