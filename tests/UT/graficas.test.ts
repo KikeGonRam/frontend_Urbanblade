@@ -73,3 +73,39 @@ describe('colores de ejes con el tema activo', () => {
     expect(reteñir('#d4af37', [36, 30, 24, 1])).toBe('#d4af37')
   })
 })
+
+describe('globo de información y dorado de texto por tema (auditoría UX, prioridad 3)', () => {
+  const css = readFileSync(resolve(process.cwd(), 'app/assets/css/main.css'), 'utf8')
+  const bloques: Record<string, [string, string]> = {
+    noir: [':root {', '/* ── "Taller de Acero"'],
+    acero: ['html[data-theme="acero"] {', '/* ── "Salón'],
+    salon: ['html[data-theme="salon"] {', 'html[data-theme="libreta"] {'],
+    libreta: ['html[data-theme="libreta"] {', '@layer base'],
+  }
+  function token(tema: string, nombre: string) {
+    const [inicio, fin] = bloques[tema]!
+    const i = css.indexOf(inicio)
+    const bloque = css.slice(i, css.indexOf(fin, i + inicio.length))
+    return bloque.match(new RegExp(`--${nombre}:\\s+(#[0-9a-f]{6});`, 'i'))?.[1]
+  }
+
+  it('cada tema define su propio dorado de texto (acero y salón ya no heredan el de Nocturna)', () => {
+    for (const tema of Object.keys(bloques)) expect(token(tema, 'gold-text'), tema).toBeTruthy()
+    expect(token('acero', 'gold-text')).toBe(token('acero', 'gold'))
+    expect(token('salon', 'gold-text')).toBe(token('salon', 'gold'))
+  })
+
+  it('el título del globo (dorado de texto) alcanza 4.5:1 sobre la tarjeta en los 4 temas', () => {
+    for (const tema of THEMES) {
+      expect(contraste(canales(token(tema, 'gold-text')!), canales(THEME_PREVIEWS[tema].card)), tema).toBeGreaterThanOrEqual(4.5)
+    }
+  })
+
+  it('la sombra del globo es suave y cálida en el tema claro y más profunda en los oscuros', async () => {
+    const { sombraDelGlobo } = await import('~/utils/chartTheme')
+
+    expect(sombraDelGlobo('libreta')).toBe('rgba(70, 45, 20, 0.18)')
+    expect(sombraDelGlobo('noir')).toBe('rgba(0, 0, 0, 0.35)')
+    expect(sombraDelGlobo(null)).toBe('rgba(0, 0, 0, 0.35)')
+  })
+})

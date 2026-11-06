@@ -158,6 +158,7 @@ html[data-theme="acero"] {
     --chart-5-rgb:   251 146 60;
     --gold-dim-rgb:  156 90 48;
     --gold-glow:     rgba(193, 112, 61, 0.28);
+    --gold-text:     #c57a4b;
 
     --card-premium-from: #1e1f20;
     --card-premium-to:   #131415;
@@ -194,6 +195,7 @@ html[data-theme="salon"] {
     --chart-5-rgb:   251 146 60;
     --gold-dim-rgb:  161 129 58;
     --gold-glow:     rgba(201, 162, 74, 0.28);
+    --gold-text:     #c9a24a;
 
     --card-premium-from: #17201c;
     --card-premium-to:   #0d1310;
