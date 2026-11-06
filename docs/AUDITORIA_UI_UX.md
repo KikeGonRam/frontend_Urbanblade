@@ -224,3 +224,28 @@ npx playwright test e2e/SIT/auditoria-ui.spec.ts --workers=1 --reporter=list
 - **No cambié alturas de controles** del sidebar y la topbar: son visibles y
   afectan al espaciado del panel, que ya está validado contra el mockup.
 - **No toqué los degradados**, aunque sean los que impiden auditar el contraste.
+
+---
+
+## Seguimiento del 6 de noviembre de 2026
+
+Cuatro semanas después de la auditoría se aplicaron las correcciones de las fases 0 a 4 del plan de
+mejora de la interfaz web. Esta tabla relaciona cada hallazgo con lo hecho y con cómo se comprobó.
+**No es una auditoría nueva:** no se repitió la medición completa (4 temas × 8 páginas × 4 anchos); se
+verificó cada corrección con pruebas puntuales y capturas de la versión evaluada.
+
+| Hallazgo | Estado | Qué se hizo y cómo se comprobó |
+|---|---|---|
+| P1 · Contraste del tema `libreta` (dorado y texto atenuado) | Corregido en código | Token `--gold-text` (`#8a6408`, 4.6:1) para dorado como texto, texto atenuado `#6e6456` (4.5:1 sobre el fondo de acento), cobre de `acero` `#c57a4b` y pie del acceso `#787878`. Pruebas de razón de contraste en `tests/UT/tema.test.ts` y `tests/UT/botones.test.ts` (PR #125, #128) |
+| Contraste del degradado del botón principal | Corregido | Extremo oscuro `--gold-end` por tema, ≥ 4.5:1 con texto negro (PR #128) |
+| P1 · Desborde horizontal de la landing a 768 px | Ya no se reproduce | Medido el 6 de noviembre con Playwright: sin desborde a 320, 375, 768 y 1440 px |
+| P1 · Desborde a 320 px en `/equipo`, `/reservar`, `/servicios` | Corregido | Era la fila de enlaces legales del pie (26 px); ahora se parte en líneas. Prueba e2e `e2e/SIT/publico-320.spec.ts` (PR #131) |
+| P1 · Falta `<main>` en el login | Corregido | `AuthShell` usa `<main>` en login, registro y recuperación; la landing ya lo tenía (PR #131) |
+| P2 · Blancos táctiles de la barra y el menú | Corregido en código | Botones de la barra, colapso del menú, títulos de sección, buscador y «Salir» a 44 px; botones y campos a 44 px con puntero táctil (PR #125, #127, #128). Sin medición independiente nueva |
+| P2 · Jerarquía de encabezados | Parcial | Login con un solo `h1` (medido). El dashboard y los saltos de nivel de la landing no se midieron de nuevo |
+| P3 · Textos de la app Android en duro y contraste de píldoras | Sin cambios | La app móvil está en pausa de mejoras hasta su publicación |
+
+Otros cambios de la misma serie que conviene conocer: selector de tema con vistas previas y teclado
+(también disponible en móvil), estados vacío y de error con `role="alert"` para errores, esqueletos
+de carga accesibles (`<output>`), modales con id propio y etiquetas de gráficas en español en el
+backend.
