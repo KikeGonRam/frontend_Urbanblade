@@ -7,7 +7,7 @@ describe('esqueleto de carga', () => {
   it('es un estado accesible con etiqueta', async () => {
     const wrapper = await mountSuspended(Skeleton, { props: { label: 'Cargando citas…' } })
 
-    expect(wrapper.attributes('role')).toBe('status')
+    expect(wrapper.element.tagName).toBe('OUTPUT')
     expect(wrapper.attributes('aria-label')).toBe('Cargando citas…')
     expect(wrapper.text()).toContain('Cargando citas…')
   })

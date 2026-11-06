@@ -23,7 +23,7 @@ const BARS = [38, 62, 46, 78, 54, 90, 66, 48, 72, 58, 84, 44]
 </script>
 
 <template>
-  <div role="status" aria-live="polite" aria-busy="true" :aria-label="label" class="w-full">
+  <output aria-live="polite" aria-busy="true" :aria-label="label" class="block w-full">
     <span class="sr-only">{{ label }}</span>
 
     <div v-if="variant === 'chart'" class="flex h-full min-h-40 w-full items-end gap-2 px-1 pb-1" aria-hidden="true">
@@ -86,5 +86,5 @@ const BARS = [38, 62, 46, 78, 54, 90, 66, 48, 72, 58, 84, 44]
     </div>
 
     <span v-else class="block h-full min-h-24 w-full rounded-xl bg-ink/10 motion-safe:animate-pulse" aria-hidden="true" />
-  </div>
+  </output>
 </template>
