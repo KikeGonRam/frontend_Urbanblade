@@ -143,7 +143,7 @@ v-model="categoria"
 
     <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando productos…" />
     <BrandStatePanel v-else-if="error" mascot="bruno" state="error" tone="danger" title="No se pudo cargar el catálogo" description="Inténtalo nuevamente en unos minutos." />
-    <BrandStatePanel v-else-if="!products.length" mascot="nava" state="empty" title="Sin productos disponibles" description="Vuelve pronto para descubrir nuevos productos de cuidado." />
+    <BrandStatePanel v-else-if="!products.length" mascot="nava" state="empty" title="Por ahora no hay productos disponibles" description="Vuelve pronto para descubrir nuevos productos de cuidado." />
 
     <section
       v-else

@@ -173,7 +173,7 @@ test("un día sin huecos lo dice en vez de dejar elegir cualquier hora", async (
   await page.getByRole("button", { name: /Corte clásico/ }).click();
   await page.getByRole("button", { name: "Hoy" }).click();
 
-  await expect(page.getByText("Sin horarios libres ese día")).toBeVisible();
+  await expect(page.getByText("Ese día ya no tiene horarios libres")).toBeVisible();
 });
 
 async function asLoggedInStaff(page: Page) {

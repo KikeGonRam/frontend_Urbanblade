@@ -184,7 +184,7 @@ function money(n: number | null | undefined) {
           class="mt-4"
           mascot="nava"
           state="empty"
-          title="Sin movimientos ese día"
+          title="No hubo movimientos ese día"
           description="Cuando se registre un cobro o se entregue un pedido aparecerá aquí."
         />
         <dl v-else class="mt-4 space-y-2 text-sm">

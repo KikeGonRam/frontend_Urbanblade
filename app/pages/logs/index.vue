@@ -286,7 +286,7 @@ function fmtDate(iso: string | null) {
       :rows="logs"
       :loading="pending"
       aria-label="Registro de auditoría"
-      empty-title="Sin registros que mostrar"
+      empty-title="Todavía no hay registros que mostrar"
       empty-description="Cambia los filtros o el rango de fechas para ver otra actividad."
     >
       <template #cell-created_at="{ row }">

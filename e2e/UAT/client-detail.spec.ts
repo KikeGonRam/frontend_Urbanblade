@@ -174,7 +174,7 @@ test("un cliente sin historial lo dice en vez de mostrar una tabla vacía", asyn
 
   await page.goto("/clients/cliente-prueba");
 
-  await expect(page.getByText("Sin citas todavía")).toBeVisible();
+  await expect(page.getByText("Todavía no tiene citas")).toBeVisible();
 });
 
 test("un error de carga muestra el estado de error, no una ficha vacía", async ({

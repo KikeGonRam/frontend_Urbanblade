@@ -525,7 +525,7 @@ async function removeProduct(product: ProductRow) {
           </tr>
           <tr v-if="!products.length">
             <td colspan="6" class="px-4 py-6">
-              <BrandStatePanel mascot="nava" state="empty" title="Sin productos registrados" description="Los productos del inventario aparecerán aquí." />
+              <BrandStatePanel mascot="nava" state="empty" title="Todavía no hay productos registrados" description="Los productos del inventario aparecerán aquí." />
             </td>
           </tr>
         </tbody>

@@ -575,7 +575,7 @@ const barberRanking = computed(() => {
           class="flex h-40 items-center justify-center rounded-xl border border-dashed border-ink/[0.06]"
         >
           <p class="text-xs font-bold uppercase tracking-widest text-ink/45">
-            Sin servicios registrados
+            Todavía no hay servicios registrados
           </p>
         </div>
       </div>

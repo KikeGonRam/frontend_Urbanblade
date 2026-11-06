@@ -279,7 +279,7 @@ v-model="estadoFilter"
       :rows="orders"
       :loading="pending"
       aria-label="Pedidos"
-      empty-title="Sin pedidos que mostrar"
+      empty-title="Todavía no hay pedidos que mostrar"
       empty-description="Los pedidos de la tienda aparecerán aquí cuando un cliente compre o cuando cambies el filtro."
     >
       <template #cell-folio="{ row }">

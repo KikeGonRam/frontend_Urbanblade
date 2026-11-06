@@ -564,7 +564,7 @@ v-model="barberFilter"
           </tr>
           <tr v-if="!appointments.length" class="block md:table-row">
             <td colspan="7" class="block px-4 py-6 md:table-cell">
-              <BrandStatePanel mascot="nava" state="empty" title="Sin citas que mostrar" description="Las citas que coincidan con tus filtros aparecerán aquí." />
+              <BrandStatePanel mascot="nava" state="empty" title="Todavía no hay citas que mostrar" description="Las citas que coincidan con tus filtros aparecerán aquí." />
             </td>
           </tr>
         </tbody>

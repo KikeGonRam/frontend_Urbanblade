@@ -56,7 +56,7 @@ const services = computed(() => response.value?.data ?? [])
       action-label="Reintentar"
       @action="refresh"
     />
-    <BrandStatePanel v-else-if="!services.length" mascot="nava" state="empty" title="No hay servicios disponibles" description="Vuelve pronto para conocer nuestros próximos servicios." />
+    <BrandStatePanel v-else-if="!services.length" mascot="nava" state="empty" title="Por ahora no hay servicios disponibles" description="Vuelve pronto para conocer nuestros próximos servicios." />
 
     <LandingStyleLookbook v-else :services="services" />
 
