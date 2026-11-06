@@ -59,7 +59,7 @@ export default defineNuxtConfig({
           name: 'viewport',
           content: 'width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content',
         },
-        { name: 'theme-color', media: '(prefers-color-scheme: dark)', content: '#0a0a0a' },
+        { name: 'theme-color', media: '(prefers-color-scheme: dark)', content: '#0c0a08' },
         { name: 'theme-color', media: '(prefers-color-scheme: light)', content: '#f7f3ea' },
         { name: 'color-scheme', content: 'dark light' },
         { name: 'mobile-web-app-capable', content: 'yes' },
@@ -75,7 +75,7 @@ export default defineNuxtConfig({
       // bloqueante que lee la cookie de forma síncrona.
       script: [
         {
-          innerHTML: `(function(){try{var m=document.cookie.match(/(?:^|; )ub_theme=([^;]+)/);var t=m?decodeURIComponent(m[1]):'noir';var c={noir:'#0a0a0a',acero:'#111317',salon:'#0b1210',libreta:'#f3ede0'}[t]||'#0a0a0a';document.documentElement.setAttribute('data-theme',t);document.querySelectorAll('meta[name="theme-color"]').forEach(function(e){e.setAttribute('content',c)});document.querySelector('meta[name="color-scheme"]')?.setAttribute('content',t==='libreta'?'light':'dark');}catch(e){}})();`,
+          innerHTML: `(function(){try{var m=document.cookie.match(/(?:^|; )ub_theme=([^;]+)/);var t=m?decodeURIComponent(m[1]):'noir';var c={noir:'#0c0a08',acero:'#121314',salon:'#0b1210',libreta:'#f3ede0'}[t]||'#0c0a08';document.documentElement.setAttribute('data-theme',t);document.querySelectorAll('meta[name="theme-color"]').forEach(function(e){e.setAttribute('content',c)});document.querySelector('meta[name="color-scheme"]')?.setAttribute('content',t==='libreta'?'light':'dark');}catch(e){}})();`,
           tagPosition: 'head',
         },
         // Google Tag Manager (GTM-K4RR96BB) ya NO se carga aquí: solo después de que la persona

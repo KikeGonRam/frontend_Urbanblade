@@ -87,16 +87,16 @@
 
 /* ── "Sastrería Nocturna" (default) — negro + oro ── */
 :root {
-    --bg-main:   #0a0a0a;
-    --bg-card:   #161616;
-    --bg-accent: #1f1f1f;
-    --panel:     #111111;
+    --bg-main:   #0c0a08;
+    --bg-card:   #181512;
+    --bg-accent: #221e19;
+    --panel:     #12100d;
 
-    --ink:      #f2f2f2;
-    --ink-rgb:  242 242 242;
-    --muted:    #9c9c9c;
+    --ink:      #f4efe6;
+    --ink-rgb:  244 239 230;
+    --muted:    #a69d90;
 
-    --line:  #2c2c2c;
+    --line:  #2f2a24;
 
     --gold:          #d4af37;
     --gold-dim:      #a8842c;
@@ -112,15 +112,15 @@
     /* Dorado para TEXTO sobre fondos del tema: en los oscuros es el mismo --gold; el claro lo oscurece (AA). */
     --gold-text:     #d4af37;
 
-    --card-premium-from: #1b1b1b;
-    --card-premium-to:   #0d0d0d;
-    --panel-from:        #151515;
-    --panel-to:          #0a0a0a;
+    --card-premium-from: #1c1915;
+    --card-premium-to:   #0e0c0a;
+    --panel-from:        #151310;
+    --panel-to:          #0c0a08;
 
-    --bg-topbar:    rgba(10, 10, 10, 0.93);
-    --bg-bottomnav: rgba(10, 10, 10, 0.97);
+    --bg-topbar:    rgba(12, 10, 8, 0.93);
+    --bg-bottomnav: rgba(12, 10, 8, 0.97);
 
-    --dot-color: rgba(255, 255, 255, 0.03);
+    --dot-color: rgba(255, 244, 230, 0.03);
 
     /* Colores de estado (kit, 26-sep): éxito, aviso, peligro, información. Solo para
        estados y variaciones (+/−); la identidad sigue siendo el oro de cada tema. */
@@ -130,18 +130,18 @@
     --info-rgb:    96 165 250;
 }
 
-/* ── "Taller de Acero" — grafito frío + cobre ── */
+/* ── "Taller de Acero" — grafito + cobre ── */
 html[data-theme="acero"] {
-    --bg-main:   #111317;
-    --bg-card:   #1a1d22;
-    --bg-accent: #22262c;
-    --panel:     #14171b;
+    --bg-main:   #121314;
+    --bg-card:   #1b1c1d;
+    --bg-accent: #242526;
+    --panel:     #151617;
 
-    --ink:      #eef0f2;
-    --ink-rgb:  238 240 242;
-    --muted:    #8f95a0;
+    --ink:      #f0eeea;
+    --ink-rgb:  240 238 234;
+    --muted:    #9a9b99;
 
-    --line:  #2c3038;
+    --line:  #2d2f31;
 
     --gold:          #c57a4b;
     --gold-dim:      #9c5a30;
@@ -155,13 +155,13 @@ html[data-theme="acero"] {
     --gold-dim-rgb:  156 90 48;
     --gold-glow:     rgba(193, 112, 61, 0.28);
 
-    --card-premium-from: #1d2026;
-    --card-premium-to:   #121418;
-    --panel-from:        #191c21;
-    --panel-to:          #0f1114;
+    --card-premium-from: #1e1f20;
+    --card-premium-to:   #131415;
+    --panel-from:        #1a1b1c;
+    --panel-to:          #101112;
 
-    --bg-topbar:    rgba(17, 19, 23, 0.93);
-    --bg-bottomnav: rgba(17, 19, 23, 0.97);
+    --bg-topbar:    rgba(18, 19, 20, 0.93);
+    --bg-bottomnav: rgba(18, 19, 20, 0.97);
 
     --dot-color: rgba(193, 112, 61, 0.04);
 }
@@ -173,9 +173,9 @@ html[data-theme="salon"] {
     --bg-accent: #1c2621;
     --panel:     #0f1614;
 
-    --ink:      #eef2ee;
-    --ink-rgb:  238 242 238;
-    --muted:    #93a49b;
+    --ink:      #f1efe6;
+    --ink-rgb:  241 239 230;
+    --muted:    #9aa89c;
 
     --line:  #26332c;
 

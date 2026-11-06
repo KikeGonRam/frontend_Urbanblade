@@ -149,7 +149,7 @@ onBeforeUnmount(() => {
   z-index: 0;
   background:
     radial-gradient(circle at 15% 20%, rgb(var(--gold-rgb) / 0.08), transparent 26rem),
-    linear-gradient(150deg, #050505 4%, rgba(5, 5, 5, 0.55) 55%, #0a0a0a 100%);
+    linear-gradient(150deg, #050505 4%, rgba(5, 5, 5, 0.55) 55%, #0c0a08 100%);
 }
 .auth-shell__gridlines {
   position: absolute;
