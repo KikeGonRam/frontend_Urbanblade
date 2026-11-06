@@ -25,8 +25,8 @@ export function chartThemeTick() {
 }
 
 function cssVar(name: string, fallback: string): string {
-  void chartThemeVersion.value
-  if (!import.meta.client) return fallback
+  // Leer la versión hace que el computed que llama a esta función dependa del tema (nunca es negativa).
+  if (chartThemeVersion.value < 0 || !import.meta.client) return fallback
   const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim()
 
   return value || fallback
