@@ -422,7 +422,7 @@ async function removeProduct(product: ProductRow) {
       </button>
     </section>
 
-    <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando productos…" />
+    <UiSkeleton v-if="pending" variant="rows" :rows="8" label="Cargando productos…" class="ui-card" />
 
     <BrandStatePanel
       v-else-if="error"

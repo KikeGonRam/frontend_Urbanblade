@@ -132,7 +132,7 @@ async function submitComment(work: WorkRow) {
       <p class="mt-1 text-sm text-muted">Los últimos trabajos publicados por nuestros barberos.</p>
     </header>
 
-    <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando inspiración…" />
+    <UiSkeleton v-if="pending" variant="feed" :rows="6" label="Cargando inspiración…" />
     <BrandStatePanel
       v-else-if="error"
       mascot="bruno"

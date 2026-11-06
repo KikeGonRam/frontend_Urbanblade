@@ -261,7 +261,7 @@ async function removeService(service: ServiceRow) {
       :busy="pending"
     />
 
-    <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando servicios…" />
+    <UiSkeleton v-if="pending" variant="rows" :rows="8" label="Cargando servicios…" class="ui-card" />
     <BrandStatePanel
       v-else-if="error"
       mascot="bruno"
