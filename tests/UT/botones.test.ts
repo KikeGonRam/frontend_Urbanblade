@@ -65,3 +65,9 @@ describe('formularios', () => {
     expect(css).toContain('color: var(--gold-text)')
   })
 })
+
+describe('accesibilidad 2.2', () => {
+  it('el foco no queda bajo las barras fijas (scroll-padding en html)', () => {
+    expect(css).toMatch(/html \{ scroll-padding-top: 4\.5rem; scroll-padding-bottom: 5\.5rem; \}/)
+  })
+})
