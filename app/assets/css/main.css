@@ -10,6 +10,10 @@
         -webkit-tap-highlight-color: transparent;
         -webkit-text-size-adjust: 100%;
         overscroll-behavior: none;
+        /* WCAG 2.4.11 (foco no oculto): al enfocar con el teclado, el elemento no debe quedar bajo la barra superior fija
+           (56 px) ni bajo la navegación inferior móvil (64 px). */
+        scroll-padding-top: 4.5rem;
+        scroll-padding-bottom: 5.5rem;
     }
 
     /* Saltos a #ancla con scroll suave; el margen libera la barra fija de 80 px de la landing. */

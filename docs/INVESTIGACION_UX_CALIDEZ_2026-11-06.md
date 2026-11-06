@@ -81,9 +81,9 @@ Los conteos son búsquedas de texto en `app/`, no una auditoría de cada pantall
 | Criterio | Estado en UrbanBlade |
 | --- | --- |
 | 2.5.8 Tamaño de objetivo (AA) | Barra y menú a 44 px desde la Fase 0; falta medir los enlaces de tablas |
-| 2.4.11 Foco no oculto (AA) | Sin comprobar: la barra superior fija puede tapar el elemento enfocado; añadir `scroll-padding-top` |
-| 3.2.6 Ayuda consistente (A) | El asistente flotante está en el mismo lugar en los paneles; falta comprobarlo en el sitio público |
-| 3.3.8 Autenticación accesible (AA) | Sin comprobar: permitir pegar y gestores de contraseñas en el acceso |
+| 2.4.11 Foco no oculto (AA) | Mitigado: `scroll-padding` de 4.5 rem arriba y 5.5 rem abajo en `html` para la barra superior y la navegación móvil. Sin prueba con teclado en cada pantalla |
+| 3.2.6 Ayuda consistente (A) | El asistente flotante está en el mismo lugar en todos los paneles; el sitio público ofrece el teléfono en el pie, sin asistente: no hay ayuda que cambie de lugar, pero conviene decidir si el asistente también va allí |
+| 3.3.8 Autenticación accesible (AA) | Revisado en el código: `autocomplete` correcto (`username`, `current-password`, `new-password`) y ningún bloqueo de pegado. Sin prueba con un gestor de contraseñas real |
 | 3.3.7 Entrada redundante (A) | Sin comprobar en la reserva por pasos |
 | 2.5.7 Movimientos de arrastre (AA) | Sin comprobar en el calendario |
 
