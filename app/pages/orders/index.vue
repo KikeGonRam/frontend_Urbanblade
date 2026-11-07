@@ -340,52 +340,44 @@ v-model="estadoFilter"
       :busy="pending"
     />
 
-    <div
+    <UiModal
       v-if="delivering"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="deliver-title"
-      @click.self="delivering = null"
+      :title="`Entregar ${delivering.folio}`"
+      size="sm"
+      :busy="busy === delivering.id"
+      @close="delivering = null"
     >
-      <div class="w-full max-w-sm rounded-2xl border border-line bg-card p-6">
-        <h2 id="deliver-title" class="mb-1 text-lg font-semibold text-ink">
-          Entregar {{ delivering.folio }}
-        </h2>
-        <p class="mb-4 text-sm text-muted">
-          Total a cobrar:
-          <span class="font-black text-gold">{{
-            fmtMoney(delivering.total)
-          }}</span>
-        </p>
-        <UiChoiceCards
-          v-model="metodoPago"
-          label="Método de pago"
-          :options="DELIVER_METODOS"
-          :columns="1"
-          class="mb-4"
-        />
-        <p v-if="actionError" class="mb-3 text-sm text-danger">
-          {{ actionError }}
-        </p>
-        <div class="flex gap-3">
-          <button
-            type="button"
-            :disabled="busy === delivering.id"
-            class="flex-1 rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-black hover:bg-gold-dim disabled:opacity-50"
-            @click="confirmDeliver"
-          >
-            {{ busy === delivering.id ? "Guardando…" : "Confirmar entrega" }}
-          </button>
-          <button
-            type="button"
-            class="rounded-lg border border-line px-4 py-2 text-sm text-muted hover:text-ink"
-            @click="delivering = null"
-          >
-            Cancelar
-          </button>
-        </div>
+      <p class="mb-4 text-sm text-muted">
+        Total a cobrar:
+        <span class="font-black text-gold">{{ fmtMoney(delivering.total) }}</span>
+      </p>
+      <UiChoiceCards
+        v-model="metodoPago"
+        label="Método de pago"
+        :options="DELIVER_METODOS"
+        :columns="1"
+        class="mb-4"
+      />
+      <p v-if="actionError" class="mb-3 text-sm text-danger">
+        {{ actionError }}
+      </p>
+      <div class="flex gap-3">
+        <button
+          type="button"
+          :disabled="busy === delivering.id"
+          class="ui-btn min-h-11 flex-1 px-4"
+          @click="confirmDeliver"
+        >
+          {{ busy === delivering.id ? "Guardando…" : "Confirmar entrega" }}
+        </button>
+        <button
+          type="button"
+          class="ui-btn-secondary min-h-11 px-4"
+          @click="delivering = null"
+        >
+          Cancelar
+        </button>
       </div>
-    </div>
+    </UiModal>
   </div>
 </template>

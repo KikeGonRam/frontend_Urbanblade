@@ -1,7 +1,8 @@
 <script setup lang="ts">
-const props = withDefaults(defineProps<{ title: string; busy?: boolean }>(), {
-  busy: false,
-});
+const props = withDefaults(
+  defineProps<{ title: string; busy?: boolean; size?: "sm" | "md" | "lg" }>(),
+  { busy: false, size: "lg" },
+);
 const emit = defineEmits<{ close: [] }>();
 const dialog = ref<HTMLDialogElement | null>(null);
 // Un id por instancia: con una ventana abierta sobre otra, un id fijo repetido rompía aria-labelledby.
@@ -47,7 +48,7 @@ function close() {
   <Teleport to="body">
     <dialog
       ref="dialog"
-      class="ui-modal"
+      :class="['ui-modal', `ui-modal--${size}`]"
       role="dialog"
       aria-modal="true"
       :aria-labelledby="titleId"
@@ -77,5 +78,11 @@ function close() {
 <style scoped>
 .ui-modal {
   width: min(56rem, calc(100vw - 2rem));
+}
+.ui-modal--md {
+  width: min(28rem, calc(100vw - 2rem));
+}
+.ui-modal--sm {
+  width: min(24rem, calc(100vw - 2rem));
 }
 </style>
