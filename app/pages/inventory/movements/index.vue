@@ -175,6 +175,20 @@ const form = reactive({
   fecha: "",
 });
 const formError = ref("");
+const mErr = (field: string) => fieldErrors.value[field]?.[0] ?? null;
+const mInput = (field: string) => [
+  "ui-input w-full",
+  fieldErrors.value[field] ? "border-danger/60" : "border-line",
+];
+const tipoOptions = computed(() => [
+  { value: "salida", title: "Salida", detail: "Consumo del producto", icon: "box" },
+  ...(isAdmin.value
+    ? [{ value: "entrada", title: "Entrada", detail: "Reposición de stock", icon: "plus" }]
+    : []),
+]);
+const movementProduct = computed(
+  () => products.value.find((p) => p.id === form.product_id)?.nombre ?? "",
+);
 const fieldErrors = ref<Record<string, string[]>>({});
 const saving = ref(false);
 
@@ -478,136 +492,108 @@ async function submitForm() {
       :busy="saving"
       @close="closeForm"
     >
-        <form id="movement-form" class="space-y-3" @submit.prevent="submitForm">
-          <div>
-            <label for="movement-product" class="mb-1 block text-xs text-muted"
-              >Producto</label
-            >
-            <select
-              id="movement-product"
-              v-model="form.product_id"
-              required
-              :aria-invalid="!!fieldErrors.product_id"
-              :aria-describedby="
-                fieldErrors.product_id ? 'movement-product-error' : undefined
-              "
-              :class="[
-                'ui-input w-full',
-                fieldErrors.product_id ? 'border-danger/60' : 'border-line',
-              ]"
-            >
-              <option value="" disabled>Selecciona…</option>
-              <option v-for="p in products" :key="p.id" :value="p.id">
-                {{ p.nombre }}
-              </option>
-            </select>
-            <p
-              v-if="fieldErrors.product_id"
-              id="movement-product-error"
-              class="mt-1 text-xs text-danger"
-            >
-              {{ fieldErrors.product_id[0] }}
-            </p>
-          </div>
-          <div>
-            <label for="movement-type" class="mb-1 block text-xs text-muted"
-              >Tipo</label
-            >
-            <select
-              id="movement-type"
+        <form id="movement-form" class="space-y-6" @submit.prevent="submitForm">
+          <section class="space-y-4" aria-labelledby="mv-what">
+            <p id="mv-what" class="ub-form-section__title">Movimiento</p>
+            <UiChoiceCards
               v-model="form.tipo"
-              :aria-invalid="!!fieldErrors.tipo"
-              :aria-describedby="
-                fieldErrors.tipo ? 'movement-type-error' : undefined
-              "
-              :class="[
-                'ui-input w-full',
-                fieldErrors.tipo ? 'border-danger/60' : 'border-line',
-              ]"
-            >
-              <option value="salida">Salida (consumo)</option>
-              <option v-if="isAdmin" value="entrada">
-                Entrada (reposición)
-              </option>
-            </select>
-            <p
-              v-if="fieldErrors.tipo"
-              id="movement-type-error"
-              class="mt-1 text-xs text-danger"
-            >
-              {{ fieldErrors.tipo[0] }}
-            </p>
-            <p v-if="!isAdmin" class="mt-1 text-xs italic text-muted">
-              Recepción solo puede registrar salidas.
-            </p>
-          </div>
-          <div>
-            <label for="movement-quantity" class="mb-1 block text-xs text-muted"
-              >Cantidad</label
-            >
-            <input
-              id="movement-quantity"
-              v-model.number="form.cantidad"
-              type="number"
-              min="1"
-              required
-              :aria-invalid="!!fieldErrors.cantidad"
-              :aria-describedby="
-                fieldErrors.cantidad ? 'movement-quantity-error' : undefined
-              "
-              :class="[
-                'ui-input w-full',
-                fieldErrors.cantidad ? 'border-danger/60' : 'border-line',
-              ]"
-            >
-            <p
-              v-if="fieldErrors.cantidad"
-              id="movement-quantity-error"
-              class="mt-1 text-xs text-danger"
-            >
-              {{ fieldErrors.cantidad[0] }}
-            </p>
-          </div>
-          <div>
-            <label for="movement-reason" class="mb-1 block text-xs text-muted"
-              >Motivo (opcional)</label
-            >
-            <input
-              id="movement-reason"
-              v-model="form.motivo"
-              type="text"
-              maxlength="255"
-              :aria-invalid="!!fieldErrors.motivo"
-              :aria-describedby="
-                fieldErrors.motivo ? 'movement-reason-error' : undefined
-              "
-              :class="[
-                'ui-input w-full',
-                fieldErrors.motivo ? 'border-danger/60' : 'border-line',
-              ]"
-            >
-            <p
-              v-if="fieldErrors.motivo"
-              id="movement-reason-error"
-              class="mt-1 text-xs text-danger"
-            >
-              {{ fieldErrors.motivo[0] }}
-            </p>
-          </div>
-          <div class="grid gap-3 sm:grid-cols-2">
-            <div>
-              <label for="movement-appointment" class="mb-1 block text-xs text-muted">Cita asociada (opcional)</label>
-              <input id="movement-appointment" v-model="form.appointment_id" type="text" placeholder="ID de la cita" :aria-invalid="!!fieldErrors.appointment_id" :class="['ui-input w-full', fieldErrors.appointment_id ? 'border-danger/60' : '']">
-              <p class="mt-1 text-xs text-muted">Úsalo si corresponde al consumo de una cita.</p>
-              <p v-if="fieldErrors.appointment_id" class="mt-1 text-xs text-danger">{{ fieldErrors.appointment_id[0] }}</p>
+              label="Tipo"
+              hide-label
+              :options="tipoOptions"
+              :columns="2"
+            />
+            <p v-if="!isAdmin" class="ub-form-help">Recepción solo puede registrar salidas.</p>
+            <p v-if="mErr('tipo')" class="text-xs text-danger">{{ mErr("tipo") }}</p>
+            <UiFormField field-id="movement-product" label="Producto" icon="box" :error="mErr('product_id')">
+              <select
+                id="movement-product"
+                v-model="form.product_id"
+                aria-label="Producto"
+                required
+                :aria-invalid="!!mErr('product_id')"
+                :aria-describedby="mErr('product_id') ? 'movement-product-error' : undefined"
+                :class="mInput('product_id')"
+              >
+                <option value="" disabled>Selecciona…</option>
+                <option v-for="p in products" :key="p.id" :value="p.id">
+                  {{ p.nombre }}
+                </option>
+              </select>
+            </UiFormField>
+            <UiFormField field-id="movement-quantity" label="Cantidad" icon="plus" :error="mErr('cantidad')">
+              <input
+                id="movement-quantity"
+                v-model.number="form.cantidad"
+                aria-label="Cantidad"
+                type="number"
+                min="1"
+                required
+                :aria-invalid="!!mErr('cantidad')"
+                :aria-describedby="mErr('cantidad') ? 'movement-quantity-error' : undefined"
+                :class="mInput('cantidad')"
+              >
+            </UiFormField>
+            <div class="ub-apptcard" aria-label="Resumen del movimiento">
+              <span class="ub-apptcard__avatar"><UiIcon name="box" /></span>
+              <span class="min-w-0 flex-1">
+                <b class="block truncate text-sm text-ink">{{ movementProduct || "Producto sin elegir" }}</b>
+                <small class="block truncate text-xs text-muted">{{ form.tipo === "entrada" ? "Reposición" : "Consumo" }}</small>
+              </span>
+              <span class="ub-apptcard__pill">{{ form.tipo === "entrada" ? "+" : "−" }}{{ form.cantidad || 0 }}</span>
             </div>
-            <div>
-              <label for="movement-date" class="mb-1 block text-xs text-muted">Fecha del movimiento (opcional)</label>
-              <input id="movement-date" v-model="form.fecha" type="date" :aria-invalid="!!fieldErrors.fecha" :class="['ui-input w-full', fieldErrors.fecha ? 'border-danger/60' : '']">
-              <p class="mt-1 text-xs text-muted">Vacío = fecha actual.</p>
-              <p v-if="fieldErrors.fecha" class="mt-1 text-xs text-danger">{{ fieldErrors.fecha[0] }}</p>
+          </section>
+
+          <section class="space-y-4" aria-labelledby="mv-more">
+            <p id="mv-more" class="ub-form-section__title">Detalles</p>
+            <UiFormField field-id="movement-reason" label="Motivo (opcional)" icon="text" :error="mErr('motivo')">
+              <input
+                id="movement-reason"
+                v-model="form.motivo"
+                aria-label="Motivo (opcional)"
+                type="text"
+                maxlength="255"
+                :aria-invalid="!!mErr('motivo')"
+                :aria-describedby="mErr('motivo') ? 'movement-reason-error' : undefined"
+                :class="mInput('motivo')"
+              >
+            </UiFormField>
+            <div class="grid gap-3 sm:grid-cols-2">
+              <UiFormField
+                field-id="movement-appointment"
+                label="Cita asociada (opcional)"
+                icon="calendar"
+                hint="Úsalo si corresponde al consumo de una cita."
+                :error="mErr('appointment_id')"
+              >
+                <input
+                  id="movement-appointment"
+                  v-model="form.appointment_id"
+                  aria-label="Cita asociada (opcional)"
+                  type="text"
+                  placeholder="ID de la cita"
+                  :aria-invalid="!!mErr('appointment_id')"
+                  :class="mInput('appointment_id')"
+                >
+              </UiFormField>
+              <UiFormField
+                field-id="movement-date"
+                label="Fecha del movimiento (opcional)"
+                icon="clock"
+                hint="Vacío = fecha actual."
+                :error="mErr('fecha')"
+              >
+                <input
+                  id="movement-date"
+                  v-model="form.fecha"
+                  aria-label="Fecha del movimiento (opcional)"
+                  type="date"
+                  :aria-invalid="!!mErr('fecha')"
+                  :class="mInput('fecha')"
+                >
+              </UiFormField>
             </div>
-          </div>
+          </section>
+
           <p v-if="formError" role="alert" class="text-sm text-danger">
             {{ formError }}
           </p>
