@@ -70,6 +70,20 @@ const props = defineProps<{
 }>();
 const saludo = useSaludo();
 
+// Dirección de la barbería para el botón «Cómo llegar» (mismo endpoint público que la reserva).
+const { apiFetch } = useApi();
+const { data: shopRes } = await useAsyncData<{ data: { direccion?: string | null } }>(
+  "cliente-barbershop",
+  () => apiFetch("/barbershop"),
+  { lazy: true },
+);
+const shop = computed(() => shopRes.value?.data ?? null);
+const mapsUrl = computed(() =>
+  shop.value?.direccion
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(shop.value.direccion)}`
+    : "",
+);
+
 const safeProgress = computed(() =>
   Math.max(0, Math.min(100, Number(props.data.loyalty.progressPct) || 0)),
 );
@@ -236,8 +250,25 @@ const visitChartOptions = {
             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             {{ countdown }}
           </p>
+          <p v-if="shop?.direccion" class="mt-4 inline-flex items-center gap-2 text-sm text-muted">
+            <UiIcon name="pin" class="text-gold" />
+            {{ shop.direccion }}
+          </p>
           <div class="mt-5 flex flex-wrap gap-2">
-            <NuxtLink to="/my/appointments" class="ui-btn min-h-11 px-5 text-sm">Ver o cambiar mi cita</NuxtLink>
+            <NuxtLink to="/my/appointments" class="ui-btn min-h-11 gap-2 px-5 text-sm">
+              <UiIcon name="calendar" />
+              Reagendar o cancelar
+            </NuxtLink>
+            <a
+              v-if="mapsUrl"
+              :href="mapsUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex min-h-11 items-center gap-2 rounded-xl border border-line px-5 text-sm font-semibold text-ink transition-colors hover:border-gold/40"
+            >
+              <UiIcon name="pin" />
+              Cómo llegar
+            </a>
             <NuxtLink to="/barbers" class="inline-flex min-h-11 items-center rounded-xl border border-line px-5 text-sm font-semibold text-ink transition-colors hover:border-gold/40">Nuestros barberos</NuxtLink>
           </div>
         </template>

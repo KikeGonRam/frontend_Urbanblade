@@ -60,6 +60,8 @@ test("el cliente ve su próxima cita con su estado, puntos y visitas", async ({ 
   const cita = page.getByRole("article", { name: "Tu próxima cita" });
   await expect(cita.getByText("Combo Corte + Barba")).toBeVisible();
   await expect(cita.getByText("Confirmada")).toBeVisible();
+  await expect(cita.getByRole("link", { name: "Reagendar o cancelar" })).toBeVisible();
+  await expect(cita.getByRole("link", { name: "Cómo llegar" })).toHaveAttribute("href", /maps\/search/);
   await expect(page.getByText("Te faltan 2 visitas para V.I.P")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Tus visitas" })).toBeVisible();
   await expect(page.getByText("Arreglo de Barba", { exact: true })).toBeVisible();

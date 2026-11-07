@@ -84,6 +84,33 @@ const props = defineProps<{ data: AdminData }>();
 // Cita abierta en la ventana de detalle (se toca desde «Citas de hoy» o «Actividad»).
 const detailCode = ref<string | null>(null);
 
+// Periodo de las tarjetas de citas e ingresos: el servidor ya manda hoy, semana y mes; la variación
+// es contra el mes pasado y por eso se muestra igual en los tres.
+type Periodo = "hoy" | "semana" | "mes";
+const periodo = ref<Periodo>("hoy");
+const PERIODOS = [
+  { value: "hoy", label: "Hoy", icon: "clock" },
+  { value: "semana", label: "Semana" },
+  { value: "mes", label: "Mes" },
+];
+const CITAS_LABEL: Record<Periodo, string> = { hoy: "Citas de hoy", semana: "Citas de la semana", mes: "Citas del mes" };
+const INGRESOS_LABEL: Record<Periodo, string> = { hoy: "Ingresos de hoy", semana: "Ingresos de la semana", mes: "Ingresos del mes" };
+const citasPorPeriodo = computed<Record<Periodo, number>>(() => ({
+  hoy: props.data.kpis.appointments_today,
+  semana: props.data.kpis.appointments_week,
+  mes: props.data.kpis.appointments_month,
+}));
+const ingresosPorPeriodo = computed<Record<Periodo, number>>(() => ({
+  hoy: props.data.kpis.income_today,
+  semana: props.data.kpis.income_week,
+  mes: props.data.kpis.income_month,
+}));
+const citasHint = computed(
+  () => `${fmtInt(props.data.kpis.appointments_week)} esta semana · ${fmtInt(props.data.kpis.appointments_month)} este mes`,
+);
+const ingresosHint = computed(
+  () => `Pagos registrados: ${fmtMoney(props.data.kpis.income_week)} esta semana · ${fmtMoney(props.data.kpis.income_month)} este mes`,
+);
 const ratioActiveClients = computed(() =>
   props.data.kpis.total_clients > 0
     ? Math.round(
@@ -445,53 +472,45 @@ onMounted(async () => {
       <span class="h-px flex-1 bg-ink/[0.06]" />
     </div>
 
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <h2 class="text-sm font-black uppercase tracking-[0.18em] text-gold">Resumen</h2>
+      <UiFilterChips v-model="periodo" label="Periodo de las tarjetas" :options="PERIODOS" />
+    </div>
     <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Resumen">
       <UiStatCard
-        label="Citas de hoy"
-        :value="fmtInt(data.kpis.appointments_today)"
+        :label="CITAS_LABEL[periodo]"
+        :value="fmtInt(citasPorPeriodo[periodo])"
         :delta="data.kpis.appointment_growth"
         delta-label="vs. mes pasado"
-        :hint="`${fmtInt(data.kpis.appointments_week)} esta semana · ${fmtInt(data.kpis.appointments_month)} este mes`"
+        :hint="citasHint"
+        icon="calendar"
         to="/appointments"
-      >
-        <template #icon>
-          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-        </template>
-      </UiStatCard>
+      />
       <UiStatCard
-        label="Ingresos de hoy"
-        :value="fmtMoney(data.kpis.income_today)"
+        :label="INGRESOS_LABEL[periodo]"
+        :value="fmtMoney(ingresosPorPeriodo[periodo])"
         :delta="data.kpis.income_growth"
         delta-label="vs. mes pasado"
         :spark="data.incomeChart.values"
-        :hint="`Pagos registrados: ${fmtMoney(data.kpis.income_week)} esta semana · ${fmtMoney(data.kpis.income_month)} este mes`"
+        :hint="ingresosHint"
+        icon="cash"
         to="/payments"
-      >
-        <template #icon>
-          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-        </template>
-      </UiStatCard>
+      />
       <UiStatCard
         label="Clientes activos"
         :value="fmtInt(data.kpis.active_clients)"
         :progress="ratioActiveClients"
         :hint="`${ratioActiveClients}% de ${fmtInt(data.kpis.total_clients)} clientes · ${fmtInt(data.kpis.new_clients)} nuevos`"
+        icon="users"
         to="/clients"
-      >
-        <template #icon>
-          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-        </template>
-      </UiStatCard>
+      />
       <UiStatCard
         label="Retención"
         :value="`${data.kpis.retention_rate.toFixed(1)}%`"
         :progress="data.kpis.retention_rate"
         :hint="`${fmtInt(data.kpis.recurring_clients)} clientes recurrentes`"
-      >
-        <template #icon>
-          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-        </template>
-      </UiStatCard>
+        icon="repeat"
+      />
     </section>
 
     <NuxtLink
