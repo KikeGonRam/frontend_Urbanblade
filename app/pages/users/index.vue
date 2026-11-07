@@ -31,6 +31,15 @@ const ROLE_LABEL: Record<string, string> = {
   recepcionista: "Recepción",
   barbero: "Barbero",
   cliente: "Cliente",
+  ingeniero: "Ingeniero",
+};
+// Anillo del avatar por rol, como en el prototipo (dorado: administración; el resto, tonos de la marca).
+const ROLE_RING: Record<string, string> = {
+  administrador: "ring-gold",
+  recepcionista: "ring-sky-400/70",
+  barbero: "ring-emerald-400/70",
+  cliente: "ring-line",
+  ingeniero: "ring-violet-400/70",
 };
 
 const exportColumns: CsvColumn<UserRow>[] = [
@@ -76,6 +85,7 @@ const ROLE_ICON: Record<string, string> = {
   recepcionista: "headset",
   barbero: "scissors",
   cliente: "user",
+  ingeniero: "spark",
 };
 const roleOptions = computed(() => [
   { value: "", label: "Todos", icon: "users" },
@@ -199,7 +209,9 @@ async function removeUser(user: UserRow) {
     >
       <template #cell-name="{ row }">
         <div class="flex items-center gap-3">
-          <UiAvatar :src="row.avatar_url" :name="row.name" />
+          <span class="inline-flex rounded-xl ring-2 ring-offset-2 ring-offset-card" :class="ROLE_RING[row.roles[0]] ?? 'ring-line'">
+            <UiAvatar :src="row.avatar_url" :name="row.name" />
+          </span>
           <span class="font-bold text-ink">{{ row.name }}</span>
           <span
             v-if="currentUser && row.id === currentUser.id"

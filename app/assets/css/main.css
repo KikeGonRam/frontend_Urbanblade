@@ -862,7 +862,8 @@ html[data-theme="libreta"] .group:hover .group-hover\:text-gold { color: #8a6408
 .ub-dashboard-content > * > *:nth-child(4) { animation-delay: 180ms; }
 .ub-dashboard-content > * > *:nth-child(5) { animation-delay: 240ms; }
 .ub-dashboard-content > * > *:nth-child(n+6) { animation-delay: 300ms; }
-.ub-dashboard-content table thead th { background: rgb(var(--ink-rgb) / .035); color: var(--muted); font-weight: 700; letter-spacing: .06em; }
+/* Encabezado OPACO (mezcla sobre la tarjeta): con fondo translúcido las filas se veían a través al desplazar. */
+.ub-dashboard-content table thead th { background: color-mix(in srgb, var(--ink) 5%, var(--bg-card)); color: var(--muted); font-weight: 700; letter-spacing: .06em; box-shadow: inset 0 -1px 0 var(--line); }
 .ub-dashboard-content a.bg-card.border, .ub-dashboard-content button.bg-card.border { transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease; }
 .ub-dashboard-content a.bg-card.border:hover, .ub-dashboard-content button.bg-card.border:hover { transform: translateY(-2px); box-shadow: 0 14px 32px rgb(0 0 0 / 0.28); }
 @media (prefers-reduced-motion: reduce) {
