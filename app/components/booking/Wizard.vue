@@ -594,14 +594,14 @@ function prettyDate(iso: string) {
     </section>
 
     <template v-else>
-      <header class="mb-8">
+      <header :class="embedded ? 'mb-5' : 'mb-8'">
         <p class="text-xs font-black uppercase tracking-[0.2em] text-gold">
           {{ shop?.nombre || 'UrbanBlade' }}
         </p>
-        <h1 class="mt-2 text-3xl font-black uppercase tracking-tight text-ink">
+        <h1 v-if="!embedded" class="mt-2 text-3xl font-black uppercase tracking-tight text-ink">
           Reserva tu cita
         </h1>
-        <p v-if="shop?.direccion || shop?.horario_apertura" class="mt-2 text-sm text-muted">
+        <p v-if="shop?.direccion || shop?.horario_apertura" :class="embedded ? 'mt-1 text-sm text-muted' : 'mt-2 text-sm text-muted'">
           <span v-if="shop?.direccion">{{ shop.direccion }}</span>
           <span v-if="shop?.direccion && shop?.horario_apertura" aria-hidden="true"> · </span>
           <span v-if="shop?.horario_apertura && shop?.horario_cierre">
