@@ -108,10 +108,10 @@ const COLUMNAS: DataTableColumn[] = [
   { key: "totalAppointments", label: "Citas", align: "center", hideBelow: "md" },
   { key: "joinedAt", label: "Registrado", hideBelow: "lg" },
 ];
-function onRowAction(action: string, client: ClientRow) {
-  if (action === "view") navigateTo(`/clients/${client.slug}`);
+async function onRowAction(action: string, client: ClientRow) {
+  if (action === "view") await navigateTo(`/clients/${client.slug}`);
   else if (action === "edit") openEdit(client);
-  else if (action === "delete") removeClient(client);
+  else if (action === "delete") await removeClient(client);
 }
 const clients = computed(() => response.value?.data ?? []);
 const pagination = computed(() => ({

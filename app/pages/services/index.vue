@@ -77,9 +77,9 @@ const ESTADO_OPCIONES = [
   { value: "1", label: "Activos", icon: "check" },
   { value: "0", label: "Inactivos", icon: "x" },
 ];
-function onRowAction(action: string, service: ServiceRow) {
+async function onRowAction(action: string, service: ServiceRow) {
   if (action === "edit") openEdit(service);
-  else if (action === "delete") removeService(service);
+  else if (action === "delete") await removeService(service);
 }
 const services = computed(() => response.value?.data ?? []);
 const categories = computed(() => response.value?.categories ?? []);

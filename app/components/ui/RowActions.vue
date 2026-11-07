@@ -18,7 +18,8 @@ const emit = defineEmits<{ action: [key: string] }>();
 </script>
 
 <template>
-  <div class="ub-actions" role="group" aria-label="Acciones">
+  <fieldset class="ub-actions m-0 min-w-0 border-0 p-0">
+    <legend class="sr-only">Acciones</legend>
     <template v-for="a in actions" :key="a.key">
       <button
         v-if="!a.hidden"
@@ -33,5 +34,5 @@ const emit = defineEmits<{ action: [key: string] }>();
         <UiIcon :name="a.icon" />
       </button>
     </template>
-  </div>
+  </fieldset>
 </template>

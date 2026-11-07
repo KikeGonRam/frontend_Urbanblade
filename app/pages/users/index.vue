@@ -81,9 +81,9 @@ const roleOptions = computed(() => [
   { value: "", label: "Todos", icon: "users" },
   ...roles.value.map((r) => ({ value: r, label: ROLE_LABEL[r] ?? r, icon: ROLE_ICON[r] })),
 ]);
-function onRowAction(action: string, user: UserRow) {
+async function onRowAction(action: string, user: UserRow) {
   if (action === "edit") openEdit(user);
-  else if (action === "delete") removeUser(user);
+  else if (action === "delete") await removeUser(user);
 }
 const users = computed(() => response.value?.data ?? []);
 const roles = computed(() => response.value?.roles ?? []);
