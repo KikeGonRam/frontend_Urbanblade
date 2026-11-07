@@ -952,7 +952,8 @@ v-model="barberoFilter"
                 >
               </UiFormField>
             </div>
-            <div class="flex flex-wrap gap-2" role="group" aria-label="Propina rápida">
+            <fieldset class="m-0 flex min-w-0 flex-wrap gap-2 border-0 p-0">
+              <legend class="sr-only">Propina rápida</legend>
               <button
                 v-for="pct in TIP_PRESETS"
                 :key="pct"
@@ -963,7 +964,7 @@ v-model="barberoFilter"
               >
                 {{ pct === 0 ? "Sin propina" : pct + "%" }}
               </button>
-            </div>
+            </fieldset>
 
             <div
               v-if="selected.paquete_disponible"
