@@ -692,6 +692,29 @@ html[data-theme="libreta"] .group:hover .group-hover\:text-gold { color: #8a6408
     /* UiFormSheet usa <dialog> nativo: se anulan sus medidas por defecto. */
     dialog.ub-sheet { width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; color: inherit; }
     dialog.ub-sheet::backdrop { background: transparent; }
+    /* Panel premium: recuadro con ícono, anillo de avance, pie con pista de teclado y campos con ícono. */
+    .ub-sheet__tile { display: grid; place-items: center; width: 2.875rem; height: 2.875rem; border-radius: .875rem; background: rgb(var(--gold-rgb) / .14); color: var(--gold-text); flex: none; }
+    .ub-sheet__tile .ub-icon { width: 1.375rem; height: 1.375rem; }
+    .ub-ring { position: relative; width: 2.875rem; height: 2.875rem; flex: none; display: inline-block; }
+    .ub-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .ub-ring circle { fill: none; stroke-width: 4; }
+    .ub-ring__bg { stroke: var(--line); }
+    .ub-ring__fg { stroke: var(--gold); stroke-linecap: round; transition: stroke-dashoffset .4s ease; }
+    .ub-ring > span { position: absolute; inset: 0; display: grid; place-items: center; font-size: .6875rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .ub-sheet__hint { display: flex; flex: 1; align-items: center; gap: .5rem; min-width: 0; font-size: .75rem; color: var(--muted); }
+    .ub-sheet__hint kbd { border: 1px solid var(--line); border-radius: .3rem; padding: .05rem .4rem; font: inherit; font-size: .6875rem; background: var(--bg-accent); }
+    .ub-sheet__dot { width: .45rem; height: .45rem; border-radius: 50%; background: var(--gold); flex: none; }
+    .ub-sheet__body .ui-input { min-height: 2.875rem; border-radius: .75rem; background: var(--bg-accent); transition: border-color .15s ease, box-shadow .15s ease; }
+    .ub-sheet__body .ui-input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 4px rgb(var(--gold-rgb) / .14); }
+    .ub-sheet__body .ub-form-section__title { display: flex; align-items: center; gap: .5rem; letter-spacing: .12em; color: var(--muted); }
+    .ub-sheet__body .ub-form-section__title::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+    .ub-sheet__body .ub-form-section { border-top: 0; padding-top: .25rem; }
+    .ub-in { position: relative; display: flex; align-items: center; }
+    .ub-in__icon { position: absolute; left: .85rem; color: var(--muted); pointer-events: none; }
+    .ub-in--icon > :is(input, select, textarea) { padding-left: 2.6rem; }
+    .ub-in--top { align-items: flex-start; }
+    .ub-in--top > .ub-in__icon { top: .95rem; }
+    .ub-in:focus-within > .ub-in__icon { color: var(--gold-text); }
     /* Variante de UiFormSheet: cabecera y pie fijos, solo el cuerpo se desplaza. */
     .ub-sheet__panel--flex { display: flex; flex-direction: column; padding: 0; overflow: hidden; }
     .ub-sheet__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; border-bottom: 1px solid var(--line); padding: 1.5rem 1.75rem 1.25rem; }

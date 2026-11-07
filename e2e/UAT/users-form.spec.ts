@@ -42,15 +42,15 @@ test("el formulario único muestra solo los campos del rol elegido", async ({ pa
   await prepararUsuarios(page);
   const panel = page.getByRole("dialog", { name: "Nueva persona" });
 
-  await panel.getByLabel("Rol").selectOption("cliente");
+  await panel.getByRole("radio", { name: /Cliente/ }).click();
   await expect(panel.getByLabel("Teléfono")).toBeVisible();
   await expect(panel.getByLabel("Especialidades")).toHaveCount(0);
 
-  await panel.getByLabel("Rol").selectOption("barbero");
+  await panel.getByRole("radio", { name: /Barbero/ }).click();
   await expect(panel.getByLabel("Especialidades")).toBeVisible();
   await expect(panel.getByLabel("Teléfono")).toHaveCount(0);
 
-  await panel.getByLabel("Rol").selectOption("recepcionista");
+  await panel.getByRole("radio", { name: /Recepción/ }).click();
   await expect(panel.getByLabel("Teléfono")).toHaveCount(0);
   await expect(panel.getByLabel("Especialidades")).toHaveCount(0);
 });
@@ -61,11 +61,11 @@ test("un cliente nuevo se da de alta con su teléfono en una sola llamada", asyn
 
   await panel.getByLabel("Nombre").fill("Cliente Nuevo");
   await panel.getByLabel("Email").fill("nuevo@test.local");
-  await panel.getByLabel("Rol").selectOption("cliente");
+  await panel.getByRole("radio", { name: /Cliente/ }).click();
   await panel.getByLabel("Teléfono").fill("5551234567");
   await panel.getByLabel("Contraseña", { exact: true }).fill("password123");
   await panel.getByLabel("Confirmar contraseña").fill("password123");
-  await panel.getByRole("button", { name: "Guardar" }).click();
+  await panel.getByRole("button", { name: "Crear persona" }).click();
 
   await expect.poll(() => sent.clients).toEqual({
     name: "Cliente Nuevo",

@@ -465,12 +465,20 @@ async function submitForm() {
       :busy="pending"
     />
 
-    <UiModal v-if="showForm" title="Nuevo movimiento" :busy="saving" @close="closeForm">
-      <div class="mb-6 rounded-xl border border-gold/20 bg-gold/5 p-4">
-        <p class="text-xs font-black uppercase tracking-[0.2em] text-gold">Control de inventario</p>
-        <p class="mt-1 text-sm leading-relaxed text-muted">Registra una entrada o salida con los datos que admite el sistema.</p>
-      </div>
-        <form class="space-y-3" @submit.prevent="submitForm">
+    <UiFormSheet
+      v-if="showForm"
+      title="Nuevo movimiento"
+      kicker="Control de inventario"
+      icon="box"
+      subtitle="Registra una entrada o salida con los datos que admite el sistema."
+      form-id="movement-form"
+      submit-label="Registrar"
+      hint="El stock se actualiza al registrar"
+      :submit-disabled="!form.product_id"
+      :busy="saving"
+      @close="closeForm"
+    >
+        <form id="movement-form" class="space-y-3" @submit.prevent="submitForm">
           <div>
             <label for="movement-product" class="mb-1 block text-xs text-muted"
               >Producto</label
@@ -603,24 +611,7 @@ async function submitForm() {
           <p v-if="formError" role="alert" class="text-sm text-danger">
             {{ formError }}
           </p>
-          <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row">
-            <button
-              type="submit"
-              :disabled="saving || !form.product_id"
-              class="ui-btn flex-1 justify-center py-3 text-xs tracking-[0.15em]"
-            >
-              {{ saving ? "Guardando…" : "Registrar" }}
-            </button>
-            <button
-              type="button"
-              :disabled="saving"
-              class="ui-btn-secondary justify-center px-4 py-3 text-xs disabled:opacity-50"
-              @click="closeForm"
-            >
-              Cancelar
-            </button>
-          </div>
         </form>
-    </UiModal>
+    </UiFormSheet>
   </div>
 </template>

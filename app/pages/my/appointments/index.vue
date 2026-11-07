@@ -649,9 +649,17 @@ onUnmounted(() => teardownStripe());
 
     <UiServiceTicketModal v-if="ticket" :ticket="ticket" @close="ticket = null" />
 
-    <UiModal v-if="showForm && !isEditing" title="Nueva cita" :busy="bookingBusy" @close="showForm = false">
+    <UiFormSheet
+      v-if="showForm && !isEditing"
+      title="Nueva cita"
+      kicker="Reserva"
+      icon="calendar"
+      subtitle="Elige servicio, barbero y horario en unos pasos."
+      :busy="bookingBusy"
+      @close="showForm = false"
+    >
       <BookingWizard embedded :initial-barber="form.barber_id" @busy="bookingBusy = $event" @confirmed="refresh()" />
-    </UiModal>
+    </UiFormSheet>
 
     <UiModal
       v-if="showForm && isEditing"

@@ -3,6 +3,7 @@ export interface ChoiceOption<T extends string = string> {
   value: T;
   title: string;
   detail?: string;
-  icon?: "efectivo" | "transferencia" | "tarjeta" | "salon";
+  /** Los cuatro de pago (trazos propios) o cualquier nombre de `UiIcon`. */
+  icon?: string;
   disabled?: boolean;
 }

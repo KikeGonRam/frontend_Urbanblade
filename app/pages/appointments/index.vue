@@ -571,13 +571,20 @@ v-model="barberFilter"
       </table>
     </section>
 
-    <UiModal
+    <UiFormSheet
       v-if="showForm"
       :title="editing ? 'Editar cita' : 'Nueva cita'"
+      kicker="Agenda"
+      icon="calendar"
+      subtitle="Cliente, barbero, servicio y horario de la cita."
+      form-id="appointment-form"
+      submit-label="Guardar"
+      hint="La agenda se actualiza al guardar"
+      :submit-disabled="!form.client_id"
       :busy="saving"
       @close="showForm = false"
     >
-        <form class="space-y-3" @submit.prevent="submitForm">
+        <form id="appointment-form" class="space-y-3" @submit.prevent="submitForm">
           <div>
             <label class="mb-1 block text-xs text-muted">Cliente</label>
             <div
@@ -711,24 +718,8 @@ v-model="form.notas"
             />
           </div>
           <p v-if="formError" class="text-sm text-danger">{{ formError }}</p>
-          <div class="mt-5 flex gap-3">
-            <button
-              type="submit"
-              :disabled="saving || !form.client_id"
-              class="flex-1 rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-black hover:bg-gold-dim disabled:opacity-50"
-            >
-              {{ saving ? "Guardando…" : "Guardar" }}
-            </button>
-            <button
-              type="button"
-              class="rounded-lg border border-line px-4 py-2 text-sm text-muted hover:text-ink"
-              @click="showForm = false"
-            >
-              Cancelar
-            </button>
-          </div>
         </form>
-    </UiModal>
+    </UiFormSheet>
 
     <UiAppointmentDetailModal v-if="detailCode" :code="detailCode" @close="detailCode = ''" />
   </div>

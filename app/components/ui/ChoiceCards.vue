@@ -22,7 +22,7 @@ const groupId = useId();
 const buttons = ref<HTMLButtonElement[]>([]);
 
 // Íconos de trazo (24x24, estilo Heroicons outline).
-const ICONS: Record<NonNullable<ChoiceOption<T>["icon"]>, string[]> = {
+const ICONS: Record<string, string[]> = {
   efectivo: [
     "M2.25 18.75a60.07 60.07 0 0115.8 2.1c.73.2 1.45-.34 1.45-1.1V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.38c0-.62.5-1.12 1.13-1.12H20.25M2.25 6v9m18-10.5v.75c0 .41.34.75.75.75h.75m-1.5-1.5h.38c.62 0 1.12.5 1.12 1.13v9.74c0 .63-.5 1.13-1.13 1.13h-.37m1.5-1.5h-.75a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.38a1.13 1.13 0 01-1.12-1.13V15m1.5 1.5v-.75A.75.75 0 003 15h-.75",
     "M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.01v.01H18v-.01zm-12 0h.01v.01H6v-.01z",
@@ -88,7 +88,8 @@ function onKeydown(event: KeyboardEvent, index: number) {
         @keydown="onKeydown($event, index)"
       >
         <span v-if="option.icon" class="ub-choice__icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
+          <UiIcon v-if="!ICONS[option.icon]" :name="option.icon" class="h-5 w-5" />
+          <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
             <path v-for="(d, i) in ICONS[option.icon]" :key="i" :d="d" />
           </svg>
         </span>

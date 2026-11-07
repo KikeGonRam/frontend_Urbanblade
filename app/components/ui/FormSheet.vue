@@ -14,8 +14,20 @@ const props = withDefaults(
     /** Si se indica, el pie estándar envía ese formulario (Guardar + Cancelar). */
     formId?: string;
     submitLabel?: string;
+    /** Ícono del recuadro dorado de la cabecera (nombre de UiIcon). */
+    icon?: string;
+    /** Línea de apoyo bajo el título. */
+    subtitle?: string;
+    /** 0–100: muestra el anillo de avance en la cabecera. */
+    progress?: number | null;
+    /** Texto de ayuda a la izquierda del pie. */
+    hint?: string;
+    /** Deshabilita el botón principal además del estado ocupado. */
+    submitDisabled?: boolean;
+    /** Oculta el botón principal (el formulario trae su propia acción). */
+    hideSubmit?: boolean;
   }>(),
-  { kicker: "", badge: "", busy: false, formId: "", submitLabel: "Guardar" },
+  { kicker: "", badge: "", busy: false, formId: "", submitLabel: "Guardar", icon: "", subtitle: "", progress: null, hint: "", submitDisabled: false, hideSubmit: false },
 );
 const emit = defineEmits<{ close: [] }>();
 
@@ -81,14 +93,34 @@ onBeforeUnmount(() => {
     >
       <div ref="panel" class="ub-sheet__panel ub-sheet__panel--flex">
         <header class="ub-sheet__head">
-          <div class="min-w-0">
+          <span v-if="icon" class="ub-sheet__tile"><UiIcon :name="icon" /></span>
+          <div class="min-w-0 flex-1">
             <p v-if="kicker" class="ub-form-kicker">{{ kicker }}</p>
             <h2 :id="titleId" class="mt-1 text-2xl font-black text-ink">
               {{ title }}
             </h2>
+            <p v-if="subtitle" class="mt-1 ub-form-help">{{ subtitle }}</p>
             <slot name="subtitle" />
           </div>
           <div class="flex shrink-0 items-center gap-2">
+            <span v-if="progress !== null" class="ub-ring">
+              <svg
+                viewBox="0 0 46 46"
+                role="img"
+                :aria-label="`Avance del formulario: ${progress}%`"
+              >
+                <circle class="ub-ring__bg" cx="23" cy="23" r="19" />
+                <circle
+                  class="ub-ring__fg"
+                  cx="23"
+                  cy="23"
+                  r="19"
+                  stroke-dasharray="119.4"
+                  :stroke-dashoffset="119.4 * (1 - progress / 100)"
+                />
+              </svg>
+              <span aria-hidden="true">{{ progress }}%</span>
+            </span>
             <span
               v-if="badge"
               class="rounded-full border border-gold/25 bg-gold/10 px-2 py-1 text-xs font-black uppercase tracking-wider text-gold-text"
@@ -113,10 +145,16 @@ onBeforeUnmount(() => {
 
         <footer v-if="$slots.footer || formId" class="ub-sheet__foot">
           <slot name="footer">
+            <span v-if="hint" class="ub-sheet__hint">
+              <span class="ub-sheet__dot" aria-hidden="true" />
+              <span class="min-w-0 truncate">{{ hint }}</span>
+              <kbd>Esc</kbd>
+            </span>
             <button
+              v-if="!hideSubmit"
               type="submit"
               :form="formId"
-              :disabled="busy"
+              :disabled="busy || submitDisabled"
               class="ui-btn min-h-11 flex-1 px-4"
             >
               {{ busy ? "Guardando…" : submitLabel }}
