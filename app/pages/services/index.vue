@@ -96,6 +96,11 @@ const form = reactive({
   activo: true,
 });
 const formError = ref("");
+const sErr = (field: string) => fieldErrors.value[field]?.[0] ?? null;
+const sInput = (field: string) => [
+  "ui-input w-full",
+  fieldErrors.value[field] ? "border-danger/60" : "border-line",
+];
 const fieldErrors = ref<Record<string, string[]>>({});
 const saving = ref(false);
 
@@ -380,138 +385,91 @@ async function removeService(service: ServiceRow) {
       :busy="saving"
       @close="showForm = false"
     >
-      <template #subtitle>
-        <p class="mt-2 ub-form-help">Define cómo se mostrará, cuánto dura y qué precio tendrá al reservar.</p>
-      </template>
-      <form id="service-form" class="space-y-4" @submit.prevent="submitForm">
-          <div class="ub-form-section space-y-4">
-            <p class="ub-form-section__title">Información del servicio</p>
-          <div>
-            <label
-              for="service-nombre"
-              class="ub-form-label"
-              >Nombre del servicio</label
-            >
+      <form id="service-form" class="space-y-6" @submit.prevent="submitForm">
+        <section class="space-y-4" aria-labelledby="sv-info">
+          <p id="sv-info" class="ub-form-section__title">Información</p>
+          <UiFormField field-id="service-nombre" label="Nombre del servicio" icon="tag" :error="sErr('nombre')">
             <input
               id="service-nombre"
               v-model="form.nombre"
+              aria-label="Nombre del servicio"
               type="text"
               required
               maxlength="120"
               placeholder="Ej. Corte Clásico + Barba"
-              :class="[
-                'ui-input w-full',
-                fieldErrors.nombre
-                  ? 'border-danger/60 focus:border-danger focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
-                  : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]',
-              ]"
+              :class="sInput('nombre')"
             >
-            <p v-if="fieldErrors.nombre" class="mt-1 text-xs text-danger">
-              {{ fieldErrors.nombre[0] }}
-            </p>
-          </div>
-
-          <div>
-            <label
-              for="service-categoria"
-              class="ub-form-label"
-              >Categoría</label
-            >
+          </UiFormField>
+          <UiFormField field-id="service-categoria" label="Categoría" icon="box" :error="sErr('categoria')">
             <input
               id="service-categoria"
               v-model="form.categoria"
+              aria-label="Categoría"
               type="text"
               required
               maxlength="100"
               list="service-categories-list"
               placeholder="Ej. Cortes, Barba, Tratamientos…"
-              :class="[
-                'ui-input w-full',
-                fieldErrors.categoria
-                  ? 'border-danger/60 focus:border-danger focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
-                  : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]',
-              ]"
+              :class="sInput('categoria')"
             >
-            <datalist id="service-categories-list">
-              <option v-for="c in categories" :key="c" :value="c" />
-            </datalist>
-            <!-- Chips sugeridos -->
-            <div v-if="categories.length" class="mt-2 flex flex-wrap gap-1.5">
-              <button
-                v-for="cat in categories"
-                :key="cat"
-                type="button"
-                class="rounded-md border border-line/70 bg-ink/5 px-2 py-0.5 text-xs text-muted hover:border-gold hover:text-gold"
-                @click="form.categoria = cat"
-              >
-                {{ cat }}
-              </button>
-            </div>
-            <p v-if="fieldErrors.categoria" class="mt-1 text-xs text-danger">
-              {{ fieldErrors.categoria[0] }}
-            </p>
+          </UiFormField>
+          <datalist id="service-categories-list">
+            <option v-for="c in categories" :key="c" :value="c" />
+          </datalist>
+          <div v-if="categories.length" class="flex flex-wrap gap-2" role="list" aria-label="Categorías sugeridas">
+            <button
+              v-for="cat in categories"
+              :key="cat"
+              type="button"
+              class="ub-chip"
+              :aria-pressed="form.categoria === cat"
+              @click="form.categoria = cat"
+            >
+              {{ cat }}
+            </button>
           </div>
-          </div>
+        </section>
 
-          <div class="ub-form-section space-y-4">
-            <p class="ub-form-section__title">Precio y duración</p>
+        <section class="space-y-4" aria-labelledby="sv-price">
+          <p id="sv-price" class="ub-form-section__title">Precio y duración</p>
           <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div>
-              <label
-                for="service-duracion"
-                class="ub-form-label"
-                >Duración (min)</label
-              >
+            <UiFormField field-id="service-duracion" label="Duración (min)" icon="clock" :error="sErr('duracion_min')">
               <input
                 id="service-duracion"
                 v-model.number="form.duracion_min"
+                aria-label="Duración (min)"
                 type="number"
                 min="5"
                 max="600"
                 required
-                :class="[
-                  'ui-input w-full',
-                  fieldErrors.duracion_min
-                    ? 'border-danger/60 focus:border-danger focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
-                    : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]',
-                ]"
+                :class="sInput('duracion_min')"
               >
-              <p
-                v-if="fieldErrors.duracion_min"
-                class="mt-1 text-xs text-danger"
-              >
-                {{ fieldErrors.duracion_min[0] }}
-              </p>
-            </div>
-            <div>
-              <label
-                for="service-precio"
-                class="ub-form-label"
-                >Precio ($ MXN)</label
-              >
+            </UiFormField>
+            <UiFormField field-id="service-precio" label="Precio ($ MXN)" icon="cash" :error="sErr('precio')">
               <input
                 id="service-precio"
                 v-model.number="form.precio"
+                aria-label="Precio ($ MXN)"
                 type="number"
                 step="0.01"
                 min="0"
                 required
-                :class="[
-                  'ui-input w-full',
-                  fieldErrors.precio
-                    ? 'border-danger/60 focus:border-danger focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
-                    : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]',
-                ]"
+                :class="sInput('precio')"
               >
-              <p v-if="fieldErrors.precio" class="mt-1 text-xs text-danger">
-                {{ fieldErrors.precio[0] }}
-              </p>
-            </div>
+            </UiFormField>
           </div>
+          <div class="ub-apptcard" aria-label="Vista previa para el cliente">
+            <span class="ub-apptcard__avatar"><UiIcon name="scissors" /></span>
+            <span class="min-w-0 flex-1">
+              <b class="block truncate text-sm text-ink">{{ form.nombre || "Nombre del servicio" }}</b>
+              <small class="block truncate text-xs text-muted">{{ form.categoria || "Categoría" }} · {{ form.duracion_min || 0 }} min</small>
+            </span>
+            <span class="ub-apptcard__pill">{{ fmtMoney(form.precio || 0) }}</span>
           </div>
+        </section>
 
-          <div class="ub-form-section space-y-4">
-            <p class="ub-form-section__title">Presentación</p>
+        <section class="space-y-4" aria-labelledby="sv-pres">
+          <p id="sv-pres" class="ub-form-section__title">Presentación</p>
           <UiImageUpload
             id="service-imagen"
             v-model="form.imagenFile"
@@ -519,31 +477,25 @@ async function removeService(service: ServiceRow) {
             :current-url="editing?.imagen_url"
             :error="fieldErrors.imagen?.[0]"
           />
-
-          <div>
-            <label
-              for="service-descripcion"
-              class="ub-form-label"
-              >Descripción del servicio (opcional)</label
-            >
+          <UiFormField field-id="service-descripcion" label="Descripción del servicio (opcional)" icon="text" top>
             <textarea
               id="service-descripcion"
               v-model="form.descripcion"
+              aria-label="Descripción del servicio (opcional)"
               rows="3"
               maxlength="2000"
               placeholder="Detalla qué incluye el corte o servicio…"
               class="ui-input w-full"
             />
-          </div>
-
+          </UiFormField>
           <UiSwitch
             v-model="form.activo"
             label="Activo"
             description="Disponible para reserva por clientes"
           />
-          </div>
+        </section>
 
-          <p v-if="formError" class="text-xs text-danger">{{ formError }}</p>
+        <p v-if="formError" role="alert" class="text-sm text-danger">{{ formError }}</p>
       </form>
     </UiFormSheet>
   </div>

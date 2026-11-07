@@ -148,6 +148,30 @@ const showForm = ref(false);
 const editing = ref<ClientRow | null>(null);
 const form = reactive({ name: "", email: "", telefono: "", password: "" });
 const formError = ref("");
+const cErr = (field: string) => fieldErrors.value[field]?.[0] ?? null;
+const cInput = (field: string) => [
+  "ui-input w-full",
+  fieldErrors.value[field] ? "border-danger/60" : "border-line",
+];
+const clientInitials = computed(
+  () =>
+    form.name
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((w) => w[0])
+      .join("")
+      .toUpperCase() || "—",
+);
+const clientProgress = computed(() => {
+  const need = [
+    !!form.name.trim(),
+    form.email.includes("@") && form.email.includes("."),
+    !!form.telefono.trim(),
+    editing.value ? true : form.password.length >= 8,
+  ];
+  return Math.round((need.filter(Boolean).length / need.length) * 100);
+});
 const fieldErrors = ref<Record<string, string[]>>({});
 const actionError = ref("");
 const saving = ref(false);
@@ -432,117 +456,95 @@ v-model="search"
       hint="Se guarda con un solo clic"
       :badge="editing ? 'Edición' : 'Alta'"
       form-id="client-form"
-      submit-label="Guardar"
+      :submit-label="editing ? 'Guardar cambios' : 'Crear cliente'"
+      :progress="clientProgress"
       :busy="saving"
       @close="showForm = false"
     >
-      <form id="client-form" class="space-y-3" @submit.prevent="submitForm">
-          <div>
-            <label for="client-name" class="mb-1 block text-xs text-muted"
-              >Nombre</label
-            >
+      <form id="client-form" class="space-y-6" @submit.prevent="submitForm">
+        <section class="space-y-4" aria-labelledby="cl-id">
+          <p id="cl-id" class="ub-form-section__title">Identidad</p>
+          <UiFormField field-id="client-name" label="Nombre completo" icon="user" :error="cErr('name')">
             <input
               id="client-name"
               v-model="form.name"
+              aria-label="Nombre"
               type="text"
               required
-              :aria-invalid="!!fieldErrors.name"
-              :aria-describedby="
-                fieldErrors.name ? 'client-name-error' : undefined
-              "
-              :class="[
-                'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink',
-                fieldErrors.name ? 'border-danger/60' : 'border-line',
-              ]"
+              autocomplete="off"
+              placeholder="Ej. Carlos Mendoza"
+              :aria-invalid="!!cErr('name')"
+              :aria-describedby="cErr('name') ? 'client-name-error' : undefined"
+              :class="cInput('name')"
             >
-            <p
-              v-if="fieldErrors.name"
-              id="client-name-error"
-              class="mt-1 text-xs text-danger"
-            >
-              {{ fieldErrors.name[0] }}
-            </p>
+          </UiFormField>
+          <div class="ub-apptcard" aria-label="Vista previa en la lista">
+            <span class="ub-apptcard__avatar">{{ clientInitials }}</span>
+            <span class="min-w-0 flex-1">
+              <b class="block truncate text-sm text-ink">{{ form.name || "Nombre del cliente" }}</b>
+              <small class="block truncate text-xs text-muted">{{ form.email || "correo@ejemplo.com" }}</small>
+            </span>
+            <span class="ub-apptcard__pill">{{ editing ? "Cliente" : "Nuevo" }}</span>
           </div>
-          <div>
-            <label for="client-email" class="mb-1 block text-xs text-muted"
-              >Email</label
-            >
+        </section>
+
+        <section class="space-y-4" aria-labelledby="cl-contact">
+          <p id="cl-contact" class="ub-form-section__title">Contacto</p>
+          <UiFormField field-id="client-email" label="Correo" icon="mail" :error="cErr('email')">
             <input
               id="client-email"
               v-model="form.email"
+              aria-label="Email"
               type="email"
               required
-              :aria-invalid="!!fieldErrors.email"
-              :aria-describedby="
-                fieldErrors.email ? 'client-email-error' : undefined
-              "
-              :class="[
-                'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink',
-                fieldErrors.email ? 'border-danger/60' : 'border-line',
-              ]"
+              autocomplete="off"
+              placeholder="nombre@correo.com"
+              :aria-invalid="!!cErr('email')"
+              :aria-describedby="cErr('email') ? 'client-email-error' : undefined"
+              :class="cInput('email')"
             >
-            <p
-              v-if="fieldErrors.email"
-              id="client-email-error"
-              class="mt-1 text-xs text-danger"
-            >
-              {{ fieldErrors.email[0] }}
-            </p>
-          </div>
-          <div>
-            <label for="client-phone" class="mb-1 block text-xs text-muted"
-              >Teléfono</label
-            >
+          </UiFormField>
+          <UiFormField field-id="client-phone" label="Teléfono" icon="phone" :error="cErr('telefono')">
             <input
               id="client-phone"
               v-model="form.telefono"
+              aria-label="Teléfono"
               type="tel"
-              :aria-invalid="!!fieldErrors.telefono"
-              :aria-describedby="
-                fieldErrors.telefono ? 'client-phone-error' : undefined
-              "
-              :class="[
-                'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink',
-                fieldErrors.telefono ? 'border-danger/60' : 'border-line',
-              ]"
+              autocomplete="tel"
+              placeholder="55 1234 5678"
+              :aria-invalid="!!cErr('telefono')"
+              :aria-describedby="cErr('telefono') ? 'client-phone-error' : undefined"
+              :class="cInput('telefono')"
             >
-            <p
-              v-if="fieldErrors.telefono"
-              id="client-phone-error"
-              class="mt-1 text-xs text-danger"
-            >
-              {{ fieldErrors.telefono[0] }}
-            </p>
-          </div>
-          <div v-if="!editing">
-            <label for="client-password" class="mb-1 block text-xs text-muted"
-              >Contraseña</label
-            >
+          </UiFormField>
+        </section>
+
+        <section v-if="!editing" class="space-y-4" aria-labelledby="cl-access">
+          <p id="cl-access" class="ub-form-section__title">Acceso</p>
+          <UiFormField
+            field-id="client-password"
+            label="Contraseña"
+            icon="lock"
+            :error="cErr('password')"
+            hint="Mínimo 8 caracteres. El cliente podrá cambiarla desde su perfil."
+          >
             <input
               id="client-password"
               v-model="form.password"
+              aria-label="Contraseña"
               type="password"
               required
               minlength="8"
               autocomplete="new-password"
-              :aria-invalid="!!fieldErrors.password"
-              :aria-describedby="
-                fieldErrors.password ? 'client-password-error' : undefined
-              "
-              :class="[
-                'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink',
-                fieldErrors.password ? 'border-danger/60' : 'border-line',
-              ]"
+              placeholder="Mínimo 8 caracteres"
+              :aria-invalid="!!cErr('password')"
+              :aria-describedby="cErr('password') ? 'client-password-error' : undefined"
+              :class="cInput('password')"
             >
-            <p
-              v-if="fieldErrors.password"
-              id="client-password-error"
-              class="mt-1 text-xs text-danger"
-            >
-              {{ fieldErrors.password[0] }}
-            </p>
-          </div>
-          <p v-if="formError" class="text-sm text-danger">{{ formError }}</p>
+          </UiFormField>
+        </section>
+
+        <p v-if="formError" role="alert" class="text-sm text-danger">{{ formError }}</p>
       </form>
     </UiFormSheet>
   </div>
