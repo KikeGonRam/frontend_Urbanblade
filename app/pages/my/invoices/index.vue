@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { DataTableColumn } from "~/components/ui/DataTable.vue";
 /*
  * Fase 9.8 — "Mis Facturas" del cliente, puerto de Client\ClientInvoiceController
  * (web): historial de pagos de las propias citas con total acumulado y
@@ -28,6 +29,18 @@ const { data: response, pending, error, refresh } = await useAsyncData(
   { lazy: true },
 )
 const payments = computed(() => response.value?.data ?? [])
+// El historial llega completo; se pagina de 10 en 10 en pantalla.
+const PAGE_SIZE = 10;
+const page = ref(1);
+const lastPage = computed(() => Math.max(1, Math.ceil(payments.value.length / PAGE_SIZE)));
+const pageRows = computed(() => payments.value.slice((page.value - 1) * PAGE_SIZE, page.value * PAGE_SIZE));
+const COLUMNAS: DataTableColumn[] = [
+  { key: "fecha", label: "Fecha" },
+  { key: "servicio", label: "Servicio" },
+  { key: "barbero", label: "Barbero", hideBelow: "md" },
+  { key: "metodo", label: "Método", hideBelow: "md" },
+  { key: "monto", label: "Monto", align: "right" },
+];
 const meta = computed(() => response.value?.meta ?? { total_pagado: 0, total_citas: 0 })
 
 function fmtMoney(n: number) {
@@ -69,9 +82,8 @@ async function downloadReceipt(payment: PaymentRow) {
       <div class="ui-card p-4"><p class="text-xs font-bold uppercase text-muted">Citas con recibo</p><p class="mt-1 text-xl font-black text-ink">{{ meta.total_citas }}</p></div>
     </section>
 
-    <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando tus recibos…" />
     <BrandStatePanel
-      v-else-if="error"
+      v-if="error"
       mascot="bruno"
       state="error"
       tone="danger"
@@ -79,43 +91,34 @@ async function downloadReceipt(payment: PaymentRow) {
       action-label="Reintentar"
       @action="refresh"
     />
-    <p v-else-if="!payments.length" class="rounded-2xl border border-dashed border-line p-12 text-center text-sm text-muted">
-      Todavía no tienes pagos registrados.
-    </p>
-
     <p v-if="downloadError" class="mb-3 text-sm text-danger">{{ downloadError }}</p>
-
-    <section v-if="!pending && !error && payments.length" class="ui-card overflow-x-auto">
-      <table class="w-full text-left text-sm">
-        <thead>
-          <tr class="border-b border-line text-xs uppercase tracking-wider text-muted">
-            <th class="px-4 py-3">Fecha</th>
-            <th class="px-4 py-3">Servicio</th>
-            <th class="px-4 py-3">Barbero</th>
-            <th class="px-4 py-3">Método</th>
-            <th class="px-4 py-3 text-right">Monto</th>
-            <th class="px-4 py-3 text-right">Comprobante</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="payment in payments" :key="payment.id" class="border-b border-line/60 last:border-0">
-            <td class="px-4 py-3 text-ink">{{ fmtDate(payment.appointment.fecha) }}</td>
-            <td class="px-4 py-3 text-muted">{{ payment.appointment.service ?? '—' }}</td>
-            <td class="px-4 py-3 text-muted">{{ payment.appointment.barber ?? '—' }}</td>
-            <td class="px-4 py-3 text-muted">{{ METODO_LABEL[payment.metodo_pago] ?? payment.metodo_pago }}</td>
-            <td class="px-4 py-3 text-right font-black text-gold">{{ fmtMoney(Number(payment.monto) + Number(payment.propina)) }}</td>
-            <td class="px-4 py-3 text-right">
-              <button
-                type="button" :disabled="downloading === payment.id"
-                class="rounded-lg border border-line px-3 py-1 text-xs text-muted hover:text-ink disabled:opacity-50 min-h-10"
-                @click="downloadReceipt(payment)"
-              >
-                {{ downloading === payment.id ? 'Generando…' : 'Descargar' }}
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
+    <UiDataTable
+      v-if="!error"
+      :columns="COLUMNAS"
+      :rows="pageRows"
+      :loading="pending"
+      aria-label="Mis recibos"
+      empty-title="Todavía no tienes pagos registrados"
+      empty-description="Tus recibos aparecerán aquí después de tu primera cita pagada."
+    >
+      <template #cell-fecha="{ row }"><span class="text-ink">{{ fmtDate(row.appointment.fecha) }}</span></template>
+      <template #cell-servicio="{ row }"><span class="text-muted">{{ row.appointment.service ?? '—' }}</span></template>
+      <template #cell-barbero="{ row }"><span class="text-muted">{{ row.appointment.barber ?? '—' }}</span></template>
+      <template #cell-metodo="{ row }"><span class="text-muted">{{ METODO_LABEL[row.metodo_pago] ?? row.metodo_pago }}</span></template>
+      <template #cell-monto="{ row }"><span class="font-black text-gold">{{ fmtMoney(Number(row.monto) + Number(row.propina)) }}</span></template>
+      <template #actions="{ row }">
+        <UiRowActions
+          :actions="[{ key: 'download', label: 'Descargar el recibo del ' + fmtDate(row.appointment.fecha), icon: 'text', disabled: downloading === row.id }]"
+          @action="downloadReceipt(row)"
+        />
+      </template>
+    </UiDataTable>
+    <UiPagination
+      v-if="payments.length > PAGE_SIZE"
+      v-model:current-page="page"
+      :last-page="lastPage"
+      :total="payments.length"
+      :per-page="PAGE_SIZE"
+    />
   </div>
 </template>

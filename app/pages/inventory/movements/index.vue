@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { DataTableColumn } from "~/components/ui/DataTable.vue";
 import type { CsvColumn } from "~/composables/useCsvExport";
 /*
  * Fase 9.5 — historial de movimientos de inventario, puerto de
@@ -166,6 +167,20 @@ async function markOrdered(item: LowStockItem) {
 
 // ── Nuevo movimiento ──────────────────────────────────────────────────────
 const showForm = ref(false);
+const COLUMNAS: DataTableColumn[] = [
+  { key: "fecha", label: "Fecha" },
+  { key: "producto", label: "Producto" },
+  { key: "tipo", label: "Tipo" },
+  { key: "cantidad", label: "Cantidad", align: "right" },
+  { key: "motivo", label: "Motivo", hideBelow: "md" },
+  { key: "responsable", label: "Responsable", hideBelow: "lg" },
+];
+const TIPO_OPCIONES = [
+  { value: "", label: "Todos", icon: "box" },
+  { value: "entrada", label: "Entradas", icon: "plus" },
+  { value: "salida", label: "Salidas", icon: "box" },
+];
+
 const form = reactive({
   product_id: "",
   tipo: "salida",
@@ -358,26 +373,8 @@ async function submitForm() {
     </section>
 
     <section class="mb-5 flex flex-wrap items-center gap-3">
-      <label for="movement-search" class="sr-only"
-        >Buscar producto o motivo</label
-      >
-      <input
-        id="movement-search"
-        v-model="search"
-        type="text"
-        placeholder="Producto o motivo…"
-        class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink sm:max-w-xs"
-      >
-      <label for="movement-filter-type" class="sr-only">Filtrar por tipo</label>
-      <select
-        id="movement-filter-type"
-        v-model="tipoFilter"
-        class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
-      >
-        <option value="">Todos los tipos</option>
-        <option value="entrada">Entrada</option>
-        <option value="salida">Salida</option>
-      </select>
+      <UiSearchInput v-model="search" label="Buscar producto o motivo" placeholder="Buscar por producto o motivo…" />
+      <UiFilterChips v-model="tipoFilter" label="Filtrar por tipo" :options="TIPO_OPCIONES" />
       <label for="movement-filter-product" class="sr-only"
         >Filtrar por producto</label
       >
@@ -402,9 +399,8 @@ async function submitForm() {
       </button>
     </section>
 
-    <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando movimientos…" />
     <BrandStatePanel
-      v-else-if="error"
+      v-if="error"
       mascot="bruno"
       state="error"
       tone="danger"
@@ -413,63 +409,31 @@ async function submitForm() {
       action-label="Reintentar"
       @action="refresh"
     />
-
-    <section v-if="!pending && !error" class="ui-card overflow-x-auto">
-      <table aria-label="Movimientos de inventario" class="w-full text-left text-sm">
-        <thead>
-          <tr
-            class="border-b border-line text-xs uppercase tracking-wider text-muted"
-          >
-            <th scope="col" class="px-4 py-3">Fecha</th>
-            <th scope="col" class="px-4 py-3">Producto</th>
-            <th scope="col" class="px-4 py-3">Tipo</th>
-            <th scope="col" class="px-4 py-3 text-right">Cantidad</th>
-            <th scope="col" class="px-4 py-3">Motivo</th>
-            <th scope="col" class="px-4 py-3">Responsable</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="movement in movements"
-            :key="movement.id"
-            class="border-b border-line/60 last:border-0"
-          >
-            <td class="px-4 py-3 text-muted">
-              {{ fmtDateTime(movement.fecha) }}
-            </td>
-            <td class="px-4 py-3 font-bold text-ink">
-              {{ movement.product.nombre ?? "—" }}
-            </td>
-            <td class="px-4 py-3">
-              <span
-                class="rounded-full border px-2 py-0.5 text-xs font-black uppercase"
-                :class="
-                  movement.tipo === 'entrada'
-                    ? 'border-success/25 bg-success/10 text-success'
-                    : 'border-warning/25 bg-warning/10 text-warning'
-                "
-              >
-                {{ movement.tipo }}
-              </span>
-            </td>
-            <td class="px-4 py-3 text-right font-black text-ink">
-              {{ movement.tipo === "entrada" ? "+" : "−"
-              }}{{ movement.cantidad }}
-            </td>
-            <td class="px-4 py-3 text-muted">{{ movement.motivo ?? "—" }}</td>
-            <td class="px-4 py-3 text-muted">
-              {{ movement.user.name ?? "—" }}
-            </td>
-          </tr>
-          <tr v-if="!movements.length">
-            <td colspan="6" class="px-4 py-12 text-center text-sm text-muted">
-              Sin movimientos.
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
-
+    <UiDataTable
+      v-else
+      :columns="COLUMNAS"
+      :rows="movements"
+      :loading="pending"
+      aria-label="Movimientos de inventario"
+      empty-title="Todavía no hay movimientos"
+      empty-description="Las entradas y salidas de inventario aparecerán aquí."
+    >
+      <template #cell-fecha="{ row }"><span class="text-muted">{{ fmtDateTime(row.fecha) }}</span></template>
+      <template #cell-producto="{ row }"><span class="font-bold text-ink">{{ row.product.nombre ?? "—" }}</span></template>
+      <template #cell-tipo="{ row }">
+        <span
+          class="rounded-full border px-2 py-0.5 text-xs font-black uppercase"
+          :class="row.tipo === 'entrada' ? 'border-success/25 bg-success/10 text-success' : 'border-warning/25 bg-warning/10 text-warning'"
+        >
+          {{ row.tipo }}
+        </span>
+      </template>
+      <template #cell-cantidad="{ row }">
+        <span class="font-black text-ink">{{ row.tipo === "entrada" ? "+" : "−" }}{{ row.cantidad }}</span>
+      </template>
+      <template #cell-motivo="{ row }"><span class="text-muted">{{ row.motivo ?? "—" }}</span></template>
+      <template #cell-responsable="{ row }"><span class="text-muted">{{ row.user.name ?? "—" }}</span></template>
+    </UiDataTable>
     <UiPagination
       v-if="pagination"
       v-model:current-page="page"

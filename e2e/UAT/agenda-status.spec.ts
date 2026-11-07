@@ -108,7 +108,7 @@ test("recepción marca 'no asistió' en una cita de ayer con una sola acción", 
   );
 
   await page.goto("/appointments");
-  await page.getByRole("button", { name: "No asistió" }).click();
+  await page.getByRole("table", { name: "Citas" }).getByRole("button", { name: "No asistió" }).click();
 
   const request = await patch;
   // Solo el estado: sin 'fecha', que es justo lo que bloqueaba el PUT.
@@ -132,7 +132,7 @@ test("solo se ofrecen las transiciones válidas del estado actual", async ({
   // ...y nada más: iniciar/completar/no-show no salen desde pendiente.
   await expect(page.getByRole("button", { name: "Iniciar" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Completar" })).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "No asistió" })).toHaveCount(0);
+  await expect(page.getByRole("table", { name: "Citas" }).getByRole("button", { name: "No asistió" })).toHaveCount(0);
   // Tampoco se puede cobrar una cita pendiente (CHARGEABLE del backend).
   await expect(page.getByRole("link", { name: "Cobrar" })).toHaveCount(0);
 });

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { DataTableColumn } from "~/components/ui/DataTable.vue";
 /*
  * Muro/Reseñas (fase post-9.9) — Reseñas de clientes a barberos, puerto de
  * Barber\ReviewController (web). Api\Review\ReviewController no existía
@@ -49,6 +50,25 @@ const { data: response, pending, error, refresh } = await useAsyncData(
   { watch: [barberFilter, ratingFilter, sort, dir, page], lazy: true },
 )
 
+const COLUMNAS: DataTableColumn[] = [
+  { key: "created_at", label: "Fecha", sortable: true },
+  { key: "rating", label: "Calificación", sortable: true },
+  { key: "barbero", label: "Barbero", hideBelow: "md" },
+  { key: "cliente", label: "Cliente", hideBelow: "md" },
+  { key: "comentario", label: "Comentario" },
+];
+const RATING_OPCIONES = [
+  { value: "", label: "Todas", icon: "star" },
+  ...[5, 4, 3, 2, 1].map((r) => ({ value: String(r), label: r + " ★" })),
+];
+// El orden lo hace el servidor (sobre todas las páginas); la tabla solo lo muestra y lo pide.
+const tableSort = computed({
+  get: () => ({ key: sort.value, dir: dir.value }),
+  set: (v: { key: string; dir: "asc" | "desc" } | null) => {
+    sort.value = v?.key ?? "created_at";
+    dir.value = v?.dir ?? "desc";
+  },
+});
 const reviews = computed(() => response.value?.data ?? [])
 const pagination = computed(() => response.value?.meta)
 const barbers = computed(() => response.value?.barbers ?? [])
@@ -62,15 +82,6 @@ function clearFilters() {
   barberFilter.value = ''
   ratingFilter.value = ''
   page.value = 1
-}
-
-function toggleSort(column: string) {
-  if (sort.value === column) {
-    dir.value = dir.value === 'asc' ? 'desc' : 'asc'
-  } else {
-    sort.value = column
-    dir.value = 'desc'
-  }
 }
 
 function fmtDate(iso: string | null) {
@@ -95,24 +106,13 @@ function fmtDate(iso: string | null) {
       <div class="ui-card p-4"><p class="text-xs font-bold uppercase text-muted">Bajas (≤2★)</p><p class="mt-1 text-xl font-black text-danger">{{ stats.bajas }}</p></div>
     </section>
 
-    <UiPagination
-      v-if="pagination"
-      v-model:current-page="page"
-      :last-page="pagination.last_page"
-      :total="pagination.total"
-      :per-page="10"
-      :busy="pending"
-    />
 
     <section class="mb-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
       <select v-model="barberFilter" class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink sm:w-auto">
         <option value="">Todos los barberos</option>
         <option v-for="b in barbers" :key="b.id" :value="b.id">{{ b.name }}</option>
       </select>
-      <select v-model="ratingFilter" class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink sm:w-auto">
-        <option value="">Todas las calificaciones</option>
-        <option v-for="r in [5, 4, 3, 2, 1]" :key="r" :value="r">{{ r }} ★</option>
-      </select>
+      <UiFilterChips v-model="ratingFilter" label="Filtrar por calificación" :options="RATING_OPCIONES" />
       <button
         v-if="barberFilter || ratingFilter" type="button"
         class="text-xs font-bold uppercase tracking-widest text-muted hover:text-ink" @click="clearFilters"
@@ -121,9 +121,8 @@ function fmtDate(iso: string | null) {
       </button>
     </section>
 
-    <p v-if="pending" class="text-sm text-muted">Cargando…</p>
     <BrandStatePanel
-      v-else-if="error"
+      v-if="error"
       mascot="bruno"
       state="error"
       tone="danger"
@@ -132,35 +131,29 @@ function fmtDate(iso: string | null) {
       action-label="Reintentar"
       @action="refresh"
     />
-    <p v-else-if="!reviews.length" class="rounded-2xl border border-dashed border-line p-12 text-center text-sm text-muted">
-      Sin reseñas que mostrar.
-    </p>
-
-    <section v-else class="ui-card overflow-x-auto">
-      <table aria-label="Reseñas" class="w-full min-w-[48rem] text-left text-sm">
-        <thead>
-          <tr class="border-b border-line text-xs uppercase tracking-wider text-muted">
-            <th scope="col" class="cursor-pointer px-4 py-3 select-none" @click="toggleSort('created_at')">
-              Fecha {{ sort === 'created_at' ? (dir === 'asc' ? '↑' : '↓') : '' }}
-            </th>
-            <th scope="col" class="cursor-pointer px-4 py-3 select-none" @click="toggleSort('rating')">
-              Calificación {{ sort === 'rating' ? (dir === 'asc' ? '↑' : '↓') : '' }}
-            </th>
-            <th scope="col" class="px-4 py-3">Barbero</th>
-            <th scope="col" class="px-4 py-3">Cliente</th>
-            <th scope="col" class="px-4 py-3">Comentario</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="r in reviews" :key="r.id" class="border-b border-line/60 last:border-0">
-            <td class="px-4 py-3 whitespace-nowrap text-muted">{{ fmtDate(r.created_at) }}</td>
-            <td class="px-4 py-3" :class="r.rating <= 2 ? 'text-danger' : 'text-gold'">{{ r.rating }} ★</td>
-            <td class="px-4 py-3 text-ink">{{ r.barber.name ?? '—' }}</td>
-            <td class="px-4 py-3 text-ink">{{ r.client.name ?? '—' }}</td>
-            <td class="px-4 py-3 text-muted">{{ r.comment ?? '—' }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
+    <UiDataTable
+      v-else
+      v-model:sort="tableSort"
+      :columns="COLUMNAS"
+      :rows="reviews"
+      :loading="pending"
+      aria-label="Reseñas"
+      empty-title="Todavía no hay reseñas que mostrar"
+      empty-description="Las reseñas de los clientes aparecerán aquí."
+    >
+      <template #cell-created_at="{ row }"><span class="whitespace-nowrap text-muted">{{ fmtDate(row.created_at) }}</span></template>
+      <template #cell-rating="{ row }"><span :class="row.rating <= 2 ? 'text-danger' : 'text-gold'">{{ row.rating }} ★</span></template>
+      <template #cell-barbero="{ row }"><span class="text-ink">{{ row.barber.name ?? '—' }}</span></template>
+      <template #cell-cliente="{ row }"><span class="text-ink">{{ row.client.name ?? '—' }}</span></template>
+      <template #cell-comentario="{ row }"><span class="text-muted">{{ row.comment ?? '—' }}</span></template>
+    </UiDataTable>
+    <UiPagination
+      v-if="pagination"
+      v-model:current-page="page"
+      :last-page="pagination.last_page"
+      :total="pagination.total"
+      :per-page="10"
+      :busy="pending"
+    />
   </div>
 </template>

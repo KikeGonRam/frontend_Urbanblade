@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { DataTableColumn } from "~/components/ui/DataTable.vue";
 /*
  * Fase 9.9 — Historial de sorteos mensuales, puerto de Loyalty\RaffleController
  * (web). No existía ninguna API para esto antes de esta fase.
@@ -29,6 +30,18 @@ const { data: response, pending, error, refresh } = await useAsyncData(
   { lazy: true },
 )
 const raffles = computed(() => response.value?.data ?? [])
+// El historial llega completo; se pagina de 10 en 10 en pantalla.
+const PAGE_SIZE = 10;
+const page = ref(1);
+const lastPage = computed(() => Math.max(1, Math.ceil(raffles.value.length / PAGE_SIZE)));
+const pageRows = computed(() => raffles.value.slice((page.value - 1) * PAGE_SIZE, page.value * PAGE_SIZE));
+const COLUMNAS: DataTableColumn[] = [
+  { key: "mes", label: "Mes" },
+  { key: "ganador", label: "Ganador" },
+  { key: "nivel", label: "Nivel", hideBelow: "md" },
+  { key: "premio", label: "Premio", hideBelow: "md" },
+  { key: "estado", label: "Estado", align: "right" },
+];
 const stats = computed<Stats>(() => response.value?.stats ?? { total: 0, reclamados: 0, vigentes: 0 })
 
 function fmtDate(iso: string | null) {
@@ -58,33 +71,28 @@ function statusOf(r: RaffleRow) {
       <div class="ui-card p-4"><p class="text-xs font-bold uppercase text-muted">Vigentes</p><p class="mt-1 text-xl font-black text-gold">{{ stats.vigentes }}</p></div>
     </section>
 
-    <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando sorteos…" />
-    <BrandStatePanel v-else-if="error" mascot="bruno" state="error" tone="danger" title="No se pudo cargar el historial de sorteos" description="Inténtalo nuevamente en unos minutos." action-label="Reintentar" @action="refresh" />
-    <BrandStatePanel v-else-if="!raffles.length" mascot="nava" state="empty" title="Todavía no hay resultados de sorteos" description="Los próximos resultados aparecerán aquí." />
-
-    <section v-else class="ui-card overflow-x-auto">
-      <table aria-label="Sorteos" class="w-full min-w-[42rem] text-left text-sm">
-        <thead>
-          <tr class="border-b border-line text-xs uppercase tracking-wider text-muted">
-            <th scope="col" class="px-4 py-3">Mes</th>
-            <th scope="col" class="px-4 py-3">Ganador</th>
-            <th scope="col" class="px-4 py-3">Nivel</th>
-            <th scope="col" class="px-4 py-3">Premio</th>
-            <th scope="col" class="px-4 py-3 text-right">Estado</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="r in raffles" :key="r.id" class="border-b border-line/60 last:border-0">
-            <td class="px-4 py-3 text-ink">{{ r.mes }}</td>
-            <td class="px-4 py-3 font-bold text-ink">{{ r.client.user.name ?? '—' }}</td>
-            <td class="px-4 py-3 text-muted">{{ r.nivel_ganador ?? '—' }}</td>
-            <td class="px-4 py-3 text-muted">{{ r.premio }}</td>
-            <td class="px-4 py-3 text-right">
-              <span class="rounded-full border px-2 py-0.5 text-xs font-black" :class="statusOf(r).class">{{ statusOf(r).label }}</span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
+    <BrandStatePanel v-if="error" mascot="bruno" state="error" tone="danger" title="No se pudo cargar el historial de sorteos" description="Inténtalo nuevamente en unos minutos." action-label="Reintentar" @action="refresh" />
+    <UiDataTable
+      v-else
+      :columns="COLUMNAS"
+      :rows="pageRows"
+      :loading="pending"
+      aria-label="Sorteos"
+      empty-title="Todavía no hay resultados de sorteos"
+      empty-description="Los próximos resultados aparecerán aquí."
+    >
+      <template #cell-mes="{ row }"><span class="text-ink">{{ row.mes }}</span></template>
+      <template #cell-ganador="{ row }"><span class="font-bold text-ink">{{ row.client.user.name ?? '—' }}</span></template>
+      <template #cell-nivel="{ row }"><span class="text-muted">{{ row.nivel_ganador ?? '—' }}</span></template>
+      <template #cell-premio="{ row }"><span class="text-muted">{{ row.premio }}</span></template>
+      <template #cell-estado="{ row }"><span class="rounded-full border px-2 py-0.5 text-xs font-black" :class="statusOf(row).class">{{ statusOf(row).label }}</span></template>
+    </UiDataTable>
+    <UiPagination
+      v-if="raffles.length > PAGE_SIZE"
+      v-model:current-page="page"
+      :last-page="lastPage"
+      :total="raffles.length"
+      :per-page="PAGE_SIZE"
+    />
   </div>
 </template>
