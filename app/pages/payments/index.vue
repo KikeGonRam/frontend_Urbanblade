@@ -358,7 +358,6 @@ async function openCharge(preselectId = "") {
   stripeErrors.value = "";
   productosAgregados.value = [];
   ocultarSugerencias.value = false;
-  cargarSugerencias();
   showCharge.value = true;
 
   loadingChargeable.value = true;
@@ -380,6 +379,8 @@ async function openCharge(preselectId = "") {
   } finally {
     loadingChargeable.value = false;
   }
+
+  await cargarSugerencias();
 }
 
 /*
