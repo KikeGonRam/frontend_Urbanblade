@@ -162,7 +162,7 @@ const METODO_OPCIONES = computed(() => [
 ]);
 async function onRowAction(action: string, payment: PaymentRow) {
   if (action === "pdf") await viewReceipt(payment);
-  else if (action === "void") await removePayment(payment);
+  else if (action === "void") removePayment(payment);
 }
 const payments = computed(() => response.value?.data ?? []);
 const stats = computed(() => response.value?.meta.stats);
