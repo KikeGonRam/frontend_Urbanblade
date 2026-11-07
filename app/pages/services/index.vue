@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { DataTableColumn } from "~/components/ui/DataTable.vue";
 import type { CsvColumn } from "~/composables/useCsvExport";
 /*
  * Fase 9.5 — catálogo de servicios, gestión admin. Api/Service/
@@ -59,13 +60,33 @@ const {
         categoria: categoria.value || undefined,
         activo: activo.value || undefined,
         page: page.value,
-        per_page: 15,
+        per_page: 10,
       },
     }),
   { watch: [debouncedSearch, categoria, activo, page], lazy: true },
 );
+const COLUMNAS: DataTableColumn[] = [
+  { key: "nombre", label: "Servicio" },
+  { key: "categoria", label: "Categoría", hideBelow: "md" },
+  { key: "duracion_min", label: "Duración", hideBelow: "md" },
+  { key: "precio", label: "Precio", align: "right" },
+  { key: "activo", label: "Estado", align: "center" },
+];
+const ESTADO_OPCIONES = [
+  { value: "", label: "Todos", icon: "scissors" },
+  { value: "1", label: "Activos", icon: "check" },
+  { value: "0", label: "Inactivos", icon: "x" },
+];
+function onRowAction(action: string, service: ServiceRow) {
+  if (action === "edit") openEdit(service);
+  else if (action === "delete") removeService(service);
+}
 const services = computed(() => response.value?.data ?? []);
 const categories = computed(() => response.value?.categories ?? []);
+const categoriaOpciones = computed(() => [
+  { value: "", label: "Todas" },
+  ...categories.value.map((c) => ({ value: c, label: c })),
+]);
 const pagination = computed(() => response.value?.meta);
 
 watch([debouncedSearch, categoria, activo], () => {
@@ -225,28 +246,10 @@ async function removeService(service: ServiceRow) {
       />
     </div>
 
-    <section class="mb-5 flex flex-wrap items-center gap-3">
-      <input
-        v-model="search"
-        type="text"
-        placeholder="Nombre del servicio…"
-        class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)] sm:max-w-xs"
-      >
-      <select
-        v-model="categoria"
-        class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]"
-      >
-        <option value="">Todas las categorías</option>
-        <option v-for="c in categories" :key="c" :value="c">{{ c }}</option>
-      </select>
-      <select
-        v-model="activo"
-        class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]"
-      >
-        <option value="">Todos los estados</option>
-        <option value="1">Activo</option>
-        <option value="0">Inactivo</option>
-      </select>
+    <section class="mb-5 flex flex-wrap items-center gap-3" aria-label="Filtros">
+      <UiSearchInput v-model="search" label="Buscar servicios" placeholder="Buscar por nombre del servicio…" />
+      <UiFilterChips v-model="activo" label="Filtrar por estado" :options="ESTADO_OPCIONES" />
+      <UiFilterChips v-if="categories.length" v-model="categoria" label="Filtrar por categoría" :options="categoriaOpciones" />
       <button
         v-if="search || categoria || activo"
         type="button"
@@ -262,7 +265,7 @@ async function removeService(service: ServiceRow) {
       v-model:current-page="page"
       :last-page="pagination.last_page"
       :total="pagination.total"
-      :per-page="15"
+      :per-page="10"
       :busy="pending"
     />
 
@@ -278,100 +281,49 @@ async function removeService(service: ServiceRow) {
       @action="refresh"
     />
 
-    <section v-if="!pending && !error" class="ui-card overflow-x-auto">
-      <table aria-label="Servicios" class="w-full text-left text-sm">
-        <thead>
-          <tr
-            class="border-b border-line text-xs uppercase tracking-wider text-muted"
-          >
-            <th scope="col" class="px-4 py-3">Servicio</th>
-            <th scope="col" class="px-4 py-3">Categoría</th>
-            <th scope="col" class="px-4 py-3">Duración</th>
-            <th scope="col" class="px-4 py-3 text-right">Precio</th>
-            <th scope="col" class="px-4 py-3 text-center">Estado</th>
-            <th scope="col" class="px-4 py-3 text-right">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="service in services"
-            :key="service.id"
-            class="border-b border-line/60 last:border-0"
-          >
-            <td class="px-4 py-3">
-              <div class="flex items-center gap-3">
-                <img
-                  v-if="service.imagen_url"
-                  :src="service.imagen_url"
-                  :alt="service.nombre"
-                  class="h-9 w-9 rounded-lg border border-line object-cover"
-                >
-                <div
-                  v-else
-                  class="flex h-9 w-9 items-center justify-center rounded-lg border border-line bg-ink/5 text-xs text-gold"
-                >
-                  ✂
-                </div>
-                <div>
-                  <p class="font-bold text-ink">{{ service.nombre }}</p>
-                  <p
-                    v-if="service.descripcion"
-                    class="line-clamp-1 text-xs text-muted"
-                  >
-                    {{ service.descripcion }}
-                  </p>
-                </div>
-              </div>
-            </td>
-            <td class="px-4 py-3">
-              <span
-                class="rounded-full border border-line bg-ink/5 px-2 py-0.5 text-xs font-black uppercase text-muted"
-              >
-                {{ service.categoria }}
-              </span>
-            </td>
-            <td class="px-4 py-3 text-muted">{{ service.duracion_min }} min</td>
-            <td class="px-4 py-3 text-right font-black text-success">
-              {{ fmtMoney(service.precio) }}
-            </td>
-            <td class="px-4 py-3 text-center">
-              <span
-                class="rounded-full border px-2 py-0.5 text-xs font-black uppercase"
-                :class="
-                  service.activo
-                    ? 'border-success/25 bg-success/10 text-success'
-                    : 'border-line bg-ink/5 text-muted'
-                "
-              >
-                {{ service.activo ? "Activo" : "Inactivo" }}
-              </span>
-            </td>
-            <td class="px-4 py-3">
-              <div v-if="service.slug" class="flex justify-end gap-2">
-                <button
-                  type="button"
-                  class="min-h-10 rounded-lg border border-line px-3 py-1 text-xs text-muted hover:text-ink"
-                  @click="openEdit(service)"
-                >
-                  Editar
-                </button>
-                <!-- Acción destructiva en el menú ⋯, como en Clientes: la principal queda a la vista y borrar pide dos pasos. -->
-                <UiRowMenu
-                  :label="`Más acciones de ${service.nombre ?? 'este servicio'}`"
-                  :items="[{ label: 'Eliminar servicio', danger: true, onSelect: () => removeService(service) }]"
-                />
-              </div>
-            </td>
-          </tr>
-          <tr v-if="!services.length">
-            <td colspan="6" class="px-4 py-12 text-center text-sm text-muted">
-              Todavía no hay servicios registrados.
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
-
+    <UiDataTable
+      v-if="!error"
+      :columns="COLUMNAS"
+      :rows="services"
+      :loading="pending"
+      aria-label="Servicios"
+      empty-title="Todavía no hay servicios registrados"
+      empty-description="Crea el primer servicio o cambia los filtros."
+    >
+      <template #cell-nombre="{ row }">
+        <div class="flex items-center gap-3">
+          <img v-if="row.imagen_url" :src="row.imagen_url" :alt="row.nombre" class="h-9 w-9 rounded-lg border border-line object-cover">
+          <span v-else class="flex h-9 w-9 items-center justify-center rounded-lg border border-line bg-ink/5 text-gold"><UiIcon name="scissors" /></span>
+          <div class="min-w-0">
+            <p class="font-bold text-ink">{{ row.nombre }}</p>
+            <p v-if="row.descripcion" class="line-clamp-1 text-xs text-muted">{{ row.descripcion }}</p>
+          </div>
+        </div>
+      </template>
+      <template #cell-categoria="{ row }">
+        <span class="rounded-full border border-line bg-ink/5 px-2 py-0.5 text-xs font-black uppercase text-muted">{{ row.categoria }}</span>
+      </template>
+      <template #cell-duracion_min="{ row }"><span class="text-muted">{{ row.duracion_min }} min</span></template>
+      <template #cell-precio="{ row }"><span class="font-black text-success">{{ fmtMoney(row.precio) }}</span></template>
+      <template #cell-activo="{ row }">
+        <span
+          class="rounded-full border px-2 py-0.5 text-xs font-black uppercase"
+          :class="row.activo ? 'border-success/25 bg-success/10 text-success' : 'border-line bg-ink/5 text-muted'"
+        >
+          {{ row.activo ? "Activo" : "Inactivo" }}
+        </span>
+      </template>
+      <template #actions="{ row }">
+        <UiRowActions
+          v-if="row.slug"
+          :actions="[
+            { key: 'edit', label: `Editar ${row.nombre}`, icon: 'edit' },
+            { key: 'delete', label: `Eliminar ${row.nombre}`, icon: 'trash', danger: true },
+          ]"
+          @action="onRowAction($event, row)"
+        />
+      </template>
+    </UiDataTable>
     <UiFormSheet
       v-if="showForm"
       :title="editing ? 'Editar servicio' : 'Nuevo servicio'"

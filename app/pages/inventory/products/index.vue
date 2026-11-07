@@ -86,7 +86,7 @@ const {
     tipo: tipo.value || undefined,
     bajo_stock: soloBajoStock.value ? 1 : undefined,
     page: page.value,
-    per_page: 15,
+    per_page: 10,
   }),
   () =>
     apiFetch<ProductsResponse>("/inventory/products", {
@@ -96,7 +96,7 @@ const {
         tipo: tipo.value || undefined,
         bajo_stock: soloBajoStock.value ? 1 : undefined,
         page: page.value,
-        per_page: 15,
+        per_page: 10,
       },
     }),
   { watch: [debouncedSearch, categoria, tipo, soloBajoStock, page], lazy: true },
@@ -545,7 +545,7 @@ async function removeProduct(product: ProductRow) {
       v-model:current-page="page"
       :last-page="pagination.last_page"
       :total="pagination.total"
-      :per-page="15"
+      :per-page="10"
       :busy="pending"
     />
 

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { DataTableColumn } from "~/components/ui/DataTable.vue";
 import type { CsvColumn } from "~/composables/useCsvExport";
 /*
  * Fase 9.1 del plan (ver .claude/skills/nuxt-migration-plan/SKILL.md) — a
@@ -85,7 +86,7 @@ const {
     search: search.value || undefined,
     segment: segment.value || undefined,
     page: page.value,
-    per_page: 15,
+    per_page: 10,
   }),
   () =>
     apiFetch<ClientsResponse>("/admin/clients", {
@@ -93,18 +94,31 @@ const {
         search: search.value || undefined,
         segment: segment.value || undefined,
         page: page.value,
-        per_page: 15,
+        per_page: 10,
       },
     }),
   { watch: [debouncedSearch, segment, page], lazy: true },
 );
 
+const COLUMNAS: DataTableColumn[] = [
+  { key: "name", label: "Cliente" },
+  { key: "email", label: "Email", hideBelow: "md" },
+  { key: "telefono", label: "Teléfono", hideBelow: "lg" },
+  { key: "segment", label: "Segmento", align: "center" },
+  { key: "totalAppointments", label: "Citas", align: "center", hideBelow: "md" },
+  { key: "joinedAt", label: "Registrado", hideBelow: "lg" },
+];
+function onRowAction(action: string, client: ClientRow) {
+  if (action === "view") navigateTo(`/clients/${client.slug}`);
+  else if (action === "edit") openEdit(client);
+  else if (action === "delete") removeClient(client);
+}
 const clients = computed(() => response.value?.data ?? []);
 const pagination = computed(() => ({
   current_page: response.value?.current_page ?? page.value,
   last_page: response.value?.last_page ?? 1,
   total: response.value?.total ?? 0,
-  per_page: response.value?.per_page ?? 15,
+  per_page: response.value?.per_page ?? 10,
 }));
 
 watch([debouncedSearch, segment], () => {
@@ -317,14 +331,12 @@ function fmtDate(iso: string | null) {
     </section>
 
     <section class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center">
-      <input
-v-model="search"
-        aria-label="Nombre o email"
-        type="text"
-        placeholder="Nombre o email..."
-        class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink sm:max-w-md"
-        @input="resetAndSearch"
-      >
+      <UiSearchInput
+        v-model="search"
+        label="Nombre o email"
+        placeholder="Buscar por nombre o correo…"
+        @update:model-value="resetAndSearch"
+      />
       <button
         v-if="search || segment"
         type="button"
@@ -348,9 +360,8 @@ v-model="search"
       </div>
     </section>
 
-    <UiSkeleton v-if="pending" variant="rows" :rows="8" label="Cargando clientes…" class="ui-card" />
     <BrandStatePanel
-      v-else-if="error"
+      v-if="error"
       mascot="bruno"
       state="error"
       tone="danger"
@@ -363,81 +374,39 @@ v-model="search"
       {{ actionError }}
     </p>
 
-    <section v-if="!pending && !error" class="ui-card overflow-x-auto">
-      <table aria-label="Clientes" class="w-full text-left text-sm">
-        <thead>
-          <tr
-            class="border-b border-line text-xs uppercase tracking-wider text-muted"
-          >
-            <th scope="col" class="px-4 py-3">Cliente</th>
-            <th scope="col" class="px-4 py-3">Email</th>
-            <th scope="col" class="px-4 py-3">Teléfono</th>
-            <th scope="col" class="px-4 py-3 text-center">Segmento</th>
-            <th scope="col" class="px-4 py-3 text-center">Citas</th>
-            <th scope="col" class="px-4 py-3">Registrado</th>
-            <th scope="col" class="px-4 py-3 text-right">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="client in clients"
-            :key="client.id"
-            class="border-b border-line/60 last:border-0"
-          >
-            <td class="px-4 py-3">
-              <div class="flex items-center gap-3">
-                <UiAvatar :src="client.avatar_url" :name="client.name" />
-                <span class="font-bold text-ink">{{
-                  client.name ?? "Sin usuario"
-                }}</span>
-              </div>
-            </td>
-            <td class="px-4 py-3 text-muted">{{ client.email ?? "—" }}</td>
-            <td class="px-4 py-3 text-muted">{{ client.telefono ?? "—" }}</td>
-            <td class="px-4 py-3 text-center">
-              <span
-                class="rounded-full border px-2 py-0.5 text-xs font-black"
-                :class="SEGMENT_CLASS[client.segment]"
-                >{{ SEGMENT_LABEL[client.segment] }}</span
-              >
-            </td>
-            <td class="px-4 py-3 text-center text-ink">
-              {{ client.totalAppointments }}
-            </td>
-            <td class="px-4 py-3 text-muted">{{ fmtDate(client.joinedAt) }}</td>
-            <td class="px-4 py-3">
-              <div v-if="client.slug" class="flex justify-end gap-2">
-                <NuxtLink
-                  :to="`/clients/${client.slug}`"
-                  class="flex min-h-9 items-center rounded-lg border border-gold/30 px-3 py-1 text-xs font-bold text-gold transition-colors hover:bg-gold/10"
-                >
-                  Ver ficha
-                </NuxtLink>
-                <button
-                  type="button"
-                  class="rounded-lg border border-line px-3 py-1 text-xs text-muted hover:text-ink min-h-10"
-                  @click="openEdit(client)"
-                >
-                  Editar
-                </button>
-                <!-- Baja de cliente: acción destructiva, solo administración
-                     (authorizeAdmin() en ClientAdminController::destroy). Va en el menú ⋯, no a la vista. -->
-                <UiRowMenu
-                  v-if="isAdmin"
-                  :label="`Más acciones de ${client.name ?? 'este cliente'}`"
-                  :items="[{ label: 'Eliminar cliente', danger: true, onSelect: () => removeClient(client) }]"
-                />
-              </div>
-            </td>
-          </tr>
-          <tr v-if="!clients.length">
-            <td colspan="7" class="px-4 py-12 text-center text-sm text-muted">
-              Sin clientes que mostrar.
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
+    <UiDataTable
+      v-if="!error"
+      :columns="COLUMNAS"
+      :rows="clients"
+      :loading="pending"
+      aria-label="Clientes"
+      empty-title="Sin clientes que mostrar"
+      empty-description="Cambia la búsqueda o el segmento para ver otros clientes."
+    >
+      <template #cell-name="{ row }">
+        <div class="flex items-center gap-3">
+          <UiAvatar :src="row.avatar_url" :name="row.name" />
+          <span class="font-bold text-ink">{{ row.name ?? "Sin usuario" }}</span>
+        </div>
+      </template>
+      <template #cell-email="{ row }"><span class="text-muted">{{ row.email ?? "—" }}</span></template>
+      <template #cell-telefono="{ row }"><span class="text-muted">{{ row.telefono ?? "—" }}</span></template>
+      <template #cell-segment="{ row }">
+        <span class="rounded-full border px-2 py-0.5 text-xs font-black" :class="SEGMENT_CLASS[row.segment]">{{ SEGMENT_LABEL[row.segment] }}</span>
+      </template>
+      <template #cell-joinedAt="{ row }"><span class="text-muted">{{ fmtDate(row.joinedAt) }}</span></template>
+      <template #actions="{ row }">
+        <UiRowActions
+          v-if="row.slug"
+          :actions="[
+            { key: 'view', label: `Ver ficha de ${row.name ?? 'este cliente'}`, icon: 'eye' },
+            { key: 'edit', label: `Editar a ${row.name ?? 'este cliente'}`, icon: 'edit' },
+            { key: 'delete', label: `Eliminar a ${row.name ?? 'este cliente'}`, icon: 'trash', danger: true, hidden: !isAdmin },
+          ]"
+          @action="onRowAction($event, row)"
+        />
+      </template>
+    </UiDataTable>
 
     <UiPagination
       v-model:current-page="page"

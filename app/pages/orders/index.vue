@@ -72,7 +72,7 @@ const {
         estado: estadoFilter.value || undefined,
         q: search.value || undefined,
         page: page.value,
-        per_page: 15,
+        per_page: 10,
       },
     }),
   { watch: [estadoFilter, debouncedSearch, page], lazy: true },
@@ -336,7 +336,7 @@ v-model="estadoFilter"
       v-model:current-page="page"
       :last-page="pagination.last_page"
       :total="pagination.total"
-      :per-page="15"
+      :per-page="10"
       :busy="pending"
     />
 

@@ -91,7 +91,7 @@ const {
     fecha_desde: fechaDesde.value || undefined,
     fecha_hasta: fechaHasta.value || undefined,
     page: page.value,
-    per_page: 15,
+    per_page: 10,
   }),
   () =>
     apiFetch<LogsResponse>("/logs", {
@@ -103,7 +103,7 @@ const {
         fecha_desde: fechaDesde.value || undefined,
         fecha_hasta: fechaHasta.value || undefined,
         page: page.value,
-        per_page: 15,
+        per_page: 10,
       },
     }),
   {
@@ -312,7 +312,7 @@ function fmtDate(iso: string | null) {
       v-model:current-page="page"
       :last-page="pagination.last_page"
       :total="pagination.total"
-      :per-page="15"
+      :per-page="10"
       :busy="pending"
     />
   </div>
