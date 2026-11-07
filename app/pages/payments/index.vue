@@ -280,6 +280,51 @@ const form = reactive({
 const chargeError = ref("");
 const saving = ref(false);
 
+// ── Sugerencias de productos al cobrar ────────────────────────────────────
+// Se venden junto con el cobro (POST /payments { productos }) como pedido de
+// la cita; con tarjeta no aplican porque el intento de Stripe solo cubre el
+// servicio.
+interface ProductoSugerido {
+  id: string;
+  nombre: string;
+  precio_venta: number;
+  imagen?: string | null;
+  stock_actual: number;
+}
+const sugerencias = ref<ProductoSugerido[]>([]);
+const productosAgregados = ref<string[]>([]);
+const ocultarSugerencias = ref(false);
+
+const productosVendidos = computed(() =>
+  form.metodo === "tarjeta"
+    ? []
+    : sugerencias.value.filter((p) => productosAgregados.value.includes(p.id)),
+);
+const productosTotal = computed(() =>
+  productosVendidos.value.reduce((sum, p) => sum + Number(p.precio_venta), 0),
+);
+const totalConProductos = computed(
+  () => preview.value.total + productosTotal.value,
+);
+
+function toggleProducto(id: string) {
+  productosAgregados.value = productosAgregados.value.includes(id)
+    ? productosAgregados.value.filter((x) => x !== id)
+    : [...productosAgregados.value, id];
+}
+
+async function cargarSugerencias() {
+  try {
+    const res = await apiFetch<{ data: ProductoSugerido[] }>("/products");
+    sugerencias.value = (res.data ?? [])
+      .filter((p) => p.stock_actual > 0)
+      .slice(0, 3);
+  } catch {
+    // Es una ayuda opcional: sin catálogo el cobro sigue igual.
+    sugerencias.value = [];
+  }
+}
+
 const selected = computed(
   () =>
     chargeableAppointments.value.find((a) => a.id === form.appointmentId) ??
@@ -311,6 +356,9 @@ async function openCharge(preselectId = "") {
   form.stripePaymentId = "";
   chargeError.value = "";
   stripeErrors.value = "";
+  productosAgregados.value = [];
+  ocultarSugerencias.value = false;
+  cargarSugerencias();
   showCharge.value = true;
 
   loadingChargeable.value = true;
@@ -405,6 +453,12 @@ async function submitCharge() {
         usar_paquete_id: form.usarPaquete ? selected.value.paquete_disponible?.id : undefined,
         codigo_gift_card: form.codigoGiftCard.trim() || undefined,
         stripe_payment_id: form.stripePaymentId || undefined,
+        productos: productosVendidos.value.length
+          ? productosVendidos.value.map((p) => ({
+              product_id: p.id,
+              cantidad: 1,
+            }))
+          : undefined,
       },
     });
     showCharge.value = false;
@@ -1048,15 +1102,86 @@ v-model.number="form.propina"
                     >Propina</span
                   ><span class="text-gold">{{ fmtMoney(form.propina) }}</span>
                 </div>
+                <div
+                  v-if="productosVendidos.length"
+                  class="flex justify-between"
+                >
+                  <span class="text-xs font-bold uppercase text-muted"
+                    >Productos</span
+                  ><span class="tabular-nums text-ink">{{
+                    fmtMoney(productosTotal)
+                  }}</span>
+                </div>
                 <div class="my-2 border-t border-line" />
                 <div class="flex justify-between">
                   <span class="text-xs font-black uppercase text-ink"
                     >Total a pagar</span
-                  ><span class="text-xl font-black text-gold">{{
-                    fmtMoney(preview.total)
+                  ><span class="text-xl font-black tabular-nums text-gold">{{
+                    fmtMoney(totalConProductos)
                   }}</span>
                 </div>
               </div>
+            </div>
+
+            <div
+              v-if="
+                !ocultarSugerencias &&
+                sugerencias.length &&
+                form.metodo !== 'tarjeta'
+              "
+              class="space-y-2"
+            >
+              <div class="flex items-center justify-between">
+                <p class="text-xs font-bold uppercase tracking-widest text-muted">
+                  ¿Algo más para el cliente?
+                </p>
+                <button
+                  type="button"
+                  class="min-h-11 rounded-lg px-2 text-xs text-muted hover:text-ink"
+                  @click="ocultarSugerencias = true"
+                >
+                  Ocultar sugerencias
+                </button>
+              </div>
+              <ul class="flex flex-col gap-2 sm:flex-row">
+                <li
+                  v-for="p in sugerencias"
+                  :key="p.id"
+                  class="flex flex-1 items-center gap-3 rounded-xl border border-line bg-card p-3"
+                >
+                  <img
+                    v-if="p.imagen"
+                    :src="p.imagen"
+                    alt=""
+                    class="h-12 w-12 shrink-0 rounded-[10px] object-cover"
+                  >
+                  <div class="min-w-0 flex-1">
+                    <p class="truncate text-[13px] font-semibold text-ink">
+                      {{ p.nombre }}
+                    </p>
+                    <p class="text-sm tabular-nums text-muted">
+                      {{ fmtMoney(p.precio_venta) }}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    :aria-pressed="productosAgregados.includes(p.id)"
+                    class="min-h-11 shrink-0 rounded-lg border px-3 text-xs font-semibold"
+                    :class="
+                      productosAgregados.includes(p.id)
+                        ? 'border-gold bg-gold/15 text-gold-text'
+                        : 'border-line text-ink hover:border-gold'
+                    "
+                    @click="toggleProducto(p.id)"
+                  >
+                    {{
+                      productosAgregados.includes(p.id)
+                        ? "Agregado ✓"
+                        : "Agregar"
+                    }}
+                  </button>
+                </li>
+              </ul>
             </div>
 
             <p v-if="chargeError" class="text-sm text-danger">
