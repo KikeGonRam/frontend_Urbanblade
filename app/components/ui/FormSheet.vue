@@ -103,13 +103,12 @@ onBeforeUnmount(() => {
             <slot name="subtitle" />
           </div>
           <div class="flex shrink-0 items-center gap-2">
-            <span
-              v-if="progress !== null"
-              class="ub-ring"
-              role="img"
-              :aria-label="`Avance del formulario: ${progress}%`"
-            >
-              <svg viewBox="0 0 46 46" aria-hidden="true">
+            <span v-if="progress !== null" class="ub-ring">
+              <svg
+                viewBox="0 0 46 46"
+                role="img"
+                :aria-label="`Avance del formulario: ${progress}%`"
+              >
                 <circle class="ub-ring__bg" cx="23" cy="23" r="19" />
                 <circle
                   class="ub-ring__fg"

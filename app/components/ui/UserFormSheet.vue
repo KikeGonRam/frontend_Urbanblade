@@ -85,7 +85,19 @@ const roleOptions = computed(() =>
 );
 
 const showPassword = ref(false);
-const emailValid = computed(() => /\S+@\S+\.\S+/.test(form.email));
+/** Correo con forma válida: una sola @, dominio con punto y sin espacios (sin regex con retroceso). */
+function isEmail(value: string) {
+  const parts = value.split("@");
+  if (parts.length !== 2 || /\s/.test(value)) return false;
+  const [local, domain] = parts;
+  return (
+    !!local &&
+    domain.includes(".") &&
+    !domain.startsWith(".") &&
+    !domain.endsWith(".")
+  );
+}
+const emailValid = computed(() => isEmail(form.email));
 const emailBad = computed(() => !!form.email && !emailValid.value);
 const strength = computed(() => {
   const pass = form.password;
@@ -111,16 +123,17 @@ const strengthText = computed(
       ? "Déjala vacía para conservar la actual."
       : "Usa al menos 8 caracteres."),
 );
+const roleFieldFilled = computed(() => {
+  if (isBarber.value) return !!form.especialidades.trim();
+  if (isClient.value) return !!form.telefono.trim();
+  return true;
+});
 const progress = computed(() => {
   const need = [
     !!form.name.trim(),
     emailValid.value,
     props.editing ? true : form.password.length >= 8,
-    isBarber.value
-      ? !!form.especialidades.trim()
-      : isClient.value
-        ? !!form.telefono.trim()
-        : true,
+    roleFieldFilled.value,
   ];
   return Math.round((need.filter(Boolean).length / need.length) * 100);
 });
