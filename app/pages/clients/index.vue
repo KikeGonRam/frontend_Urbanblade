@@ -380,7 +380,7 @@ function fmtDate(iso: string | null) {
       :rows="clients"
       :loading="pending"
       aria-label="Clientes"
-      empty-title="Sin clientes que mostrar"
+      empty-title="Todavía no hay clientes que mostrar"
       empty-description="Cambia la búsqueda o el segmento para ver otros clientes."
     >
       <template #cell-name="{ row }">

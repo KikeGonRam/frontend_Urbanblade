@@ -194,7 +194,7 @@ async function removeUser(user: UserRow) {
       :rows="users"
       :loading="pending"
       aria-label="Usuarios"
-      empty-title="Sin usuarios"
+      empty-title="Todavía no hay usuarios que mostrar"
       empty-description="Cambia la búsqueda o el filtro de rol para ver otras cuentas."
     >
       <template #cell-name="{ row }">
