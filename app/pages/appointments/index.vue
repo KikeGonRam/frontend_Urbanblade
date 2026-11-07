@@ -195,6 +195,17 @@ const form = reactive({
 const formError = ref("");
 const actionError = ref("");
 const saving = ref(false);
+function apptInitials(name: string) {
+  return (
+    name
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((w) => w[0])
+      .join("")
+      .toUpperCase() || "—"
+  );
+}
 
 // ── Disponibilidad (guía, no restricción) ─────────────────────────────────
 // A diferencia del modal del cliente (pages/my/appointments), aquí la hora
@@ -584,17 +595,18 @@ v-model="barberFilter"
       :busy="saving"
       @close="showForm = false"
     >
-        <form id="appointment-form" class="space-y-3" @submit.prevent="submitForm">
-          <div>
-            <label class="mb-1 block text-xs text-muted">Cliente</label>
-            <div
-              v-if="form.client_label"
-              class="flex items-center justify-between rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
-            >
-              <span>{{ form.client_label }}</span>
+        <form id="appointment-form" class="space-y-6" @submit.prevent="submitForm">
+          <section class="space-y-4" aria-labelledby="ap-client">
+            <p id="ap-client" class="ub-form-section__title">Cliente</p>
+            <div v-if="form.client_label" class="ub-apptcard">
+              <span class="ub-apptcard__avatar">{{ apptInitials(form.client_label) }}</span>
+              <span class="min-w-0 flex-1">
+                <b class="block truncate text-sm text-ink">{{ form.client_label }}</b>
+                <small class="block text-xs text-muted">Cliente seleccionado</small>
+              </span>
               <button
                 type="button"
-                class="text-xs text-muted hover:text-ink"
+                class="ub-chip"
                 @click="
                   form.client_id = '';
                   form.client_label = '';
@@ -604,21 +616,25 @@ v-model="barberFilter"
               </button>
             </div>
             <template v-else>
-              <input
-v-model="clientQuery"
-                aria-label="Buscar cliente por nombre o correo"
-                type="text"
-                placeholder="Buscar por nombre o email…"
-                class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
-              >
+              <UiFormField field-id="appt-client-q" label="Buscar cliente" icon="users">
+                <input
+                  id="appt-client-q"
+                  v-model="clientQuery"
+                  aria-label="Buscar cliente por nombre o correo"
+                  type="text"
+                  autocomplete="off"
+                  placeholder="Buscar por nombre o email…"
+                  class="ui-input w-full"
+                >
+              </UiFormField>
               <ul
                 v-if="clientOptions.length"
-                class="mt-1 max-h-40 overflow-y-auto rounded-lg border border-line bg-main"
+                class="max-h-44 overflow-y-auto rounded-xl border border-line bg-main"
               >
                 <li v-for="c in clientOptions" :key="c.id">
                   <button
                     type="button"
-                    class="block w-full px-3 py-2 text-left text-sm text-ink hover:bg-accent"
+                    class="block w-full px-3 py-2.5 text-left text-sm text-ink hover:bg-accent"
                     @click="pickClient(c)"
                   >
                     {{ c.name }} <span class="text-muted">({{ c.email }})</span>
@@ -626,98 +642,77 @@ v-model="clientQuery"
                 </li>
               </ul>
             </template>
-          </div>
-          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div>
-              <label class="mb-1 block text-xs text-muted">Barbero</label>
-              <select
-v-model="form.barber_id"
-                aria-label="Barbero"
-                required
-                class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
-              >
-                <option value="" disabled>Selecciona…</option>
-                <option v-for="b in barbers" :key="b.id" :value="b.id">
-                  {{ b.name }}
-                </option>
-              </select>
+          </section>
+
+          <section class="space-y-4" aria-labelledby="ap-svc">
+            <p id="ap-svc" class="ub-form-section__title">Servicio y barbero</p>
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <UiFormField field-id="appt-barber" label="Barbero" icon="scissors">
+                <select id="appt-barber" v-model="form.barber_id" aria-label="Barbero" required class="ui-input w-full">
+                  <option value="" disabled>Selecciona…</option>
+                  <option v-for="b in barbers" :key="b.id" :value="b.id">
+                    {{ b.name }}
+                  </option>
+                </select>
+              </UiFormField>
+              <UiFormField field-id="appt-service" label="Servicio" icon="tag">
+                <select id="appt-service" v-model="form.service_id" aria-label="Servicio" required class="ui-input w-full">
+                  <option value="" disabled>Selecciona…</option>
+                  <option v-for="s in services" :key="s.id" :value="s.id">
+                    {{ s.nombre }} — ${{ s.precio }}
+                  </option>
+                </select>
+              </UiFormField>
             </div>
-            <div>
-              <label class="mb-1 block text-xs text-muted">Servicio</label>
-              <select
-v-model="form.service_id"
-                aria-label="Servicio"
-                required
-                class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
-              >
-                <option value="" disabled>Selecciona…</option>
-                <option v-for="s in services" :key="s.id" :value="s.id">
-                  {{ s.nombre }} — ${{ s.precio }}
-                </option>
-              </select>
-            </div>
-          </div>
-          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div>
-              <label class="mb-1 block text-xs text-muted">Fecha</label>
-              <input
-v-model="form.fecha"
-                aria-label="Fecha"
-                type="date"
-                required
-                class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
-              >
-            </div>
-            <div>
-              <label class="mb-1 block text-xs text-muted">Hora</label>
-              <input
-v-model="form.hora_inicio"
-                aria-label="Hora de inicio"
-                type="time"
-                required
-                list="horarios-libres"
-                class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
-              >
-              <datalist id="horarios-libres">
-                <option
-                  v-for="slot in slots"
-                  :key="slot.time"
-                  :value="slot.time"
+          </section>
+
+          <section class="space-y-4" aria-labelledby="ap-when">
+            <p id="ap-when" class="ub-form-section__title">Fecha y hora</p>
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <UiFormField field-id="appt-fecha" label="Fecha" icon="calendar">
+                <input id="appt-fecha" v-model="form.fecha" aria-label="Fecha" type="date" required class="ui-input w-full">
+              </UiFormField>
+              <UiFormField field-id="appt-hora" label="Hora" icon="clock">
+                <input
+                  id="appt-hora"
+                  v-model="form.hora_inicio"
+                  aria-label="Hora de inicio"
+                  type="time"
+                  required
+                  list="horarios-libres"
+                  class="ui-input w-full"
                 >
-                  {{ slot.label }}
-                </option>
-              </datalist>
-              <p v-if="horaOcupada" class="mt-1 text-xs text-warning">
-                Ese horario no aparece libre para este barbero. Puedes
-                continuar; el sistema lo rechazará si ya está tomado.
-              </p>
-              <p v-else-if="slotsLoaded" class="mt-1 text-xs text-muted">
-                {{ slots.length }} horario(s) libre(s) ese día.
-              </p>
+              </UiFormField>
             </div>
-          </div>
-          <div>
-            <label class="mb-1 block text-xs text-muted">Estado</label>
-            <select
-v-model="form.estado"
-              aria-label="Estado de la cita"
-              class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
-            >
-              <option v-for="e in ESTADOS" :key="e" :value="e">
-                {{ ESTADO_LABEL[e] }}
+            <datalist id="horarios-libres">
+              <option v-for="slot in slots" :key="slot.time" :value="slot.time">
+                {{ slot.label }}
               </option>
-            </select>
-          </div>
-          <div>
-            <label class="mb-1 block text-xs text-muted">Notas</label>
-            <textarea
-v-model="form.notas"
-              aria-label="Notas"
-              rows="2"
-              class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
-            />
-          </div>
-          <p v-if="formError" class="text-sm text-danger">{{ formError }}</p>
+            </datalist>
+            <p v-if="horaOcupada" class="text-xs text-warning">
+              Ese horario no aparece libre para este barbero. Puedes
+              continuar; el sistema lo rechazará si ya está tomado.
+            </p>
+            <p v-else-if="slotsLoaded" class="text-xs text-muted">
+              {{ slots.length }} horario(s) libre(s) ese día.
+            </p>
+          </section>
+
+          <section class="space-y-4" aria-labelledby="ap-more">
+            <p id="ap-more" class="ub-form-section__title">Detalles</p>
+            <UiFormField field-id="appt-estado" label="Estado" icon="check">
+              <select id="appt-estado" v-model="form.estado" aria-label="Estado de la cita" class="ui-input w-full">
+                <option v-for="e in ESTADOS" :key="e" :value="e">
+                  {{ ESTADO_LABEL[e] }}
+                </option>
+              </select>
+            </UiFormField>
+            <UiFormField field-id="appt-notas" label="Notas" icon="text" top>
+              <textarea id="appt-notas" v-model="form.notas" aria-label="Notas" rows="2" class="ui-input w-full" />
+            </UiFormField>
+          </section>
+
+          <p v-if="formError" role="alert" class="text-sm text-danger">{{ formError }}</p>
         </form>
     </UiFormSheet>
 
