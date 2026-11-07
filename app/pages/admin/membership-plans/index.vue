@@ -145,38 +145,33 @@ async function deactivate(plan: Plan) {
       </div>
     </div>
 
-    <!-- Modal de creación -->
-    <div v-if="showCreate" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <div class="w-full max-w-md rounded-2xl border border-line bg-card p-6">
-        <div class="mb-4 flex items-center justify-between">
-          <h3 class="text-lg font-black uppercase text-ink">Nuevo plan</h3>
-          <button type="button" class="text-sm text-muted hover:text-ink" @click="showCreate = false">✕</button>
+    <UiFormSheet
+      v-if="showCreate"
+      title="Nuevo plan"
+      kicker="Membresías"
+      badge="Alta"
+      form-id="plan-form"
+      submit-label="Crear plan"
+      :busy="saving"
+      @close="showCreate = false"
+    >
+      <form id="plan-form" class="space-y-4" @submit.prevent="submitCreate">
+        <UiFormField field-id="plan-nombre" label="Nombre">
+          <input id="plan-nombre" v-model="form.nombre" aria-label="Nombre" type="text" required class="ui-input w-full">
+        </UiFormField>
+        <UiFormField field-id="plan-descripcion" label="Descripción (opcional)">
+          <textarea id="plan-descripcion" v-model="form.descripcion" aria-label="Descripción (opcional)" rows="2" class="ui-input w-full" />
+        </UiFormField>
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <UiFormField field-id="plan-precio" label="Precio mensual (MXN)">
+            <input id="plan-precio" v-model.number="form.precio_mensual" aria-label="Precio mensual (MXN)" type="number" min="1" step="1" required class="ui-input w-full">
+          </UiFormField>
+          <UiFormField field-id="plan-descuento" label="Descuento (%)">
+            <input id="plan-descuento" v-model.number="form.descuento_pct" aria-label="Descuento (%)" type="number" min="1" max="100" step="1" required class="ui-input w-full">
+          </UiFormField>
         </div>
-        <form class="space-y-4" @submit.prevent="submitCreate">
-          <div>
-            <label class="mb-1 block text-xs text-muted">Nombre</label>
-            <input v-model="form.nombre" type="text" required class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
-          </div>
-          <div>
-            <label class="mb-1 block text-xs text-muted">Descripción (opcional)</label>
-            <textarea v-model="form.descripcion" rows="2" class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink" />
-          </div>
-          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div>
-              <label class="mb-1 block text-xs text-muted">Precio mensual (MXN)</label>
-              <input v-model.number="form.precio_mensual" type="number" min="1" step="1" required class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
-            </div>
-            <div>
-              <label class="mb-1 block text-xs text-muted">Descuento (%)</label>
-              <input v-model.number="form.descuento_pct" type="number" min="1" max="100" step="1" required class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink">
-            </div>
-          </div>
-          <p v-if="createError" role="alert" class="text-sm text-danger">{{ createError }}</p>
-          <button type="submit" class="ui-btn w-full justify-center" :disabled="saving">
-            {{ saving ? "Creando…" : "Crear plan" }}
-          </button>
-        </form>
-      </div>
-    </div>
+        <p v-if="createError" role="alert" class="text-sm text-danger">{{ createError }}</p>
+      </form>
+    </UiFormSheet>
   </div>
 </template>

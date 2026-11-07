@@ -305,35 +305,33 @@ async function cancelMembership() {
       </div>
     </section>
 
-    <!-- Modal de contratación -->
-    <div v-if="subscribing" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" role="dialog" aria-modal="true" aria-labelledby="subscribe-title" @keydown.esc="closeSubscribe">
-      <div class="w-full max-w-md rounded-2xl border border-line bg-card p-6">
-        <div class="mb-4 flex items-center justify-between">
-          <h3 id="subscribe-title" class="text-lg font-black uppercase text-ink">{{ subscribing.nombre }}</h3>
-          <button type="button" class="flex h-11 w-11 items-center justify-center text-sm text-muted hover:text-ink" aria-label="Cerrar" @click="closeSubscribe">✕</button>
-        </div>
-
-        <template v-if="subscribeSucceeded && subscribeWaiting">
-          <p class="rounded-xl border border-line bg-ink/[0.03] p-5 text-center text-sm text-muted">
-            Pago confirmado, activando tu membresía…
-          </p>
-        </template>
-        <template v-else-if="subscribeSucceeded">
-          <p class="rounded-xl border border-success/25 bg-success/10 p-5 text-center text-sm text-success">
-            Pago confirmado. Actualiza la página en unos momentos si todavía no ves tu membresía activa.
-          </p>
-        </template>
-        <form v-else class="space-y-4" @submit.prevent="subscribeWithCard">
-          <p class="text-2xl font-black text-gold">
-            {{ fmtMoney(subscribing.precio_mensual) }}<span class="text-sm text-muted">/mes</span>
-          </p>
-          <div ref="cardElementRef" class="rounded-lg border border-line bg-main px-3 py-3" />
-          <p v-if="subscribeError" role="alert" class="text-sm text-danger">{{ subscribeError }}</p>
-          <button type="submit" class="ui-btn w-full justify-center" :disabled="subscribeProcessing">
-            {{ subscribeProcessing ? "Procesando…" : "Contratar y pagar el primer mes" }}
-          </button>
-        </form>
-      </div>
-    </div>
+    <UiModal
+      v-if="subscribing"
+      :title="subscribing.nombre"
+      size="md"
+      :busy="subscribeProcessing"
+      @close="closeSubscribe"
+    >
+      <template v-if="subscribeSucceeded && subscribeWaiting">
+        <p class="rounded-xl border border-line bg-ink/[0.03] p-5 text-center text-sm text-muted">
+          Pago confirmado, activando tu membresía…
+        </p>
+      </template>
+      <template v-else-if="subscribeSucceeded">
+        <p class="rounded-xl border border-success/25 bg-success/10 p-5 text-center text-sm text-success">
+          Pago confirmado. Actualiza la página en unos momentos si todavía no ves tu membresía activa.
+        </p>
+      </template>
+      <form v-else class="space-y-4" @submit.prevent="subscribeWithCard">
+        <p class="text-2xl font-black text-gold">
+          {{ fmtMoney(subscribing.precio_mensual) }}<span class="text-sm text-muted">/mes</span>
+        </p>
+        <div ref="cardElementRef" class="rounded-lg border border-line bg-main px-3 py-3" />
+        <p v-if="subscribeError" role="alert" class="text-sm text-danger">{{ subscribeError }}</p>
+        <button type="submit" class="ui-btn w-full justify-center" :disabled="subscribeProcessing">
+          {{ subscribeProcessing ? "Procesando…" : "Contratar y pagar el primer mes" }}
+        </button>
+      </form>
+    </UiModal>
   </div>
 </template>

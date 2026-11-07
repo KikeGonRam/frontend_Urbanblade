@@ -272,33 +272,31 @@ async function waitForPackageToAppear() {
       </div>
     </section>
 
-    <!-- Modal de compra -->
-    <div v-if="buying" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" role="dialog" aria-modal="true" aria-labelledby="buy-title" @keydown.esc="closeBuy">
-      <div class="w-full max-w-md rounded-2xl border border-line bg-card p-6">
-        <div class="mb-4 flex items-center justify-between">
-          <h3 id="buy-title" class="text-lg font-black uppercase text-ink">{{ buying.nombre }}</h3>
-          <button type="button" class="flex h-11 w-11 items-center justify-center text-sm text-muted hover:text-ink" aria-label="Cerrar" @click="closeBuy">✕</button>
-        </div>
-
-        <template v-if="buySucceeded && buyWaiting">
-          <p class="rounded-xl border border-line bg-ink/[0.03] p-5 text-center text-sm text-muted">
-            Pago confirmado, activando tu paquete…
-          </p>
-        </template>
-        <template v-else-if="buySucceeded">
-          <p class="rounded-xl border border-success/25 bg-success/10 p-5 text-center text-sm text-success">
-            Pago confirmado. Actualiza la página en unos momentos si todavía no ves tu paquete.
-          </p>
-        </template>
-        <form v-else class="space-y-4" @submit.prevent="buyWithCard">
-          <p class="text-2xl font-black text-gold">{{ fmtMoney(buying.precio) }}</p>
-          <div ref="cardElementRef" class="rounded-lg border border-line bg-main px-3 py-3" />
-          <p v-if="buyError" role="alert" class="text-sm text-danger">{{ buyError }}</p>
-          <button type="submit" class="ui-btn w-full justify-center" :disabled="buyProcessing">
-            {{ buyProcessing ? "Procesando…" : `Comprar por ${fmtMoney(buying.precio)}` }}
-          </button>
-        </form>
-      </div>
-    </div>
+    <UiModal
+      v-if="buying"
+      :title="buying.nombre"
+      size="md"
+      :busy="buyProcessing"
+      @close="closeBuy"
+    >
+      <template v-if="buySucceeded && buyWaiting">
+        <p class="rounded-xl border border-line bg-ink/[0.03] p-5 text-center text-sm text-muted">
+          Pago confirmado, activando tu paquete…
+        </p>
+      </template>
+      <template v-else-if="buySucceeded">
+        <p class="rounded-xl border border-success/25 bg-success/10 p-5 text-center text-sm text-success">
+          Pago confirmado. Actualiza la página en unos momentos si todavía no ves tu paquete.
+        </p>
+      </template>
+      <form v-else class="space-y-4" @submit.prevent="buyWithCard">
+        <p class="text-2xl font-black text-gold">{{ fmtMoney(buying.precio) }}</p>
+        <div ref="cardElementRef" class="rounded-lg border border-line bg-main px-3 py-3" />
+        <p v-if="buyError" role="alert" class="text-sm text-danger">{{ buyError }}</p>
+        <button type="submit" class="ui-btn w-full justify-center" :disabled="buyProcessing">
+          {{ buyProcessing ? "Procesando…" : `Comprar por ${fmtMoney(buying.precio)}` }}
+        </button>
+      </form>
+    </UiModal>
   </div>
 </template>

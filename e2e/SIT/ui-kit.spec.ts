@@ -41,7 +41,7 @@ test("el interruptor se cambia con el teclado y el servicio sigue mandando activ
   await page.goto("/services");
   await page.getByRole("button", { name: "Editar" }).first().click();
 
-  const form = page.getByRole("dialog", { name: "Formulario de servicio" });
+  const form = page.getByRole("dialog", { name: "Editar servicio" });
   const activo = form.getByRole("switch", { name: "Activo" });
   await expect(activo).toHaveAttribute("aria-checked", "true");
 

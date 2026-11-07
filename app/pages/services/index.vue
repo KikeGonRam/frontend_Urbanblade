@@ -367,32 +367,20 @@ async function removeService(service: ServiceRow) {
       </table>
     </section>
 
-    <!-- Modal para crear / editar servicio -->
-    <div
+    <UiFormSheet
       v-if="showForm"
-      class="ub-sheet"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Formulario de servicio"
-      @click.self="showForm = false"
+      :title="editing ? 'Editar servicio' : 'Nuevo servicio'"
+      kicker="Catálogo comercial"
+      :badge="editing ? 'Edición' : 'Nuevo'"
+      form-id="service-form"
+      submit-label="Guardar servicio"
+      :busy="saving"
+      @close="showForm = false"
     >
-      <div
-        class="ub-sheet__panel"
-      >
-        <div class="mb-6 flex items-start justify-between gap-4">
-          <div>
-            <p class="ub-form-kicker">Catálogo comercial</p>
-            <h2 class="mt-2 text-2xl font-black text-ink">
-              {{ editing ? "Editar servicio" : "Nuevo servicio" }}
-            </h2>
-            <p class="mt-2 ub-form-help">Define cómo se mostrará, cuánto dura y qué precio tendrá al reservar.</p>
-          </div>
-          <span class="rounded-full border border-gold/25 bg-gold/10 px-2 py-1 text-xs font-black uppercase tracking-wider text-gold">
-            {{ editing ? "Edición" : "Nuevo" }}
-          </span>
-        </div>
-
-        <form class="space-y-4" @submit.prevent="submitForm">
+      <template #subtitle>
+        <p class="mt-2 ub-form-help">Define cómo se mostrará, cuánto dura y qué precio tendrá al reservar.</p>
+      </template>
+      <form id="service-form" class="space-y-4" @submit.prevent="submitForm">
           <div class="ub-form-section space-y-4">
             <p class="ub-form-section__title">Información del servicio</p>
           <div>
@@ -553,25 +541,7 @@ async function removeService(service: ServiceRow) {
           </div>
 
           <p v-if="formError" class="text-xs text-danger">{{ formError }}</p>
-
-          <div class="mt-6 flex justify-end gap-3 pt-2">
-            <button
-              type="button"
-              class="rounded-lg border border-line px-4 py-2 text-sm font-semibold text-muted hover:text-ink"
-              @click="showForm = false"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              :disabled="saving"
-              class="rounded-lg bg-gold px-5 py-2 text-sm font-bold text-black hover:bg-gold-dim disabled:opacity-50"
-            >
-              {{ saving ? "Guardando…" : "Guardar servicio" }}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+      </form>
+    </UiFormSheet>
   </div>
 </template>

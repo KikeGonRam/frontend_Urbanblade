@@ -11,8 +11,11 @@ const props = withDefaults(
     kicker?: string;
     badge?: string;
     busy?: boolean;
+    /** Si se indica, el pie estándar envía ese formulario (Guardar + Cancelar). */
+    formId?: string;
+    submitLabel?: string;
   }>(),
-  { kicker: "", badge: "", busy: false },
+  { kicker: "", badge: "", busy: false, formId: "", submitLabel: "Guardar" },
 );
 const emit = defineEmits<{ close: [] }>();
 
@@ -108,8 +111,25 @@ onBeforeUnmount(() => {
           <slot />
         </div>
 
-        <footer v-if="$slots.footer" class="ub-sheet__foot">
-          <slot name="footer" />
+        <footer v-if="$slots.footer || formId" class="ub-sheet__foot">
+          <slot name="footer">
+            <button
+              type="submit"
+              :form="formId"
+              :disabled="busy"
+              class="ui-btn min-h-11 flex-1 px-4"
+            >
+              {{ busy ? "Guardando…" : submitLabel }}
+            </button>
+            <button
+              type="button"
+              :disabled="busy"
+              class="ui-btn-secondary min-h-11 px-4"
+              @click="close"
+            >
+              Cancelar
+            </button>
+          </slot>
         </footer>
       </div>
     </dialog>

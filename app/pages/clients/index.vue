@@ -423,19 +423,17 @@ v-model="search"
       :busy="pending"
     />
 
-    <div
+    <UiFormSheet
       v-if="showForm"
-      class="ub-sheet"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="client-form-title"
-      @click.self="!saving && (showForm = false)"
+      :title="editing ? 'Editar cliente' : 'Nuevo cliente'"
+      kicker="Directorio"
+      :badge="editing ? 'Edición' : 'Alta'"
+      form-id="client-form"
+      submit-label="Guardar"
+      :busy="saving"
+      @close="showForm = false"
     >
-      <div class="ub-sheet__panel">
-        <h2 id="client-form-title" class="mb-4 text-lg font-semibold text-ink">
-          {{ editing ? "Editar cliente" : "Nuevo cliente" }}
-        </h2>
-        <form class="space-y-3" @submit.prevent="submitForm">
+      <form id="client-form" class="space-y-3" @submit.prevent="submitForm">
           <div>
             <label for="client-name" class="mb-1 block text-xs text-muted"
               >Nombre</label
@@ -542,25 +540,7 @@ v-model="search"
             </p>
           </div>
           <p v-if="formError" class="text-sm text-danger">{{ formError }}</p>
-          <div class="mt-5 flex gap-3">
-            <button
-              type="submit"
-              :disabled="saving"
-              class="flex-1 rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-black hover:bg-gold-dim disabled:opacity-50"
-            >
-              {{ saving ? "Guardando…" : "Guardar" }}
-            </button>
-            <button
-              type="button"
-              :disabled="saving"
-              class="rounded-lg border border-line px-4 py-2 text-sm text-muted hover:text-ink disabled:opacity-50"
-              @click="showForm = false"
-            >
-              Cancelar
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+      </form>
+    </UiFormSheet>
   </div>
 </template>
