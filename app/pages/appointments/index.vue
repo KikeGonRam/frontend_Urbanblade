@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { DataTableColumn } from "~/components/ui/DataTable.vue";
 /*
  * Fase 9.2 del plan (ver .claude/skills/nuxt-migration-plan/SKILL.md) —
  * como en 9.1, no hay página Inertia/Vue de referencia: appointments/
@@ -108,6 +109,29 @@ const {
   { watch: [estadoFilter, barberFilter], lazy: true },
 );
 const appointments = computed(() => response.value?.data ?? []);
+// El listado trae las citas más recientes de una vez; se pagina de 10 en 10 en pantalla.
+const PAGE_SIZE = 10;
+const page = ref(1);
+const lastPage = computed(() => Math.max(1, Math.ceil(appointments.value.length / PAGE_SIZE)));
+const pageRows = computed(() => appointments.value.slice((page.value - 1) * PAGE_SIZE, page.value * PAGE_SIZE));
+watch([estadoFilter, barberFilter], () => {
+  page.value = 1;
+});
+watch(lastPage, (n) => {
+  if (page.value > n) page.value = n;
+});
+const COLUMNAS: DataTableColumn[] = [
+  { key: "fecha", label: "Fecha" },
+  { key: "hora", label: "Hora" },
+  { key: "cliente", label: "Cliente" },
+  { key: "servicio", label: "Servicio", hideBelow: "md" },
+  { key: "barbero", label: "Barbero", hideBelow: "lg" },
+  { key: "estado", label: "Estado", align: "center" },
+];
+const ESTADO_OPCIONES = computed(() => [
+  { value: "", label: "Todas", icon: "calendar" },
+  ...ESTADOS.map((e) => ({ value: e, label: ESTADO_LABEL[e] })),
+]);
 
 interface Barber {
   id: string;
@@ -430,16 +454,7 @@ onBeforeUnmount(() => {
     </header>
 
     <section class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center">
-      <select
-v-model="estadoFilter"
-        aria-label="Filtrar por estado"
-        class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
-      >
-        <option value="">Todos los estados</option>
-        <option v-for="e in ESTADOS" :key="e" :value="e">
-          {{ ESTADO_LABEL[e] }}
-        </option>
-      </select>
+      <UiFilterChips v-model="estadoFilter" label="Filtrar por estado" :options="ESTADO_OPCIONES" />
       <select
 v-model="barberFilter"
         aria-label="Filtrar por barbero"
@@ -461,127 +476,97 @@ v-model="barberFilter"
       >
         Limpiar filtros
       </button>
-      <span class="text-xs text-muted sm:ml-auto"
-        >Mostrando hasta 50 citas más recientes.</span
-      >
     </section>
 
-    <UiSkeleton v-if="pending" variant="rows" :rows="8" label="Cargando citas…" class="ui-card" />
-    <BrandStatePanel v-else-if="error" mascot="bruno" state="error" tone="danger" title="No se pudo cargar la lista de citas" description="Inténtalo nuevamente en unos minutos." />
+    <BrandStatePanel v-if="error" mascot="bruno" state="error" tone="danger" title="No se pudo cargar la lista de citas" description="Inténtalo nuevamente en unos minutos." />
     <p v-if="actionError" role="alert" class="mb-4 text-sm text-danger">
       {{ actionError }}
     </p>
-
-    <section v-else class="ui-card overflow-x-auto">
-      <table data-mobile-cards class="block w-full text-left text-sm md:table">
-        <thead class="hidden md:table-header-group">
-          <tr
-            class="border-b border-line text-xs uppercase tracking-wider text-muted"
+    <UiDataTable
+      v-if="!error"
+      :columns="COLUMNAS"
+      :rows="pageRows"
+      :loading="pending"
+      aria-label="Citas"
+      empty-title="Todavía no hay citas que mostrar"
+      empty-description="Las citas que coincidan con tus filtros aparecerán aquí."
+    >
+      <template #cell-fecha="{ row }"><span class="text-ink">{{ formatShortDate(row.fecha) }}</span></template>
+      <template #cell-hora="{ row }"><span class="text-muted">{{ row.hora_inicio?.slice(0, 5) }}</span></template>
+      <template #cell-cliente="{ row }">
+        <button
+          type="button"
+          class="rounded text-left font-bold text-ink underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+          :aria-label="`Ver detalle de la cita de ${row.client.user.name ?? 'este cliente'}`"
+          @click="detailCode = row.code"
+        >
+          {{ row.client.user.name ?? "—" }}
+        </button>
+      </template>
+      <template #cell-servicio="{ row }"><span class="text-muted">{{ row.service.nombre ?? "—" }}</span></template>
+      <template #cell-barbero="{ row }"><span class="text-muted">{{ row.barber.user.name ?? "—" }}</span></template>
+      <template #cell-estado="{ row: appt }">
+        <span class="rounded-full border px-2 py-0.5 text-xs font-black" :class="ESTADO_CLASS[appt.estado]">{{ ESTADO_LABEL[appt.estado] ?? appt.estado }}</span>
+        <span
+          v-if="appt.estado === 'confirmada' && appt.puede_iniciar === false && appt.motivo_no_iniciar"
+          class="ml-1 cursor-help text-warning"
+          tabindex="0"
+          role="img"
+          :title="appt.motivo_no_iniciar"
+          :aria-label="`No se puede iniciar: ${appt.motivo_no_iniciar}`"
+          >ⓘ</span
+        >
+      </template>
+      <template #actions="{ row: appt }">
+        <div class="flex flex-wrap justify-end gap-2">
+          <!-- Acciones del día: una sola pulsación por transición, en
+               vez de abrir el formulario completo para mover el estado. -->
+          <button
+            v-for="destino in accionesDe(appt.estado)"
+            :key="destino"
+            type="button"
+            class="min-h-9 rounded-lg border border-gold/30 px-3 py-1 text-xs font-bold text-gold transition-colors hover:bg-gold/10 disabled:opacity-50"
+            :disabled="
+              statusPending === `${appt.id}:${destino}` ||
+              (destino === 'en_proceso' && appt.puede_iniciar === false) ||
+              !!motivoBloqueoPorFecha(appt.fecha, destino)
+            "
+            :title="
+              destino === 'en_proceso' && appt.puede_iniciar === false
+                ? (appt.motivo_no_iniciar ?? '')
+                : motivoBloqueoPorFecha(appt.fecha, destino)
+            "
+            @click="changeStatus(appt, destino)"
           >
-            <th class="px-4 py-3">Fecha</th>
-            <th class="px-4 py-3">Hora</th>
-            <th class="px-4 py-3">Cliente</th>
-            <th class="px-4 py-3">Servicio</th>
-            <th class="px-4 py-3">Barbero</th>
-            <th class="px-4 py-3 text-center">Estado</th>
-            <th class="px-4 py-3 text-right">Acciones</th>
-          </tr>
-        </thead>
-        <tbody class="block md:table-row-group">
-          <tr
-            v-for="appt in appointments"
-            :key="appt.id"
-            class="block border-b border-line/60 py-2 last:border-0 md:table-row md:py-0"
+            {{
+              statusPending === `${appt.id}:${destino}`
+                ? "…"
+                : ACCION_LABEL[destino]
+            }}
+          </button>
+          <NuxtLink
+            v-if="COBRABLES.includes(appt.estado)"
+            :to="`/payments?cita=${appt.id}`"
+            class="flex min-h-9 items-center rounded-lg border border-success/30 px-3 py-1 text-xs font-bold text-success transition-colors hover:bg-success/10"
           >
-            <td data-label="Fecha" class="flex items-center justify-between gap-3 px-4 py-1.5 before:text-xs before:uppercase before:tracking-wider before:text-muted before:content-[attr(data-label)] md:table-cell md:py-3 md:before:content-none text-ink">{{ formatShortDate(appt.fecha) }}</td>
-            <td data-label="Hora" class="flex items-center justify-between gap-3 px-4 py-1.5 before:text-xs before:uppercase before:tracking-wider before:text-muted before:content-[attr(data-label)] md:table-cell md:py-3 md:before:content-none text-muted">
-              {{ appt.hora_inicio?.slice(0, 5) }}
-            </td>
-            <td data-label="Cliente" class="flex items-center justify-between gap-3 px-4 py-1.5 before:text-xs before:uppercase before:tracking-wider before:text-muted before:content-[attr(data-label)] md:table-cell md:py-3 md:before:content-none font-bold text-ink">
-              <button
-                type="button"
-                class="rounded text-left underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
-                :aria-label="`Ver detalle de la cita de ${appt.client.user.name ?? 'este cliente'}`"
-                @click="detailCode = appt.code"
-              >
-                {{ appt.client.user.name ?? "—" }}
-              </button>
-            </td>
-            <td data-label="Servicio" class="flex items-center justify-between gap-3 px-4 py-1.5 before:text-xs before:uppercase before:tracking-wider before:text-muted before:content-[attr(data-label)] md:table-cell md:py-3 md:before:content-none text-muted">
-              {{ appt.service.nombre ?? "—" }}
-            </td>
-            <td data-label="Barbero" class="flex items-center justify-between gap-3 px-4 py-1.5 before:text-xs before:uppercase before:tracking-wider before:text-muted before:content-[attr(data-label)] md:table-cell md:py-3 md:before:content-none text-muted">
-              {{ appt.barber.user.name ?? "—" }}
-            </td>
-            <td data-label="Estado" class="flex items-center justify-between gap-3 px-4 py-1.5 before:text-xs before:uppercase before:tracking-wider before:text-muted before:content-[attr(data-label)] md:table-cell md:py-3 md:before:content-none text-center">
-              <span
-                class="rounded-full border px-2 py-0.5 text-xs font-black"
-                :class="ESTADO_CLASS[appt.estado]"
-                >{{ ESTADO_LABEL[appt.estado] ?? appt.estado }}</span
-              >
-              <!-- Por qué no se puede iniciar todavía (falta cobrar, verificar la transferencia o aún no es la hora):
-                   antes era una línea ámbar que hacía irregular la altura de la fila. -->
-              <span
-                v-if="appt.estado === 'confirmada' && appt.puede_iniciar === false && appt.motivo_no_iniciar"
-                class="ml-1 cursor-help text-warning"
-                tabindex="0"
-                role="img"
-                :title="appt.motivo_no_iniciar"
-                :aria-label="`No se puede iniciar: ${appt.motivo_no_iniciar}`"
-                >ⓘ</span
-              >
-            </td>
-            <td data-label="Acciones" class="block px-4 py-1.5 md:table-cell md:py-3">
-              <div class="flex flex-wrap justify-end gap-2">
-                <!-- Acciones del día: una sola pulsación por transición, en
-                     vez de abrir el formulario completo para mover el estado. -->
-                <button
-                  v-for="destino in accionesDe(appt.estado)"
-                  :key="destino"
-                  type="button"
-                  class="min-h-9 rounded-lg border border-gold/30 px-3 py-1 text-xs font-bold text-gold transition-colors hover:bg-gold/10 disabled:opacity-50"
-                  :disabled="
-                    statusPending === `${appt.id}:${destino}` ||
-                    (destino === 'en_proceso' && appt.puede_iniciar === false) ||
-                    !!motivoBloqueoPorFecha(appt.fecha, destino)
-                  "
-                  :title="
-                    destino === 'en_proceso' && appt.puede_iniciar === false
-                      ? (appt.motivo_no_iniciar ?? '')
-                      : motivoBloqueoPorFecha(appt.fecha, destino)
-                  "
-                  @click="changeStatus(appt, destino)"
-                >
-                  {{
-                    statusPending === `${appt.id}:${destino}`
-                      ? "…"
-                      : ACCION_LABEL[destino]
-                  }}
-                </button>
-                <NuxtLink
-                  v-if="COBRABLES.includes(appt.estado)"
-                  :to="`/payments?cita=${appt.id}`"
-                  class="flex min-h-9 items-center rounded-lg border border-success/30 px-3 py-1 text-xs font-bold text-success transition-colors hover:bg-success/10"
-                >
-                  Cobrar
-                </NuxtLink>
-                <!-- Editar y Cancelar van en el menú ⋯: a la vista solo lo que se usa a diario (auditoría A-20). -->
-                <UiRowMenu
-                  :label="`Más acciones de la cita de ${appt.client.user.name ?? 'este cliente'}`"
-                  :items="itemsMenu(appt)"
-                />
-              </div>
-            </td>
-          </tr>
-          <tr v-if="!appointments.length" class="block md:table-row">
-            <td colspan="7" class="block px-4 py-6 md:table-cell">
-              <BrandStatePanel mascot="nava" state="empty" title="Todavía no hay citas que mostrar" description="Las citas que coincidan con tus filtros aparecerán aquí." />
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
-
+            Cobrar
+          </NuxtLink>
+          <!-- Editar y Cancelar van en el menú ⋯: a la vista solo lo que se usa a diario (auditoría A-20). -->
+          <UiRowMenu
+            :label="`Más acciones de la cita de ${appt.client.user.name ?? 'este cliente'}`"
+            :items="itemsMenu(appt)"
+          />
+        </div>
+      </template>
+    </UiDataTable>
+    <UiPagination
+      v-if="appointments.length > PAGE_SIZE"
+      v-model:current-page="page"
+      :last-page="lastPage"
+      :total="appointments.length"
+      :per-page="PAGE_SIZE"
+      :busy="pending"
+    />
     <UiFormSheet
       v-if="showForm"
       :title="editing ? 'Editar cita' : 'Nueva cita'"

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { DataTableColumn } from "~/components/ui/DataTable.vue";
 /*
  * Fase 9.3 del plan (ver .claude/skills/nuxt-migration-plan/SKILL.md) —
  * como 9.1/9.2, payments/index.blade.php en barber sigue siendo Blade
@@ -148,6 +149,21 @@ const {
   },
 );
 
+const COLUMNAS: DataTableColumn[] = [
+  { key: "folio", label: "Folio / Fecha" },
+  { key: "cliente", label: "Cliente y servicio" },
+  { key: "barbero", label: "Barbero", hideBelow: "md" },
+  { key: "metodo", label: "Método", hideBelow: "md" },
+  { key: "total", label: "Total", align: "right" },
+];
+const METODO_OPCIONES = computed(() => [
+  { value: "", label: "Todos", icon: "cash" },
+  ...Object.entries(METODO_LABEL).map(([value, label]) => ({ value, label })),
+]);
+async function onRowAction(action: string, payment: PaymentRow) {
+  if (action === "pdf") await viewReceipt(payment);
+  else if (action === "void") await removePayment(payment);
+}
 const payments = computed(() => response.value?.data ?? []);
 const stats = computed(() => response.value?.meta.stats);
 const pendingCount = computed(() => response.value?.meta.pending_count ?? 0);
@@ -685,23 +701,8 @@ onUnmounted(() => teardownStripe());
     </section>
 
     <section class="mb-5 flex flex-wrap items-center gap-3">
-      <input
-v-model="search"
-        aria-label="Cliente o servicio"
-        type="text"
-        placeholder="Cliente o servicio…"
-        class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink sm:max-w-xs"
-      >
-      <select
-v-model="metodoFilter"
-        aria-label="Filtrar por método de pago"
-        class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
-      >
-        <option value="">Todos los métodos</option>
-        <option v-for="(label, val) in METODO_LABEL" :key="val" :value="val">
-          {{ label }}
-        </option>
-      </select>
+      <UiSearchInput v-model="search" label="Cliente o servicio" placeholder="Buscar por cliente o servicio…" />
+      <UiFilterChips v-model="metodoFilter" label="Filtrar por método de pago" :options="METODO_OPCIONES" />
       <select
 v-model="barberoFilter"
         aria-label="Filtrar por barbero"
@@ -725,9 +726,8 @@ v-model="barberoFilter"
       </button>
     </section>
 
-    <UiSkeleton v-if="pending" variant="rows" :rows="8" label="Cargando pagos…" class="ui-card" />
     <BrandStatePanel
-      v-else-if="error"
+      v-if="error"
       mascot="bruno"
       state="error"
       tone="danger"
@@ -736,100 +736,47 @@ v-model="barberoFilter"
       action-label="Reintentar"
       @action="refresh"
     />
-
-    <section v-if="!pending && !error" class="ui-card overflow-x-auto">
-      <table class="w-full text-left text-sm">
-        <thead>
-          <tr
-            class="border-b border-line text-xs uppercase tracking-wider text-muted"
-          >
-            <th class="px-4 py-3">Folio / Fecha</th>
-            <th class="px-4 py-3">Cliente & Servicio</th>
-            <th class="px-4 py-3">Barbero</th>
-            <th class="px-4 py-3">Método</th>
-            <th class="px-4 py-3 text-right">Total</th>
-            <th class="px-4 py-3 text-right">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="payment in payments"
-            :key="payment.id"
-            class="border-b border-line/60 last:border-0"
-          >
-            <td class="px-4 py-3">
-              <div class="flex flex-col">
-                <span class="font-black text-ink"
-                  >#{{ String(payment.id).padStart(6, "0").slice(-6) }}</span
-                >
-                <span class="text-xs font-bold uppercase text-muted">{{
-                  fmtDateTime(payment.created_at)
-                }}</span>
-              </div>
-            </td>
-            <td class="px-4 py-3">
-              <div class="flex flex-col">
-                <span class="font-bold text-ink">{{
-                  payment.appointment.client ?? "N/A"
-                }}</span>
-                <span
-                  class="text-xs font-black uppercase tracking-widest text-gold"
-                  >{{ payment.appointment.service ?? "General" }}</span
-                >
-              </div>
-            </td>
-            <td class="px-4 py-3 text-ink/80">
-              {{ payment.appointment.barber ?? "—" }}
-            </td>
-            <td class="px-4 py-3">
-              <span
-                class="rounded-full border border-line bg-ink/5 px-2 py-0.5 text-xs font-black uppercase text-muted"
-                >{{
-                  METODO_LABEL[payment.metodo_pago] ?? payment.metodo_pago
-                }}</span
-              >
-            </td>
-            <td class="px-4 py-3 text-right">
-              <div class="flex flex-col items-end">
-                <span class="font-black text-success">{{
-                  fmtMoney(Number(payment.monto) + Number(payment.propina))
-                }}</span>
-                <span
-                  v-if="Number(payment.propina) > 0"
-                  class="text-xs font-bold uppercase text-gold"
-                  >+{{ fmtMoney(payment.propina) }} propina</span
-                >
-              </div>
-            </td>
-            <td class="px-4 py-3">
-              <div class="flex justify-end gap-2">
-                <button
-                  type="button"
-                  class="rounded-lg border border-line px-3 py-1 text-xs text-muted hover:text-gold min-h-10"
-                  @click="viewReceipt(payment)"
-                >
-                  PDF
-                </button>
-                <button
-                  v-if="hasRole('administrador')"
-                  type="button"
-                  class="rounded-lg border border-danger/20 px-3 py-1 text-xs text-danger hover:bg-danger/10 min-h-10"
-                  @click="removePayment(payment)"
-                >
-                  Anular
-                </button>
-              </div>
-            </td>
-          </tr>
-          <tr v-if="!payments.length">
-            <td colspan="6" class="px-4 py-12 text-center text-sm text-muted">
-              Sin comprobantes.
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
-
+    <UiDataTable
+      v-else
+      :columns="COLUMNAS"
+      :rows="payments"
+      :loading="pending"
+      aria-label="Pagos"
+      empty-title="Todavía no hay comprobantes"
+      empty-description="Los cobros registrados aparecerán aquí."
+    >
+      <template #cell-folio="{ row }">
+        <div class="flex flex-col">
+          <span class="font-black text-ink">#{{ String(row.id).padStart(6, "0").slice(-6) }}</span>
+          <span class="text-xs font-bold uppercase text-muted">{{ fmtDateTime(row.created_at) }}</span>
+        </div>
+      </template>
+      <template #cell-cliente="{ row }">
+        <div class="flex flex-col">
+          <span class="font-bold text-ink">{{ row.appointment.client ?? "N/A" }}</span>
+          <span class="text-xs font-black uppercase tracking-widest text-gold">{{ row.appointment.service ?? "General" }}</span>
+        </div>
+      </template>
+      <template #cell-barbero="{ row }"><span class="text-ink/80">{{ row.appointment.barber ?? "—" }}</span></template>
+      <template #cell-metodo="{ row }">
+        <span class="rounded-full border border-line bg-ink/5 px-2 py-0.5 text-xs font-black uppercase text-muted">{{ METODO_LABEL[row.metodo_pago] ?? row.metodo_pago }}</span>
+      </template>
+      <template #cell-total="{ row }">
+        <div class="flex flex-col items-end">
+          <span class="font-black text-success">{{ fmtMoney(Number(row.monto) + Number(row.propina)) }}</span>
+          <span v-if="Number(row.propina) > 0" class="text-xs font-bold uppercase text-gold">+{{ fmtMoney(row.propina) }} propina</span>
+        </div>
+      </template>
+      <template #actions="{ row }">
+        <UiRowActions
+          :actions="[
+            { key: 'pdf', label: `Ver comprobante PDF de ${row.appointment.client ?? 'este pago'}`, icon: 'text' },
+            { key: 'void', label: `Anular el cobro de ${row.appointment.client ?? 'este cliente'}`, icon: 'trash', danger: true, hidden: !hasRole('administrador') },
+          ]"
+          @action="onRowAction($event, row)"
+        />
+      </template>
+    </UiDataTable>
     <UiPagination
       v-if="pagination"
       v-model:current-page="page"
