@@ -99,7 +99,12 @@ test("al cobrar en efectivo se pueden agregar productos y viajan en el cobro", a
   // 300 del servicio + 120 del producto.
   await expect(page.getByText("$420")).toBeVisible();
 
+  // La propina rápida del 10% suma $30 al total y viaja en el cobro.
+  await page.getByRole("button", { name: "10%" }).click();
+  await expect(page.getByText("$450")).toBeVisible();
+
   await page.getByRole("button", { name: "Confirmar y cerrar servicio" }).click();
 
   await expect.poll(() => getPaymentBody()?.productos).toEqual([{ product_id: "prod-1", cantidad: 1 }]);
+  expect(getPaymentBody()?.propina).toBe(30);
 });

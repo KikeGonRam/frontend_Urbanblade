@@ -715,6 +715,12 @@ html[data-theme="libreta"] .group:hover .group-hover\:text-gold { color: #8a6408
     .ub-in--top { align-items: flex-start; }
     .ub-in--top > .ub-in__icon { top: .95rem; }
     .ub-in:focus-within > .ub-in__icon { color: var(--gold-text); }
+    .ub-apptcard { display: flex; align-items: center; gap: .75rem; padding: .875rem; border: 1px dashed var(--line); border-radius: .875rem; background: linear-gradient(135deg, rgb(var(--gold-rgb) / .1), transparent 60%); }
+    .ub-apptcard__avatar { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border-radius: 50%; background: var(--gold); color: #1a1405; font-weight: 800; flex: none; }
+    .ub-apptcard__pill { border-radius: 9999px; background: rgb(var(--gold-rgb) / .14); color: var(--gold-text); padding: .25rem .6rem; font-size: .6875rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; }
+    .ub-chip { min-height: 2.5rem; padding: 0 .9rem; border-radius: 9999px; border: 1px solid var(--line); background: var(--bg-accent); font-size: .8125rem; font-weight: 600; color: var(--ink); transition: border-color .15s ease, background-color .15s ease; }
+    .ub-chip:hover { border-color: rgb(var(--gold-rgb) / .5); }
+    .ub-chip[aria-pressed="true"] { background: var(--gold); border-color: var(--gold); color: #1a1405; }
     /* Variante de UiFormSheet: cabecera y pie fijos, solo el cuerpo se desplaza. */
     .ub-sheet__panel--flex { display: flex; flex-direction: column; padding: 0; overflow: hidden; }
     .ub-sheet__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; border-bottom: 1px solid var(--line); padding: 1.5rem 1.75rem 1.25rem; }

@@ -325,6 +325,22 @@ async function cargarSugerencias() {
   }
 }
 
+const TIP_PRESETS = [0, 10, 15, 20];
+const tipFor = (pct: number) =>
+  Math.round(((selected.value?.precio ?? 0) * pct)) / 100;
+function initialsOf(name: string | null | undefined) {
+  return (
+    (name ?? "")
+      .trim()
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((w) => w[0])
+      .join("")
+      .toUpperCase() || "—"
+  );
+}
+
 const selected = computed(
   () =>
     chargeableAppointments.value.find((a) => a.id === form.appointmentId) ??
@@ -905,29 +921,48 @@ v-model="barberoFilter"
           </div>
 
           <template v-if="selected">
+            <div class="ub-apptcard">
+              <span class="ub-apptcard__avatar">{{ initialsOf(selected.client_name) }}</span>
+              <span class="min-w-0 flex-1">
+                <b class="block truncate text-sm text-ink">{{ selected.client_name }}</b>
+                <small class="block truncate text-xs text-muted">{{ selected.service_name }} · {{ selected.fecha }}</small>
+              </span>
+              <span class="ub-apptcard__pill">{{ selected.nivel_label }}</span>
+            </div>
             <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div>
-                <label class="mb-1 block text-xs text-muted"
-                  >Monto del servicio</label
-                >
+              <UiFormField field-id="charge-monto" label="Monto del servicio" icon="tag">
                 <input
+                  id="charge-monto"
                   :value="fmtMoney(selected.precio)"
+                  aria-label="Monto del servicio"
                   type="text"
                   readonly
-                  class="w-full rounded-lg border border-line bg-ink/5 px-3 py-2 text-sm text-ink/70"
+                  class="ui-input w-full text-ink/70"
                 >
-              </div>
-              <div>
-                <label class="mb-1 block text-xs text-muted">Propina</label>
+              </UiFormField>
+              <UiFormField field-id="charge-propina" label="Propina" icon="spark">
                 <input
-v-model.number="form.propina"
+                  id="charge-propina"
+                  v-model.number="form.propina"
                   aria-label="Propina"
                   type="number"
                   step="0.01"
                   min="0"
                   class="ui-input w-full"
                 >
-              </div>
+              </UiFormField>
+            </div>
+            <div class="flex flex-wrap gap-2" role="group" aria-label="Propina rápida">
+              <button
+                v-for="pct in TIP_PRESETS"
+                :key="pct"
+                type="button"
+                class="ub-chip"
+                :aria-pressed="form.propina === tipFor(pct)"
+                @click="form.propina = tipFor(pct)"
+              >
+                {{ pct === 0 ? "Sin propina" : pct + "%" }}
+              </button>
             </div>
 
             <div
@@ -954,22 +989,22 @@ v-model.number="form.propina"
               </div>
             </div>
 
-            <div v-if="!form.usarPremioRifa && !form.usarPaquete">
-              <label class="mb-1 block text-xs text-muted"
-                >Código de gift card (opcional)</label
-              >
+            <UiFormField
+              v-if="!form.usarPremioRifa && !form.usarPaquete"
+              field-id="charge-giftcard"
+              label="Código de gift card (opcional)"
+              icon="tag"
+              :hint="`Se aplica al total antes de cobrar el resto por ${METODO_LABEL[form.metodo]?.toLowerCase()}. Si el saldo no alcanza, cubre solo una parte.`"
+            >
               <input
+                id="charge-giftcard"
                 v-model="form.codigoGiftCard"
+                aria-label="Código de gift card (opcional)"
                 type="text"
                 placeholder="Ej. A1B2C3D4"
                 class="ui-input w-full uppercase"
               >
-              <p class="mt-1 text-xs italic text-muted">
-                Se aplica al total antes de cobrar el resto por
-                {{ METODO_LABEL[form.metodo]?.toLowerCase() }}. Si el saldo no
-                alcanza, cubre solo una parte.
-              </p>
-            </div>
+            </UiFormField>
 
             <div
               v-if="selected.premio_rifa"
