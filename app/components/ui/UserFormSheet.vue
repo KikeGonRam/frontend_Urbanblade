@@ -372,7 +372,7 @@ async function submit() {
         </UiFormField>
         <UiFormField
           v-if="!editing || form.password"
-          id="user-password-confirmation"
+          field-id="user-password-confirmation"
           label="Confirmar contraseña"
           :error="err('password_confirmation')"
         >
