@@ -159,19 +159,27 @@ async function deactivate(plan: Plan) {
       @close="showCreate = false"
     >
       <form id="plan-form" class="space-y-4" @submit.prevent="submitCreate">
-        <UiFormField field-id="plan-nombre" label="Nombre">
+        <UiFormField field-id="plan-nombre" label="Nombre del plan" icon="tag">
           <input id="plan-nombre" v-model="form.nombre" aria-label="Nombre" type="text" required class="ui-input w-full">
         </UiFormField>
-        <UiFormField field-id="plan-descripcion" label="Descripción (opcional)">
+        <UiFormField field-id="plan-descripcion" label="Descripción (opcional)" icon="text" top>
           <textarea id="plan-descripcion" v-model="form.descripcion" aria-label="Descripción (opcional)" rows="2" class="ui-input w-full" />
         </UiFormField>
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <UiFormField field-id="plan-precio" label="Precio mensual (MXN)">
+          <UiFormField field-id="plan-precio" label="Precio mensual (MXN)" icon="cash">
             <input id="plan-precio" v-model.number="form.precio_mensual" aria-label="Precio mensual (MXN)" type="number" min="1" step="1" required class="ui-input w-full">
           </UiFormField>
-          <UiFormField field-id="plan-descuento" label="Descuento (%)">
+          <UiFormField field-id="plan-descuento" label="Descuento (%)" icon="percent">
             <input id="plan-descuento" v-model.number="form.descuento_pct" aria-label="Descuento (%)" type="number" min="1" max="100" step="1" required class="ui-input w-full">
           </UiFormField>
+        </div>
+        <div class="ub-apptcard" aria-label="Vista previa del plan">
+          <span class="ub-apptcard__avatar"><UiIcon name="tag" /></span>
+          <span class="min-w-0 flex-1">
+            <b class="block truncate text-sm text-ink">{{ form.nombre || "Nombre del plan" }}</b>
+            <small class="block truncate text-xs text-muted">{{ form.descuento_pct || 0 }}% de descuento en servicios</small>
+          </span>
+          <span class="ub-apptcard__pill">${{ form.precio_mensual || 0 }}/mes</span>
         </div>
         <p v-if="createError" role="alert" class="text-sm text-danger">{{ createError }}</p>
       </form>
