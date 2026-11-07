@@ -22,8 +22,12 @@ const props = withDefaults(
     progress?: number | null;
     /** Texto de ayuda a la izquierda del pie. */
     hint?: string;
+    /** Deshabilita el botón principal además del estado ocupado. */
+    submitDisabled?: boolean;
+    /** Oculta el botón principal (el formulario trae su propia acción). */
+    hideSubmit?: boolean;
   }>(),
-  { kicker: "", badge: "", busy: false, formId: "", submitLabel: "Guardar", icon: "", subtitle: "", progress: null, hint: "" },
+  { kicker: "", badge: "", busy: false, formId: "", submitLabel: "Guardar", icon: "", subtitle: "", progress: null, hint: "", submitDisabled: false, hideSubmit: false },
 );
 const emit = defineEmits<{ close: [] }>();
 
@@ -148,9 +152,10 @@ onBeforeUnmount(() => {
               <kbd>Esc</kbd>
             </span>
             <button
+              v-if="!hideSubmit"
               type="submit"
               :form="formId"
-              :disabled="busy"
+              :disabled="busy || submitDisabled"
               class="ui-btn min-h-11 flex-1 px-4"
             >
               {{ busy ? "Guardando…" : submitLabel }}

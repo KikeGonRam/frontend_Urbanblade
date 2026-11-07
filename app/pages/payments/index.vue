@@ -857,9 +857,16 @@ v-model="barberoFilter"
     </UiModal>
 
     <!-- Nuevo Cobro -->
-    <UiModal
+    <UiFormSheet
       v-if="showCharge"
-      title="Registro de Cobro"
+      title="Registro de cobro"
+      kicker="Pagos"
+      icon="cash"
+      subtitle="Elige la cita, el método de pago y confirma el cobro."
+      form-id="charge-form"
+      submit-label="Confirmar y cerrar servicio"
+      hint="Cierra el servicio al confirmar"
+      :hide-submit="loadingChargeable || !selected || form.metodo === 'tarjeta'"
       :busy="saving"
       @close="closeCharge"
     >
@@ -869,7 +876,7 @@ v-model="barberoFilter"
           <span>Cargando citas por cobrar…</span>
         </div>
 
-        <form v-else class="space-y-4" @submit.prevent="submitCharge">
+        <form v-else id="charge-form" class="space-y-4" @submit.prevent="submitCharge">
           <div v-if="!chargeableAppointments.length" class="rounded-xl border border-dashed border-line bg-main/40 p-6 text-center">
             <p class="text-sm font-bold text-ink">Por ahora no hay citas listas para cobrar</p>
             <p class="mt-1 text-xs leading-relaxed text-muted">Las citas aprobadas y pendientes de pago aparecerán aquí cuando estén disponibles.</p>
@@ -1189,33 +1196,8 @@ v-model.number="form.propina"
               {{ chargeError }}
             </p>
 
-            <div v-show="form.metodo !== 'tarjeta'" class="flex gap-3">
-              <button
-                type="submit"
-                :disabled="saving"
-                class="flex-1 rounded-lg bg-gold px-4 py-2.5 text-sm font-semibold text-black hover:bg-gold-dim disabled:opacity-50"
-              >
-                {{ saving ? "Guardando…" : "Confirmar y Cerrar Servicio" }}
-              </button>
-              <button
-                type="button"
-                class="rounded-lg border border-line px-4 py-2.5 text-sm text-muted hover:text-ink"
-                @click="closeCharge"
-              >
-                Cancelar
-              </button>
-            </div>
           </template>
-          <div v-else class="flex justify-end">
-            <button
-              type="button"
-              class="rounded-lg border border-line px-4 py-2.5 text-sm text-muted hover:text-ink"
-              @click="closeCharge"
-            >
-              Cerrar
-            </button>
-          </div>
         </form>
-    </UiModal>
+    </UiFormSheet>
   </div>
 </template>

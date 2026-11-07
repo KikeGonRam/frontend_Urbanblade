@@ -99,7 +99,7 @@ test("al cobrar en efectivo se pueden agregar productos y viajan en el cobro", a
   // 300 del servicio + 120 del producto.
   await expect(page.getByText("$420")).toBeVisible();
 
-  await page.getByRole("button", { name: "Confirmar y Cerrar Servicio" }).click();
+  await page.getByRole("button", { name: "Confirmar y cerrar servicio" }).click();
 
   await expect.poll(() => getPaymentBody()?.productos).toEqual([{ product_id: "prod-1", cantidad: 1 }]);
 });
