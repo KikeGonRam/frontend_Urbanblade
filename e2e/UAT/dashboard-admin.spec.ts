@@ -36,6 +36,20 @@ test("los KPIs muestran valor y variación contra el mes pasado", async ({ page 
   await expect(page.getByRole("link", { name: /3 productos con stock bajo/ })).toHaveAttribute("href", "/inventory/products");
 });
 
+test("el periodo de las tarjetas cambia citas e ingresos entre hoy, semana y mes", async ({ page }) => {
+  await openAdminDashboard(page);
+  const resumen = page.getByRole("region", { name: "Resumen" });
+
+  await page.getByRole("button", { name: "Mes", exact: true }).click();
+  await expect(resumen.getByText("Ingresos del mes")).toBeVisible();
+  await expect(resumen.getByText("$58,640")).toBeVisible();
+  await expect(resumen.getByText("Citas del mes")).toBeVisible();
+
+  await page.getByRole("button", { name: "Semana", exact: true }).click();
+  await expect(resumen.getByText("Ingresos de la semana")).toBeVisible();
+  await expect(resumen.getByText("$14,820")).toBeVisible();
+});
+
 test("las gráficas principales están a la vista sin abrir la analítica", async ({ page }) => {
   await openAdminDashboard(page);
 

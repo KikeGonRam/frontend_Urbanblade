@@ -17,8 +17,10 @@ const props = withDefaults(
     /** 0–100 para una barra de avance. */
     progress?: number | null;
     to?: string | null;
+    /** Nombre de un UiIcon para el recuadro dorado (alternativa a la ranura `icon`). */
+    icon?: string | null;
   }>(),
-  { delta: null, deltaLabel: "vs. periodo anterior", hint: null, spark: null, progress: null, to: null },
+  { delta: null, deltaLabel: "vs. periodo anterior", hint: null, spark: null, progress: null, to: null, icon: null },
 );
 
 const sparkPath = computed(() => {
@@ -85,8 +87,9 @@ const showDelta = computed(() => props.delta !== null && props.delta !== 0 && Nu
   >
     <div class="flex items-start justify-between gap-3">
       <p class="text-[13px] font-semibold text-muted">{{ label }}</p>
-      <span v-if="$slots.icon" class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gold/10 text-gold" aria-hidden="true">
-        <slot name="icon" />
+      <span v-if="icon || $slots.icon" class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gold/10 text-gold" aria-hidden="true">
+        <UiIcon v-if="icon" :name="icon" />
+        <slot v-else name="icon" />
       </span>
     </div>
 
@@ -106,7 +109,7 @@ const showDelta = computed(() => props.delta !== null && props.delta !== 0 && Nu
         class="inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 font-semibold tabular-nums"
         :class="up ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger'"
       >
-        <span aria-hidden="true">{{ up ? "▲" : "▼" }}</span>
+        <UiIcon :name="up ? 'up' : 'down'" class="!h-3.5 !w-3.5" />
         <span class="sr-only">{{ up ? "Sube" : "Baja" }}</span>
         {{ deltaText }}%
       </span>
