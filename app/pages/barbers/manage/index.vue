@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { DataTableColumn } from "~/components/ui/DataTable.vue";
 /*
  * Gestión admin de barberos -- Api\Barber\BarberManagementController, bajo
  * /barbers/manage (paginado, búsqueda, filtro por activo). Antes de esto el
@@ -57,6 +58,17 @@ const {
     }),
   { watch: [debouncedSearch, activo, page], lazy: true },
 );
+const COLUMNAS: DataTableColumn[] = [
+  { key: "barbero", label: "Barbero" },
+  { key: "especialidades", label: "Especialidades", hideBelow: "md" },
+  { key: "comision_pct", label: "Comisión", align: "center", hideBelow: "md" },
+  { key: "activo", label: "Estado", align: "center" },
+];
+const ESTADO_OPCIONES = [
+  { value: "", label: "Todos", icon: "scissors" },
+  { value: "1", label: "Activos", icon: "check" },
+  { value: "0", label: "Inactivos", icon: "x" },
+];
 const barbers = computed(() => response.value?.data ?? []);
 const pagination = computed(() => response.value?.meta);
 
@@ -168,21 +180,9 @@ async function submitForm() {
       </NuxtLink>
     </header>
 
-    <section class="mb-5 flex flex-wrap items-center gap-3">
-      <input
-        v-model="search"
-        type="text"
-        placeholder="Nombre o correo…"
-        class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)] sm:max-w-xs"
-      >
-      <select
-        v-model="activo"
-        class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]"
-      >
-        <option value="">Todos los estados</option>
-        <option value="1">Activo</option>
-        <option value="0">Inactivo</option>
-      </select>
+    <section class="mb-5 flex flex-wrap items-center gap-3" aria-label="Filtros">
+      <UiSearchInput v-model="search" label="Buscar barberos" placeholder="Buscar por nombre o correo…" />
+      <UiFilterChips v-model="activo" label="Filtrar por estado" :options="ESTADO_OPCIONES" />
       <button
         v-if="search || activo"
         type="button"
@@ -193,6 +193,52 @@ async function submitForm() {
       </button>
     </section>
 
+
+    <BrandStatePanel
+      v-if="error"
+      mascot="bruno"
+      state="error"
+      tone="danger"
+      title="No se pudo cargar la lista de barberos"
+      action-label="Reintentar"
+      @action="refresh"
+    />
+    <UiDataTable
+      v-else
+      :columns="COLUMNAS"
+      :rows="barbers"
+      :loading="pending"
+      aria-label="Barberos"
+      empty-title="Todavía no hay barberos registrados"
+      empty-description="Cambia la búsqueda o el filtro de estado para ver otros barberos."
+    >
+      <template #cell-barbero="{ row }">
+        <div class="flex items-center gap-3">
+          <img v-if="row.foto_url" :src="row.foto_url" :alt="row.user.name" class="h-9 w-9 rounded-full border border-line object-cover">
+          <span v-else class="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-ink/5 text-xs font-black text-gold">{{ row.user.name.charAt(0) }}</span>
+          <div class="min-w-0">
+            <p class="font-bold text-ink">{{ row.user.name }}</p>
+            <p class="text-xs text-muted">{{ row.user.email }}</p>
+          </div>
+        </div>
+      </template>
+      <template #cell-especialidades="{ row }"><span class="line-clamp-1 text-muted">{{ row.especialidades || "—" }}</span></template>
+      <template #cell-comision_pct="{ row }"><span class="text-ink">{{ row.comision_pct }}%</span></template>
+      <template #cell-activo="{ row }">
+        <span
+          class="rounded-full border px-2 py-0.5 text-xs font-black uppercase"
+          :class="row.activo ? 'border-success/25 bg-success/10 text-success' : 'border-line bg-ink/5 text-muted'"
+        >
+          {{ row.activo ? "Activo" : "Inactivo" }}
+        </span>
+      </template>
+      <template #actions="{ row }">
+        <UiRowActions
+          :actions="[{ key: 'edit', label: `Editar a ${row.user.name}`, icon: 'edit' }]"
+          @action="openEdit(row)"
+        />
+      </template>
+    </UiDataTable>
     <UiPagination
       v-if="pagination"
       v-model:current-page="page"
@@ -201,103 +247,6 @@ async function submitForm() {
       :per-page="10"
       :busy="pending"
     />
-
-    <div
-      v-if="pending"
-      class="flex items-center gap-3 py-12 text-sm text-muted"
-    >
-      <div
-        class="h-5 w-5 animate-spin rounded-full border-2 border-gold border-t-transparent"
-      />
-      <span>Cargando barberos…</span>
-    </div>
-
-    <BrandStatePanel
-      v-else-if="error"
-      mascot="bruno"
-      state="error"
-      tone="danger"
-      title="No se pudo cargar la lista de barberos"
-      action-label="Reintentar"
-      @action="refresh"
-    />
-
-    <section v-else class="ui-card overflow-x-auto">
-      <table aria-label="Barberos" class="w-full min-w-[52rem] text-left text-sm">
-        <thead>
-          <tr
-            class="border-b border-line text-xs uppercase tracking-wider text-muted"
-          >
-            <th scope="col" class="px-4 py-3">Barbero</th>
-            <th scope="col" class="px-4 py-3">Especialidades</th>
-            <th scope="col" class="px-4 py-3 text-center">Comisión</th>
-            <th scope="col" class="px-4 py-3 text-center">Estado</th>
-            <th scope="col" class="px-4 py-3 text-right">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="barber in barbers"
-            :key="barber.id"
-            class="border-b border-line/60 last:border-0"
-          >
-            <td class="px-4 py-3">
-              <div class="flex items-center gap-3">
-                <img
-                  v-if="barber.foto_url"
-                  :src="barber.foto_url"
-                  :alt="barber.user.name"
-                  class="h-9 w-9 rounded-full border border-line object-cover"
-                >
-                <div
-                  v-else
-                  class="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-ink/5 text-xs font-black text-gold"
-                >
-                  {{ barber.user.name.charAt(0) }}
-                </div>
-                <div>
-                  <p class="font-bold text-ink">{{ barber.user.name }}</p>
-                  <p class="text-xs text-muted">{{ barber.user.email }}</p>
-                </div>
-              </div>
-            </td>
-            <td class="px-4 py-3 text-muted">
-              <span class="line-clamp-1">{{ barber.especialidades || "—" }}</span>
-            </td>
-            <td class="px-4 py-3 text-center text-ink">
-              {{ barber.comision_pct }}%
-            </td>
-            <td class="px-4 py-3 text-center">
-              <span
-                class="rounded-full border px-2 py-0.5 text-xs font-black uppercase"
-                :class="
-                  barber.activo
-                    ? 'border-success/25 bg-success/10 text-success'
-                    : 'border-line bg-ink/5 text-muted'
-                "
-              >
-                {{ barber.activo ? "Activo" : "Inactivo" }}
-              </span>
-            </td>
-            <td class="px-4 py-3 text-right">
-              <button
-                type="button"
-                class="rounded-lg border border-line px-3 py-1 text-xs text-muted hover:text-ink"
-                @click="openEdit(barber)"
-              >
-                Editar
-              </button>
-            </td>
-          </tr>
-          <tr v-if="!barbers.length">
-            <td colspan="5" class="px-4 py-12 text-center text-sm text-muted">
-              Sin barberos registrados.
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
-
     <UiFormSheet
       v-if="showForm"
       :title="'Editar barbero'"

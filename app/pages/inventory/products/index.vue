@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { DataTableColumn } from "~/components/ui/DataTable.vue";
 import type { CsvColumn } from "~/composables/useCsvExport";
 /*
  * Fase 9.5 — gestión de inventario y productos, panel admin.
@@ -101,10 +102,29 @@ const {
     }),
   { watch: [debouncedSearch, categoria, tipo, soloBajoStock, page], lazy: true },
 );
+const COLUMNAS: DataTableColumn[] = [
+  { key: "nombre", label: "Producto" },
+  { key: "categoria", label: "Categoría", hideBelow: "md" },
+  { key: "precio_venta", label: "Precio", align: "right" },
+  { key: "stock_actual", label: "Stock", align: "center" },
+  { key: "tipo", label: "Tipo", align: "center", hideBelow: "md" },
+];
+async function onRowAction(action: string, product: ProductRow) {
+  if (action === "edit") openEdit(product);
+  else if (action === "delete") await removeProduct(product);
+}
 const products = computed(() => response.value?.data ?? []);
 const stats = computed(() => response.value?.meta.stats);
 const categorias = computed(() => response.value?.meta.categorias ?? []);
 const tipos = computed(() => response.value?.meta.tipos ?? []);
+const tipoOpciones = computed(() => [
+  { value: "", label: "Todos", icon: "box" },
+  ...tipos.value.map((t) => ({ value: t, label: t === "venta_cliente" ? "Venta" : "Insumo" })),
+]);
+const categoriaOpciones = computed(() => [
+  { value: "", label: "Todas" },
+  ...categorias.value.map((c) => ({ value: c, label: c })),
+]);
 const pagination = computed(() => response.value?.meta);
 
 watch([debouncedSearch, categoria, tipo, soloBajoStock], () => {
@@ -398,29 +418,10 @@ async function removeProduct(product: ProductRow) {
     </section>
 
     <!-- Filtros -->
-    <section class="mb-5 flex flex-wrap items-center gap-3">
-      <input
-        v-model="search"
-        type="text"
-        placeholder="Buscar producto…"
-        class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)] sm:max-w-xs"
-      >
-      <select
-        v-model="categoria"
-        class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]"
-      >
-        <option value="">Todas las categorías</option>
-        <option v-for="c in categorias" :key="c" :value="c">{{ c }}</option>
-      </select>
-      <select
-        v-model="tipo"
-        class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]"
-      >
-        <option value="">Todos los tipos</option>
-        <option v-for="t in tipos" :key="t" :value="t">
-          {{ t === "venta_cliente" ? "Venta" : "Insumo" }}
-        </option>
-      </select>
+    <section class="mb-5 flex flex-wrap items-center gap-3" aria-label="Filtros">
+      <UiSearchInput v-model="search" label="Buscar productos" placeholder="Buscar producto…" />
+      <UiFilterChips v-model="tipo" label="Filtrar por tipo" :options="tipoOpciones" />
+      <UiFilterChips v-if="categorias.length" v-model="categoria" label="Filtrar por categoría" :options="categoriaOpciones" />
       <UiSwitch v-model="soloBajoStock" label="Solo bajo stock" class="gap-2" />
       <button
         v-if="search || categoria || tipo || soloBajoStock"
@@ -432,10 +433,8 @@ async function removeProduct(product: ProductRow) {
       </button>
     </section>
 
-    <UiSkeleton v-if="pending" variant="rows" :rows="8" label="Cargando productos…" class="ui-card" />
-
     <BrandStatePanel
-      v-else-if="error"
+      v-if="error"
       mascot="bruno"
       state="error"
       tone="danger"
@@ -444,102 +443,48 @@ async function removeProduct(product: ProductRow) {
       action-label="Reintentar"
       @action="refresh"
     />
-
-    <!-- Tabla de productos -->
-    <section v-if="!pending && !error" class="ui-card overflow-x-auto">
-      <table aria-label="Productos" class="w-full text-left text-sm">
-        <thead>
-          <tr
-            class="border-b border-line text-xs uppercase tracking-wider text-muted"
-          >
-            <th scope="col" class="px-4 py-3">Producto</th>
-            <th scope="col" class="px-4 py-3">Categoría</th>
-            <th scope="col" class="px-4 py-3 text-right">Precio</th>
-            <th scope="col" class="px-4 py-3 text-center">Stock</th>
-            <th scope="col" class="px-4 py-3 text-center">Tipo</th>
-            <th scope="col" class="px-4 py-3 text-right">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="product in products"
-            :key="product.id"
-            class="border-b border-line/60 last:border-0"
-          >
-            <td class="px-4 py-3">
-              <div class="flex items-center gap-3">
-                <img
-                  v-if="product.imagen_url"
-                  :src="product.imagen_url"
-                  :alt="product.nombre"
-                  class="h-9 w-9 rounded-lg border border-line object-cover"
-                >
-                <div
-                  v-else
-                  class="flex h-9 w-9 items-center justify-center rounded-lg border border-line bg-ink/5 text-xs text-muted"
-                >
-                  📦
-                </div>
-                <div>
-                  <p class="font-bold text-ink">{{ product.nombre }}</p>
-                  <p
-                    v-if="product.descripcion"
-                    class="line-clamp-1 text-xs text-muted"
-                  >
-                    {{ product.descripcion }}
-                  </p>
-                </div>
-              </div>
-            </td>
-            <td class="px-4 py-3 text-muted">{{ product.categoria }}</td>
-            <td class="px-4 py-3 text-right font-black text-ink">
-              {{ fmtMoney(product.precio_venta) }}
-            </td>
-            <td class="px-4 py-3 text-center">
-              <span
-                class="rounded-full border px-2 py-0.5 text-xs font-black uppercase"
-                :class="
-                  product.stock_actual <= product.stock_minimo
-                    ? 'border-warning/25 bg-warning/10 text-warning'
-                    : 'border-success/25 bg-success/10 text-success'
-                "
-              >
-                {{ product.stock_actual }}
-              </span>
-            </td>
-            <td class="px-4 py-3 text-center">
-              <span
-                class="rounded-full border border-line bg-ink/5 px-2 py-0.5 text-xs font-black uppercase text-muted"
-              >
-                {{ product.tipo === "venta_cliente" ? "Venta" : "Insumo" }}
-              </span>
-            </td>
-            <td class="px-4 py-3">
-              <div class="flex justify-end gap-2">
-                <button
-                  type="button"
-                  class="min-h-10 rounded-lg border border-line px-3 py-1 text-xs text-muted hover:text-ink"
-                  @click="openEdit(product)"
-                >
-                  Editar
-                </button>
-                <!-- Acción destructiva en el menú ⋯, como en Clientes: la principal queda a la vista y borrar pide dos pasos. -->
-                <UiRowMenu
-                  :label="`Más acciones de ${product.nombre ?? 'este producto'}`"
-                  :items="[{ label: 'Eliminar producto', danger: true, onSelect: () => removeProduct(product) }]"
-                />
-              </div>
-            </td>
-          </tr>
-          <tr v-if="!products.length">
-            <td colspan="6" class="px-4 py-6">
-              <BrandStatePanel mascot="nava" state="empty" title="Todavía no hay productos registrados" description="Los productos del inventario aparecerán aquí." />
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
-
+    <UiDataTable
+      v-else
+      :columns="COLUMNAS"
+      :rows="products"
+      :loading="pending"
+      aria-label="Productos"
+      empty-title="Todavía no hay productos registrados"
+      empty-description="Los productos del inventario aparecerán aquí."
+    >
+      <template #cell-nombre="{ row }">
+        <div class="flex items-center gap-3">
+          <img v-if="row.imagen_url" :src="row.imagen_url" :alt="row.nombre" class="h-9 w-9 rounded-lg border border-line object-cover">
+          <span v-else class="flex h-9 w-9 items-center justify-center rounded-lg border border-line bg-ink/5 text-muted"><UiIcon name="box" /></span>
+          <div class="min-w-0">
+            <p class="font-bold text-ink">{{ row.nombre }}</p>
+            <p v-if="row.descripcion" class="line-clamp-1 text-xs text-muted">{{ row.descripcion }}</p>
+          </div>
+        </div>
+      </template>
+      <template #cell-categoria="{ row }"><span class="text-muted">{{ row.categoria }}</span></template>
+      <template #cell-precio_venta="{ row }"><span class="font-black text-ink">{{ fmtMoney(row.precio_venta) }}</span></template>
+      <template #cell-stock_actual="{ row }">
+        <span
+          class="rounded-full border px-2 py-0.5 text-xs font-black uppercase"
+          :class="row.stock_actual <= row.stock_minimo ? 'border-warning/25 bg-warning/10 text-warning' : 'border-success/25 bg-success/10 text-success'"
+        >
+          {{ row.stock_actual }}
+        </span>
+      </template>
+      <template #cell-tipo="{ row }">
+        <span class="rounded-full border border-line bg-ink/5 px-2 py-0.5 text-xs font-black uppercase text-muted">{{ row.tipo === "venta_cliente" ? "Venta" : "Insumo" }}</span>
+      </template>
+      <template #actions="{ row }">
+        <UiRowActions
+          :actions="[
+            { key: 'edit', label: `Editar ${row.nombre}`, icon: 'edit' },
+            { key: 'delete', label: `Eliminar ${row.nombre}`, icon: 'trash', danger: true },
+          ]"
+          @action="onRowAction($event, row)"
+        />
+      </template>
+    </UiDataTable>
     <UiPagination
       v-if="pagination"
       v-model:current-page="page"
