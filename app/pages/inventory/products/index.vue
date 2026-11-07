@@ -167,6 +167,16 @@ const form = reactive({
   activo: true,
 });
 const formError = ref("");
+const pErr = (field: string) => fieldErrors.value[field]?.[0] ?? null;
+const pInput = (field: string) => [
+  "ui-input w-full",
+  fieldErrors.value[field] ? "border-danger/60" : "border-line",
+];
+const margenPct = computed(() => {
+  const venta = Number(form.precio_venta) || 0;
+  const costo = Number(form.precio_compra) || 0;
+  return venta > 0 ? Math.round(((venta - costo) / venta) * 100) : 0;
+});
 const fieldErrors = ref<Record<string, string[]>>({});
 const saving = ref(false);
 
@@ -552,78 +562,52 @@ async function removeProduct(product: ProductRow) {
       :busy="saving"
       @close="showForm = false"
     >
-      <form id="product-form" class="space-y-4" @submit.prevent="submitForm">
-          <div>
-            <label
-              for="prod-nombre"
-              class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted"
-              >Nombre del producto</label
-            >
+      <form id="product-form" class="space-y-6" @submit.prevent="submitForm">
+        <section class="space-y-4" aria-labelledby="pr-info">
+          <p id="pr-info" class="ub-form-section__title">Información</p>
+          <UiFormField field-id="prod-nombre" label="Nombre del producto" icon="box" :error="pErr('nombre')">
             <input
               id="prod-nombre"
               v-model="form.nombre"
+              aria-label="Nombre del producto"
               type="text"
               required
               placeholder="Ej. Cera Mate Fijación Fuerte"
-              :class="[
-                'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-none',
-                fieldErrors.nombre
-                  ? 'border-danger/60 focus:border-danger focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
-                  : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]',
-              ]"
+              :class="pInput('nombre')"
             >
-            <p v-if="fieldErrors.nombre" class="mt-1 text-xs text-danger">
-              {{ fieldErrors.nombre[0] }}
-            </p>
-          </div>
-
+          </UiFormField>
           <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div>
-              <label
-                for="prod-categoria"
-                class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted"
-                >Categoría</label
-              >
+            <UiFormField field-id="prod-categoria" label="Categoría" icon="tag" :error="pErr('categoria')">
               <input
                 id="prod-categoria"
                 v-model="form.categoria"
+                aria-label="Categoría"
                 type="text"
                 required
                 list="prod-categories-list"
-                placeholder="Ej. Ceras, Shampoos…"
-                :class="[
-                  'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-none',
-                  fieldErrors.categoria
-                    ? 'border-danger/60 focus:border-danger focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
-                    : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]',
-                ]"
+                placeholder="Ej. Cuidado del cabello"
+                :class="pInput('categoria')"
               >
-              <datalist id="prod-categories-list">
-                <option v-for="c in categorias" :key="c" :value="c" />
-              </datalist>
-              <p v-if="fieldErrors.categoria" class="mt-1 text-xs text-danger">
-                {{ fieldErrors.categoria[0] }}
-              </p>
-            </div>
-            <div>
-              <label
-                for="prod-tipo"
-                class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted"
-                >Tipo de producto</label
-              >
-              <select
-                id="prod-tipo"
-                v-model="form.tipo"
-                class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]"
-              >
+            </UiFormField>
+            <UiFormField field-id="prod-tipo" label="Tipo de producto" icon="users">
+              <select id="prod-tipo" v-model="form.tipo" aria-label="Tipo de producto" class="ui-input w-full">
                 <option value="venta_cliente">Venta al cliente</option>
-                <option value="insumo_barberia">
-                  Insumo interno de barbería
-                </option>
+                <option value="insumo_barberia">Insumo interno de barbería</option>
               </select>
-            </div>
+            </UiFormField>
           </div>
-
+          <datalist id="prod-categories-list">
+            <option v-for="c in categorias" :key="c" :value="c" />
+          </datalist>
+          <UiFormField field-id="prod-descripcion" label="Descripción (opcional)" icon="text" top>
+            <textarea
+              id="prod-descripcion"
+              v-model="form.descripcion"
+              aria-label="Descripción (opcional)"
+              rows="3"
+              class="ui-input w-full"
+            />
+          </UiFormField>
           <UiImageUpload
             id="prod-imagen"
             v-model="form.imagenFile"
@@ -631,141 +615,80 @@ async function removeProduct(product: ProductRow) {
             :current-url="editing?.imagen_url"
             :error="fieldErrors.imagen?.[0]"
           />
+        </section>
 
-          <div>
-            <label
-              for="prod-descripcion"
-              class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted"
-              >Descripción (opcional)</label
-            >
-            <textarea
-              id="prod-descripcion"
-              v-model="form.descripcion"
-              rows="2"
-              placeholder="Detalles sobre presentación, aroma o ingredientes…"
-              class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]"
-            />
-          </div>
-
+        <section class="space-y-4" aria-labelledby="pr-price">
+          <p id="pr-price" class="ub-form-section__title">Precio</p>
           <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div>
-              <label
-                for="prod-precio-compra"
-                class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted"
-                >Precio compra / Costo ($)</label
-              >
+            <UiFormField field-id="prod-precio-compra" label="Precio compra / Costo ($)" icon="cash" :error="pErr('precio_compra')">
               <input
                 id="prod-precio-compra"
                 v-model.number="form.precio_compra"
+                aria-label="Precio compra / Costo ($)"
                 type="number"
                 step="0.01"
                 min="0"
                 required
-                :class="[
-                  'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-none',
-                  fieldErrors.precio_compra
-                    ? 'border-danger/60 focus:border-danger focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
-                    : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]',
-                ]"
+                :class="pInput('precio_compra')"
               >
-              <p
-                v-if="fieldErrors.precio_compra"
-                class="mt-1 text-xs text-danger"
-              >
-                {{ fieldErrors.precio_compra[0] }}
-              </p>
-            </div>
-            <div>
-              <label
-                for="prod-precio-venta"
-                class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted"
-                >Precio venta ($)</label
-              >
+            </UiFormField>
+            <UiFormField field-id="prod-precio-venta" label="Precio venta ($)" icon="tag" :error="pErr('precio_venta')">
               <input
                 id="prod-precio-venta"
                 v-model.number="form.precio_venta"
+                aria-label="Precio venta ($)"
                 type="number"
                 step="0.01"
                 min="0"
                 required
-                :class="[
-                  'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-none',
-                  fieldErrors.precio_venta
-                    ? 'border-danger/60 focus:border-danger focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
-                    : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]',
-                ]"
+                :class="pInput('precio_venta')"
               >
-              <p
-                v-if="fieldErrors.precio_venta"
-                class="mt-1 text-xs text-danger"
-              >
-                {{ fieldErrors.precio_venta[0] }}
-              </p>
-            </div>
+            </UiFormField>
           </div>
+          <div class="ub-apptcard" aria-label="Vista previa en la tienda">
+            <span class="ub-apptcard__avatar"><UiIcon name="box" /></span>
+            <span class="min-w-0 flex-1">
+              <b class="block truncate text-sm text-ink">{{ form.nombre || "Nombre del producto" }}</b>
+              <small class="block truncate text-xs text-muted">{{ form.categoria || "Categoría" }} · margen {{ margenPct }}%</small>
+            </span>
+            <span class="ub-apptcard__pill">{{ fmtMoney(form.precio_venta || 0) }}</span>
+          </div>
+        </section>
 
+        <section class="space-y-4" aria-labelledby="pr-stock">
+          <p id="pr-stock" class="ub-form-section__title">Existencias</p>
           <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div>
-              <label
-                for="prod-stock-actual"
-                class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted"
-                >Stock actual</label
-              >
+            <UiFormField field-id="prod-stock-actual" label="Stock actual" icon="box" :error="pErr('stock_actual')">
               <input
                 id="prod-stock-actual"
                 v-model.number="form.stock_actual"
+                aria-label="Stock actual"
                 type="number"
                 min="0"
                 required
-                :class="[
-                  'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-none',
-                  fieldErrors.stock_actual
-                    ? 'border-danger/60 focus:border-danger focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
-                    : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]',
-                ]"
+                :class="pInput('stock_actual')"
               >
-              <p
-                v-if="fieldErrors.stock_actual"
-                class="mt-1 text-xs text-danger"
-              >
-                {{ fieldErrors.stock_actual[0] }}
-              </p>
-            </div>
-            <div>
-              <label
-                for="prod-stock-minimo"
-                class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted"
-                >Stock mínimo de alerta</label
-              >
+            </UiFormField>
+            <UiFormField field-id="prod-stock-minimo" label="Stock mínimo (alerta)" icon="clock" :error="pErr('stock_minimo')">
               <input
                 id="prod-stock-minimo"
                 v-model.number="form.stock_minimo"
+                aria-label="Stock mínimo (alerta)"
                 type="number"
                 min="0"
                 required
-                :class="[
-                  'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-none',
-                  fieldErrors.stock_minimo
-                    ? 'border-danger/60 focus:border-danger focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
-                    : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]',
-                ]"
+                :class="pInput('stock_minimo')"
               >
-              <p
-                v-if="fieldErrors.stock_minimo"
-                class="mt-1 text-xs text-danger"
-              >
-                {{ fieldErrors.stock_minimo[0] }}
-              </p>
-            </div>
+            </UiFormField>
           </div>
-
           <UiSwitch
             v-model="form.activo"
             label="Activo"
             description="Visible en el catálogo y la tienda"
           />
+        </section>
 
-          <p v-if="formError" class="text-xs text-danger">{{ formError }}</p>
+        <p v-if="formError" role="alert" class="text-sm text-danger">{{ formError }}</p>
       </form>
     </UiFormSheet>
   </div>

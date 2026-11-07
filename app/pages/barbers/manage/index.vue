@@ -83,6 +83,11 @@ const form = reactive({
   comisionPct: 0,
 });
 const formError = ref("");
+const bErr = (field: string) => fieldErrors.value[field]?.[0] ?? null;
+const bInput = (field: string) => [
+  "ui-input w-full",
+  fieldErrors.value[field] ? "border-danger/60" : "border-line",
+];
 const fieldErrors = ref<Record<string, string[]>>({});
 const saving = ref(false);
 
@@ -306,95 +311,58 @@ async function submitForm() {
       :busy="saving"
       @close="showForm = false"
     >
-      <form id="barber-form" class="space-y-4" @submit.prevent="submitForm">
+      <form id="barber-form" class="space-y-6" @submit.prevent="submitForm">
+        <section class="space-y-4" aria-labelledby="bb-id">
+          <p id="bb-id" class="ub-form-section__title">Identidad</p>
           <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div>
-              <label
-                for="barber-name"
-                class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted"
-                >Nombre</label
-              >
+            <UiFormField field-id="barber-name" label="Nombre" icon="user" :error="bErr('name')">
               <input
                 id="barber-name"
                 v-model="form.name"
+                aria-label="Nombre"
                 type="text"
                 required
                 maxlength="255"
-                :class="[
-                  'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-none',
-                  fieldErrors.name
-                    ? 'border-danger/60 focus:border-danger focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
-                    : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]',
-                ]"
+                :class="bInput('name')"
               >
-              <p v-if="fieldErrors.name" class="mt-1 text-xs text-danger">
-                {{ fieldErrors.name[0] }}
-              </p>
-            </div>
-            <div>
-              <label
-                for="barber-email"
-                class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted"
-                >Correo</label
-              >
+            </UiFormField>
+            <UiFormField field-id="barber-email" label="Correo" icon="mail" :error="bErr('email')">
               <input
                 id="barber-email"
                 v-model="form.email"
+                aria-label="Correo"
                 type="email"
                 required
                 maxlength="255"
-                :class="[
-                  'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-none',
-                  fieldErrors.email
-                    ? 'border-danger/60 focus:border-danger focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
-                    : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]',
-                ]"
+                :class="bInput('email')"
               >
-              <p v-if="fieldErrors.email" class="mt-1 text-xs text-danger">
-                {{ fieldErrors.email[0] }}
-              </p>
-            </div>
+            </UiFormField>
           </div>
+        </section>
 
-          <div>
-            <label
-              for="barber-especialidades"
-              class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted"
-              >Especialidades</label
-            >
+        <section class="space-y-4" aria-labelledby="bb-prof">
+          <p id="bb-prof" class="ub-form-section__title">Perfil público</p>
+          <UiFormField field-id="barber-especialidades" label="Especialidades" icon="scissors" :error="bErr('especialidades')">
             <input
               id="barber-especialidades"
               v-model="form.especialidades"
+              aria-label="Especialidades"
               type="text"
               maxlength="1000"
               placeholder="Ej. Fades, barba, color…"
-              :class="[
-                'w-full rounded-lg border bg-main px-3 py-2 text-sm text-ink focus:outline-none',
-                fieldErrors.especialidades
-                  ? 'border-danger/60 focus:border-danger focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
-                  : 'border-line focus:border-gold focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]',
-              ]"
+              :class="bInput('especialidades')"
             >
-            <p v-if="fieldErrors.especialidades" class="mt-1 text-xs text-danger">
-              {{ fieldErrors.especialidades[0] }}
-            </p>
-          </div>
-
-          <div>
-            <label
-              for="barber-descripcion"
-              class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted"
-              >Descripción (perfil público)</label
-            >
+          </UiFormField>
+          <UiFormField field-id="barber-descripcion" label="Descripción (perfil público)" icon="text" top>
             <textarea
               id="barber-descripcion"
               v-model="form.descripcion"
+              aria-label="Descripción (perfil público)"
               rows="3"
               maxlength="1000"
-              class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]"
+              class="ui-input w-full"
             />
-          </div>
-
+          </UiFormField>
           <UiImageUpload
             id="barber-foto"
             v-model="form.fotoFile"
@@ -403,31 +371,30 @@ async function submitForm() {
             :error="fieldErrors.foto?.[0]"
             round
           />
+        </section>
 
-          <div>
-            <label
-              for="barber-comision"
-              class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted"
-              >Comisión (% sobre el precio de lista del servicio)</label
-            >
+        <section class="space-y-4" aria-labelledby="bb-work">
+          <p id="bb-work" class="ub-form-section__title">Trabajo</p>
+          <UiFormField field-id="barber-comision" label="Comisión (% sobre el precio de lista del servicio)" icon="percent">
             <input
               id="barber-comision"
               v-model.number="form.comisionPct"
+              aria-label="Comisión (% sobre el precio de lista del servicio)"
               type="number"
               min="0"
               max="100"
               step="1"
-              class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]"
+              class="ui-input w-full"
             >
-          </div>
-
+          </UiFormField>
           <UiSwitch
             v-model="form.activo"
             label="Activo"
             description="Visible en el catálogo público"
           />
+        </section>
 
-          <p v-if="formError" class="text-xs text-danger">{{ formError }}</p>
+        <p v-if="formError" role="alert" class="text-sm text-danger">{{ formError }}</p>
       </form>
     </UiFormSheet>
   </div>
