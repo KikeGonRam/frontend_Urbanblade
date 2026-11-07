@@ -689,6 +689,12 @@ html[data-theme="libreta"] .group:hover .group-hover\:text-gold { color: #8a6408
     .ub-form-label { color: var(--muted); display: block; font-size:.75rem; font-weight: 700; margin-bottom: .4rem; }
     .ub-sheet__panel > h2:first-child, .ub-sheet__panel > form > h2:first-child { font-size: 1.25rem; margin-bottom: 1.5rem; }
     @media (max-width: 640px) { .ub-sheet__panel { max-width: none; padding: 1.25rem; border-left: 0; } }
+    /* Variante de UiFormSheet: cabecera y pie fijos, solo el cuerpo se desplaza. */
+    .ub-sheet__panel--flex { display: flex; flex-direction: column; padding: 0; overflow: hidden; }
+    .ub-sheet__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; border-bottom: 1px solid var(--line); padding: 1.5rem 1.75rem 1.25rem; }
+    .ub-sheet__body { flex: 1 1 auto; overflow-y: auto; overscroll-behavior: contain; padding: 1.25rem 1.75rem; }
+    .ub-sheet__foot { display: flex; gap: .75rem; border-top: 1px solid var(--line); background: var(--bg-card); padding: 1rem 1.75rem calc(1rem + env(safe-area-inset-bottom)); }
+    @media (max-width: 640px) { .ub-sheet__head, .ub-sheet__body, .ub-sheet__foot { padding-left: 1.25rem; padding-right: 1.25rem; } }
     @keyframes ub-sheet-in { from { transform: translateX(32px); opacity: 0; } to { transform: none; opacity: 1; } }
     @keyframes ub-sheet-fade { from { opacity: 0; } to { opacity: 1; } }
     @media (prefers-reduced-motion: reduce) { .ub-sheet, .ub-sheet__panel { animation: none; } }

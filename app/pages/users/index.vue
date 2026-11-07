@@ -79,76 +79,25 @@ function clearFilters() {
   page.value = 1;
 }
 
-// ── Crear / editar ───────────────────────────────────────────────────────
+// ── Crear / editar (formulario único en UiUserFormSheet) ───────────────────
 const showForm = ref(false);
 const editing = ref<UserRow | null>(null);
-const form = reactive({
-  name: "",
-  email: "",
-  password: "",
-  password_confirmation: "",
-  role: "cliente",
-});
-const formError = ref("");
-const fieldErrors = ref<Record<string, string[]>>({});
 const actionError = ref("");
-const saving = ref(false);
 
 function openCreate() {
   editing.value = null;
-  form.name = "";
-  form.email = "";
-  form.password = "";
-  form.password_confirmation = "";
-  form.role = "cliente";
-  formError.value = "";
-  fieldErrors.value = {};
   showForm.value = true;
 }
 
 function openEdit(user: UserRow) {
   editing.value = user;
-  form.name = user.name;
-  form.email = user.email;
-  form.password = "";
-  form.password_confirmation = "";
-  form.role = user.roles[0] ?? "cliente";
-  formError.value = "";
-  fieldErrors.value = {};
   showForm.value = true;
 }
 
-async function submitForm() {
-  saving.value = true;
-  formError.value = "";
-  fieldErrors.value = {};
-  try {
-    const body: Record<string, string> = {
-      name: form.name,
-      email: form.email,
-      role: form.role,
-    };
-    if (form.password) {
-      body.password = form.password;
-      body.password_confirmation = form.password_confirmation;
-    }
-    if (editing.value) {
-      await apiFetch(`/users/${editing.value.id}`, { method: "PUT", body });
-    } else {
-      await apiFetch("/users", { method: "POST", body });
-    }
-    showForm.value = false;
-    await refresh();
-  } catch (err: unknown) {
-    const dataErr = (
-      err as { data?: { message?: string; errors?: Record<string, string[]> } }
-    )?.data;
-    fieldErrors.value = dataErr?.errors ?? {};
-    formError.value =
-      dataErr?.message ?? "No se pudo guardar. Verifica los datos.";
-  } finally {
-    saving.value = false;
-  }
+async function onSaved(warning: string) {
+  showForm.value = false;
+  actionError.value = warning;
+  await refresh();
 }
 
 async function removeUser(user: UserRow) {
@@ -317,203 +266,13 @@ async function removeUser(user: UserRow) {
       :busy="pending"
     />
 
-    <div
+    <UiUserFormSheet
       v-if="showForm"
-      class="ub-sheet"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="user-form-title"
-      @click.self="!saving && (showForm = false)"
-    >
-      <div class="ub-sheet__panel">
-        <div class="mb-6 flex items-start justify-between gap-4">
-          <div>
-            <p class="ub-form-kicker">Cuentas de acceso</p>
-            <h2 id="user-form-title" class="mt-2 text-2xl font-black text-ink">
-              {{ editing ? "Editar usuario" : "Nuevo usuario" }}
-            </h2>
-            <p class="mt-2 ub-form-help">Configura la identidad, el nivel de acceso y las credenciales de esta cuenta.</p>
-          </div>
-          <span class="rounded-full border border-gold/25 bg-gold/10 px-2 py-1 text-xs font-black uppercase tracking-wider text-gold">
-            {{ editing ? "Edición" : "Alta" }}
-          </span>
-        </div>
-        <form class="space-y-3" @submit.prevent="submitForm">
-          <div class="ub-form-section space-y-4">
-            <p class="ub-form-section__title">Identidad</p>
-          <div>
-            <label for="user-name" class="ub-form-label"
-              >Nombre</label
-            >
-            <input
-              id="user-name"
-              v-model="form.name"
-              type="text"
-              required
-              :aria-invalid="!!fieldErrors.name"
-              :aria-describedby="
-                fieldErrors.name ? 'user-name-error' : undefined
-              "
-              :class="[
-                'ui-input w-full',
-                fieldErrors.name ? 'border-danger/60' : 'border-line',
-              ]"
-            >
-            <p
-              v-if="fieldErrors.name"
-              id="user-name-error"
-              class="mt-1 text-xs text-danger"
-            >
-              {{ fieldErrors.name[0] }}
-            </p>
-          </div>
-          <div>
-            <label for="user-email" class="ub-form-label"
-              >Email</label
-            >
-            <input
-              id="user-email"
-              v-model="form.email"
-              type="email"
-              required
-              :aria-invalid="!!fieldErrors.email"
-              :aria-describedby="
-                fieldErrors.email ? 'user-email-error' : undefined
-              "
-              :class="[
-                'ui-input w-full',
-                fieldErrors.email ? 'border-danger/60' : 'border-line',
-              ]"
-            >
-            <p
-              v-if="fieldErrors.email"
-              id="user-email-error"
-              class="mt-1 text-xs text-danger"
-            >
-              {{ fieldErrors.email[0] }}
-            </p>
-          </div>
-          </div>
-          <div class="ub-form-section space-y-4">
-            <p class="ub-form-section__title">Permisos</p>
-          <div>
-            <label for="user-role" class="ub-form-label"
-              >Rol</label
-            >
-            <select
-              id="user-role"
-              v-model="form.role"
-              required
-              :aria-invalid="!!fieldErrors.role"
-              :aria-describedby="
-                fieldErrors.role ? 'user-role-error' : undefined
-              "
-              :class="[
-                'ui-input w-full',
-                fieldErrors.role ? 'border-danger/60' : 'border-line',
-              ]"
-            >
-              <option v-for="r in roles" :key="r" :value="r">
-                {{ ROLE_LABEL[r] ?? r }}
-              </option>
-            </select>
-            <p
-              v-if="fieldErrors.role"
-              id="user-role-error"
-              class="mt-1 text-xs text-danger"
-            >
-              {{ fieldErrors.role[0] }}
-            </p>
-          </div>
-          </div>
-          <div class="ub-form-section space-y-4">
-            <div>
-              <p class="ub-form-section__title">Seguridad</p>
-              <p class="mt-1 ub-form-help">{{ editing ? "Déjala vacía para conservar la contraseña actual." : "Usa al menos 8 caracteres y confirma la contraseña." }}</p>
-            </div>
-          <div>
-            <label for="user-password" class="ub-form-label">{{
-              editing ? "Nueva contraseña (opcional)" : "Contraseña"
-            }}</label>
-            <input
-              id="user-password"
-              v-model="form.password"
-              type="password"
-              :required="!editing"
-              minlength="8"
-              autocomplete="new-password"
-              :aria-invalid="!!fieldErrors.password"
-              :aria-describedby="
-                fieldErrors.password ? 'user-password-error' : undefined
-              "
-              :class="[
-                'ui-input w-full',
-                fieldErrors.password ? 'border-danger/60' : 'border-line',
-              ]"
-            >
-            <p
-              v-if="fieldErrors.password"
-              id="user-password-error"
-              class="mt-1 text-xs text-danger"
-            >
-              {{ fieldErrors.password[0] }}
-            </p>
-          </div>
-          <div v-if="!editing || form.password">
-            <label
-              for="user-password-confirmation"
-              class="ub-form-label"
-              >Confirmar contraseña</label
-            >
-            <input
-              id="user-password-confirmation"
-              v-model="form.password_confirmation"
-              type="password"
-              :required="!editing || !!form.password"
-              minlength="8"
-              autocomplete="new-password"
-              :aria-invalid="!!fieldErrors.password_confirmation"
-              :aria-describedby="
-                fieldErrors.password_confirmation
-                  ? 'user-password-confirmation-error'
-                  : undefined
-              "
-              :class="[
-                'ui-input w-full',
-                fieldErrors.password_confirmation
-                  ? 'border-danger/60'
-                  : 'border-line',
-              ]"
-            >
-            <p
-              v-if="fieldErrors.password_confirmation"
-              id="user-password-confirmation-error"
-              class="mt-1 text-xs text-danger"
-            >
-              {{ fieldErrors.password_confirmation[0] }}
-            </p>
-          </div>
-          </div>
-          <p v-if="formError" class="text-sm text-danger">{{ formError }}</p>
-          <div class="mt-5 flex gap-3">
-            <button
-              type="submit"
-              :disabled="saving"
-              class="flex-1 rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-black hover:bg-gold-dim disabled:opacity-50"
-            >
-              {{ saving ? "Guardando…" : "Guardar" }}
-            </button>
-            <button
-              type="button"
-              :disabled="saving"
-              class="rounded-lg border border-line px-4 py-2 text-sm text-muted hover:text-ink disabled:opacity-50"
-              @click="showForm = false"
-            >
-              Cancelar
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+      :editing="editing"
+      :roles="roles"
+      :role-label="ROLE_LABEL"
+      @close="showForm = false"
+      @saved="onSaved"
+    />
   </div>
 </template>
