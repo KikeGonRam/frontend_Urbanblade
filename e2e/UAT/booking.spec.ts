@@ -42,7 +42,7 @@ test("un cliente puede reservar su propia cita", async ({ page }) => {
   await page.goto("/my/appointments");
   await page.getByRole("button", { name: "Reservar nueva cita" }).click();
   await expect(
-    page.getByRole("heading", { name: "Reserva tu cita" }),
+    page.getByRole("heading", { name: "Nueva cita" }),
   ).toBeVisible();
 
   // Paso 1-3: servicio, barbero (fixture de mock-api.mjs), día y hora reales.
@@ -84,7 +84,7 @@ test("reservar desde la ficha del barbero salta directo al horario", async ({
 
   await expect(page).toHaveURL(/\/my\/appointments\?barber=b-1$/);
   await expect(
-    page.getByRole("heading", { name: "Reserva tu cita" }),
+    page.getByRole("heading", { name: "Nueva cita" }),
   ).toBeVisible();
 
   // Con el barbero ya preseleccionado (initial-barber), elegir el servicio
@@ -110,7 +110,7 @@ test("un choque de horario muestra el motivo real del backend", async ({
 
   await page.goto("/my/appointments?barber=b-1");
   await expect(
-    page.getByRole("heading", { name: "Reserva tu cita" }),
+    page.getByRole("heading", { name: "Nueva cita" }),
   ).toBeVisible();
 
   await page.getByRole("button", { name: /Corte clásico/ }).click();
