@@ -416,7 +416,8 @@ async function removeService(service: ServiceRow) {
           <datalist id="service-categories-list">
             <option v-for="c in categories" :key="c" :value="c" />
           </datalist>
-          <div v-if="categories.length" class="flex flex-wrap gap-2" role="list" aria-label="Categorías sugeridas">
+          <fieldset v-if="categories.length" class="m-0 flex min-w-0 flex-wrap gap-2 border-0 p-0">
+            <legend class="sr-only">Categorías sugeridas</legend>
             <button
               v-for="cat in categories"
               :key="cat"
@@ -427,7 +428,7 @@ async function removeService(service: ServiceRow) {
             >
               {{ cat }}
             </button>
-          </div>
+          </fieldset>
         </section>
 
         <section class="space-y-4" aria-labelledby="sv-price">
