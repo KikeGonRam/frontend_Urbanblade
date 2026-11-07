@@ -221,109 +221,91 @@ async function remove(work: Work) {
       />
     </section>
 
-    <!-- Modal para publicar nuevo trabajo -->
-    <div
+    <UiFormSheet
       v-if="showForm"
-      class="ub-sheet"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Publicar nuevo trabajo"
-      @click.self="closeForm"
+      title="Publicar trabajo"
+      kicker="Portafolio"
+      icon="image"
+      subtitle="Muestra tu mejor corte con fotos o video."
+      badge="Nuevo"
+      form-id="work-form"
+      submit-label="Publicar trabajo"
+      hint="Se publica en tu perfil público"
+      :submit-disabled="!files.length"
+      :busy="saving"
+      @close="closeForm"
     >
-      <form
-        class="ub-sheet__panel"
-        @submit.prevent="publish"
-      >
-        <h2 class="text-lg font-bold text-ink">Publicar trabajo en portafolio</h2>
-
-        <div class="mt-4 space-y-4">
-          <div>
-            <label for="work-title" class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted">
-              Título del corte o diseño
-            </label>
+      <form id="work-form" class="space-y-6" @submit.prevent="publish">
+        <section class="space-y-4" aria-labelledby="wk-info">
+          <p id="wk-info" class="ub-form-section__title">El trabajo</p>
+          <UiFormField field-id="work-title" label="Título del corte o diseño" icon="scissors">
             <input
               id="work-title"
               v-model="title"
+              aria-label="Título del corte o diseño"
               required
               maxlength="255"
               placeholder="Ej. Low Fade + Diseño personalizado"
-              class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]"
+              class="ui-input w-full"
             >
-          </div>
-
-          <div>
-            <label for="work-description" class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted">
-              Descripción o técnicas aplicadas (opcional)
-            </label>
+          </UiFormField>
+          <UiFormField field-id="work-description" label="Descripción o técnicas aplicadas (opcional)" icon="text" top>
             <textarea
               id="work-description"
               v-model="description"
+              aria-label="Descripción o técnicas aplicadas (opcional)"
               maxlength="2000"
               rows="3"
               placeholder="Detalles sobre el estilo, productos utilizados o corte realizado…"
-              class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink focus:border-gold focus:outline-none focus:shadow-[0_0_0_3px_rgba(212,175,55,0.15)]"
+              class="ui-input w-full"
             />
-          </div>
+          </UiFormField>
+        </section>
 
-          <div>
-            <label for="work-files" class="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted">
-              Fotos y videos del trabajo
-            </label>
+        <section class="space-y-4" aria-labelledby="wk-files">
+          <p id="wk-files" class="ub-form-section__title">Fotos y videos</p>
+          <UiFormField
+            field-id="work-files"
+            label="Archivos del trabajo"
+            icon="image"
+            hint="Hasta 10 archivos. Máximo 50 MB por archivo."
+          >
             <input
               id="work-files"
+              aria-label="Fotos y videos del trabajo"
               type="file"
               required
               multiple
               accept="image/*,video/*"
-              class="w-full text-sm text-muted file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-gold file:px-4 file:py-2 file:text-xs file:font-semibold file:text-black hover:file:bg-gold-dim"
+              class="ui-input w-full text-sm text-muted file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-gold file:px-4 file:py-1.5 file:text-xs file:font-semibold file:text-black hover:file:bg-gold-dim"
               @change="selectFiles"
             >
-            <p class="mt-1 text-xs text-muted">Hasta 10 archivos. Máximo 50 MB por archivo.</p>
-          </div>
-
-          <!-- Previsualización de archivos seleccionados -->
+          </UiFormField>
           <div v-if="filePreviews.length" class="space-y-2">
-            <p class="text-xs font-semibold uppercase tracking-wider text-muted">Archivos seleccionados ({{ filePreviews.length }}):</p>
-            <div class="grid grid-cols-4 gap-2">
+            <p class="ub-form-help">Archivos seleccionados ({{ filePreviews.length }})</p>
+            <div class="grid grid-cols-3 gap-2 sm:grid-cols-4">
               <div
                 v-for="(prev, i) in filePreviews"
                 :key="i"
-                class="group relative aspect-square overflow-hidden rounded-lg border border-line bg-main"
+                class="group relative aspect-square overflow-hidden rounded-xl border border-line bg-main"
               >
                 <video v-if="prev.isVideo" :src="prev.url" class="h-full w-full object-cover" />
-                <img v-else :src="prev.url" alt="Preview" class="h-full w-full object-cover">
+                <img v-else :src="prev.url" alt="Vista previa" class="h-full w-full object-cover">
                 <button
                   type="button"
-                  class="absolute top-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/80 text-xs text-white opacity-0 group-hover:opacity-100"
-                  title="Quitar"
+                  class="absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/80 text-white opacity-0 focus-visible:opacity-100 group-hover:opacity-100"
+                  aria-label="Quitar archivo"
                   @click="removeSelectedFile(i)"
                 >
-                  ✕
+                  <UiIcon name="x" />
                 </button>
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
-        <p v-if="formError" class="mt-3 text-xs text-danger">{{ formError }}</p>
-
-        <div class="mt-6 flex justify-end gap-3">
-          <button
-            type="button"
-            class="rounded-lg border border-line px-4 py-2 text-sm font-semibold text-muted hover:text-ink"
-            @click="closeForm"
-          >
-            Cancelar
-          </button>
-          <button
-            type="submit"
-            :disabled="saving || !files.length"
-            class="rounded-lg bg-gold px-5 py-2 text-sm font-bold text-black hover:bg-gold-dim disabled:opacity-50"
-          >
-            {{ saving ? 'Publicando…' : 'Publicar trabajo' }}
-          </button>
-        </div>
+        <p v-if="formError" role="alert" class="text-sm text-danger">{{ formError }}</p>
       </form>
-    </div>
+    </UiFormSheet>
   </div>
 </template>
