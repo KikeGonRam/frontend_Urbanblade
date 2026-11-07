@@ -74,3 +74,34 @@ test("un cliente nuevo se da de alta con su teléfono en una sola llamada", asyn
     password: "password123",
   });
 });
+
+test("la lista de usuarios pide 10 por página, filtra por rol con chips y edita con el ícono", async ({ page }) => {
+  await mockApi(page, { user: makeUser({ roles: ["administrador"], client_id: null }) });
+  let ultima: URL | undefined;
+  await page.route("**/api/v1/users**", async (route) => {
+    if (route.request().method() !== "GET") return route.fallback();
+    ultima = new URL(route.request().url());
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        data: [{ id: "u1", name: "Luis Prueba", email: "luis@test.local", roles: ["barbero"] }],
+        meta: { current_page: 1, last_page: 1, total: 1 },
+        roles: ["administrador", "recepcionista", "barbero", "cliente"],
+      }),
+    });
+  });
+
+  await page.goto("/login");
+  await page.getByLabel("Correo").fill("admin@test.local");
+  await page.locator("#password").fill("password");
+  await page.getByRole("button", { name: "Ingresar" }).click();
+  await page.goto("/users");
+
+  await expect.poll(() => ultima?.searchParams.get("per_page")).toBe("10");
+  await page.getByRole("button", { name: "Barbero", exact: true }).click();
+  await expect.poll(() => ultima?.searchParams.get("role")).toBe("barbero");
+
+  await page.getByRole("button", { name: "Editar a Luis Prueba" }).click();
+  await expect(page.getByRole("dialog", { name: "Editar persona" })).toBeVisible();
+});

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { CsvColumn } from "~/composables/useCsvExport";
+import type { DataTableColumn } from "~/components/ui/DataTable.vue";
 /*
  * Fase 9.6 — gestión de usuarios del sistema (cuentas de acceso, no
  * clientes), admin-only. Api/User/UserController ya estaba completo desde
@@ -60,11 +61,30 @@ const {
         q: search.value || undefined,
         role: roleFilter.value || undefined,
         page: page.value,
-        per_page: 15,
+        per_page: 10,
       },
     }),
   { watch: [debouncedSearch, roleFilter, page], lazy: true },
 );
+const COLUMNAS: DataTableColumn[] = [
+  { key: "name", label: "Usuario" },
+  { key: "email", label: "Email", hideBelow: "md" },
+  { key: "rol", label: "Rol", align: "center" },
+];
+const ROLE_ICON: Record<string, string> = {
+  administrador: "shield",
+  recepcionista: "headset",
+  barbero: "scissors",
+  cliente: "user",
+};
+const roleOptions = computed(() => [
+  { value: "", label: "Todos", icon: "users" },
+  ...roles.value.map((r) => ({ value: r, label: ROLE_LABEL[r] ?? r, icon: ROLE_ICON[r] })),
+]);
+async function onRowAction(action: string, user: UserRow) {
+  if (action === "edit") openEdit(user);
+  else if (action === "delete") await removeUser(user);
+}
 const users = computed(() => response.value?.data ?? []);
 const roles = computed(() => response.value?.roles ?? []);
 const pagination = computed(() => response.value?.meta);
@@ -142,31 +162,9 @@ async function removeUser(user: UserRow) {
         + Nuevo Usuario
       </button>
     </header>
-    <div class="mb-3">
-      <UiExportCsvButton
-        endpoint="/users"
-        :query="{ q: search || undefined, role: roleFilter || undefined }"
-        :columns="exportColumns"
-        filename="usuarios"
-      />
-    </div>
-
-    <section class="mb-5 flex flex-wrap items-center gap-3">
-      <input
-        v-model="search"
-        type="text"
-        placeholder="Nombre o email…"
-        class="w-full rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink sm:max-w-xs"
-      >
-      <select
-        v-model="roleFilter"
-        class="rounded-lg border border-line bg-main px-3 py-2 text-sm text-ink"
-      >
-        <option value="">Todos los roles</option>
-        <option v-for="r in roles" :key="r" :value="r">
-          {{ ROLE_LABEL[r] ?? r }}
-        </option>
-      </select>
+    <section class="mb-5 flex flex-wrap items-center gap-3" aria-label="Filtros">
+      <UiSearchInput v-model="search" label="Buscar usuarios" placeholder="Buscar por nombre o correo…" />
+      <UiFilterChips v-model="roleFilter" label="Filtrar por rol" :options="roleOptions" />
       <button
         v-if="search || roleFilter"
         type="button"
@@ -175,94 +173,67 @@ async function removeUser(user: UserRow) {
       >
         Limpiar filtros
       </button>
+      <span class="ml-auto">
+        <UiExportCsvButton
+          endpoint="/users"
+          :query="{ q: search || undefined, role: roleFilter || undefined }"
+          :columns="exportColumns"
+          filename="usuarios"
+        />
+      </span>
     </section>
 
-    <BrandStatePanel v-if="pending" mascot="bladebot" state="waiting" title="Cargando usuarios…" />
-    <BrandStatePanel
-      v-else-if="error"
-      mascot="bruno"
-      state="error"
-      tone="danger"
-      title="No se pudo cargar la lista de usuarios"
-      description="Inténtalo nuevamente en unos minutos."
-      action-label="Reintentar"
-      @action="refresh"
-    />
+    <BrandStatePanel v-if="error" mascot="bruno" state="error" tone="danger" title="No se pudo cargar la lista de usuarios" description="Inténtalo nuevamente en unos minutos." action-label="Reintentar" @action="refresh" />
     <p v-if="actionError" role="alert" class="mb-4 text-sm text-danger">
       {{ actionError }}
     </p>
 
-    <section v-if="!pending && !error" class="ui-card overflow-x-auto">
-      <table aria-label="Usuarios" class="w-full text-left text-sm">
-        <thead>
-          <tr
-            class="border-b border-line text-xs uppercase tracking-wider text-muted"
+    <UiDataTable
+      v-if="!error"
+      :columns="COLUMNAS"
+      :rows="users"
+      :loading="pending"
+      aria-label="Usuarios"
+      empty-title="Todavía no hay usuarios que mostrar"
+      empty-description="Cambia la búsqueda o el filtro de rol para ver otras cuentas."
+    >
+      <template #cell-name="{ row }">
+        <div class="flex items-center gap-3">
+          <UiAvatar :src="row.avatar_url" :name="row.name" />
+          <span class="font-bold text-ink">{{ row.name }}</span>
+          <span
+            v-if="currentUser && row.id === currentUser.id"
+            class="rounded-full border border-gold/25 bg-gold/10 px-1.5 py-0.5 text-xs font-black uppercase text-gold"
+            >Tú</span
           >
-            <th scope="col" class="px-4 py-3">Usuario</th>
-            <th scope="col" class="px-4 py-3">Email</th>
-            <th scope="col" class="px-4 py-3 text-center">Rol</th>
-            <th scope="col" class="px-4 py-3 text-right">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="user in users"
-            :key="user.id"
-            class="border-b border-line/60 last:border-0"
-          >
-            <td class="px-4 py-3">
-              <div class="flex items-center gap-3">
-                <UiAvatar :src="user.avatar_url" :name="user.name" />
-                <span class="font-bold text-ink">{{ user.name }}</span>
-                <span
-                  v-if="currentUser && user.id === currentUser.id"
-                  class="rounded-full border border-gold/25 bg-gold/10 px-1.5 py-0.5 text-xs font-black uppercase text-gold"
-                  >Tú</span
-                >
-              </div>
-            </td>
-            <td class="px-4 py-3 text-muted">{{ user.email }}</td>
-            <td class="px-4 py-3 text-center">
-              <span
-                class="rounded-full border border-line bg-ink/5 px-2 py-0.5 text-xs font-black uppercase text-muted"
-                >{{ ROLE_LABEL[user.roles[0]] ?? user.roles[0] ?? "—" }}</span
-              >
-            </td>
-            <td class="px-4 py-3">
-              <div class="flex justify-end gap-2">
-                <button
-                  type="button"
-                  class="rounded-lg border border-line px-3 py-1 text-xs text-muted hover:text-ink"
-                  @click="openEdit(user)"
-                >
-                  Editar
-                </button>
-                <button
-                  v-if="!currentUser || user.id !== currentUser.id"
-                  type="button"
-                  class="rounded-lg border border-danger/20 px-3 py-1 text-xs text-danger hover:bg-danger/10"
-                  @click="removeUser(user)"
-                >
-                  Eliminar
-                </button>
-              </div>
-            </td>
-          </tr>
-          <tr v-if="!users.length">
-            <td colspan="4" class="px-4 py-12 text-center text-sm text-muted">
-              Sin usuarios.
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
+        </div>
+      </template>
+      <template #cell-email="{ row }">
+        <span class="text-muted">{{ row.email }}</span>
+      </template>
+      <template #cell-rol="{ row }">
+        <span class="inline-flex items-center gap-1.5 rounded-full border border-line bg-ink/5 px-2.5 py-1 text-xs font-bold text-ink">
+          <UiIcon :name="ROLE_ICON[row.roles[0]] ?? 'user'" />
+          {{ ROLE_LABEL[row.roles[0]] ?? row.roles[0] ?? "—" }}
+        </span>
+      </template>
+      <template #actions="{ row }">
+        <UiRowActions
+          :actions="[
+            { key: 'edit', label: `Editar a ${row.name}`, icon: 'edit' },
+            { key: 'delete', label: `Eliminar a ${row.name}`, icon: 'trash', danger: true, hidden: !!currentUser && row.id === currentUser.id },
+          ]"
+          @action="onRowAction($event, row)"
+        />
+      </template>
+    </UiDataTable>
 
     <UiPagination
       v-if="pagination"
       v-model:current-page="page"
       :last-page="pagination.last_page"
       :total="pagination.total"
-      :per-page="15"
+      :per-page="10"
       :busy="pending"
     />
 

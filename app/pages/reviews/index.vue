@@ -43,7 +43,7 @@ const { data: response, pending, error, refresh } = await useAsyncData(
       sort: sort.value,
       dir: dir.value,
       page: page.value,
-      per_page: 15,
+      per_page: 10,
     },
   }),
   { watch: [barberFilter, ratingFilter, sort, dir, page], lazy: true },
@@ -100,7 +100,7 @@ function fmtDate(iso: string | null) {
       v-model:current-page="page"
       :last-page="pagination.last_page"
       :total="pagination.total"
-      :per-page="15"
+      :per-page="10"
       :busy="pending"
     />
 

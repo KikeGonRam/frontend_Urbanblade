@@ -9,7 +9,7 @@ const props = withDefaults(
   }>(),
   {
     total: 0,
-    perPage: 15,
+    perPage: 10,
     busy: false,
   },
 );
