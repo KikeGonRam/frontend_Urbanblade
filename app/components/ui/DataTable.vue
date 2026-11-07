@@ -107,7 +107,12 @@ function claveDe(row: T, index: number): string | number {
                 @click="alternarOrden(col)"
               >
                 {{ col.label }}
-                <span aria-hidden="true">{{ sort?.key === col.key ? (sort.dir === 'asc' ? '▲' : '▼') : '↕' }}</span>
+                <UiIcon
+                  :name="sort?.key === col.key ? (sort.dir === 'asc' ? 'arrowup' : 'arrowdown') : 'sort'"
+                  class="ub-sorticon"
+                  :class="sort?.key === col.key ? 'text-gold' : 'opacity-60'"
+                />
+
               </button>
               <template v-else>{{ col.label }}</template>
             </th>
