@@ -293,21 +293,17 @@ async function submitForm() {
       </table>
     </section>
 
-    <!-- Modal de edición -->
-    <div
+    <UiFormSheet
       v-if="showForm"
-      class="ub-sheet"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Editar barbero"
-      @click.self="showForm = false"
+      :title="'Editar barbero'"
+      kicker="Equipo"
+      :badge="'Edición'"
+      form-id="barber-form"
+      submit-label="Guardar cambios"
+      :busy="saving"
+      @close="showForm = false"
     >
-      <div
-        class="ub-sheet__panel"
-      >
-        <h2 class="mb-4 text-lg font-semibold text-ink">Editar barbero</h2>
-
-        <form class="space-y-4" @submit.prevent="submitForm">
+      <form id="barber-form" class="space-y-4" @submit.prevent="submitForm">
           <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label
@@ -429,25 +425,7 @@ async function submitForm() {
           />
 
           <p v-if="formError" class="text-xs text-danger">{{ formError }}</p>
-
-          <div class="mt-6 flex justify-end gap-3 pt-2">
-            <button
-              type="button"
-              class="rounded-lg border border-line px-4 py-2 text-sm font-semibold text-muted hover:text-ink"
-              @click="showForm = false"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              :disabled="saving"
-              class="rounded-lg bg-gold px-5 py-2 text-sm font-bold text-black hover:bg-gold-dim disabled:opacity-50"
-            >
-              {{ saving ? "Guardando…" : "Guardar cambios" }}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+      </form>
+    </UiFormSheet>
   </div>
 </template>

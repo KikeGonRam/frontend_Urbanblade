@@ -539,23 +539,17 @@ async function removeProduct(product: ProductRow) {
       :busy="pending"
     />
 
-    <!-- Modal Crear / Editar Producto -->
-    <div
+    <UiFormSheet
       v-if="showForm"
-      class="ub-sheet"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Formulario de producto"
-      @click.self="showForm = false"
+      :title="editing ? 'Editar producto' : 'Nuevo producto'"
+      kicker="Inventario"
+      :badge="editing ? 'Edición' : 'Alta'"
+      form-id="product-form"
+      submit-label="Guardar producto"
+      :busy="saving"
+      @close="showForm = false"
     >
-      <div
-        class="ub-sheet__panel"
-      >
-        <h2 class="mb-4 text-lg font-semibold text-ink">
-          {{ editing ? "Editar producto" : "Nuevo producto" }}
-        </h2>
-
-        <form class="space-y-4" @submit.prevent="submitForm">
+      <form id="product-form" class="space-y-4" @submit.prevent="submitForm">
           <div>
             <label
               for="prod-nombre"
@@ -769,25 +763,7 @@ async function removeProduct(product: ProductRow) {
           />
 
           <p v-if="formError" class="text-xs text-danger">{{ formError }}</p>
-
-          <div class="mt-6 flex justify-end gap-3 pt-2">
-            <button
-              type="button"
-              class="rounded-lg border border-line px-4 py-2 text-sm font-semibold text-muted hover:text-ink"
-              @click="showForm = false"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              :disabled="saving"
-              class="rounded-lg bg-gold px-5 py-2 text-sm font-bold text-black hover:bg-gold-dim disabled:opacity-50"
-            >
-              {{ saving ? "Guardando…" : "Guardar producto" }}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+      </form>
+    </UiFormSheet>
   </div>
 </template>

@@ -58,7 +58,7 @@ test("el servicio se edita eligiendo la imagen del dispositivo", async ({ page }
   await page.getByRole("button", { name: "Editar" }).first().click();
 
   // Ya no hay campo de URL; se ve la imagen guardada y el botón para cambiarla.
-  const form = page.getByRole("dialog", { name: "Formulario de servicio" });
+  const form = page.getByRole("dialog", { name: "Editar servicio" });
   await expect(form.getByPlaceholder(/https:/)).toHaveCount(0);
   await expect(form.getByText("Cambiar imagen")).toBeVisible();
 
@@ -83,7 +83,7 @@ test("una imagen demasiado pesada se rechaza antes de enviarla", async ({ page }
   await page.goto("/services");
   await page.getByRole("button", { name: /Nuevo Servicio/ }).click();
 
-  const form = page.getByRole("dialog", { name: "Formulario de servicio" });
+  const form = page.getByRole("dialog", { name: "Nuevo servicio" });
   await form.locator("#service-imagen").setInputFiles({
     name: "enorme.png",
     mimeType: "image/png",
