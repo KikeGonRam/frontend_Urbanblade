@@ -212,6 +212,9 @@ function onTransferFileChange(e: Event) {
 }
 
 // ── Barbero favorito ─────────────────────────────────────────────────────
+// El favorito va primero en la lista (auditoría UX, prioridad 4): el clic más probable queda arriba. El orden
+// relativo del resto no cambia (sort estable).
+const orderedBarbers = computed(() => [...barbers.value].sort((a, b) => Number(b.es_favorito) - Number(a.es_favorito)))
 // Solo preferencia de UI (pre-destacarlo), nunca bloquea reservar con otro.
 // Optimista: actualiza el heart al instante y revierte si el PUT falla, en
 // vez de esperar el round-trip antes de reflejar el click.
@@ -633,8 +636,9 @@ function prettyDate(iso: string) {
             :aria-current="i === step ? 'step' : undefined"
             @click="goToStep(i)"
           >
-            <span class="grid h-5 w-5 place-items-center rounded-full border border-current text-xs">{{ i + 1 }}</span>
-            <span>{{ label }}</span>
+            <!-- Paso hecho: ✓ en lugar del número, para ver de un vistazo lo que ya está resuelto. -->
+            <span class="grid h-5 w-5 place-items-center rounded-full border border-current text-xs" aria-hidden="true">{{ i < step ? '✓' : i + 1 }}</span>
+            <span>{{ label }}<span v-if="i < step" class="sr-only">, completado</span></span>
           </button>
         </li>
       </ol>
@@ -703,13 +707,13 @@ function prettyDate(iso: string) {
         />
         <div v-else class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <div
-            v-for="barber in barbers" :key="barber.id"
+            v-for="barber in orderedBarbers" :key="barber.id"
             class="ui-card relative flex flex-col gap-3 p-4 transition-colors hover:border-gold/40"
             :class="barber.es_favorito && 'border-gold/50'"
           >
             <button
               v-if="isAuthenticated" type="button"
-              class="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full transition-colors"
+              class="absolute right-2 top-2 grid h-11 w-11 place-items-center rounded-full transition-colors"
               :class="barber.es_favorito ? 'text-gold' : 'text-muted hover:text-gold'"
               :aria-pressed="barber.es_favorito"
               :aria-label="barber.es_favorito ? `Quitar a ${barber.user?.name} de favoritos` : `Marcar a ${barber.user?.name} como favorito`"
@@ -720,7 +724,7 @@ function prettyDate(iso: string) {
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 20.5s-7.5-4.6-10-9.3C.5 8 2 4.5 5.5 4c2-.3 3.8.7 4.9 2.2l1.6 2 1.6-2C14.7 4.7 16.5 3.7 18.5 4c3.5.5 5 4 3.5 7.2-2.5 4.7-10 9.3-10 9.3Z" />
               </svg>
             </button>
-            <button type="button" class="flex min-h-11 items-center gap-3 pr-8 text-left" @click="pickBarber(barber.id)">
+            <button type="button" class="flex min-h-11 items-center gap-3 pr-10 text-left" @click="pickBarber(barber.id)">
               <img
                 v-if="barber.foto" :src="barber.foto" :alt="`Foto de ${barber.user?.name}`"
                 class="h-12 w-12 shrink-0 rounded-full object-cover" loading="lazy" decoding="async"
@@ -730,6 +734,7 @@ function prettyDate(iso: string) {
               </span>
               <span class="min-w-0">
                 <span class="block truncate text-sm font-black text-ink">{{ barber.user?.name }}</span>
+                <span v-if="barber.es_favorito" class="mt-1 inline-block rounded-full bg-gold/10 px-2 py-0.5 text-xs font-bold text-gold">Tu favorito</span>
                 <span class="mt-0.5 block truncate text-xs text-muted">{{ barber.especialidades || 'Barbero' }}</span>
               </span>
             </button>
