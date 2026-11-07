@@ -212,10 +212,11 @@ async function submit() {
     <form id="user-form" class="space-y-5" @submit.prevent="submit">
       <section class="space-y-4" aria-labelledby="sec-id">
         <p id="sec-id" class="ub-form-section__title">Identidad</p>
-        <UiFormField id="user-name" label="Nombre" :error="err('name')">
+        <UiFormField field-id="user-name" label="Nombre" :error="err('name')">
           <input
             id="user-name"
             v-model="form.name"
+            aria-label="Nombre"
             type="text"
             required
             :aria-invalid="!!err('name')"
@@ -223,10 +224,11 @@ async function submit() {
             :class="inputClass('name')"
           >
         </UiFormField>
-        <UiFormField id="user-email" label="Email" :error="err('email')">
+        <UiFormField field-id="user-email" label="Email" :error="err('email')">
           <input
             id="user-email"
             v-model="form.email"
+            aria-label="Email"
             type="email"
             required
             :aria-invalid="!!err('email')"
@@ -234,10 +236,11 @@ async function submit() {
             :class="inputClass('email')"
           >
         </UiFormField>
-        <UiFormField id="user-role" label="Rol" :error="err('role')">
+        <UiFormField field-id="user-role" label="Rol" :error="err('role')">
           <select
             id="user-role"
             v-model="form.role"
+            aria-label="Rol"
             required
             :aria-invalid="!!err('role')"
             :aria-describedby="err('role') ? 'user-role-error' : undefined"
@@ -257,10 +260,11 @@ async function submit() {
       >
         <p id="sec-client" class="ub-form-section__title">Datos del cliente</p>
         <p v-if="loadingProfile" class="ub-form-help">Cargando perfil…</p>
-        <UiFormField id="user-telefono" label="Teléfono" :error="err('telefono')">
+        <UiFormField field-id="user-telefono" label="Teléfono" :error="err('telefono')">
           <input
             id="user-telefono"
             v-model="form.telefono"
+            aria-label="Teléfono"
             type="tel"
             autocomplete="tel"
             :aria-invalid="!!err('telefono')"
@@ -278,13 +282,14 @@ async function submit() {
         <p id="sec-barber" class="ub-form-section__title">Perfil del barbero</p>
         <p v-if="loadingProfile" class="ub-form-help">Cargando perfil…</p>
         <UiFormField
-          id="user-especialidades"
+          field-id="user-especialidades"
           label="Especialidades"
           :error="err('especialidades')"
         >
           <input
             id="user-especialidades"
             v-model="form.especialidades"
+            aria-label="Especialidades"
             type="text"
             maxlength="1000"
             placeholder="Ej. Fades, barba, color…"
@@ -292,13 +297,14 @@ async function submit() {
           >
         </UiFormField>
         <UiFormField
-          id="user-descripcion"
+          field-id="user-descripcion"
           label="Descripción (perfil público)"
           :error="err('descripcion')"
         >
           <textarea
             id="user-descripcion"
             v-model="form.descripcion"
+            aria-label="Descripción (perfil público)"
             rows="3"
             maxlength="1000"
             :class="inputClass('descripcion')"
@@ -313,13 +319,14 @@ async function submit() {
           round
         />
         <UiFormField
-          id="user-comision"
+          field-id="user-comision"
           label="Comisión (% sobre el precio de lista)"
           :error="err('comision_pct')"
         >
           <input
             id="user-comision"
             v-model.number="form.comisionPct"
+            aria-label="Comisión (% sobre el precio de lista)"
             type="number"
             min="0"
             max="100"
@@ -346,13 +353,14 @@ async function submit() {
           </p>
         </div>
         <UiFormField
-          id="user-password"
+          field-id="user-password"
           :label="editing ? 'Nueva contraseña (opcional)' : 'Contraseña'"
           :error="err('password')"
         >
           <input
             id="user-password"
             v-model="form.password"
+            :aria-label="editing ? 'Nueva contraseña (opcional)' : 'Contraseña'"
             type="password"
             :required="!editing"
             minlength="8"
@@ -371,6 +379,7 @@ async function submit() {
           <input
             id="user-password-confirmation"
             v-model="form.password_confirmation"
+            aria-label="Confirmar contraseña"
             type="password"
             :required="!editing || !!form.password"
             minlength="8"

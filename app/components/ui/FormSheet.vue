@@ -16,6 +16,7 @@ const props = withDefaults(
 );
 const emit = defineEmits<{ close: [] }>();
 
+const dialog = ref<HTMLDialogElement | null>(null);
 const panel = ref<HTMLElement | null>(null);
 const titleId = useId();
 let previous: HTMLElement | null = null;
@@ -38,7 +39,7 @@ function onKeydown(event: KeyboardEvent) {
   ];
   if (!focusable.length) return;
   const first = focusable[0];
-  const last = focusable[focusable.length - 1];
+  const last = focusable.at(-1)!;
   if (event.shiftKey && document.activeElement === first) {
     event.preventDefault();
     last.focus();
@@ -50,6 +51,7 @@ function onKeydown(event: KeyboardEvent) {
 
 onMounted(async () => {
   previous = document.activeElement as HTMLElement | null;
+  dialog.value?.showModal();
   await nextTick();
   // Primer campo del formulario, no el botón de cerrar.
   (
@@ -58,20 +60,23 @@ onMounted(async () => {
     ) ?? panel.value?.querySelector<HTMLElement>(focusableSelector)
   )?.focus();
 });
-onBeforeUnmount(() => previous?.focus());
+onBeforeUnmount(() => {
+  dialog.value?.close();
+  previous?.focus();
+});
 </script>
 
 <template>
   <Teleport to="body">
-    <div class="ub-sheet" @click.self="close">
-      <div
-        ref="panel"
-        class="ub-sheet__panel ub-sheet__panel--flex"
-        role="dialog"
-        aria-modal="true"
-        :aria-labelledby="titleId"
-        @keydown="onKeydown"
-      >
+    <dialog
+      ref="dialog"
+      class="ub-sheet"
+      :aria-labelledby="titleId"
+      @cancel.prevent="close"
+      @keydown="onKeydown"
+      @click="$event.target === dialog && close()"
+    >
+      <div ref="panel" class="ub-sheet__panel ub-sheet__panel--flex">
         <header class="ub-sheet__head">
           <div class="min-w-0">
             <p v-if="kicker" class="ub-form-kicker">{{ kicker }}</p>
@@ -107,6 +112,6 @@ onBeforeUnmount(() => previous?.focus());
           <slot name="footer" />
         </footer>
       </div>
-    </div>
+    </dialog>
   </Teleport>
 </template>
