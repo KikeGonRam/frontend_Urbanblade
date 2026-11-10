@@ -275,6 +275,7 @@ test(`flujo crítico (${TAREA}, antes de la sesión ${SESION} de la UAT): web, A
       if (permitirEscritura) {
         expect(personal.email && personal.password, "Falta la cuenta del personal: HUMO_STAFF_EMAIL y HUMO_STAFF_PASSWORD").toBeTruthy();
         apk = Apk.elegirEmulador();
+        apk.mantenerDespierto();
         build.emulador = `${apk.nombreDelEmulador()} (${apk.serie})`;
       }
 

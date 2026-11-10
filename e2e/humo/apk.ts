@@ -76,6 +76,16 @@ export class Apk {
     return new Apk(emuladores[0]!);
   }
 
+  /**
+   * Mantiene la pantalla encendida y desbloqueada: los pasos de la web tardan minutos y, si el emulador se duerme,
+   * uiautomator ya no ve nada («null root node»). `stayon` solo dura mientras el emulador esté encendido.
+   */
+  mantenerDespierto() {
+    this.adb(["shell", "svc", "power", "stayon", "true"]);
+    this.adb(["shell", "input", "keyevent", "KEYCODE_WAKEUP"]);
+    this.adb(["shell", "wm", "dismiss-keyguard"]);
+  }
+
   adb(args: string[]): string {
     return execFileSync(ADB, ["-s", this.serie, ...args], { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
   }
@@ -117,6 +127,7 @@ export class Apk {
     } catch {
       // Android anterior a 13 no tiene ese permiso.
     }
+    this.mantenerDespierto();
     this.adb(["logcat", "-c"]);
     this.lanzar();
     for (let intento = 0; intento <= 2; intento++) {
