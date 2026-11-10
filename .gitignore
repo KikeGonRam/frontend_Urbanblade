@@ -29,6 +29,9 @@ node_modules
 # Playwright (Fase 6 E2E)
 /test-results
 /playwright-report
+/playwright-report-humo
+/test-results-humo
+/test-results-humo-estado
 /blob-report
 /playwright/.cache
 /cypress/videos

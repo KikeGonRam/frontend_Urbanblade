@@ -15,6 +15,7 @@
     "test:uat": "playwright test e2e/UAT",
     "test:oat": "playwright test e2e/OAT",
     "test:e2e": "playwright test",
+    "test:humo": "playwright test -c playwright.humo.config.ts",
     "e2e:servers": "node scripts/e2e-servers.mjs",
     "cypress:run": "cypress run",
     "cypress:open": "cypress open",
