@@ -23,6 +23,16 @@ export interface Nodo {
   x: number;
   y: number;
   arriba: number;
+  /** Bordes: para tocar una casilla al inicio de su fila y saber qué contenedor envuelve a un texto. */
+  izquierda: number;
+  derecha: number;
+  abajo: number;
+  /** Falso cuando la app deshabilitó el control (por ejemplo, un botón que aún no se puede usar). */
+  habilitado: boolean;
+  /** Verdadero en una casilla o interruptor (o una fila que se marca como casilla). */
+  marcable: boolean;
+  /** Verdadero en una casilla o interruptor marcado. */
+  marcado: boolean;
 }
 
 const esperar = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -171,6 +181,12 @@ export class Apk {
             x: Math.round((x1 + x2) / 2),
             y: Math.round((y1 + y2) / 2),
             arriba: y1,
+            izquierda: x1,
+            derecha: x2,
+            abajo: y2,
+            habilitado: atributo("enabled") !== "false",
+            marcable: atributo("checkable") === "true",
+            marcado: atributo("checked") === "true",
           });
         }
         if (nodos.length) return nodos;
