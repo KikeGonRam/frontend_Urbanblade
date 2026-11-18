@@ -127,7 +127,7 @@ export class Apk {
 
   /**
    * Arranca la app desde cero: sin sesión ni datos guardados y sin el aviso de permiso de notificaciones. En un emulador
-   * con poca memoria Android puede cerrar la app por un ANR mientras arranca; si eso pasa (queda en el registro de
+   * con poca memoria Android puede cerrar la app mientras arranca (por un ANR o por «start timeout»); si eso pasa (queda en el registro de
    * Android), se vuelve a abrir hasta 2 veces y se anota en `reaperturasPorAnr`. Cualquier otro problema hace fallar.
    */
   async abrirLimpia(textoDeBienvenida: string) {
@@ -146,7 +146,7 @@ export class Apk {
       while (Date.now() < limite) {
         if (await this.hay(textoDeBienvenida)) return;
         const registro = this.adb(["logcat", "-d", "-s", "ActivityManager:I"]);
-        if (/Killing \d+:com\.urbanblade\.mobile\/\S+ \(adj -?\d+\): .*anr/i.test(registro)) {
+        if (/Killing \d+:com\.urbanblade\.mobile\/\S+ \(adj -?\d+\): .*(anr|start timeout)/i.test(registro)) {
           cerradaPorAnr = true;
           break;
         }
