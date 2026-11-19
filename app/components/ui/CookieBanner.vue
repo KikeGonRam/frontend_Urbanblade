@@ -17,7 +17,6 @@ const { bannerOpen, accept, reject } = useConsent()
       Cambia tu elección en «Preferencias de cookies». Más en el
       <NuxtLink to="/privacidad#cookies" class="font-bold text-ink underline hover:text-gold">Aviso de Privacidad</NuxtLink>.
     </p>
->
     <div class="mt-3 flex flex-col gap-2 sm:flex-row sm:justify-end">
       <button
         type="button"

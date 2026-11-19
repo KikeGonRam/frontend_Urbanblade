@@ -34,6 +34,17 @@ test("la primera visita muestra el banner y no contacta a terceros", async ({ pa
   expect(cookies.map((c) => c.name).filter((n) => /^_clck|^_clsk|^_ga|^__stripe/.test(n))).toEqual([]);
 });
 
+test("el banner no pinta caracteres sueltos entre el texto y los botones", async ({ page }) => {
+  await mockApi(page);
+  await page.goto("/");
+  const banner = page.getByTestId("cookie-banner");
+  await expect(banner).toBeVisible();
+
+  // Una línea que sea solo un símbolo («>», «<», «/»…) es un resto de plantilla, no contenido.
+  const lineas = (await banner.innerText()).split("\n").map((l) => l.trim()).filter(Boolean);
+  expect(lineas.filter((l) => /^[<>/\\|]+$/.test(l)), "texto suelto en el banner").toEqual([]);
+});
+
 test("rechazar conserva la elección y no carga analítica", async ({ page, context }) => {
   await mockApi(page);
   const pedidas = vigilar(page);
