@@ -74,7 +74,7 @@ const money = (n: number) => `$${Math.round(n).toLocaleString('es-MX')}`
       </div>
 
       <ul class="look-list grid max-h-[260px] lg:max-h-[460px] content-start gap-3 overflow-y-auto" role="tablist" aria-label="Estilos">
-        <li v-for="s in visible" :key="s.id">
+        <li v-for="s in visible" :key="s.id" role="presentation">
           <button
             type="button" role="tab" :aria-selected="selected.id === s.id"
             class="group flex min-h-[64px] w-full items-center gap-4 rounded-2xl border p-3 text-left transition-all"

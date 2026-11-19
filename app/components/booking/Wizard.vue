@@ -1,53 +1,11 @@
 <script setup lang="ts">
-import { loadStripe, type Stripe, type StripeCardElement, type StripeElements } from '@stripe/stripe-js/pure'
-import type { ChoiceOption } from '~/types/choice'
+import { BOOKING_STEPS } from '~/composables/useBookingWizard'
+import { BOOKING_TIP_PRESETS } from '~/composables/useBookingPricing'
 
 const props = withDefaults(defineProps<{ initialBarber?: string, embedded?: boolean }>(), { initialBarber: '', embedded: false })
 const emit = defineEmits<{ confirmed: [code: string], busy: [value: boolean] }>()
 
-interface ServiceRow {
-  id: string
-  nombre: string
-  categoria: string | null
-  precio: number
-  duracion_min: number
-  descripcion: string | null
-  imagen: string | null
-}
-interface BarberRow {
-  id: string
-  slug: string | null
-  user: { id: string, name: string } | null
-  especialidades: string | null
-  foto: string | null
-  avg_rating: number | null
-  total_reviews: number
-  citas_conmigo: number | null
-  es_favorito: boolean
-}
-interface ProductRow {
-  id: string
-  nombre: string
-  categoria: string | null
-  descripcion: string | null
-  precio_venta: number
-  stock_actual: number
-  imagen: string | null
-}
-interface Slot { time: string, label: string }
-interface Barbershop {
-  nombre: string | null
-  direccion: string | null
-  telefono: string | null
-  horario_apertura: string | null
-  horario_cierre: string | null
-  politica_cancelacion: number | null
-}
-
-const { apiFetch } = useApi()
-const { isAuthenticated, hasRole, user, fetchMe } = useAuth()
-const runtimeConfig = useRuntimeConfig()
-const route = useRoute()
+const { isAuthenticated, user, fetchMe } = useAuth()
 
 // /reservar es pública y no pasa por el middleware 'auth', así que nadie
 // carga el usuario: con la cookie puesta pero user en null, hasRole() da
@@ -57,541 +15,49 @@ if (isAuthenticated.value && !user.value) {
   await fetchMe()
 }
 
-// ── Estado del asistente ──────────────────────────────────────────────────
-// La query SOLO se lee al entrar (enlace/QR con ?servicio=, y el regreso del
-// login) y se vuelve a escribir UNA vez, al saltar al login (ver currentUrl()).
-// Deliberadamente NO se espeja en la URL en cada selección: app.vue monta la
-// página con :key="route.fullPath", así que cada cambio de query remonta el
-// componente completo, vuelve a pedir los catálogos y reproduce la transición
-// de página -- un remonte por cada toque del visitante.
-const serviceId = ref(typeof route.query.servicio === 'string' ? route.query.servicio : '')
-const barberId = ref(props.initialBarber || (typeof route.query.barbero === 'string' ? route.query.barbero : ''))
-const date = ref(typeof route.query.fecha === 'string' ? route.query.fecha : '')
-const time = ref(typeof route.query.hora === 'string' ? route.query.hora : '')
-const notes = ref('')
-const activeStep = ref<number | null>(null)
-
-// ── Datos públicos ────────────────────────────────────────────────────────
-const { data: shopData } = await useAsyncData<{ data: Barbershop }>(
-  'reservar-barbershop',
-  () => apiFetch('/barbershop'),
-)
-const shop = computed(() => shopData.value?.data ?? null)
-
-const { data: servicesData, pending: servicesPending, error: servicesError } = await useAsyncData<{ data: ServiceRow[] }>(
-  'reservar-services',
-  () => apiFetch('/services'),
-)
-const services = computed(() => servicesData.value?.data ?? [])
-
-const { data: barbersData, pending: barbersPending, error: barbersError } = await useAsyncData<{ data: BarberRow[] }>(
-  'reservar-barbers',
-  () => apiFetch('/barbers'),
-)
-const barbers = computed(() => barbersData.value?.data ?? [])
-
-// ── Productos sugeridos (paso de confirmar) ──────────────────────────────
-// Reutiliza el mismo catalogo publico de la tienda (GET /products) -- no es
-// un catalogo aparte, solo se sugieren 4 con stock disponible para no
-// abrumar el paso de confirmar con la tienda completa.
-const { data: productsData } = await useAsyncData<{ data: ProductRow[] }>(
-  'reservar-products',
-  () => apiFetch('/products'),
-)
-const suggestedProducts = computed(() =>
-  (productsData.value?.data ?? []).filter(p => p.stock_actual > 0).slice(0, 4),
-)
-const selectedProductIds = ref<Set<string>>(new Set())
-function toggleProduct(id: string) {
-  const next = new Set(selectedProductIds.value)
-  if (next.has(id)) next.delete(id)
-  else next.add(id)
-  selectedProductIds.value = next
-}
-const selectedProducts = computed(() =>
-  suggestedProducts.value.filter(p => selectedProductIds.value.has(p.id)),
-)
-const productsTotal = computed(() => selectedProducts.value.reduce((sum, p) => sum + p.precio_venta, 0))
-
-// ── Descuento de membresia/lealtad ───────────────────────────────────────
-// El mismo % que ya calcula PaymentService al cobrar (ver
-// LoyaltyService::bestDiscountPct) -- se muestra aqui solo como referencia
-// honesta de cuanto va a pagar realmente, sea que pague ahora o despues.
-const membershipDiscountPct = computed(() => user.value?.client?.descuento_activo_pct ?? 0)
-const discountedServicePrice = computed(() => {
-  const base = selectedService.value?.precio ?? 0
-  return membershipDiscountPct.value > 0
-    ? Math.round(base * (1 - membershipDiscountPct.value / 100) * 100) / 100
-    : base
+// Máquina de pasos, catálogos, disponibilidad, totales y pago viven en composables
+// (useBookingWizard y los que compone); este componente solo cablea la plantilla.
+const wizard = useBookingWizard({
+  initialBarber: props.initialBarber,
+  onBusy: value => emit('busy', value),
+  onConfirmed: code => emit('confirmed', code),
 })
+await wizard.ready
 
-// ── Propina sugerida ──────────────────────────────────────────────────────
-// Se calcula sobre el precio YA con descuento (mismo criterio que
-// loyaltyCharge.ts usa en recepcion: descuento primero, propina despues).
-const TIP_PRESETS = [0, 0.10, 0.15, 0.20] as const
-const tipPreset = ref<number>(0)
-const customTip = ref<string>('')
-const usingCustomTip = computed(() => customTip.value !== '')
-const tipAmount = computed(() => {
-  if (usingCustomTip.value) {
-    const parsed = Number(customTip.value)
-    return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0
-  }
-  return Math.round(discountedServicePrice.value * tipPreset.value)
-})
-function pickTipPreset(pct: number) {
-  tipPreset.value = pct
-  customTip.value = ''
-}
-
-const grandTotal = computed(() => discountedServicePrice.value + productsTotal.value + tipAmount.value)
-
-// ── Pagar ahora vs pagar despues (Fase 7) ────────────────────────────────
-// "Pagar ahora" reutiliza el mecanismo de deposito anti-no-show tal cual
-// (mismo backend, mismo webhook de Stripe) pero por el monto completo -- ver
-// AppointmentController::store() en barber. Default 'despues' para no
-// forzar el cambio de comportamiento a nadie que solo quiera reservar.
-type PayChoice = 'despues' | 'ahora_tarjeta' | 'ahora_transferencia'
-const payChoice = ref<PayChoice>('despues')
-const payAmountToCharge = computed(() => discountedServicePrice.value + tipAmount.value)
-
-let stripe: Stripe | null = null
-let elements: StripeElements | null = null
-let cardElement: StripeCardElement | null = null
-const cardElementRef = ref<HTMLDivElement | null>(null)
-const stripeConfigured = Boolean(runtimeConfig.public.stripeKey)
-// Mismos tres valores de siempre (el backend no cambia); solo se presentan como tarjetas.
-const payOptions = computed<ChoiceOption<PayChoice>[]>(() => [
-  { value: 'despues', title: 'Pagar en el salón', detail: 'Efectivo, tarjeta o transferencia el día de tu cita', icon: 'salon' },
-  ...(stripeConfigured
-    ? [{ value: 'ahora_tarjeta' as const, title: 'Pagar ahora con tarjeta', detail: 'Se cobra al instante de forma segura', icon: 'tarjeta' as const }]
-    : []),
-  { value: 'ahora_transferencia', title: 'Pagar ahora por transferencia', detail: 'Sube tu comprobante para confirmar', icon: 'transferencia' },
-])
-const cardError = ref('')
-// `stripe` es una variable normal (no reactiva) a proposito, para no meter
-// el objeto Stripe en un Proxy de Vue; este ref es lo que el template observa.
-const stripeReady = ref(false)
-
-async function ensureStripeMounted() {
-  if (!stripeConfigured || cardElement) return
-  stripe = await loadStripe(runtimeConfig.public.stripeKey as string)
-  if (!stripe) return
-  elements = stripe.elements()
-  // El iframe de Stripe es de otro origen: no puede heredar el color del tema
-  // ("inherit" lo dejaba oscuro sobre fondo oscuro), asi que se le pasa el
-  // color ya calculado del contenedor.
-  const textColor = cardElementRef.value ? getComputedStyle(cardElementRef.value).color : '#ffffff'
-  cardElement = elements.create('card', {
-    style: { base: { fontFamily: 'Figtree, sans-serif', fontSize: '15px', color: textColor, '::placeholder': { color: '#8a8a8a' } }, invalid: { color: '#f87171' } },
-  })
-  if (cardElementRef.value) cardElement.mount(cardElementRef.value)
-  cardElement.on('change', ({ error: elError }) => { cardError.value = elError?.message ?? '' })
-  stripeReady.value = true
-}
-function teardownStripe() {
-  cardElement?.unmount()
-  cardElement = null
-  elements = null
-  cardError.value = ''
-  stripeReady.value = false
-}
-watch(payChoice, async (choice) => {
-  if (choice === 'ahora_tarjeta') await nextTick().then(ensureStripeMounted)
-  else teardownStripe()
-})
-onUnmounted(() => teardownStripe())
-
-// Transferencia: el cliente sube su comprobante DESPUES de que la cita ya
-// existe (mismo flujo que el deposito anti-no-show) -- se guarda el archivo
-// aqui y se sube en confirm(), una vez se tiene el codigo de la cita.
-const transferReceipt = ref<File | null>(null)
-function onTransferFileChange(e: Event) {
-  const input = e.target as HTMLInputElement
-  transferReceipt.value = input.files?.[0] ?? null
-}
-
-// ── Barbero favorito ─────────────────────────────────────────────────────
-// El favorito va primero en la lista (auditoría UX, prioridad 4): el clic más probable queda arriba. El orden
-// relativo del resto no cambia (sort estable).
-const orderedBarbers = computed(() => [...barbers.value].sort((a, b) => Number(b.es_favorito) - Number(a.es_favorito)))
-// Solo preferencia de UI (pre-destacarlo), nunca bloquea reservar con otro.
-// Optimista: actualiza el heart al instante y revierte si el PUT falla, en
-// vez de esperar el round-trip antes de reflejar el click.
-const favoriteSaving = ref(false)
-async function toggleFavorite(barber: BarberRow) {
-  if (!isAuthenticated.value || favoriteSaving.value) return
-  const next = !barber.es_favorito
-  const previous = barbers.value.map(b => ({ id: b.id, es_favorito: b.es_favorito }))
-  for (const b of barbers.value) b.es_favorito = b.id === barber.id ? next : false
-  favoriteSaving.value = true
-  try {
-    await apiFetch('/profile/favorite-barber', {
-      method: 'PUT',
-      body: { barber_id: next ? barber.id : null },
-    })
-  }
-  catch {
-    for (const b of barbers.value) {
-      const found = previous.find(p => p.id === b.id)
-      if (found) b.es_favorito = found.es_favorito
-    }
-  }
-  finally {
-    favoriteSaving.value = false
-  }
-}
-
-const selectedService = computed(() => services.value.find(s => s.id === serviceId.value) ?? null)
-const selectedBarber = computed(() => barbers.value.find(b => b.id === barberId.value) ?? null)
-
-// ── Días ofrecidos ────────────────────────────────────────────────────────
-// Fechas armadas en horario local, nunca con toISOString(): el backend valida
-// 'after_or_equal:today' contra America/Mexico_City, y en UTC-6 el ISO de
-// "hoy por la noche" ya cae en mañana.
-function localISO(d: Date) {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-}
-const days = computed(() => Array.from({ length: 14 }, (_, i) => {
-  const d = new Date()
-  d.setDate(d.getDate() + i)
-
-  return {
-    iso: localISO(d),
-    weekday: d.toLocaleDateString('es-MX', { weekday: 'short' }),
-    day: d.getDate(),
-    month: d.toLocaleDateString('es-MX', { month: 'short' }),
-    isToday: i === 0,
-  }
-}))
-
-// ── Horarios reales ───────────────────────────────────────────────────────
-const slots = ref<Slot[]>([])
-const slotsPending = ref(false)
-const slotsFailed = ref(false)
-let slotsRequest = 0
-
-async function loadSlots() {
-  const request = ++slotsRequest
-  if (!serviceId.value || !barberId.value || !date.value) {
-    slots.value = []
-    slotsPending.value = false
-    return
-  }
-  slotsPending.value = true
-  slotsFailed.value = false
-  try {
-    const res = await apiFetch<{ slots: Slot[] }>('/availability/slots', {
-      query: { barber_id: barberId.value, service_id: serviceId.value, date: date.value },
-    })
-    if (request !== slotsRequest) return
-    slots.value = res.slots ?? []
-    if (time.value && !slots.value.some(s => s.time === time.value)) {
-      time.value = ''
-    }
-  }
-  catch {
-    if (request !== slotsRequest) return
-    slotsFailed.value = true
-    slots.value = []
-  }
-  finally {
-    if (request === slotsRequest) slotsPending.value = false
-  }
-}
-watch([serviceId, barberId, date], loadSlots, { immediate: true })
-
-// Agrupar horarios por franja del día -- una sola lista plana de 20+ botones
-// se siente vacia/monotona aunque haya bastante disponibilidad; agruparlos
-// con un encabezado da la sensacion de "hay opciones organizadas" en vez de
-// "aqui hay una lista".
-const SLOT_GROUPS = [
-  { key: 'manana', label: 'Mañana', max: 12 * 60 },
-  { key: 'tarde', label: 'Tarde', max: 18 * 60 },
-  { key: 'noche', label: 'Noche', max: Infinity },
-] as const
-
-function slotMinutes(time: string): number {
-  const [h, m] = time.split(':').map(Number)
-  return (h ?? 0) * 60 + (m ?? 0)
-}
-
-const groupedSlots = computed(() => {
-  const groups = SLOT_GROUPS.map(g => ({ ...g, slots: [] as Slot[] }))
-  for (const slot of slots.value) {
-    const minutes = slotMinutes(slot.time)
-    const group = groups.find(g => minutes < g.max) ?? groups[groups.length - 1]!
-    group.slots.push(slot)
-  }
-  return groups.filter(g => g.slots.length)
-})
-
-// ── Lista de espera (cuando el día elegido ya no tiene horarios) ──────────
-// Mismo criterio de quién puede reservar (canBookHere, definido más abajo)
-// -- solo cliente o invitado, nunca staff/barbero.
-const joiningWaitlist = ref(false)
-const waitlistJoined = ref(false)
-const waitlistError = ref('')
-watch([serviceId, barberId, date], () => {
-  waitlistJoined.value = false
-  waitlistError.value = ''
-})
-
-async function joinWaitlist() {
-  if (joiningWaitlist.value || !barberId.value || !serviceId.value || !date.value) return
-
-  if (!isAuthenticated.value) {
-    await navigateTo(`/login?redirect=${encodeURIComponent(currentUrl())}`)
-
-    return
-  }
-
-  joiningWaitlist.value = true
-  waitlistError.value = ''
-  try {
-    await apiFetch('/waitlist', {
-      method: 'POST',
-      body: { barber_id: barberId.value, service_id: serviceId.value, fecha: date.value },
-    })
-    waitlistJoined.value = true
-  }
-  catch (err: unknown) {
-    waitlistError.value = (err as { data?: { message?: string } })?.data?.message
-      ?? 'No se pudo anotar en la lista de espera.'
-  }
-  finally {
-    joiningWaitlist.value = false
-  }
-}
-
-// ── Pasos ─────────────────────────────────────────────────────────────────
-const STEPS = ['Servicio', 'Barbero', 'Horario', 'Confirmar'] as const
-const step = computed(() => {
-  if (activeStep.value !== null) return activeStep.value
-  if (!serviceId.value) return 0
-  if (!barberId.value) return 1
-  if (!date.value || !time.value) return 2
-
-  return 3
-})
-
-function pickService(id: string) {
-  activeStep.value = null
-  serviceId.value = id
-  time.value = ''
-}
-function pickBarber(id: string) {
-  activeStep.value = null
-  barberId.value = id
-  time.value = ''
-}
-function goToStep(target: number) {
-  // Revisar un paso no destruye el borrador. Cambiar la selección invalida la hora.
-  activeStep.value = target
-}
-
-// ── Confirmación ──────────────────────────────────────────────────────────
-// El backend solo deja reservar para sí mismo al rol cliente; admin y
-// recepción necesitan client_id (lo hacen desde /appointments) y un barbero
-// recibe 403. Se detecta antes de enviar para no mostrar un error críptico.
-const canBookHere = computed(() => !isAuthenticated.value || hasRole('cliente'))
-
-const saving = ref(false)
-watch(saving, value => emit('busy', value))
-const submitError = ref('')
-const submitErrorEl = ref<HTMLElement | null>(null)
-const confirmedCode = ref('')
-const productsWarning = ref('')
-// El cliente acepta el cargo por inasistencia en el último paso (el backend guarda cuándo lo aceptó).
-const acceptsNoShowFee = ref(false)
-
-function currentUrl() {
-  const q = new URLSearchParams({
-    servicio: serviceId.value,
-    barbero: barberId.value,
-    fecha: date.value,
-    hora: time.value,
-  }).toString()
-
-  return `/reservar?${q}`
-}
-
-const paymentWarning = ref('')
-const paymentConfirming = ref(false)
-
-async function confirm() {
-  if (saving.value || slotsPending.value || !selectedService.value || !selectedBarber.value || !time.value) return
-  submitError.value = ''
-  if (!isAuthenticated.value) {
-    // Única puerta de sesión del flujo, y solo al final: la selección viaja
-    // en ?redirect para volver exactamente a este punto.
-    await navigateTo(`/login?redirect=${encodeURIComponent(currentUrl())}`)
-
-    return
-  }
-  if (!acceptsNoShowFee.value) {
-    submitError.value = 'Para reservar acepta el cargo por inasistencia.'
-
-    return
-  }
-  if (payChoice.value === 'ahora_tarjeta' && (!stripe || !cardElement)) {
-    submitError.value = 'El formulario de tarjeta todavía no está listo. Espera un momento e intenta de nuevo.'
-
-    return
-  }
-  if (payChoice.value === 'ahora_transferencia' && !transferReceipt.value) {
-    submitError.value = 'Sube tu comprobante de transferencia para continuar.'
-
-    return
-  }
-
-  saving.value = true
-  try {
-    const res = await apiFetch<{ data: { code: string }, productos_error?: string | null }>('/appointments', {
-      method: 'POST',
-      body: {
-        barber_id: barberId.value,
-        service_id: serviceId.value,
-        fecha: date.value,
-        hora_inicio: time.value,
-        notas: notes.value || undefined,
-        productos: selectedProducts.value.length
-          ? selectedProducts.value.map(p => ({ product_id: p.id, cantidad: 1 }))
-          : undefined,
-        propina_sugerida: tipAmount.value > 0 ? tipAmount.value : undefined,
-        pagar_ahora: payChoice.value !== 'despues' || undefined,
-        acepta_cargo_inasistencia: acceptsNoShowFee.value || undefined,
-      },
-    })
-    const code = res.data?.code ?? ''
-    // La cita ya quedo creada aunque los productos fallen (ver backend): se
-    // avisa aparte en vez de tratarlo como un error de la reserva completa.
-    productsWarning.value = res.productos_error ?? ''
-
-    // El cobro (si eligio pagar ahora) va DESPUES de crear la cita: reutiliza
-    // los mismos endpoints del deposito anti-no-show. Si el cobro falla, la
-    // cita ya quedo reservada -- se avisa aparte, nunca se revierte la cita.
-    // IMPORTANTE: confirmedCode se asigna DESPUES de cobrar. Asignarlo antes
-    // cambia la vista a "cita registrada", que desmonta el campo de tarjeta
-    // de Stripe y el confirmCardPayment falla con "Element not mounted"
-    // (detectado en una prueba real en AWS).
-    if (code && payChoice.value !== 'despues') {
-      await chargeBookingPayment(code)
-    }
-
-    confirmedCode.value = code
-    if (code) emit('confirmed', code)
-  }
-  catch (err: unknown) {
-    // El 422 del backend trae el motivo real ("El barbero ya tiene una cita
-    // en ese horario.") y es la autoridad sobre conflictos: se muestra tal
-    // cual y se refrescan los horarios para que el usuario reelija.
-    submitError.value = (err as { data?: { message?: string } })?.data?.message
-      ?? 'No se pudo confirmar la cita. Intenta con otro horario.'
-    await loadSlots()
-    time.value = ''
-    activeStep.value = null
-    // El mensaje vive arriba de los pasos: si la persona estaba abajo no lo veía y solo notaba que el
-    // asistente regresaba al horario. Se lleva a la vista para que sepa por qué.
-    await nextTick()
-    submitErrorEl.value?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-  }
-  finally {
-    saving.value = false
-  }
-}
-
-async function chargeBookingPayment(code: string) {
-  paymentConfirming.value = true
-  paymentWarning.value = ''
-  try {
-    if (payChoice.value === 'ahora_tarjeta') {
-      if (!stripe || !cardElement) throw new Error('Stripe no está listo.')
-      const intentRes = await apiFetch<{ data: { client_secret: string } }>(
-        `/appointments/${code}/deposit/stripe-intent`,
-        { method: 'POST' },
-      )
-      const result = await stripe.confirmCardPayment(intentRes.data.client_secret, {
-        payment_method: { card: cardElement },
-      })
-      if (result.error) throw new Error(result.error.message ?? 'Error al procesar el pago.')
-    }
-    else if (payChoice.value === 'ahora_transferencia' && transferReceipt.value) {
-      const form = new FormData()
-      form.append('comprobante', transferReceipt.value)
-      await apiFetch(`/appointments/${code}/deposit/receipt`, { method: 'POST', body: form })
-    }
-  }
-  catch (err: unknown) {
-    // La cita ya esta reservada -- un fallo aqui NUNCA la cancela, solo se
-    // avisa para que el cliente pague despues (tarjeta de nuevo o en el salon).
-    paymentWarning.value = (err as { message?: string, data?: { message?: string } })?.data?.message
-      ?? (err as Error)?.message
-      ?? 'No se pudo procesar el pago. Podrás pagar en el salón.'
-  }
-  finally {
-    paymentConfirming.value = false
-  }
-}
-
-function currency(n: number) {
-  return `$${Math.round(n).toLocaleString('es-MX')}`
-}
-function prettyDate(iso: string) {
-  // Sin guarda, un iso vacío produce "Invalid Date" visible en pantalla.
-  const [y, m, d] = iso.split('-').map(Number)
-  if (!y || !m || !d) return ''
-
-  return new Date(y, m - 1, d).toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' })
-}
+const {
+  catalog, availability, pricing, payment,
+  date, time, notes, step,
+  selectedService, selectedBarber, canBookHere,
+  saving, submitError, submitErrorEl, confirmedCode, productsWarning, acceptsNoShowFee,
+  pickService, pickBarber, pickDate, pickTime, goToStep, confirm,
+} = wizard
+const { shop, services, servicesPending, servicesError, barbersPending, barbersError, orderedBarbers, suggestedProducts, favoriteSaving, toggleFavorite } = catalog
+const { days, slots, slotsPending, slotsFailed, groupedSlots, joiningWaitlist, waitlistJoined, waitlistError, joinWaitlist } = availability
+const {
+  selectedProducts, selectedProductIds, toggleProduct, membershipDiscountPct, discountedServicePrice,
+  tipPreset, customTip, usingCustomTip, tipAmount, pickTipPreset, grandTotal, payAmountToCharge,
+} = pricing
+const {
+  payChoice, payOptions, cardError, stripeReady, setCardElement, onTransferFileChange,
+  paymentWarning, paymentConfirming,
+} = payment
 </script>
 
 <template>
   <div class="mx-auto w-full" :class="embedded ? 'max-w-4xl p-1' : 'max-w-4xl px-4 py-8 sm:px-6 sm:py-12 lg:max-w-6xl'">
     <!-- Confirmación -->
-    <section v-if="confirmedCode" class="ui-card p-6 text-center sm:p-10">
-      <BrandMascot mascot="bladebot" state="success" size="md" class="mx-auto" />
-      <h1 class="mt-4 text-2xl font-black uppercase tracking-tight text-ink">
-        Solicitud de cita registrada
-      </h1>
-      <p class="mt-2 text-sm text-muted">
-        Tu código de cita es
-        <strong class="font-black tracking-widest text-gold">{{ confirmedCode }}</strong>
-      </p>
-      <dl class="mx-auto mt-6 max-w-sm space-y-2 text-left text-sm">
-        <div class="flex justify-between gap-4 border-b border-line pb-2">
-          <dt class="text-muted">Servicio</dt>
-          <dd class="text-right font-bold text-ink">{{ selectedService?.nombre }}</dd>
-        </div>
-        <div class="flex justify-between gap-4 border-b border-line pb-2">
-          <dt class="text-muted">Barbero</dt>
-          <dd class="text-right font-bold text-ink">{{ selectedBarber?.user?.name }}</dd>
-        </div>
-        <div class="flex justify-between gap-4">
-          <dt class="text-muted">Cuándo</dt>
-          <dd class="text-right font-bold text-ink">{{ prettyDate(date) }} · {{ time }}</dd>
-        </div>
-      </dl>
-      <p v-if="productsWarning" role="alert" class="mt-4 rounded-xl border border-warning/30 bg-warning/10 p-3 text-xs text-warning">
-        Tu cita quedó confirmada, pero no pudimos agregar los productos: {{ productsWarning }}
-      </p>
-      <p v-if="paymentWarning" role="alert" class="mt-4 rounded-xl border border-warning/30 bg-warning/10 p-3 text-xs text-warning">
-        Tu cita quedó confirmada, pero no pudimos procesar el pago: {{ paymentWarning }} Podrás pagar en el salón.
-      </p>
-      <p v-else-if="payChoice === 'ahora_tarjeta'" class="mt-4 rounded-xl border border-success/30 bg-success/10 p-3 text-xs text-success">
-        Pago con tarjeta procesado correctamente.
-      </p>
-      <p v-else-if="payChoice === 'ahora_transferencia'" class="mt-4 rounded-xl border border-gold/30 bg-gold/10 p-3 text-xs text-gold">
-        Recibimos tu comprobante de transferencia. Te avisaremos cuando se verifique.
-      </p>
-      <p v-if="shop?.politica_cancelacion" class="mt-6 text-xs leading-5 text-muted">
-        Puedes cancelar o reprogramar hasta {{ shop.politica_cancelacion }} horas antes de tu cita.
-      </p>
-      <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
-        <NuxtLink to="/my/appointments" class="ui-btn px-8 py-3">Ver mis citas</NuxtLink>
-        <NuxtLink to="/" class="ui-btn-secondary px-8 py-3">Volver al inicio</NuxtLink>
-      </div>
-    </section>
+    <BookingConfirmed
+      v-if="confirmedCode"
+      :code="confirmedCode"
+      :service-name="selectedService?.nombre"
+      :barber-name="selectedBarber?.user?.name"
+      :date="date"
+      :time="time"
+      :products-warning="productsWarning"
+      :payment-warning="paymentWarning"
+      :pay-choice="payChoice"
+      :cancellation-hours="shop?.politica_cancelacion"
+    />
 
     <template v-else>
       <header :class="embedded ? 'mb-5' : 'mb-8'">
@@ -623,414 +89,113 @@ function prettyDate(iso: string) {
         {{ submitError }}
       </p>
 
-      <!-- Progreso -->
-      <ol class="mb-6 grid grid-cols-2 gap-2 text-xs font-black tracking-wide sm:grid-cols-4">
-        <li v-for="(label, i) in STEPS" :key="label" class="flex flex-1 items-center gap-1 sm:gap-2">
-          <button
-            type="button"
-            class="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl border px-2 py-2 transition-colors sm:px-3"
-            :class="i === step
-              ? 'border-gold/40 bg-gold/10 text-gold'
-              : i < step ? 'border-line text-ink hover:border-gold/30' : 'border-line text-muted'"
-            :disabled="saving || (i > 0 && !selectedService) || (i > 1 && !selectedBarber) || (i > 2 && (!date || !time))"
-            :aria-current="i === step ? 'step' : undefined"
-            @click="goToStep(i)"
-          >
-            <!-- Paso hecho: ✓ en lugar del número, para ver de un vistazo lo que ya está resuelto. -->
-            <span class="grid h-5 w-5 place-items-center rounded-full border border-current text-xs" aria-hidden="true">{{ i < step ? '✓' : i + 1 }}</span>
-            <span>{{ label }}<span v-if="i < step" class="sr-only">, completado</span></span>
-          </button>
-        </li>
-      </ol>
+      <BookingProgress
+        :steps="BOOKING_STEPS"
+        :step="step"
+        :saving="saving"
+        :has-service="!!selectedService"
+        :has-barber="!!selectedBarber"
+        :has-schedule="!!(date && time)"
+        @go="goToStep"
+      />
 
-      <div v-if="selectedService" class="ui-card mb-6 flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 text-xs text-muted" :class="embedded ? '' : 'lg:hidden'">
-        <strong class="text-ink">{{ selectedService.nombre }}</strong>
-        <span>{{ selectedService.duracion_min }} min · {{ currency(selectedService.precio) }}</span>
-        <span v-if="selectedBarber">{{ selectedBarber.user?.name }}</span>
-        <span v-if="date">{{ prettyDate(date) }} {{ time }}</span>
-      </div>
+      <BookingSummaryInline
+        v-if="selectedService"
+        :service="selectedService"
+        :barber="selectedBarber"
+        :date="date"
+        :time="time"
+        :embedded="embedded"
+      />
 
       <!-- En escritorio: pasos a la izquierda y resumen fijo a la derecha, visible desde el primer paso. -->
       <div :class="embedded ? '' : 'lg:grid lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-start lg:gap-8'">
-      <div class="min-w-0">
-      <!-- Paso 1: servicio -->
-      <section v-if="step === 0" aria-labelledby="paso-servicio">
-        <h2 id="paso-servicio" class="mb-4 text-sm font-black uppercase tracking-widest text-ink">
-          1. Elige tu servicio
-        </h2>
-        <BrandStatePanel v-if="servicesPending" mascot="bladebot" state="waiting" title="Cargando servicios…" />
-        <BrandStatePanel
-          v-else-if="servicesError" mascot="bruno" state="error" tone="danger"
-          title="No se pudo cargar el catálogo" description="Revisa tu conexión e inténtalo nuevamente."
-        />
-        <BrandStatePanel
-          v-else-if="!services.length" mascot="nava" state="empty"
-          title="Aún no hay servicios publicados" description="Vuelve pronto o comunícate con la barbería."
-        />
-        <div v-else class="grid gap-3 sm:grid-cols-2">
-          <button
-            v-for="service in services" :key="service.id" type="button"
-            class="ui-card flex min-h-11 items-center gap-4 p-4 text-left transition-colors hover:border-gold/40"
-            @click="pickService(service.id)"
-          >
-            <img
-              v-if="service.imagen" :src="service.imagen" :alt="service.nombre"
-              class="h-14 w-14 shrink-0 rounded-lg border border-line object-cover"
-            >
-            <span v-else class="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-line bg-gold/10 text-gold" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-6 w-6">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6 6a2 2 0 1 1 4 0 2 2 0 0 1-4 0Zm0 12a2 2 0 1 1 4 0 2 2 0 0 1-4 0Zm2-10 10 8m0-8L8 16" />
-              </svg>
-            </span>
-            <span class="min-w-0 flex-1">
-              <span class="block truncate text-sm font-black text-ink">{{ service.nombre }}</span>
-              <span class="mt-0.5 block text-xs text-muted">{{ service.duracion_min }} min</span>
-            </span>
-            <span class="shrink-0 text-sm font-black text-gold">{{ currency(service.precio) }}</span>
-          </button>
-        </div>
-      </section>
-
-      <!-- Paso 2: barbero -->
-      <section v-if="step === 1" aria-labelledby="paso-barbero">
-        <h2 id="paso-barbero" class="mb-4 text-sm font-black uppercase tracking-widest text-ink">
-          2. Elige tu barbero
-        </h2>
-        <BrandStatePanel v-if="barbersPending" mascot="bladebot" state="waiting" title="Cargando barberos…" />
-        <BrandStatePanel
-          v-else-if="barbersError" mascot="bruno" state="error" tone="danger"
-          title="No se pudo cargar el equipo" description="Revisa tu conexión e inténtalo nuevamente."
-        />
-        <BrandStatePanel
-          v-else-if="!barbers.length" mascot="nava" state="empty"
-          title="Aún no hay barberos activos" description="Vuelve pronto o comunícate con la barbería."
-        />
-        <div v-else class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          <div
-            v-for="barber in orderedBarbers" :key="barber.id"
-            class="ui-card relative flex flex-col gap-3 p-4 transition-colors hover:border-gold/40"
-            :class="barber.es_favorito && 'border-gold/50'"
-          >
-            <button
-              v-if="isAuthenticated" type="button"
-              class="absolute right-2 top-2 grid h-11 w-11 place-items-center rounded-full transition-colors"
-              :class="barber.es_favorito ? 'text-gold' : 'text-muted hover:text-gold'"
-              :aria-pressed="barber.es_favorito"
-              :aria-label="barber.es_favorito ? `Quitar a ${barber.user?.name} de favoritos` : `Marcar a ${barber.user?.name} como favorito`"
-              :disabled="favoriteSaving"
-              @click.stop="toggleFavorite(barber)"
-            >
-              <svg viewBox="0 0 24 24" :fill="barber.es_favorito ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="1.5" class="h-5 w-5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 20.5s-7.5-4.6-10-9.3C.5 8 2 4.5 5.5 4c2-.3 3.8.7 4.9 2.2l1.6 2 1.6-2C14.7 4.7 16.5 3.7 18.5 4c3.5.5 5 4 3.5 7.2-2.5 4.7-10 9.3-10 9.3Z" />
-              </svg>
-            </button>
-            <button type="button" class="flex min-h-11 items-center gap-3 pr-10 text-left" @click="pickBarber(barber.id)">
-              <img
-                v-if="barber.foto" :src="barber.foto" :alt="`Foto de ${barber.user?.name}`"
-                class="h-12 w-12 shrink-0 rounded-full object-cover" loading="lazy" decoding="async"
-              >
-              <span v-else class="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-gold/15 text-xs font-black text-gold" aria-hidden="true">
-                {{ (barber.user?.name ?? '?').slice(0, 1) }}
-              </span>
-              <span class="min-w-0">
-                <span class="block truncate text-sm font-black text-ink">{{ barber.user?.name }}</span>
-                <span v-if="barber.es_favorito" class="mt-1 inline-block rounded-full bg-gold/10 px-2 py-0.5 text-xs font-bold text-gold">Tu favorito</span>
-                <span class="mt-0.5 block truncate text-xs text-muted">{{ barber.especialidades || 'Barbero' }}</span>
-              </span>
-            </button>
-
-            <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
-              <span v-if="barber.avg_rating" class="flex items-center gap-1 font-bold text-gold">
-                <svg viewBox="0 0 20 20" fill="currentColor" class="h-3.5 w-3.5">
-                  <path d="M10 1.5l2.6 5.27 5.82.85-4.21 4.1 1 5.8L10 14.9l-5.21 2.74 1-5.8-4.21-4.1 5.82-.85L10 1.5Z" />
-                </svg>
-                {{ barber.avg_rating }} <span class="font-normal text-muted">({{ barber.total_reviews }})</span>
-              </span>
-              <span v-else class="text-muted">Sin reseñas todavía</span>
-              <span v-if="barber.citas_conmigo" class="rounded-full bg-gold/10 px-2 py-0.5 font-bold text-gold">
-                Ya te cortaste {{ barber.citas_conmigo }}x con él
-              </span>
-            </div>
-
-            <NuxtLink
-              v-if="barber.slug" :to="`/equipo/${barber.slug}`" target="_blank"
-              class="text-xs font-bold text-muted underline decoration-dotted hover:text-gold"
-            >
-              Ver perfil y portafolio →
-            </NuxtLink>
-          </div>
-        </div>
-      </section>
-
-      <!-- Paso 3: horario -->
-      <section v-if="step === 2" aria-labelledby="paso-horario">
-        <h2 id="paso-horario" class="mb-4 text-sm font-black uppercase tracking-widest text-ink">
-          3. Elige día y hora
-        </h2>
-
-        <div class="mb-5 grid grid-cols-4 gap-2 sm:grid-cols-7" role="group" aria-label="Elegir día">
-          <button
-            v-for="d in days" :key="d.iso" type="button"
-            class="flex min-h-11 min-w-0 flex-col items-center justify-center rounded-xl border py-3 transition-colors"
-            :class="date === d.iso ? 'border-gold bg-gold/10 text-gold' : 'border-line text-muted hover:border-gold/30'"
-            :aria-pressed="date === d.iso"
-            @click="date = d.iso; time = ''; activeStep = null"
-          >
-            <span class="text-xs font-black uppercase tracking-widest">{{ d.isToday ? 'Hoy' : d.weekday }}</span>
-            <span class="text-lg font-black leading-none text-ink" :class="date === d.iso && 'text-gold'">{{ d.day }}</span>
-            <span class="text-xs uppercase">{{ d.month }}</span>
-          </button>
-        </div>
-
-        <BrandStatePanel
-          v-if="!date" mascot="nava" state="empty"
-          title="Elige un día" description="Te mostramos los horarios libres de ese día."
-        />
-        <BrandStatePanel v-else-if="slotsPending" mascot="bladebot" state="waiting" title="Buscando horarios libres…" />
-        <BrandStatePanel
-          v-else-if="slotsFailed" mascot="bruno" state="error" tone="danger"
-          title="No se pudieron cargar los horarios" description="Revisa tu conexión e inténtalo nuevamente."
-        />
-        <template v-else-if="!slots.length">
-          <BrandStatePanel
-            mascot="nava" state="empty"
-            title="Ese día ya no tiene horarios libres"
-            description="Prueba con otra fecha o con otro barbero del equipo."
+        <div class="min-w-0">
+          <BookingStepsService
+            v-if="step === 0"
+            :services="services"
+            :pending="servicesPending"
+            :failed="!!servicesError"
+            @pick="pickService"
           />
-          <div v-if="canBookHere" class="ui-card mt-4 p-4 text-center">
-            <template v-if="waitlistJoined">
-              <p class="text-sm font-bold text-success">
-                Te anotamos en la lista de espera. Te avisaremos si se libera un horario ese día.
-              </p>
-            </template>
-            <template v-else>
-              <p class="text-sm text-muted">
-                ¿Prefieres esperar a que se libere un horario en vez de cambiar de día?
-              </p>
-              <button
-                type="button" class="ui-btn-secondary mt-3 px-6 py-2.5 text-xs"
-                :disabled="joiningWaitlist" @click="joinWaitlist"
-              >
-                {{ joiningWaitlist ? 'Anotando…' : 'Anotarme en lista de espera' }}
-              </button>
-              <p v-if="waitlistError" role="alert" class="mt-2 text-xs text-danger">{{ waitlistError }}</p>
-            </template>
-          </div>
-        </template>
-        <template v-else>
-          <p class="mb-4 text-xs font-bold text-muted">
-            {{ slots.length }} horario{{ slots.length === 1 ? '' : 's' }} disponible{{ slots.length === 1 ? '' : 's' }} para
-            {{ prettyDate(date) }}
-          </p>
-          <div v-for="group in groupedSlots" :key="group.key" class="mb-5 last:mb-0">
-            <h3 class="mb-2 text-xs font-black uppercase tracking-widest text-muted">
-              {{ group.label }} <span class="text-ink/40">· {{ group.slots.length }}</span>
-            </h3>
-            <div class="grid grid-cols-3 gap-2 sm:grid-cols-5">
-              <button
-                v-for="slot in group.slots" :key="slot.time" type="button"
-                class="min-h-11 rounded-xl border px-2 py-2 text-sm font-bold transition-colors"
-                :class="time === slot.time ? 'border-gold bg-gold/10 text-gold' : 'border-line text-ink hover:border-gold/30'"
-                :aria-pressed="time === slot.time"
-                @click="time = slot.time; activeStep = null"
-              >
-                {{ slot.time }}
-              </button>
-            </div>
-          </div>
-        </template>
-      </section>
 
-      <!-- Paso 4: confirmar -->
-      <section v-if="step === 3" aria-labelledby="paso-confirmar">
-        <h2 id="paso-confirmar" class="mb-4 text-sm font-black uppercase tracking-widest text-ink">
-          4. Confirma tu cita
-        </h2>
-        <div class="ui-card p-5">
-          <dl class="space-y-3 text-sm">
-            <div class="flex items-start justify-between gap-4">
-              <dt class="text-muted">Servicio</dt>
-              <dd class="text-right font-bold text-ink">
-                {{ selectedService?.nombre }}
-                <span class="block text-xs font-normal text-muted">{{ selectedService?.duracion_min }} min</span>
-              </dd>
-            </div>
-            <div class="flex items-start justify-between gap-4">
-              <dt class="text-muted">Barbero</dt>
-              <dd class="text-right font-bold text-ink">{{ selectedBarber?.user?.name }}</dd>
-            </div>
-            <div class="flex items-start justify-between gap-4">
-              <dt class="text-muted">Cuándo</dt>
-              <dd class="text-right font-bold text-ink">{{ prettyDate(date) }} · {{ time }}</dd>
-            </div>
-            <div v-if="membershipDiscountPct > 0" class="flex items-start justify-between gap-4 text-xs">
-              <dt class="text-success">Descuento por nivel ({{ membershipDiscountPct }}%)</dt>
-              <dd class="text-right text-success">-{{ currency((selectedService?.precio ?? 0) - discountedServicePrice) }}</dd>
-            </div>
-            <div v-for="p in selectedProducts" :key="p.id" class="flex items-start justify-between gap-4 text-xs">
-              <dt class="text-muted">+ {{ p.nombre }}</dt>
-              <dd class="text-right text-ink">{{ currency(p.precio_venta) }}</dd>
-            </div>
-            <div v-if="tipAmount > 0" class="flex items-start justify-between gap-4 text-xs">
-              <dt class="text-muted">+ Propina</dt>
-              <dd class="text-right text-ink">{{ currency(tipAmount) }}</dd>
-            </div>
-            <div class="flex items-start justify-between gap-4 border-t border-line pt-3">
-              <dt class="font-black uppercase tracking-widest text-ink">Total</dt>
-              <dd class="text-right text-lg font-black text-gold">{{ currency(grandTotal) }}</dd>
-            </div>
-          </dl>
+          <BookingStepsBarber
+            v-if="step === 1"
+            :barbers="orderedBarbers"
+            :pending="barbersPending"
+            :failed="!!barbersError"
+            :is-authenticated="isAuthenticated"
+            :favorite-saving="favoriteSaving"
+            @pick="pickBarber"
+            @favorite="toggleFavorite"
+          />
 
-          <div v-if="suggestedProducts.length" class="mt-5 border-t border-line pt-5">
-            <p class="mb-3 text-xs font-bold text-ink">¿Se te antoja algo para llevar a tu cita?</p>
-            <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
-              <button
-                v-for="p in suggestedProducts" :key="p.id" type="button"
-                class="rounded-xl border p-2 text-left transition-colors"
-                :class="selectedProductIds.has(p.id) ? 'border-gold bg-gold/10' : 'border-line hover:border-gold/30'"
-                :aria-pressed="selectedProductIds.has(p.id)"
-                @click="toggleProduct(p.id)"
-              >
-                <img
-                  v-if="p.imagen" :src="p.imagen" :alt="p.nombre"
-                  class="mb-2 h-16 w-full rounded-lg object-cover"
-                >
-                <span v-else class="mb-2 flex h-16 w-full items-center justify-center rounded-lg bg-gold/10 text-xs text-muted">
-                  Sin foto
-                </span>
-                <span class="block truncate text-xs font-bold text-ink">{{ p.nombre }}</span>
-                <span class="mt-0.5 flex items-center justify-between text-xs">
-                  <span class="font-bold text-gold">{{ currency(p.precio_venta) }}</span>
-                  <span v-if="selectedProductIds.has(p.id)" class="font-black text-gold">✓ Agregado</span>
-                </span>
-              </button>
-            </div>
-          </div>
+          <BookingStepsSchedule
+            v-if="step === 2"
+            :days="days"
+            :date="date"
+            :time="time"
+            :slots="slots"
+            :grouped-slots="groupedSlots"
+            :slots-pending="slotsPending"
+            :slots-failed="slotsFailed"
+            :can-book-here="canBookHere"
+            :joining-waitlist="joiningWaitlist"
+            :waitlist-joined="waitlistJoined"
+            :waitlist-error="waitlistError"
+            @pick-date="pickDate"
+            @pick-time="pickTime"
+            @join-waitlist="joinWaitlist"
+          />
 
-          <div v-if="selectedService" class="mt-5 border-t border-line pt-5">
-            <p class="mb-3 text-xs font-bold text-ink">¿Quieres dejar propina para {{ selectedBarber?.user?.name || 'tu barbero' }}?</p>
-            <div class="grid grid-cols-4 gap-2">
-              <button
-                v-for="pct in TIP_PRESETS" :key="pct" type="button"
-                class="min-h-11 rounded-xl border text-sm font-bold transition-colors"
-                :class="!usingCustomTip && tipPreset === pct ? 'border-gold bg-gold/10 text-gold' : 'border-line text-ink hover:border-gold/30'"
-                :aria-pressed="!usingCustomTip && tipPreset === pct"
-                @click="pickTipPreset(pct)"
-              >
-                {{ pct === 0 ? 'Sin propina' : `${pct * 100}%` }}
-              </button>
-            </div>
-            <div class="mt-2 flex items-center gap-2">
-              <span class="text-xs text-muted">Otro monto:</span>
-              <input
-v-model="customTip"
-                aria-label="Propina personalizada" type="number" min="0" step="10" placeholder="$"
-                class="ui-input w-24 py-1.5 text-sm"
-                @focus="customTip = customTip || String(tipAmount || '')"
-              >
-            </div>
-          </div>
-
-          <div v-if="canBookHere" class="mt-5 border-t border-line pt-5">
-            <UiChoiceCards v-model="payChoice" label="¿Cuándo prefieres pagar?" :options="payOptions" />
-
-
-            <p v-if="payChoice !== 'despues'" class="mt-3 text-xs text-muted">
-              Pagarás {{ currency(payAmountToCharge) }} ahora (servicio con tu descuento + propina). Los productos que
-              agregaste se pagan aparte, en el salón.
-            </p>
-
-            <div v-if="payChoice === 'ahora_tarjeta'" class="mt-3">
-              <!-- Sin flex: en un contenedor flex el iframe de Stripe se colapsaba a 1px de ancho -->
-              <div ref="cardElementRef" class="ui-input block w-full px-3 py-3" />
-              <p v-if="cardError" role="alert" class="mt-2 text-xs text-danger">{{ cardError }}</p>
-              <p v-if="!stripeReady" class="mt-2 text-xs text-muted">Cargando formulario de tarjeta…</p>
-            </div>
-
-            <div v-if="payChoice === 'ahora_transferencia'" class="mt-3">
-              <label for="transfer-receipt" class="mb-1 block text-xs font-bold text-ink">
-                Sube tu comprobante de transferencia
-              </label>
-              <input
-                id="transfer-receipt" type="file" accept=".jpg,.jpeg,.png,.pdf" lang="es"
-                class="ui-input w-full text-xs file:mr-3 file:rounded-md file:border-0 file:bg-gold file:px-3 file:py-1 file:text-xs file:font-semibold file:text-black" @change="onTransferFileChange"
-              >
-              <p class="mt-2 text-xs text-muted">Tu cita queda reservada mientras revisamos el comprobante.</p>
-            </div>
-          </div>
-
-          <div class="mt-5">
-            <label for="booking-notes" class="mb-1 block text-xs font-bold text-ink">Notas para tu cita (opcional)</label>
-            <textarea id="booking-notes" v-model="notes" class="ui-input w-full" rows="2" maxlength="1000" />
-          </div>
-
-          <p v-if="shop?.politica_cancelacion" class="mt-4 border-t border-line pt-4 text-xs leading-5 text-muted">
-            Puedes cancelar o reprogramar sin costo hasta
-            {{ shop.politica_cancelacion }} horas antes de tu cita.
-          </p>
-
-          <!-- Staff y barberos no pueden reservar para sí mismos en el backend -->
-          <div v-if="!canBookHere" class="mt-5 rounded-xl border border-dashed border-line p-4 text-center">
-            <p class="text-sm text-muted">
-              Tu cuenta es de personal de la barbería. Las citas a nombre de un cliente se agendan desde la agenda del panel.
-            </p>
-            <NuxtLink to="/appointments" class="ui-btn mt-3 inline-flex px-6 py-2.5">Ir a la agenda</NuxtLink>
-          </div>
-
-          <template v-else>
-            <label class="mt-5 flex items-start gap-3 rounded-xl border border-line p-3 text-xs leading-5 text-muted">
-              <input v-model="acceptsNoShowFee" type="checkbox" class="mt-1 h-4 w-4 shrink-0 accent-[var(--color-gold,#d4af37)]">
-              <span>
-                Acepto el <strong class="text-ink">cargo por inasistencia</strong>: si no llego a mi cita sin cancelar a tiempo,
-                se cobra un porcentaje del servicio a mi tarjeta guardada o queda como adeudo que debo pagar en la
-                barbería para volver a reservar.
-              </span>
-            </label>
-            <button
-              type="button" class="ui-btn mt-3 w-full py-4 text-[12px] tracking-[0.15em]"
-              :disabled="saving || paymentConfirming || slotsPending || slotsFailed || !time || !selectedService || !selectedBarber || !acceptsNoShowFee"
-              @click="confirm"
-            >
-              {{ paymentConfirming ? 'Procesando pago…' : saving ? 'Confirmando…' : isAuthenticated ? 'Confirmar cita' : 'Continuar y confirmar' }}
-            </button>
-            <p v-if="!isAuthenticated" class="mt-3 text-center text-xs text-muted">
-              Te pediremos iniciar sesión o crear tu cuenta solo para guardar esta cita. No perderás lo que elegiste.
-            </p>
-          </template>
+          <BookingStepsConfirm
+            v-if="step === 3"
+            v-model:pay-choice="payChoice"
+            v-model:custom-tip="customTip"
+            v-model:notes="notes"
+            v-model:accepts-no-show-fee="acceptsNoShowFee"
+            :service="selectedService"
+            :barber="selectedBarber"
+            :date="date"
+            :time="time"
+            :membership-discount-pct="membershipDiscountPct"
+            :discounted-service-price="discountedServicePrice"
+            :selected-products="selectedProducts"
+            :selected-product-ids="selectedProductIds"
+            :suggested-products="suggestedProducts"
+            :tip-presets="BOOKING_TIP_PRESETS"
+            :tip-preset="tipPreset"
+            :using-custom-tip="usingCustomTip"
+            :tip-amount="tipAmount"
+            :grand-total="grandTotal"
+            :pay-options="payOptions"
+            :pay-amount-to-charge="payAmountToCharge"
+            :card-error="cardError"
+            :stripe-ready="stripeReady"
+            :cancellation-hours="shop?.politica_cancelacion"
+            :can-book-here="canBookHere"
+            :is-authenticated="isAuthenticated"
+            :saving="saving"
+            :payment-confirming="paymentConfirming"
+            :slots-pending="slotsPending"
+            :slots-failed="slotsFailed"
+            @toggle-product="toggleProduct"
+            @pick-tip-preset="pickTipPreset"
+            @card-el="setCardElement"
+            @receipt-change="onTransferFileChange"
+            @confirm="confirm"
+          />
         </div>
-      </section>
-      </div>
 
-      <aside v-if="!embedded" class="mt-6 hidden lg:sticky lg:top-24 lg:mt-0 lg:block" aria-label="Resumen de tu reserva">
-        <div class="ui-card p-5">
-          <h2 class="text-xs font-black uppercase tracking-widest text-gold">Tu reserva</h2>
-          <dl class="mt-4 space-y-3 text-sm">
-            <div>
-              <dt class="text-xs uppercase tracking-wider text-muted">Servicio</dt>
-              <dd v-if="selectedService" class="mt-0.5 font-bold text-ink">
-                {{ selectedService.nombre }}
-                <span class="block text-xs font-normal text-muted">{{ selectedService.duracion_min }} min</span>
-              </dd>
-              <dd v-else class="mt-0.5 text-muted">Elige un servicio</dd>
-            </div>
-            <div>
-              <dt class="text-xs uppercase tracking-wider text-muted">Barbero</dt>
-              <dd v-if="selectedBarber" class="mt-0.5 font-bold text-ink">{{ selectedBarber.user?.name }}</dd>
-              <dd v-else class="mt-0.5 text-muted">Pendiente</dd>
-            </div>
-            <div>
-              <dt class="text-xs uppercase tracking-wider text-muted">Cuándo</dt>
-              <dd v-if="date && time" class="mt-0.5 font-bold text-ink">{{ prettyDate(date) }} · {{ time }}</dd>
-              <dd v-else class="mt-0.5 text-muted">Pendiente</dd>
-            </div>
-          </dl>
-          <div v-if="selectedService" class="mt-5 flex items-baseline justify-between border-t border-line pt-4">
-            <span class="text-xs uppercase tracking-wider text-muted">{{ step === 3 ? 'Total' : 'Desde' }}</span>
-            <span class="text-2xl font-black text-ink">{{ currency(step === 3 ? grandTotal : selectedService.precio) }}</span>
-          </div>
-          <p class="mt-4 text-xs leading-5 text-muted">Puedes iniciar sin cuenta; te la pedimos solo al confirmar.</p>
-        </div>
-      </aside>
+        <BookingSummary
+          v-if="!embedded"
+          :service="selectedService"
+          :barber="selectedBarber"
+          :date="date"
+          :time="time"
+          :step="step"
+          :grand-total="grandTotal"
+        />
       </div>
     </template>
   </div>
