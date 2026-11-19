@@ -49,7 +49,7 @@ function initials(name?: string | null) {
         <span class="inline-block h-px w-8 bg-gold" />
       </p>
       <h1 class="text-4xl font-black uppercase tracking-tight text-ink">Los <span class="text-gold">Maestros</span></h1>
-      <p class="mx-auto mt-4 max-w-md text-sm leading-relaxed text-muted">Arquitectos de la imagen masculina. Conócelos antes de reservar.</p>
+      <p class="mx-auto mt-4 max-w-md text-sm leading-relaxed text-muted">Conócelos antes de reservar.</p>
     </header>
 
     <p v-if="pending" class="py-20 text-center text-muted">Cargando maestros…</p>

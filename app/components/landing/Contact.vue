@@ -27,7 +27,6 @@ defineProps<{
         <div class="flex flex-col lg:flex-row">
           <div class="relative overflow-hidden bg-panel p-8 lg:w-[38%] lg:p-10">
             <div class="pointer-events-none absolute -bottom-20 -left-20 h-60 w-60 rounded-full bg-gold/5 blur-[80px]" />
-            <h3 class="relative z-10 mb-6 text-lg font-black uppercase tracking-tighter text-ink">Información de Contacto</h3>
             <div class="relative z-10 space-y-5">
               <div v-for="info in contactInfo" :key="info.label" class="flex gap-4">
                 <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-gold/10 bg-gold/8 text-gold">

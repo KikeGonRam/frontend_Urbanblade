@@ -83,9 +83,7 @@ onBeforeUnmount(stop)
               <p class="mt-1 text-xs leading-snug text-muted">Prueba cerrada: entra con la cuenta de Google que el equipo registró. ¿Aún no la tienes? Pídela en recepción.</p>
               <a :href="earlyAccessUrl" target="_blank" rel="noopener noreferrer" class="mt-1 inline-flex min-h-[44px] items-center text-xs font-black uppercase tracking-widest text-gold hover:text-ink">Abrir enlace &rarr;</a>
             </div>
-          </div>
-          <span class="text-xs font-bold uppercase tracking-widest text-muted">Solo Android</span>
-        </div>
+          </div>        </div>
       </div>
 
       <div class="order-1 flex flex-col items-center lg:order-2" @mouseenter="stop" @mouseleave="start">
