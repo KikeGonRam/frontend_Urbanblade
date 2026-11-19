@@ -221,7 +221,6 @@ const visitChartOptions = {
         <p class="text-xs font-semibold uppercase tracking-[0.18em] text-muted">{{ data.todayLabel }}</p>
         <h1 class="mt-1 text-2xl font-semibold text-ink">{{ saludo }}, <span class="text-gold">{{ firstName }}</span></h1>
       </div>
-      <NuxtLink to="/my/appointments" class="ui-btn hidden min-h-11 shrink-0 px-5 text-sm sm:inline-flex">Reservar cita</NuxtLink>
     </header>
 
     <section class="grid grid-cols-1 gap-4 xl:grid-cols-12">

@@ -18,22 +18,7 @@ useHeroEffects(hero, heroBg)
     <div class="hero-scrim absolute inset-0 z-[1]" />
     <div class="hero-spot pointer-events-none absolute inset-0 z-[1]" aria-hidden="true" />
 
-    <div class="pointer-events-none absolute inset-0 z-[2] overflow-hidden">
-      <span class="absolute left-[14%] top-[18%] h-1.5 w-1.5 animate-ping rounded-full bg-gold/40" style="animation-duration:3.2s" />
-      <span class="absolute left-[7%] top-[35%] h-1 w-1 animate-ping rounded-full bg-gold/25" style="animation-duration:4.5s;animation-delay:.8s" />
-      <span class="absolute right-[10%] top-[50%] h-2 w-2 animate-ping rounded-full bg-gold/20" style="animation-duration:5s;animation-delay:.4s" />
-      <span class="absolute left-[28%] top-[64%] h-1 w-1 animate-ping rounded-full bg-gold/30" style="animation-duration:3.8s;animation-delay:2s" />
-      <span class="absolute right-[22%] top-[22%] h-1.5 w-1.5 animate-ping rounded-full bg-ink/10" style="animation-duration:6s;animation-delay:1.5s" />
-    </div>
-
     <div class="relative z-10 mx-auto max-w-7xl px-4 text-center">
-      <div class="float-badge mb-8 inline-flex">
-        <span class="ui-badge px-5 py-2 text-xs tracking-[0.25em]">
-          <span class="mr-2 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-gold" />
-          Reservas Disponibles Hoy
-        </span>
-      </div>
-
       <h1 class="font-black uppercase leading-[0.88] tracking-tighter text-ink" style="font-size: clamp(3.5rem, 11vw, 9rem);">
         <span class="hero-word mr-[0.22em]" style="--i:0">LA</span>
         <span class="hero-word text-gradient-gold" style="--i:1">EXCELENCIA</span>

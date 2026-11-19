@@ -47,10 +47,9 @@ await ready
         hydrate-on-visible
         :contact-info="contactInfo" :socials="socials" :map-address="mapAddress" :shop-name="shop?.nombre ?? null"
       />
-      <LandingFinalCta />
     </main>
 
-    <LandingFooter :shop="shop" :socials="socials" />
+    <LandingFooter />
     <LandingMobileBar :show="showBar && !mobileMenuOpen" />
 
     <!-- yieldSpace también cubre el tope de la página (!scrolled): ahí ya está el botón

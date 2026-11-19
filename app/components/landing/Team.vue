@@ -21,9 +21,7 @@ function initials(name?: string | null) {
             <span class="inline-block h-px w-8 bg-gold" />
             Nuestro Equipo
           </p>
-          <h2 class="text-4xl font-black uppercase tracking-tight text-ink">Los <span class="text-gold">Maestros</span></h2>
-          <p class="mt-2 text-sm text-muted">Arquitectos de la imagen masculina</p>
-        </div>
+          <h2 class="text-4xl font-black uppercase tracking-tight text-ink">Los <span class="text-gold">Maestros</span></h2>        </div>
         <NuxtLink to="/equipo" class="flex min-h-[44px] items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-gold transition-colors hover:text-ink">
           Ver equipo completo <span>&rarr;</span>
         </NuxtLink>

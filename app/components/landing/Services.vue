@@ -30,12 +30,6 @@ defineProps<{ services: LandingService[], pending: boolean }>()
           <p class="py-20 text-center italic text-muted">Cargando catálogo premium…</p>
         </template>
       </ClientOnly>
-
-      <div class="mt-12 text-center">
-        <NuxtLink to="/reservar" class="ui-btn-secondary px-10 py-4 text-xs tracking-[0.2em]">
-          Reservar ahora &rarr;
-        </NuxtLink>
-      </div>
     </div>
   </section>
 </template>

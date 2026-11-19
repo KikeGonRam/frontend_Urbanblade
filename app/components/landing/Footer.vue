@@ -1,9 +1,5 @@
 <script setup lang="ts">
-/** Pie de la portada: navegación, contacto (solo lo capturado en /barbershop), redes y avisos legales. */
-import type { LandingBarbershop, LandingSocial } from '~/types/landing'
-
-defineProps<{ shop: LandingBarbershop | null, socials: LandingSocial[] }>()
-
+/** Pie de la portada: navegación y avisos legales (contacto y redes viven en «Visítanos»). */
 const { reopen: reopenConsent } = useConsent()
 </script>
 
@@ -22,42 +18,14 @@ const { reopen: reopenConsent } = useConsent()
           </p>
         </div>
 
-        <div class="grid grid-cols-2 gap-12 sm:grid-cols-3">
-          <div>
-            <h3 class="mb-5 text-xs font-black uppercase tracking-widest text-ink">Navegación</h3>
-            <ul class="space-y-3 text-xs font-bold uppercase tracking-wider text-muted">
-              <li><a href="#servicios" class="inline-flex min-h-[44px] items-center transition hover:text-gold">Servicios</a></li>
-              <li><a href="#como-funciona" class="inline-flex min-h-[44px] items-center transition hover:text-gold">Proceso</a></li>
-              <li><a href="#equipo" class="inline-flex min-h-[44px] items-center transition hover:text-gold">Maestros</a></li>
-              <li><NuxtLink to="/login" class="inline-flex min-h-[44px] items-center transition hover:text-gold">Acceso Staff</NuxtLink></li>
-            </ul>
-          </div>
-          <!-- Segundo bloque de contacto de la portada (el otro está en «Visítanos»): también sale de
-               /barbershop, no de literales, y cada dato se oculta si la barbería no lo capturó. -->
-          <div v-if="shop?.telefono || (shop?.horario_apertura && shop?.horario_cierre)">
-            <h3 class="mb-5 text-xs font-black uppercase tracking-widest text-ink">Contacto</h3>
-            <ul class="space-y-3 text-xs font-bold tracking-wider text-muted">
-              <li v-if="shop?.telefono">
-                <a :href="`tel:${shop.telefono.replace(/\s+/g, '')}`" class="transition hover:text-gold">{{ shop.telefono }}</a>
-              </li>
-              <li v-if="shop?.horario_apertura && shop?.horario_cierre" class="text-muted/80">
-                {{ shop.horario_apertura }} – {{ shop.horario_cierre }}
-              </li>
-            </ul>
-          </div>
-          <div v-if="socials.length">
-            <h3 class="mb-5 text-xs font-black uppercase tracking-widest text-ink">Social</h3>
-            <div class="flex gap-3">
-              <a
-                v-for="social in socials" :key="`footer-${social.network}`"
-                :href="social.url" target="_blank" rel="noopener noreferrer"
-                :aria-label="`UrbanBlade en ${social.network}`"
-                class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-ink/5 text-muted transition-all hover:bg-gold/10 hover:text-gold"
-              >
-                <LandingSocialIcon :network="social.network" />
-              </a>
-            </div>
-          </div>
+        <div>
+          <h3 class="mb-5 text-xs font-black uppercase tracking-widest text-ink">Navegación</h3>
+          <ul class="space-y-3 text-xs font-bold uppercase tracking-wider text-muted">
+            <li><a href="#servicios" class="inline-flex min-h-[44px] items-center transition hover:text-gold">Servicios</a></li>
+            <li><a href="#como-funciona" class="inline-flex min-h-[44px] items-center transition hover:text-gold">Proceso</a></li>
+            <li><a href="#equipo" class="inline-flex min-h-[44px] items-center transition hover:text-gold">Maestros</a></li>
+            <li><NuxtLink to="/login" class="inline-flex min-h-[44px] items-center transition hover:text-gold">Acceso Staff</NuxtLink></li>
+          </ul>
         </div>
       </div>
 

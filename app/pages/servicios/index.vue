@@ -23,7 +23,6 @@ interface ServiceRow {
   imagen: string | null
 }
 
-const { isAuthenticated } = useAuth()
 const { apiFetch } = useApi()
 
 const { data: response, pending, error, refresh } = await useAsyncData(
@@ -59,11 +58,5 @@ const services = computed(() => response.value?.data ?? [])
     <BrandStatePanel v-else-if="!services.length" mascot="nava" state="empty" title="Por ahora no hay servicios disponibles" description="Vuelve pronto para conocer nuestros próximos servicios." />
 
     <LandingStyleLookbook v-else :services="services" />
-
-    <div class="mt-16 text-center">
-      <NuxtLink :to="isAuthenticated ? '/my/appointments' : '/register'" class="ui-btn px-10 py-4 text-xs tracking-[0.2em]">
-        {{ isAuthenticated ? 'Reservar cita' : 'Regístrate para reservar' }} &rarr;
-      </NuxtLink>
-    </div>
   </div>
 </template>

@@ -7,7 +7,6 @@ const { isAuthenticated } = useAuth()
 const navBackground = computed(() => `color-mix(in srgb, var(--bg-main) ${props.scrolled ? 95 : 60}%, transparent)`)
 
 const links = [
-  { href: '#inicio', label: 'Inicio' },
   { href: '#servicios', label: 'Servicios' },
   { href: '#como-funciona', label: 'Proceso' },
   { href: '#equipo', label: 'Maestros' },
