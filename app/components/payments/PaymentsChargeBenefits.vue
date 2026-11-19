@@ -92,12 +92,13 @@ const form = defineModel<ChargeForm>("form", { required: true });
         >
       </p>
       <div>
-        <label class="mb-1 block text-xs text-muted"
+        <label for="cobro-puntos-canjear" class="mb-1 block text-xs text-muted"
           >Puntos a canjear (disponibles:
           {{ selected.puntos_disponibles }}, máximo:
           {{ maxPuntosCanjeables }})</label
         >
         <input
+          id="cobro-puntos-canjear"
           v-model.number="form.puntosCanjear"
           type="number"
           step="1"

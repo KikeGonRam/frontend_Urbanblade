@@ -69,10 +69,11 @@ function fmtMoney(n: number | string) {
           <p class="mt-1 text-xs leading-relaxed text-muted">Las citas aprobadas y pendientes de pago aparecerán aquí cuando estén disponibles.</p>
         </div>
         <div>
-          <label class="mb-1 block text-xs text-muted"
+          <label for="cobro-cita" class="mb-1 block text-xs text-muted"
             >Seleccionar cita pendiente de cobro</label
           >
           <select
+            id="cobro-cita"
             v-model="form.appointmentId"
             required
             class="ui-input w-full"

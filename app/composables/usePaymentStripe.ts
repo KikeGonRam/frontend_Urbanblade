@@ -57,7 +57,7 @@ export function usePaymentStripe(
   watch(
     () => form.metodo,
     (m) => {
-      if (m === "tarjeta") ensureStripeMounted();
+      if (m === "tarjeta") void ensureStripeMounted();
     },
   );
 

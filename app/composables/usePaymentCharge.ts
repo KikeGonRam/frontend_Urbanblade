@@ -208,7 +208,7 @@ export function usePaymentCharge(refresh: () => Promise<unknown>) {
   const route = useRoute();
   onMounted(() => {
     const cita = typeof route.query.cita === "string" ? route.query.cita : "";
-    if (cita) openCharge(cita);
+    if (cita) void openCharge(cita);
   });
 
   async function submitCharge() {
