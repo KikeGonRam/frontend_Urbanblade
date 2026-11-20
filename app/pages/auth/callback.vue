@@ -11,7 +11,7 @@ definePageMeta({ layout: false });
 
 const route = useRoute();
 const config = useRuntimeConfig();
-const { token, user: authUser } = useAuth();
+const { token, user: authUser, fetchMe } = useAuth();
 const { takeNonce } = useGoogleLogin();
 const failed = ref(false);
 const authReturn = useAuthReturn();
@@ -46,6 +46,19 @@ onMounted(async () => {
     failed.value = true;
 
     return;
+  }
+
+  // Respaldo: el contrato solo garantiza id/name/email en la respuesta del canje. Sin
+  // `profile_complete` afterLogin() lo tomaría por incompleto y mandaría a /complete-profile
+  // incluso a cuentas completas, así que en ese caso se pide el usuario completo como antes.
+  if (typeof user.profile_complete !== "boolean") {
+    const full = await fetchMe();
+    if (!full) {
+      failed.value = true;
+
+      return;
+    }
+    user = full;
   }
 
   const redirectTarget = authReturn.afterLogin(user.profile_complete, route.query.redirect)
