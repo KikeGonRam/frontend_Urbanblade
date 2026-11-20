@@ -8,22 +8,38 @@
 definePageMeta({ layout: false });
 
 const route = useRoute();
+const config = useRuntimeConfig();
 const { token, fetchMe } = useAuth();
+const { takeNonce } = useGoogleLogin();
 const failed = ref(false);
 const authReturn = useAuthReturn();
 
 onMounted(async () => {
-  const incomingToken =
-    typeof route.query.token === "string" ? route.query.token : "";
+  const code = typeof route.query.code === "string" ? route.query.code : "";
+  const state = typeof route.query.state === "string" ? route.query.state : "";
+  // El nonce se lee (y se borra) antes de cualquier otra cosa: un enlace ajeno no lo tiene.
+  const nonce = takeNonce();
 
-  if (!incomingToken) {
+  history.replaceState(history.state, "", "/auth/callback");
+
+  if (!code || !nonce || state !== nonce) {
     failed.value = true;
 
     return;
   }
 
-  token.value = incomingToken;
-  history.replaceState(history.state, "", "/auth/callback");
+  try {
+    const data = await $fetch<{ token: string }>("/auth/google/exchange", {
+      baseURL: config.public.apiBase,
+      method: "POST",
+      body: { code, state: nonce },
+    });
+    token.value = data.token;
+  } catch {
+    failed.value = true;
+
+    return;
+  }
 
   const user = await fetchMe();
   if (!user) {
