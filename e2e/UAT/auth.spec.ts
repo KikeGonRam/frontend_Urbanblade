@@ -125,13 +125,17 @@ test("el registro por correo lleva directo a completar el perfil", async ({
   await expect(page).toHaveURL(/\/complete-profile(\?|$)/);
 });
 
-test("el acceso con Google apunta al redirect del backend", async ({
+test("el acceso con Google manda un nonce propio al redirect del backend", async ({
   page,
 }) => {
   await page.goto("/login");
 
-  const google = page.getByRole("link", { name: /Continuar con Google/i });
-  await expect(google).toHaveAttribute("href", /\/auth\/google\/redirect$/);
+  // El nonce (anti login-CSRF) lo genera el navegador al pulsar: ya no es un enlace fijo.
+  const redirect = page.waitForRequest(
+    /\/auth\/google\/redirect\?nonce=[A-Za-z0-9_-]{22,}$/,
+  );
+  await page.getByRole("button", { name: /Continuar con Google/i }).click();
+  await redirect;
 });
 
 test("un usuario ya autenticado no se queda en el login", async ({
