@@ -294,7 +294,13 @@ export interface paths {
             };
             cookie?: never;
         };
-        get?: never;
+        /**
+         * Detalle de una cita
+         * @description Todos los datos de una cita para mostrarlos en una ventana: servicio, barbero, cliente, estado, notas,
+         *     depósito y pagos. La administración y la recepción ven cualquier cita (con el contacto del cliente); el
+         *     barbero y el cliente, solo las suyas (sin el contacto).
+         */
+        get: operations["detalleDeUnaCita"];
         /**
          * Edita una cita completa (todos los campos). Reservado a administración/recepción;
          *     el barbero solo puede cambiar el estado vía updateStatus().
@@ -1886,6 +1892,134 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/social/comment/{comment_id}/report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description The ID of the comment.
+                 * @example architecto
+                 */
+                comment_id: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reporta un comentario ajeno. Idempotente: reportar dos veces lo mismo no duplica el reporte. */
+        post: operations["reportaUnComentarioAjenoIdempotenteReportarDosVecesLoMismoNoDuplicaElReporte"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/social/comment/{comment_id}/block-author": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description The ID of the comment.
+                 * @example architecto
+                 */
+                comment_id: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Bloquea al autor de un comentario: dejas de ver sus comentarios. Idempotente. */
+        post: operations["bloqueaAlAutorDeUnComentarioDejasDeVerSusComentariosIdempotente"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/social/blocks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Usuarios que bloqueaste (con el nombre público, nunca el completo) para poder deshacerlo. */
+        get: operations["usuariosQueBloqueasteconElNombrePblicoNuncaElCompletoParaPoderDeshacerlo"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/social/blocks/{block}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description The block.
+                 * @example architecto
+                 */
+                block: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Deshace un bloqueo propio. Solo puedes borrar los tuyos. */
+        delete: operations["deshaceUnBloqueoPropioSoloPuedesBorrarLosTuyos"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/comment-reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Comentarios con reportes pendientes, uno por comentario, con cuántos reportes y por qué motivos. */
+        get: operations["comentariosConReportesPendientesUnoPorComentarioConCuntosReportesYPorQuMotivos"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/comment-reports/{comment}/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example architecto */
+                comment: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Resuelve todos los reportes pendientes de un comentario.
+         * @description - remove: elimina el comentario.
+         *     - remove_and_ban: lo elimina y el autor ya no puede comentar.
+         *     - dismiss: el comentario cumple las reglas; se descartan los reportes y se conserva.
+         */
+        post: operations["resuelveTodosLosReportesPendientesDeUnComentario"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/dashboard/stats": {
         parameters: {
             query?: never;
@@ -2014,6 +2148,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/system/metrics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Tráfico de la API por minuto (peticiones, errores 5xx y latencia media), muestreado y reescalado.
+         * @description Acepta `minutes` (5 a 1440) y `step` (1 a 60). Requiere el permiso sistema.ver.
+         */
+        get: operations["getApiV1AdminSystemMetrics"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/reports/clients": {
         parameters: {
             query?: never;
@@ -2024,6 +2178,26 @@ export interface paths {
         get: operations["getApiV1AdminReportsClients"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/appointments/{appointment}/check-in": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Registra la llegada del cliente a una cita de hoy sin cambiar su estado.
+         * @description Solo administrador, recepcionista o el barbero de la cita. Responde 422 si la cita no está pendiente o confirmada, o no es de hoy. Es idempotente.
+         */
+        post: operations["postApiV1AppointmentsAppointmentCheckIn"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2046,6 +2220,68 @@ export interface paths {
          *     en su ausencia, el mismo bucket "period" que el resto de reportes.
          */
         get: operations["comisionesDeBarberosCuntoLeCorrespondeACadaUnoPorSusCitasCompletadasEnElPeriodoSobreElPrecioDeListaDelServicioverBarberCommissionServiceDistintoCriterioAPropsitoDeGenerateRevenueReportQueUsaPrecioCobradoReal"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/peak-hours": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Demanda por día de la semana y hora, calculada con las citas reales (sin IA: el análisis
+         *     de /predictions/peak-hours pasa por Ollama, es lento y devuelve texto).
+         * @description Cuenta toda cita que reservó o usó un hueco (todas menos las canceladas). Usa una
+         *     ventana en días (`days`: 30, 90, 180 o 365; 90 por defecto) y no el "period" del resto de reportes.
+         */
+        get: operations["demandaPorDaDeLaSemanaYHoraCalculadaConLasCitasRealesSinIA"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/comparison": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Compara el periodo actual con el mismo tramo del periodo calendario anterior (ingresos, citas, completadas, perdidas y clientes nuevos).
+         * @description Acepta `period` (dia, semana, mes, trimestre o año; mes por defecto). Devuelve la variación porcentual de cada métrica, o null cuando el periodo anterior estaba en cero.
+         */
+        get: operations["getApiV1AdminReportsComparison"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reports/cohorts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Cohortes de retención: de los clientes registrados cada mes, qué porcentaje vuelve a reservar en los meses siguientes.
+         * @description Acepta `months` (1 a 12; 6 por defecto).
+         */
+        get: operations["getApiV1AdminReportsCohorts"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3673,19 +3909,49 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        /** @example Registro exitoso. */
-                        message?: string;
+                        /** @example Cuenta creada exitosamente. */
+                        message: string;
                         /** @example Bearer */
-                        token_type?: string;
-                        /** @example 2|xyz... */
-                        token?: string;
-                        user?: {
-                            /** @example 5 */
-                            id?: number;
-                            /** @example Nuevo Cliente */
-                            name?: string;
-                            /** @example cliente */
-                            role?: string;
+                        token_type: string;
+                        /** @example TOKEN_DE_EJEMPLO */
+                        token: string;
+                        /** @example 2026-11-04T12:00:00.000000Z */
+                        expires_at: string;
+                        user: {
+                            /** @example 6710a1b2c3d4e5f607182930 */
+                            id: string;
+                            /** @example Juan Pérez */
+                            name: string;
+                            /** @example juan@example.com */
+                            email: string;
+                            /** @example https://urbanblade.example/storage/avatars/juan.jpg */
+                            avatar_url: string;
+                            /**
+                             * @example [
+                             *       "cliente"
+                             *     ]
+                             */
+                            roles: string[];
+                            /** @example true */
+                            profile_complete: boolean;
+                            /**
+                             * @example [
+                             *       "telefono"
+                             *     ]
+                             */
+                            profile_missing: string[];
+                            /** @example 6710a1b2c3d4e5f607182931 */
+                            client_id: string;
+                            /** @example 6710a1b2c3d4e5f607182932 */
+                            barber_id: string;
+                            client: {
+                                /** @example 5512345678 */
+                                telefono: string;
+                                /** @example 1995-04-12 */
+                                fecha_nacimiento: string;
+                                /** @example masculino */
+                                sexo: string;
+                            };
                         };
                     };
                 };
@@ -4015,6 +4281,8 @@ export interface operations {
                          *         "propina_sugerida": 25,
                          *         "has_payment": false,
                          *         "is_chargeable": true,
+                         *         "payment_status": "pendiente_en_recepcion",
+                         *         "can_change_payment_method": true,
                          *         "pago_resuelto": false,
                          *         "puede_iniciar": false,
                          *         "motivo_no_iniciar": "El pago de esta cita aún no está resuelto. Cóbrala en recepción o espera a que se verifique la transferencia antes de iniciar el servicio.",
@@ -4072,6 +4340,13 @@ export interface operations {
                             has_payment: boolean;
                             /** @example true */
                             is_chargeable: boolean;
+                            /**
+                             * @example pendiente_en_recepcion
+                             * @enum {string}
+                             */
+                            payment_status: "sin_pago" | "pendiente_en_recepcion" | "transferencia_en_revision" | "pagado";
+                            /** @example true */
+                            can_change_payment_method: boolean;
                             /** @example false */
                             pago_resuelto: boolean;
                             /** @example false */
@@ -4140,6 +4415,8 @@ export interface operations {
                          *         "propina_sugerida": 25,
                          *         "has_payment": false,
                          *         "is_chargeable": true,
+                         *         "payment_status": "pendiente_en_recepcion",
+                         *         "can_change_payment_method": true,
                          *         "pago_resuelto": false,
                          *         "puede_iniciar": false,
                          *         "motivo_no_iniciar": "El pago de esta cita aún no está resuelto. Cóbrala en recepción o espera a que se verifique la transferencia antes de iniciar el servicio.",
@@ -4197,6 +4474,13 @@ export interface operations {
                             has_payment: boolean;
                             /** @example true */
                             is_chargeable: boolean;
+                            /**
+                             * @example pendiente_en_recepcion
+                             * @enum {string}
+                             */
+                            payment_status: "sin_pago" | "pendiente_en_recepcion" | "transferencia_en_revision" | "pagado";
+                            /** @example true */
+                            can_change_payment_method: boolean;
                             /** @example false */
                             pago_resuelto: boolean;
                             /** @example false */
@@ -4610,6 +4894,31 @@ export interface operations {
                 content: {
                     "application/json": {
                         /** @example No autorizado. */
+                        message?: string;
+                    };
+                };
+            };
+        };
+    };
+    detalleDeUnaCita: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example fxp9vtie */
+                appointment_code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example No query results for model [App\Models\Appointment] architecto */
                         message?: string;
                     };
                 };
@@ -8155,6 +8464,130 @@ export interface operations {
         };
         responses: never;
     };
+    reportaUnComentarioAjenoIdempotenteReportarDosVecesLoMismoNoDuplicaElReporte: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description The ID of the comment.
+                 * @example architecto
+                 */
+                comment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @example architecto */
+                    reason: string;
+                    /**
+                     * @description El campo value no debe tener más de 200 caracteres.
+                     * @example n
+                     */
+                    details?: string | null;
+                };
+            };
+        };
+        responses: never;
+    };
+    bloqueaAlAutorDeUnComentarioDejasDeVerSusComentariosIdempotente: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description The ID of the comment.
+                 * @example architecto
+                 */
+                comment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: never;
+    };
+    usuariosQueBloqueasteconElNombrePblicoNuncaElCompletoParaPoderDeshacerlo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example No autorizado. */
+                        message?: string;
+                    };
+                };
+            };
+        };
+    };
+    deshaceUnBloqueoPropioSoloPuedesBorrarLosTuyos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description The block.
+                 * @example architecto
+                 */
+                block: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: never;
+    };
+    comentariosConReportesPendientesUnoPorComentarioConCuntosReportesYPorQuMotivos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example No autorizado. */
+                        message?: string;
+                    };
+                };
+            };
+        };
+    };
+    resuelveTodosLosReportesPendientesDeUnComentario: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example architecto */
+                comment: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @example architecto */
+                    action: string;
+                };
+            };
+        };
+        responses: never;
+    };
     getApiV1AdminDashboardStats: {
         parameters: {
             query?: never;
@@ -8331,6 +8764,28 @@ export interface operations {
             };
         };
     };
+    getApiV1AdminSystemMetrics: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example No autorizado. */
+                        message?: string;
+                    };
+                };
+            };
+        };
+    };
     getApiV1AdminReportsClients: {
         parameters: {
             query?: never;
@@ -8353,7 +8808,95 @@ export interface operations {
             };
         };
     };
+    postApiV1AppointmentsAppointmentCheckIn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example No autorizado. */
+                        message?: string;
+                    };
+                };
+            };
+        };
+    };
     comisionesDeBarberosCuntoLeCorrespondeACadaUnoPorSusCitasCompletadasEnElPeriodoSobreElPrecioDeListaDelServicioverBarberCommissionServiceDistintoCriterioAPropsitoDeGenerateRevenueReportQueUsaPrecioCobradoReal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example No autorizado. */
+                        message?: string;
+                    };
+                };
+            };
+        };
+    };
+    demandaPorDaDeLaSemanaYHoraCalculadaConLasCitasRealesSinIA: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example No autorizado. */
+                        message?: string;
+                    };
+                };
+            };
+        };
+    };
+    getApiV1AdminReportsComparison: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example No autorizado. */
+                        message?: string;
+                    };
+                };
+            };
+        };
+    };
+    getApiV1AdminReportsCohorts: {
         parameters: {
             query?: never;
             header?: never;

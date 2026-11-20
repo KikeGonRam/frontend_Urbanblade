@@ -265,35 +265,108 @@ paths:
               schema:
                 type: object
                 example:
-                  message: 'Registro exitoso.'
+                  message: 'Cuenta creada exitosamente.'
                   token_type: Bearer
-                  token: 2|xyz...
+                  token: TOKEN_DE_EJEMPLO
+                  expires_at: '2026-11-04T12:00:00.000000Z'
                   user:
-                    id: 5
-                    name: 'Nuevo Cliente'
-                    role: cliente
+                    id: 6710a1b2c3d4e5f607182930
+                    name: 'Juan Pérez'
+                    email: juan@example.com
+                    avatar_url: 'https://urbanblade.example/storage/avatars/juan.jpg'
+                    roles:
+                      - cliente
+                    profile_complete: true
+                    profile_missing:
+                      - telefono
+                    client_id: 6710a1b2c3d4e5f607182931
+                    barber_id: 6710a1b2c3d4e5f607182932
+                    client:
+                      telefono: '5512345678'
+                      fecha_nacimiento: '1995-04-12'
+                      sexo: masculino
                 properties:
                   message:
                     type: string
-                    example: 'Registro exitoso.'
+                    example: 'Cuenta creada exitosamente.'
                   token_type:
                     type: string
                     example: Bearer
                   token:
                     type: string
-                    example: 2|xyz...
+                    example: TOKEN_DE_EJEMPLO
+                  expires_at:
+                    type: string
+                    example: '2026-11-04T12:00:00.000000Z'
                   user:
                     type: object
                     properties:
                       id:
-                        type: integer
-                        example: 5
+                        type: string
+                        example: 6710a1b2c3d4e5f607182930
                       name:
                         type: string
-                        example: 'Nuevo Cliente'
-                      role:
+                        example: 'Juan Pérez'
+                      email:
                         type: string
-                        example: cliente
+                        example: juan@example.com
+                      avatar_url:
+                        type: string
+                        example: 'https://urbanblade.example/storage/avatars/juan.jpg'
+                      roles:
+                        type: array
+                        example:
+                          - cliente
+                        items:
+                          type: string
+                      profile_complete:
+                        type: boolean
+                        example: true
+                      profile_missing:
+                        type: array
+                        example:
+                          - telefono
+                        items:
+                          type: string
+                      client_id:
+                        type: string
+                        example: 6710a1b2c3d4e5f607182931
+                      barber_id:
+                        type: string
+                        example: 6710a1b2c3d4e5f607182932
+                      client:
+                        type: object
+                        properties:
+                          telefono:
+                            type: string
+                            example: '5512345678'
+                          fecha_nacimiento:
+                            type: string
+                            example: '1995-04-12'
+                          sexo:
+                            type: string
+                            example: masculino
+                        required:
+                          - telefono
+                          - fecha_nacimiento
+                          - sexo
+                    required:
+                      - id
+                      - name
+                      - email
+                      - avatar_url
+                      - roles
+                      - profile_complete
+                      - profile_missing
+                      - client_id
+                      - barber_id
+                      - client
+                required:
+                  - message
+                  - token_type
+                  - token
+                  - expires_at
+                  - user
       tags:
         - Autenticación
       requestBody:
@@ -764,6 +837,8 @@ paths:
                           propina_sugerida: 25
                           has_payment: false
                           is_chargeable: true
+                          payment_status: pendiente_en_recepcion
+                          can_change_payment_method: true
                           pago_resuelto: false
                           puede_iniciar: false
                           motivo_no_iniciar: 'El pago de esta cita aún no está resuelto. Cóbrala en recepción o espera a que se verifique la transferencia antes de iniciar el servicio.'
@@ -806,6 +881,8 @@ paths:
                             propina_sugerida: 25
                             has_payment: false
                             is_chargeable: true
+                            payment_status: pendiente_en_recepcion
+                            can_change_payment_method: true
                             pago_resuelto: false
                             puede_iniciar: false
                             motivo_no_iniciar: 'El pago de esta cita aún no está resuelto. Cóbrala en recepción o espera a que se verifique la transferencia antes de iniciar el servicio.'
@@ -866,6 +943,13 @@ paths:
                               type: boolean
                               example: false
                             is_chargeable:
+                              type: boolean
+                              example: true
+                            payment_status:
+                              type: string
+                              enum: [sin_pago, pendiente_en_recepcion, transferencia_en_revision, pagado]
+                              example: pendiente_en_recepcion
+                            can_change_payment_method:
                               type: boolean
                               example: true
                             pago_resuelto:
@@ -978,6 +1062,8 @@ paths:
                             - propina_sugerida
                             - has_payment
                             - is_chargeable
+                            - payment_status
+                            - can_change_payment_method
                             - pago_resuelto
                             - puede_iniciar
                             - motivo_no_iniciar
@@ -1010,6 +1096,8 @@ paths:
                           propina_sugerida: 25
                           has_payment: false
                           is_chargeable: true
+                          payment_status: pendiente_en_recepcion
+                          can_change_payment_method: true
                           pago_resuelto: false
                           puede_iniciar: false
                           motivo_no_iniciar: 'El pago de esta cita aún no está resuelto. Cóbrala en recepción o espera a que se verifique la transferencia antes de iniciar el servicio.'
@@ -1094,6 +1182,8 @@ paths:
                             propina_sugerida: 25
                             has_payment: false
                             is_chargeable: true
+                            payment_status: pendiente_en_recepcion
+                            can_change_payment_method: true
                             pago_resuelto: false
                             puede_iniciar: false
                             motivo_no_iniciar: 'El pago de esta cita aún no está resuelto. Cóbrala en recepción o espera a que se verifique la transferencia antes de iniciar el servicio.'
@@ -1154,6 +1244,13 @@ paths:
                               type: boolean
                               example: false
                             is_chargeable:
+                              type: boolean
+                              example: true
+                            payment_status:
+                              type: string
+                              enum: [sin_pago, pendiente_en_recepcion, transferencia_en_revision, pagado]
+                              example: pendiente_en_recepcion
+                            can_change_payment_method:
                               type: boolean
                               example: true
                             pago_resuelto:
@@ -1266,6 +1363,8 @@ paths:
                             - propina_sugerida
                             - has_payment
                             - is_chargeable
+                            - payment_status
+                            - can_change_payment_method
                             - pago_resuelto
                             - puede_iniciar
                             - motivo_no_iniciar
@@ -1887,6 +1986,26 @@ paths:
         - Citas
       security: []
   '/api/v1/appointments/{appointment_code}':
+    get:
+      summary: 'Detalle de una cita'
+      operationId: detalleDeUnaCita
+      description: "Todos los datos de una cita para mostrarlos en una ventana: servicio, barbero, cliente, estado, notas,\ndepósito y pagos. La administración y la recepción ven cualquier cita (con el contacto del cliente); el\nbarbero y el cliente, solo las suyas (sin el contacto)."
+      parameters: []
+      responses:
+        404:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'No query results for model [App\Models\Appointment] architecto'
+                properties:
+                  message:
+                    type: string
+                    example: 'No query results for model [App\Models\Appointment] architecto'
+      tags:
+        - Citas
     put:
       summary: "Edita una cita completa (todos los campos). Reservado a administración/recepción;\nel barbero solo puede cambiar el estado vía updateStatus()."
       operationId: editaUnaCitaCompletatodosLosCamposReservadoAAdministracinrecepcinElBarberoSoloPuedeCambiarElEstadoVaUpdateStatus
@@ -6393,6 +6512,157 @@ paths:
         required: true
         schema:
           type: string
+  '/api/v1/social/comment/{comment_id}/report':
+    post:
+      summary: 'Reporta un comentario ajeno. Idempotente: reportar dos veces lo mismo no duplica el reporte.'
+      operationId: reportaUnComentarioAjenoIdempotenteReportarDosVecesLoMismoNoDuplicaElReporte
+      description: ''
+      parameters: []
+      responses: {}
+      tags:
+        - Endpoints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+                  description: ''
+                  example: architecto
+                details:
+                  type: string
+                  description: 'El campo value no debe tener más de 200 caracteres.'
+                  example: 'n'
+                  nullable: true
+              required:
+                - reason
+      security: []
+    parameters:
+      -
+        in: path
+        name: comment_id
+        description: 'The ID of the comment.'
+        example: architecto
+        required: true
+        schema:
+          type: string
+  '/api/v1/social/comment/{comment_id}/block-author':
+    post:
+      summary: 'Bloquea al autor de un comentario: dejas de ver sus comentarios. Idempotente.'
+      operationId: bloqueaAlAutorDeUnComentarioDejasDeVerSusComentariosIdempotente
+      description: ''
+      parameters: []
+      responses: {}
+      tags:
+        - Endpoints
+      security: []
+    parameters:
+      -
+        in: path
+        name: comment_id
+        description: 'The ID of the comment.'
+        example: architecto
+        required: true
+        schema:
+          type: string
+  /api/v1/social/blocks:
+    get:
+      summary: 'Usuarios que bloqueaste (con el nombre público, nunca el completo) para poder deshacerlo.'
+      operationId: usuariosQueBloqueasteconElNombrePblicoNuncaElCompletoParaPoderDeshacerlo
+      description: ''
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'No autorizado.'
+                properties:
+                  message:
+                    type: string
+                    example: 'No autorizado.'
+      tags:
+        - Endpoints
+      security: []
+  '/api/v1/social/blocks/{block}':
+    delete:
+      summary: 'Deshace un bloqueo propio. Solo puedes borrar los tuyos.'
+      operationId: deshaceUnBloqueoPropioSoloPuedesBorrarLosTuyos
+      description: ''
+      parameters: []
+      responses: {}
+      tags:
+        - Endpoints
+      security: []
+    parameters:
+      -
+        in: path
+        name: block
+        description: 'The block.'
+        example: architecto
+        required: true
+        schema:
+          type: string
+  /api/v1/admin/comment-reports:
+    get:
+      summary: 'Comentarios con reportes pendientes, uno por comentario, con cuántos reportes y por qué motivos.'
+      operationId: comentariosConReportesPendientesUnoPorComentarioConCuntosReportesYPorQuMotivos
+      description: ''
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'No autorizado.'
+                properties:
+                  message:
+                    type: string
+                    example: 'No autorizado.'
+      tags:
+        - Endpoints
+      security: []
+  '/api/v1/admin/comment-reports/{comment}/resolve':
+    post:
+      summary: 'Resuelve todos los reportes pendientes de un comentario.'
+      operationId: resuelveTodosLosReportesPendientesDeUnComentario
+      description: "- remove: elimina el comentario.\n- remove_and_ban: lo elimina y el autor ya no puede comentar.\n- dismiss: el comentario cumple las reglas; se descartan los reportes y se conserva."
+      parameters: []
+      responses: {}
+      tags:
+        - Endpoints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: string
+                  description: ''
+                  example: architecto
+              required:
+                - action
+      security: []
+    parameters:
+      -
+        in: path
+        name: comment
+        description: ''
+        example: architecto
+        required: true
+        schema:
+          type: string
   /api/v1/admin/dashboard/stats:
     get:
       summary: ''
@@ -6569,6 +6839,28 @@ paths:
       tags:
         - Endpoints
       security: []
+  '/api/v1/admin/system/metrics':
+    get:
+      summary: "Tráfico de la API por minuto (peticiones, errores 5xx y latencia media), muestreado y reescalado."
+      operationId: getApiV1AdminSystemMetrics
+      description: "Acepta `minutes` (5 a 1440) y `step` (1 a 60). Requiere el permiso sistema.ver."
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'No autorizado.'
+                properties:
+                  message:
+                    type: string
+                    example: 'No autorizado.'
+      tags:
+        - Endpoints
+      security: []
   /api/v1/admin/reports/clients:
     get:
       summary: ''
@@ -6591,11 +6883,99 @@ paths:
       tags:
         - Endpoints
       security: []
+  '/api/v1/appointments/{appointment}/check-in':
+    post:
+      summary: "Registra la llegada del cliente a una cita de hoy sin cambiar su estado."
+      operationId: postApiV1AppointmentsAppointmentCheckIn
+      description: "Solo administrador, recepcionista o el barbero de la cita. Responde 422 si la cita no está pendiente o confirmada, o no es de hoy. Es idempotente."
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'No autorizado.'
+                properties:
+                  message:
+                    type: string
+                    example: 'No autorizado.'
+      tags:
+        - Endpoints
+      security: []
   /api/v1/admin/reports/barber-commissions:
     get:
       summary: "Comisiones de barberos: cuánto le corresponde a cada uno por sus\ncitas completadas en el periodo, sobre el precio de lista del\nservicio (ver BarberCommissionService -- distinto criterio a\npropósito de generateRevenueReport(), que usa precio_cobrado real)."
       operationId: comisionesDeBarberosCuntoLeCorrespondeACadaUnoPorSusCitasCompletadasEnElPeriodoSobreElPrecioDeListaDelServicioverBarberCommissionServiceDistintoCriterioAPropsitoDeGenerateRevenueReportQueUsaPrecioCobradoReal
       description: "Acepta fecha_desde/fecha_hasta explícitas (periodo de pago real) o,\nen su ausencia, el mismo bucket \"period\" que el resto de reportes."
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'No autorizado.'
+                properties:
+                  message:
+                    type: string
+                    example: 'No autorizado.'
+      tags:
+        - Endpoints
+      security: []
+  /api/v1/admin/reports/peak-hours:
+    get:
+      summary: "Demanda por día de la semana y hora, calculada con las citas reales (sin IA: el análisis\nde /predictions/peak-hours pasa por Ollama, es lento y devuelve texto)."
+      operationId: demandaPorDaDeLaSemanaYHoraCalculadaConLasCitasRealesSinIA
+      description: "Cuenta toda cita que reservó o usó un hueco (todas menos las canceladas). Usa una\nventana en días (`days`: 30, 90, 180 o 365; 90 por defecto) y no el \"period\" del resto de reportes."
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'No autorizado.'
+                properties:
+                  message:
+                    type: string
+                    example: 'No autorizado.'
+      tags:
+        - Endpoints
+      security: []
+  /api/v1/admin/reports/comparison:
+    get:
+      summary: "Compara el periodo actual con el mismo tramo del periodo calendario anterior (ingresos, citas, completadas, perdidas y clientes nuevos)."
+      operationId: getApiV1AdminReportsComparison
+      description: "Acepta `period` (dia, semana, mes, trimestre o año; mes por defecto). Devuelve la variación porcentual de cada métrica, o null cuando el periodo anterior estaba en cero."
+      parameters: []
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'No autorizado.'
+                properties:
+                  message:
+                    type: string
+                    example: 'No autorizado.'
+      tags:
+        - Endpoints
+      security: []
+  /api/v1/admin/reports/cohorts:
+    get:
+      summary: "Cohortes de retención: de los clientes registrados cada mes, qué porcentaje vuelve a reservar en los meses siguientes."
+      operationId: getApiV1AdminReportsCohorts
+      description: "Acepta `months` (1 a 12; 6 por defecto)."
       parameters: []
       responses:
         401:
