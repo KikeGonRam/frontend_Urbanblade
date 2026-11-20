@@ -5,11 +5,13 @@
  * dejarlo visible en la barra de direcciones/historial sería un riesgo
  * innecesario (ver guardrail del plan).
  */
+import type { AuthUser } from "~/composables/useAuth";
+
 definePageMeta({ layout: false });
 
 const route = useRoute();
 const config = useRuntimeConfig();
-const { token, fetchMe } = useAuth();
+const { token, user: authUser } = useAuth();
 const { takeNonce } = useGoogleLogin();
 const failed = ref(false);
 const authReturn = useAuthReturn();
@@ -28,21 +30,19 @@ onMounted(async () => {
     return;
   }
 
+  let user: AuthUser;
   try {
-    const data = await $fetch<{ token: string }>("/auth/google/exchange", {
+    const data = await $fetch<{ token: string; user: AuthUser }>("/auth/google/exchange", {
       baseURL: config.public.apiBase,
       method: "POST",
       body: { code, state: nonce },
     });
     token.value = data.token;
+    // El canje ya devuelve el usuario (mismo UserResource que /auth/login): no hace falta pedir
+    // /auth/me otra vez, que son dos viajes más (preflight + GET) antes de poder navegar.
+    user = data.user;
+    authUser.value = user;
   } catch {
-    failed.value = true;
-
-    return;
-  }
-
-  const user = await fetchMe();
-  if (!user) {
     failed.value = true;
 
     return;
