@@ -5,11 +5,13 @@
  * dejarlo visible en la barra de direcciones/historial sería un riesgo
  * innecesario (ver guardrail del plan).
  */
+import type { AuthUser } from "~/composables/useAuth";
+
 definePageMeta({ layout: false });
 
 const route = useRoute();
 const config = useRuntimeConfig();
-const { token, fetchMe } = useAuth();
+const { token, user: authUser, fetchMe } = useAuth();
 const { takeNonce } = useGoogleLogin();
 const failed = ref(false);
 const authReturn = useAuthReturn();
@@ -28,24 +30,35 @@ onMounted(async () => {
     return;
   }
 
+  let user: AuthUser;
   try {
-    const data = await $fetch<{ token: string }>("/auth/google/exchange", {
+    const data = await $fetch<{ token: string; user: AuthUser }>("/auth/google/exchange", {
       baseURL: config.public.apiBase,
       method: "POST",
       body: { code, state: nonce },
     });
     token.value = data.token;
+    // El canje ya devuelve el usuario (mismo UserResource que /auth/login): no hace falta pedir
+    // /auth/me otra vez, que son dos viajes más (preflight + GET) antes de poder navegar.
+    user = data.user;
+    authUser.value = user;
   } catch {
     failed.value = true;
 
     return;
   }
 
-  const user = await fetchMe();
-  if (!user) {
-    failed.value = true;
+  // Respaldo: el contrato solo garantiza id/name/email en la respuesta del canje. Sin
+  // `profile_complete` afterLogin() lo tomaría por incompleto y mandaría a /complete-profile
+  // incluso a cuentas completas, así que en ese caso se pide el usuario completo como antes.
+  if (typeof user.profile_complete !== "boolean") {
+    const full = await fetchMe();
+    if (!full) {
+      failed.value = true;
 
-    return;
+      return;
+    }
+    user = full;
   }
 
   const redirectTarget = authReturn.afterLogin(user.profile_complete, route.query.redirect)
