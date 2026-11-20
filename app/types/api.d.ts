@@ -651,6 +651,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/google/exchange": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Canjea el código de un solo uso de callback() por el Bearer token (flujo web de Nuxt).
+         * @description El código vive 60 s, se consume al primer intento (aunque falle) y solo sirve junto con el
+         *     nonce que el mismo navegador generó antes de salir hacia Google: quien reciba un enlace de
+         *     callback ajeno no tiene ese nonce y no puede iniciar sesión con él.
+         */
+        post: operations["canjeaElCdigoDeUnSoloUsoDeCallbackPorElBearerTokenflujoWebDeNuxt"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/services": {
         parameters: {
             query?: never;
@@ -5464,6 +5486,68 @@ export interface operations {
                 content: {
                     "application/json": {
                         /** @example El token de Google no es válido. */
+                        message?: string;
+                    };
+                };
+            };
+        };
+    };
+    canjeaElCdigoDeUnSoloUsoDeCallbackPorElBearerTokenflujoWebDeNuxt: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /**
+                     * @description Código de un solo uso recibido en la URL de /auth/callback.
+                     * @example Qm3x...
+                     */
+                    code: string;
+                    /**
+                     * @description Nonce que el navegador guardó antes de iniciar el flujo.
+                     * @example k3J9x...
+                     */
+                    state: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example Autenticación exitosa. */
+                        message?: string;
+                        /** @example Bearer */
+                        token_type?: string;
+                        /** @example TOKEN_DE_EJEMPLO */
+                        token?: string;
+                        /** @example 2026-11-04T12:00:00.000000Z */
+                        expires_at?: string;
+                        user?: {
+                            /** @example 6710a1b2c3d4e5f607182930 */
+                            id?: string;
+                            /** @example Juan Pérez */
+                            name?: string;
+                            /** @example juan@example.com */
+                            email?: string;
+                        };
+                    };
+                };
+            };
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example El código no es válido o ya expiró. */
                         message?: string;
                     };
                 };
