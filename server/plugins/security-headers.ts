@@ -69,6 +69,8 @@ export default defineNitroPlugin((nitroApp) => {
     "base-uri 'self'",
     `form-action 'self' ${api}`.trim(),
     "frame-ancestors 'self'",
+    // Cualquier recurso http:// que se cuele (imagen de un tercero, etc.) se sube a https://.
+    'upgrade-insecure-requests',
   ].join('; ')
 
   nitroApp.hooks.hook('render:html', (html, { event }) => {

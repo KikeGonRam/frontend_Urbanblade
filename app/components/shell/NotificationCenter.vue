@@ -57,6 +57,19 @@ async function markAllRead() {
   }
 }
 
+/** Solo destinos del propio sitio: ruta interna o URL absoluta del mismo origen (nunca otro dominio). */
+function safeNotificationUrl(raw: unknown): string | null {
+  const internal = safeWebPath(raw)
+  if (internal) return internal
+  if (typeof raw !== 'string') return null
+  try {
+    const url = new URL(raw)
+    return url.origin === window.location.origin ? url.href : null
+  } catch {
+    return null
+  }
+}
+
 async function openNotification(notification: NotificationItem) {
   busyId.value = notification.id
   try {
@@ -69,7 +82,8 @@ async function openNotification(notification: NotificationItem) {
   }
 
   open.value = false
-  if (notification.data.url) await navigateTo(notification.data.url, { external: true })
+  const target = safeNotificationUrl(notification.data.url)
+  if (target) await navigateTo(target, { external: true })
 }
 
 function fmtDate(iso: string | null) {

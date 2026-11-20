@@ -43,6 +43,7 @@ export function useLandingSeo({ shop, openingHours, priceRange, socials, publicS
     ],
     script: [{
       type: 'application/ld+json',
+      // Se escapa "<" para que un nombre o dirección con "</script>" no cierre la etiqueta.
       innerHTML: computed(() => JSON.stringify({
         '@context': 'https://schema.org',
         '@type': 'HairSalon',
@@ -56,7 +57,7 @@ export function useLandingSeo({ shop, openingHours, priceRange, socials, publicS
         ...(priceRange.value ? { priceRange: priceRange.value } : {}),
         ...(socials.value.length ? { sameAs: socials.value.map(s => s.url) } : {}),
         ...(publicStats.value.reviews > 0 ? { aggregateRating: { '@type': 'AggregateRating', 'ratingValue': publicStats.value.rating, 'reviewCount': publicStats.value.reviews } } : {}),
-      })),
+      }).replace(/</g, '\\u003c')),
     }],
   })
 }
