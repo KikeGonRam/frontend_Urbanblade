@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { makeUser } from "../support/api-mock";
 
 /**
  * Cobros anulados (/payments/anulados), hallazgo 13 de la prueba de usuario.
@@ -30,24 +31,9 @@ async function asAdmin(page: Page) {
   await page.context().addCookies([
     { name: "ub_token", value: "test-admin-token", url: "http://127.0.0.1:3100" },
   ]);
+  const admin = makeUser({ id: "u-admin", name: "Admin E2E", email: "admin@test.local", roles: ["administrador"], client_id: null, client: null });
   await page.route("**/api/v1/auth/me", (route) =>
-    route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({
-        user: {
-          id: "u-admin",
-          name: "Admin E2E",
-          email: "admin@test.local",
-          avatar_url: null,
-          roles: ["administrador"],
-          profile_complete: true,
-          profile_missing: [],
-          client_id: null,
-          barber_id: null,
-        },
-      }),
-    }),
+    route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ user: admin }) }),
   );
 
   const pedidas: string[] = [];
