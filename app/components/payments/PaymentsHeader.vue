@@ -1,5 +1,5 @@
 <script setup lang="ts">
-defineProps<{ pendingCount: number }>();
+defineProps<{ pendingCount: number; anuladosCount?: number; isAdmin?: boolean }>();
 defineEmits<{ "new-charge": [] }>();
 </script>
 
@@ -25,6 +25,18 @@ defineEmits<{ "new-charge": [] }>();
           v-if="pendingCount > 0"
           class="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-gold px-1 text-xs font-black text-black"
           >{{ pendingCount }}</span
+        >
+      </NuxtLink>
+      <NuxtLink
+        v-if="isAdmin"
+        to="/payments/anulados"
+        class="flex items-center rounded-lg border border-line px-4 py-2 text-sm text-muted transition-colors hover:border-gold/40 hover:text-ink"
+      >
+        Cobros anulados
+        <span
+          v-if="anuladosCount"
+          class="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full border border-line px-1 text-xs font-black text-muted"
+          >{{ anuladosCount }}</span
         >
       </NuxtLink>
       <NuxtLink

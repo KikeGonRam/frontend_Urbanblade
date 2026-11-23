@@ -17,7 +17,8 @@ const reason = defineModel<string>("reason", { required: true });
     <form class="space-y-3" @submit.prevent="$emit('confirm')">
       <p class="text-sm text-muted">
         Se anula el cobro de {{ formatMoney(payment.monto) }} de {{ payment.appointment.client ?? "este cliente" }}.
-        El comprobante se borra y no se puede deshacer; el motivo queda en la bitácora.
+        Deja de contar en ingresos y cortes de caja, pero no se borra: queda con su comprobante y el motivo
+        en «Cobros anulados», y la cita se puede volver a cobrar.
       </p>
       <div>
         <label for="void-reason" class="mb-1 block text-xs text-muted">Motivo</label>
