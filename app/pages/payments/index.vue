@@ -19,7 +19,7 @@ useSeoMeta({ title: 'Pagos — UrbanBlade', robots: 'noindex' })
 const { hasRole } = useAuth();
 
 const filters = usePaymentsFilters();
-const { pending, error, refresh, payments, stats, pendingCount, pagination, barbers } =
+const { pending, error, refresh, payments, stats, pendingCount, anuladosCount, pagination, barbers } =
   await usePaymentsList(filters);
 const { actionError, voiding, voidReason, voidBusy, voidError, confirmVoid, onRowAction } =
   usePaymentActions(refresh);
@@ -28,7 +28,12 @@ const charge = usePaymentCharge(refresh);
 
 <template>
   <div class="p-4 sm:p-6 lg:p-8">
-    <PaymentsHeader :pending-count="pendingCount" @new-charge="charge.openCharge()" />
+    <PaymentsHeader
+      :pending-count="pendingCount"
+      :anulados-count="anuladosCount"
+      :is-admin="hasRole('administrador')"
+      @new-charge="charge.openCharge()"
+    />
     <p v-if="actionError" role="alert" class="mb-4 text-sm text-danger">
       {{ actionError }}
     </p>

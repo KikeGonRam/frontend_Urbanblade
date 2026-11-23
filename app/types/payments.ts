@@ -26,6 +26,9 @@ export interface PaymentRow {
     barber: string | null;
   };
   creator: { id: string | null; name: string | null };
+  // Solo en el historial de anulados (GET /payments?anulados=1, administrador): el cobro se
+  // conserva con su motivo, quién lo anuló y cuándo (anulación lógica, hallazgo 13).
+  anulacion?: { motivo: string | null; fecha: string | null; por: string | null } | null;
 }
 
 export interface PaymentStats {
@@ -43,6 +46,8 @@ export interface PaymentsResponse {
     total: number;
     stats: PaymentStats;
     pending_count: number;
+    // Cuántos cobros anulados hay; null para quien no es administrador.
+    anulados_count?: number | null;
   };
 }
 

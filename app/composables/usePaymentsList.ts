@@ -103,6 +103,7 @@ export async function usePaymentsList(filters: PaymentsFilters) {
   // debe dejar la pantalla de cobros en blanco: sin `meta` simplemente no hay tarjetas ni paginación.
   const stats = computed(() => response.value?.meta?.stats);
   const pendingCount = computed(() => response.value?.meta?.pending_count ?? 0);
+  const anuladosCount = computed(() => response.value?.meta?.anulados_count ?? 0);
   const pagination = computed(() => response.value?.meta);
 
   const { data: barbersRes } = await useAsyncData(
@@ -120,5 +121,6 @@ export async function usePaymentsList(filters: PaymentsFilters) {
     })),
   );
 
-  return { pending, error, refresh, payments, stats, pendingCount, pagination, barbers };
+  return { pending, error, refresh, payments, stats, pendingCount,
+    anuladosCount, pagination, barbers };
 }
