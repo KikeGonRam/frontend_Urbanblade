@@ -121,25 +121,3 @@ export const CLIENT_DASHBOARD = {
     sparkHighlights: [],
   },
 };
-
-export const ENGINEER_DASHBOARD = {
-  role: "ingeniero",
-  data: {
-    ...ADMIN_DASHBOARD.data,
-    moduleTelemetry: {
-      window_days: 30,
-      payments: { verified_month: 128, pending_review: 2, rejected_month: 1, amount_month: 58640 },
-      orders: { pending: 1, delivered_month: 14, cancelled_month: 1 },
-      campaigns: { scheduled: 1, sent_month: 3, recipients_month: 240, opens_month: 96, clicks_month: 21 },
-      raffles: { redeemable: 1, claimed_month: 1, expired_unclaimed: 0 },
-      social: { works_month: 9, reactions_month: 64, comments_month: 12, saves_month: 8 },
-    },
-  },
-};
-
-export const SYSTEM_STATUS = {
-  database: { status: "up", latency_ms: 42 },
-  redis: { status: "up", latency_ms: 3 },
-  queue: { pending: 0, failed: 0 },
-  scheduled_tasks: [{ status: "success" }],
-};

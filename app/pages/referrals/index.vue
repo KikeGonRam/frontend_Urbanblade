@@ -7,7 +7,7 @@
  * ReferralService en barber). Sin Stripe -- puntos de lealtad ya
  * existentes, no dinero nuevo.
  */
-definePageMeta({ middleware: ["auth", "client"], layout: "dashboard" });
+definePageMeta({ middleware: ["auth", "client", "feature"], feature: "referrals", layout: "dashboard" });
 
 useSeoMeta({ title: 'Referidos — UrbanBlade', robots: 'noindex' })
 

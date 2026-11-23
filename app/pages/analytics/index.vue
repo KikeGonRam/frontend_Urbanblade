@@ -4,7 +4,7 @@
  * nuevo Api\Analytics\AnalyticsController en barber (creado en esta misma
  * fase; no existía ninguna API para esto antes). La página es solo para
  * administrador y recepcionista (middleware `staff`, nov-2026): antes un
- * cliente o ingeniero entraba escribiendo la URL. El backend sigue recortando
+ * cliente entraba escribiendo la URL. El backend sigue recortando
  * el contenido por rol (AnalyticsInsightService); la vista simple de abajo se
  * conserva por si una cuenta con varios roles recibe ese recorte.
  *

@@ -6,7 +6,7 @@
  * con 'media' (tipo imagen/video), 'comments' (últimos 3) y barber.slug/foto
  * para poder construir esta página. 'images' se conserva sin cambios.
  */
-definePageMeta({ middleware: ['auth'], layout: 'dashboard' })
+definePageMeta({ middleware: ['auth', 'feature'], feature: 'social', layout: 'dashboard' })
 
 useSeoMeta({ title: 'Muro Inspiración — UrbanBlade', robots: 'noindex' })
 

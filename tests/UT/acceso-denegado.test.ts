@@ -46,7 +46,7 @@ describe('aviso de acceso denegado', () => {
   })
 
   it('el middleware staff avisa a un rol sin acceso', async () => {
-    estado.roles = ['ingeniero']
+    estado.roles = ['cliente']
 
     await (staff as unknown as () => Promise<unknown>)()
 

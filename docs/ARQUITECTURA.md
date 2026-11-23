@@ -93,7 +93,10 @@ con clave publicable. Las claves secretas y la validación final quedan en backe
 
 Los temas `noir`, `acero`, `salon` y `libreta` comparten navegación y permisos.
 Consultar [interfaz](INTERFAZ.md) y
-[observabilidad de ingeniero](ADR-002-OBSERVABILIDAD-INGENIERO.md).
+[observabilidad de ingeniero, reemplazada](ADR-002-OBSERVABILIDAD-INGENIERO.md).
+
+Los módulos opcionales se controlan con `features` de `GET /barbershop` (`useFeatures`, middleware `feature`):
+apagado o sin respuesta cuenta como apagado, se oculta del menú y la URL redirige a /dashboard.
 
 ## PWA y privacidad
 

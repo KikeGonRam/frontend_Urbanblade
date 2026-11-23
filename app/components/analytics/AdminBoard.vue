@@ -11,6 +11,8 @@ import { etiquetaComparacion, lecturaComparativa, lecturaDelNegocio, variacionDe
 import { fmtInt } from '~/utils/chartTheme'
 import { formatMoney } from '~/utils/format'
 
+const { isEnabled } = useFeatures()
+
 type Period = 'dia' | 'semana' | 'mes' | 'trimestre' | 'año'
 const PERIODOS: { id: Period, label: string }[] = [
   { id: 'dia', label: 'Hoy' },
@@ -216,7 +218,7 @@ const ICONO = { bien: '✓', atencion: '!', info: 'i' } as const
               <dd class="mt-1 text-2xl font-black text-ink">{{ fmtInt(clients?.inactiveClients) }}</dd>
             </div>
           </dl>
-          <NuxtLink to="/campaigns" class="mt-5 inline-flex min-h-10 items-center rounded-lg border border-line px-4 text-sm font-semibold text-gold hover:bg-gold/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold">
+          <NuxtLink v-if="isEnabled('campaigns')" to="/campaigns" class="mt-5 inline-flex min-h-10 items-center rounded-lg border border-line px-4 text-sm font-semibold text-gold hover:bg-gold/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold">
             Reactivar con una campaña
           </NuxtLink>
         </section>

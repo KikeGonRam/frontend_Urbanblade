@@ -5,7 +5,7 @@
  * (GET /admin/comment-reports) y permite eliminar, eliminar y vetar al autor
  * para comentar, o descartar los reportes (POST .../resolve).
  */
-definePageMeta({ middleware: ["auth", "admin"], layout: "dashboard" });
+definePageMeta({ middleware: ["auth", "admin", "feature"], feature: "social", layout: "dashboard" });
 useSeoMeta({ title: 'Moderación del muro — UrbanBlade', robots: 'noindex' })
 
 

@@ -14,9 +14,7 @@ const quickAction = computed(() =>
     ? { to: "/my/appointments", label: "Reservar cita" }
     : hasRole("barbero")
       ? { to: "/barber/agenda", label: "Ver mi agenda" }
-      : hasRole("ingeniero")
-        ? { to: "/system", label: "Revisar sistema" }
-        : { to: "/appointments", label: "Nueva cita" },
+      : { to: "/appointments", label: "Nueva cita" },
 );
 // Solo el ítem con la ruta más específica queda activo: en /appointments/calendar no deben iluminarse a la vez
 // «Citas» (/appointments) y «Calendario» (/appointments/calendar).

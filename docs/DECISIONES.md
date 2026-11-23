@@ -13,7 +13,7 @@ Las decisiones describen el diseño implementado; no conceden autorización oper
 | F06 | Cuatro temas con un modelo de navegación. | Cambiar apariencia no debe cambiar permisos o rutas. |
 | F07 | Playwright y Cypress con build/API simulada. | Pruebas repetibles sin datos reales; integración externa requiere otra evidencia. |
 | F08 | PWA sin transacciones offline. | Caché de recursos y navegación, nunca fuente de verdad de citas/pagos. Revisar rutas sensibles en caché. |
-| F09 | Ingeniero con observabilidad de solo lectura. | Agregados y salud técnica, sin convertirlo en administrador. |
+| F09 | ~~Ingeniero con observabilidad de solo lectura.~~ Reemplazada el 23-nov-2026: el rol se quitó. | Reportes, Logs y Estado del Servidor quedan solo para administrador. |
 | F10 | CI y despliegue separados. | Servicios externos pueden construir incluso cambios Markdown. |
 
 Las fuentes y los flujos están en [ARQUITECTURA](ARQUITECTURA.md),

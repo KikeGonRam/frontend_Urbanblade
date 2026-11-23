@@ -13,7 +13,7 @@ decisiones y comprobaciones. La evidencia histórica conserva su fecha y alcance
 | Workflows y publicación | [CI/CD](CI_CD.md) |
 | Publicar la imagen, verificar y revertir en AWS | [Despliegue](DESPLIEGUE.md) |
 | Interfaz, temas y mascotas | [INTERFAZ](INTERFAZ.md) |
-| Observabilidad del ingeniero | [ADR-002](ADR-002-OBSERVABILIDAD-INGENIERO.md) |
+| Observabilidad del ingeniero (reemplazada) | [ADR-002](ADR-002-OBSERVABILIDAD-INGENIERO.md) |
 | Cypress y registro opcional en Cloud | [Cypress Cloud](CYPRESS_CLOUD.md) |
 | Revisión de secretos y límites | [Seguridad documental](SEGURIDAD_DOCUMENTACION.md) |
 | Preparar cambios | [CONTRIBUTING](../CONTRIBUTING.md) |

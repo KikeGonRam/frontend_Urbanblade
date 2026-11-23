@@ -49,7 +49,19 @@ export interface MockApiOptions {
   registerStatus?: number;
   /** Cuerpo extra para respuestas de error (p. ej. errores de validación). */
   errorBody?: Record<string, unknown>;
+  /** Interruptores de módulos que devuelve GET /barbershop. Por defecto TODOS encendidos (como en mock-api.mjs). */
+  features?: Record<string, boolean>;
 }
+
+/** Los seis módulos con interruptor; el backend los trae apagados en producción/staging. */
+export const ALL_FEATURES_ON = {
+  packages: true,
+  gift_cards: true,
+  referrals: true,
+  raffles: true,
+  social: true,
+  campaigns: true,
+};
 
 export async function mockApi(page: Page, options: MockApiOptions = {}) {
   const {
@@ -57,6 +69,7 @@ export async function mockApi(page: Page, options: MockApiOptions = {}) {
     loginStatus = 200,
     registerStatus = 201,
     errorBody = { message: "Error" },
+    features = ALL_FEATURES_ON,
   } = options;
 
   await page.route("**/api/v1/**", async (route) => {
@@ -112,6 +125,11 @@ export async function mockApi(page: Page, options: MockApiOptions = {}) {
 
     if (path === "/auth/me") {
       return json({ user });
+    }
+
+    // Ficha pública del negocio: aquí interesa `features` (lo lee useFeatures en el cliente).
+    if (path === "/barbershop") {
+      return json({ data: { nombre: "UrbanBlade Centro", features } });
     }
 
     if (path === "/auth/logout") {

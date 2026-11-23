@@ -31,7 +31,6 @@ const ROLE_LABEL: Record<string, string> = {
   recepcionista: "Recepción",
   barbero: "Barbero",
   cliente: "Cliente",
-  ingeniero: "Ingeniero",
 };
 // Anillo del avatar por rol, como en el prototipo (dorado: administración; el resto, tonos de la marca).
 const ROLE_RING: Record<string, string> = {
@@ -39,7 +38,6 @@ const ROLE_RING: Record<string, string> = {
   recepcionista: "ring-sky-400/70",
   barbero: "ring-emerald-400/70",
   cliente: "ring-line",
-  ingeniero: "ring-violet-400/70",
 };
 
 const exportColumns: CsvColumn<UserRow>[] = [
@@ -85,7 +83,6 @@ const ROLE_ICON: Record<string, string> = {
   recepcionista: "headset",
   barbero: "scissors",
   cliente: "user",
-  ingeniero: "spark",
 };
 const roleOptions = computed(() => [
   { value: "", label: "Todos", icon: "users" },
