@@ -92,11 +92,12 @@ const summary = computed(() => rows.value.slice(0, 3).map(r => `${r.titulo}: ${r
 
 <template>
   <section v-if="rows.length || showLink" :aria-label="titulo" class="rounded-2xl border border-line bg-card px-5 py-4">
-    <header class="flex items-center justify-between gap-3">
+    <!-- En teléfono el enlace va debajo: en una sola fila el título quedaba en una columna de 120 px. -->
+    <header class="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
       <button
         v-if="rows.length"
         type="button"
-        class="flex min-w-0 flex-1 items-center gap-3 rounded-lg text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold"
+        class="flex w-full min-w-0 flex-1 items-center gap-3 rounded-lg text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold"
         :aria-expanded="expanded"
         aria-controls="insights-panel"
         @click="toggle"
@@ -119,7 +120,7 @@ const summary = computed(() => rows.value.slice(0, 3).map(r => `${r.titulo}: ${r
         <h3 class="text-base font-semibold text-ink">{{ titulo }}</h3>
         <p class="mt-0.5 text-sm text-muted">Patrones, predicciones y recomendaciones sobre tu historial</p>
       </div>
-      <NuxtLink v-if="showLink" to="/analytics" class="shrink-0 text-sm font-semibold text-gold hover:underline">
+      <NuxtLink v-if="showLink" to="/analytics" class="shrink-0 text-sm font-semibold text-gold hover:underline" :class="rows.length ? 'pl-7 sm:pl-0' : ''">
         Ver analítica completa →
       </NuxtLink>
     </header>

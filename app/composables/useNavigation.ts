@@ -91,7 +91,8 @@ export function useNavigation() {
       title: 'Principal',
       collapsible: false,
       items: [
-        item('Dashboard', '/dashboard', 'dashboard', true),
+        // «Inicio» y no «Dashboard»: la guía de voz pide español sin jerga y la app Android ya lo llama así.
+        item('Inicio', '/dashboard', 'dashboard', true),
         ...(on('social') ? [item('Muro Inspiración', '/social/feed', 'wall', isClient.value)] : []),
         item('Notificaciones', '/notifications', 'notifications'),
       ],

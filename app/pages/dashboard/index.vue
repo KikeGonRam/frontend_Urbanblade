@@ -34,14 +34,14 @@ const fullName = computed(() => user.value?.name ?? "");
 
 <template>
   <div class="p-4 sm:p-6 lg:p-8">
-    <UiSkeleton v-if="pending" variant="cards" label="Cargando dashboard…" />
+    <UiSkeleton v-if="pending" variant="cards" label="Cargando tu panel…" />
     <BrandStatePanel
       v-else-if="error"
       mascot="bruno"
       state="error"
       tone="danger"
-      title="No se pudo cargar el dashboard"
-      description="Inténtalo nuevamente para recuperar tus indicadores."
+      title="No se pudo cargar tu panel"
+      description="Revisa tu conexión e inténtalo de nuevo para recuperar tus indicadores."
       action-label="Reintentar"
       @action="refresh"
     />
@@ -71,15 +71,18 @@ const fullName = computed(() => user.value?.name ?? "");
       :data="dashboard.data as any"
     />
 
-    <section v-else-if="dashboard" class="ui-card-premium p-5">
-      <header class="mb-4">
-        <h1 class="mt-1 text-2xl font-semibold text-ink">Dashboard</h1>
-      </header>
-      <p class="text-sm text-muted">
-        Sesión activa como <strong class="text-ink">{{ dashboard.role }}</strong
-        >. El dashboard de este rol todavía no está migrado a Nuxt — sigue
-        disponible en la versión Inertia de <code>barber</code> mientras tanto.
-      </p>
-    </section>
+    <!--
+      Rol sin panel (p. ej. una cuenta del antiguo rol ingeniero, que ya no existe, o sin rol): antes decía que el
+      panel seguía «en la versión Inertia de barber», que se retiró. Ahora explica qué hacer.
+    -->
+    <BrandStatePanel
+      v-else-if="dashboard"
+      mascot="bruno"
+      state="lost"
+      title="Tu cuenta todavía no tiene un panel"
+      description="Pide a administración que revise tu rol. Mientras tanto puedes revisar tus datos en tu perfil."
+      action-label="Ir a mi perfil"
+      action-to="/profile"
+    />
   </div>
 </template>

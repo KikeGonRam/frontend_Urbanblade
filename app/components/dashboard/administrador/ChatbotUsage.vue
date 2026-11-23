@@ -1,7 +1,36 @@
 <script setup lang="ts">
 import type { ChatbotTelemetry } from "~/types/dashboard";
 
-defineProps<{ telemetry: ChatbotTelemetry }>();
+const props = defineProps<{ telemetry: ChatbotTelemetry }>();
+
+// Nombres legibles de las fuentes que registra ChatbotController::recordProviderTelemetry (antes salían en inglés
+// y en mayúsculas: «OLLAMA», «MEMORY»…).
+const FUENTES: Record<string, string> = {
+  ollama: "IA local",
+  gemini: "Gemini",
+  manual: "Respuesta guiada",
+  memory: "Memoria",
+  direct: "Directa",
+  intelligence: "Datos del negocio",
+  external_data: "Fuentes externas",
+  rate_limit: "Límite de uso",
+};
+const nombreFuente = (fuente: string | number) => FUENTES[String(fuente)] ?? String(fuente).replace(/_/g, " ");
+
+// El estado ya no dice «OK» siempre: depende de la tasa de error de la ventana.
+const estado = computed(() => {
+  if (!props.telemetry.total_requests) return { texto: "Sin uso", clase: "text-muted", punto: "bg-muted" };
+  if ((props.telemetry.error_rate_pct ?? 0) > 5) return { texto: "Con fallas", clase: "text-warning", punto: "bg-warning" };
+  return { texto: "Estable", clase: "text-success", punto: "bg-success" };
+});
+
+// «$0.0000» no decía nada: con el modelo local el costo es cero.
+const costo = computed(() => {
+  const usd = props.telemetry.estimated_cost_usd ?? 0;
+  if (usd <= 0) return "Sin costo";
+  if (usd < 0.01) return "< $0.01 USD";
+  return `$${usd.toFixed(2)} USD`;
+});
 </script>
 
 <template>
@@ -19,12 +48,8 @@ defineProps<{ telemetry: ChatbotTelemetry }>();
           class="mt-0.5 flex items-center gap-2 text-base font-semibold text-ink"
         >
           Uso de Bladebot
-          <span
-            class="flex items-center gap-1 text-xs font-black uppercase text-success"
-          >
-            <span
-              class="h-1.5 w-1.5 animate-pulse rounded-full bg-success"
-            />OK
+          <span class="flex items-center gap-1 text-xs font-bold" :class="estado.clase">
+            <span class="h-1.5 w-1.5 rounded-full" :class="estado.punto" aria-hidden="true" />{{ estado.texto }}
           </span>
         </h3>
       </div>
@@ -79,9 +104,7 @@ defineProps<{ telemetry: ChatbotTelemetry }>();
           Costo estimado
         </p>
         <p class="text-lg font-semibold tabular-nums text-ink">
-          ${{
-            (telemetry.estimated_cost_usd ?? 0).toFixed(4)
-          }}
+          {{ costo }}
         </p>
       </div>
     </div>
@@ -103,10 +126,7 @@ defineProps<{ telemetry: ChatbotTelemetry }>();
           :key="source"
           class="flex items-center justify-between rounded-xl border border-ink/[0.05] bg-ink/[0.02] px-3 py-2"
         >
-          <span
-            class="truncate text-xs font-bold uppercase text-ink"
-            >{{ String(source).replace(/_/g, " ") }}</span
-          >
+          <span class="truncate text-xs font-semibold text-ink">{{ nombreFuente(source) }}</span>
           <span class="ml-2 shrink-0 text-xs font-black text-gold">{{
             count
           }}</span>

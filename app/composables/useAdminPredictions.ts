@@ -30,6 +30,8 @@ export function useAdminPredictions() {
   const appointmentForecast = ref<number | string | null>(null);
   const aiConfidence = ref<string | null>(null);
   const aiInsights = ref<AiInsight[] | null>(null);
+  /** La carga falló (red o servidor): distinto de «no hay historial para estimar». */
+  const failed = ref(false);
 
   const { apiFetch } = useApi();
 
@@ -47,14 +49,16 @@ export function useAdminPredictions() {
         ),
       ]);
 
+      // «—» y no «N/A» (inglés): la tarjeta explica debajo que aún no hay historial para estimar.
       incomeForecast.value = incomeRes.data?.predicted_income
         ? fmtMoney(incomeRes.data.predicted_income)
-        : "N/A";
-      appointmentForecast.value = apptRes.data?.predicted_appointments ?? "N/A";
+        : "—";
+      appointmentForecast.value = apptRes.data?.predicted_appointments ?? "—";
       // La API no expone una confianza estadística validada; no inventar un porcentaje.
-      aiConfidence.value = "No validada";
+      aiConfidence.value = "Por validar";
       aiInsights.value = Object.values(insightsRes.data ?? {});
     } catch {
+      failed.value = true;
       incomeForecast.value = "—";
       appointmentForecast.value = "—";
       aiConfidence.value = "—";
@@ -62,5 +66,5 @@ export function useAdminPredictions() {
     }
   });
 
-  return { incomeForecast, appointmentForecast, aiConfidence, aiInsights };
+  return { incomeForecast, appointmentForecast, aiConfidence, aiInsights, failed };
 }

@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { AI_STATUS_STYLE, useAdminPredictions } from "~/composables/useAdminPredictions";
 
-const { incomeForecast, appointmentForecast, aiConfidence, aiInsights } = useAdminPredictions();
+const { incomeForecast, appointmentForecast, aiConfidence, aiInsights, failed } = useAdminPredictions();
+
+// Sin estimación (historial corto): se dice en una línea en vez de dejar dos «—» sin explicación.
+const sinEstimacion = computed(() => !failed.value && incomeForecast.value === "—" && appointmentForecast.value === "—");
 </script>
 
 <template>
@@ -66,7 +69,8 @@ const { incomeForecast, appointmentForecast, aiConfidence, aiInsights } = useAdm
         >
           Confianza
         </p>
-        <p class="text-lg font-semibold tabular-nums text-ink">
+        <!-- Valor cualitativo: en texto más pequeño para que «Por validar» no se parta en dos líneas grandes. -->
+        <p class="flex min-h-7 items-center justify-center text-sm font-semibold text-ink">
           <span
             v-if="aiConfidence === null"
             class="inline-block h-1 w-8 animate-pulse rounded bg-gold/25"
@@ -76,11 +80,18 @@ const { incomeForecast, appointmentForecast, aiConfidence, aiInsights } = useAdm
       </div>
     </div>
 
+    <p v-if="failed" role="alert" class="-mt-2 mb-5 text-xs text-danger">
+      No se pudieron cargar las predicciones. Revisa tu conexión y vuelve a abrir el panel.
+    </p>
+    <p v-else-if="sinEstimacion" class="-mt-2 mb-5 text-xs text-muted">
+      Todavía no hay historial suficiente para estimar la semana.
+    </p>
+
     <div>
       <p
         class="mb-2 text-sm font-medium text-muted"
       >
-        Insights
+        Hallazgos
       </p>
       <div class="space-y-2">
         <div
@@ -90,13 +101,13 @@ const { incomeForecast, appointmentForecast, aiConfidence, aiInsights } = useAdm
           <div
             class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-warning"
           />
-          <p class="text-xs text-ink/45">Cargando análisis...</p>
+          <p class="text-xs text-muted">Cargando análisis…</p>
         </div>
         <p
           v-else-if="!aiInsights.length"
-          class="text-xs italic text-ink/45"
+          class="text-xs text-muted"
         >
-          Sin insights disponibles.
+          Todavía no hay hallazgos para esta semana.
         </p>
         <div
           v-for="insight in aiInsights ?? []"
@@ -116,7 +127,7 @@ const { incomeForecast, appointmentForecast, aiConfidence, aiInsights } = useAdm
               ).dot
             "
           />
-          <p class="text-xs text-ink/60">{{ insight.message }}</p>
+          <p class="text-sm text-muted">{{ insight.message }}</p>
         </div>
       </div>
     </div>
