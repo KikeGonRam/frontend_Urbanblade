@@ -15,7 +15,7 @@ defineEmits<{ "new-charge": [] }>();
         Gestión de ingresos, comprobantes y trazabilidad financiera.
       </p>
     </div>
-    <div class="flex items-center gap-3">
+    <div class="flex flex-wrap items-center gap-3">
       <NuxtLink
         to="/payments/pending"
         class="relative rounded-lg border border-line px-4 py-2 text-sm text-muted hover:text-ink"

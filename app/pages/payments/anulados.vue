@@ -22,6 +22,10 @@ const { data, pending, error, refresh } = await useAsyncData<PaymentsResponse>(
 
 // Solo filas que traen `anulacion`: una API anterior a la anulación lógica ignora ?anulados=1 y
 // devolvería los cobros vigentes, que aquí no deben aparecer como anulados.
+// Mismo «Ver comprobante PDF» que la tabla de pagos: barber conserva el comprobante del cobro anulado
+// y su ruta de comprobante lo resuelve solo para el administrador.
+const { actionError, onRowAction } = usePaymentActions(refresh);
+
 const rows = computed(() => (data.value?.data ?? []).filter((row) => row.anulacion));
 const meta = computed(() => data.value?.meta);
 
@@ -65,6 +69,10 @@ function fmtDateTime(iso: string | null | undefined) {
       </NuxtLink>
     </header>
 
+    <p v-if="actionError" role="alert" class="mb-4 text-sm text-danger">
+      {{ actionError }}
+    </p>
+
     <BrandStatePanel
       v-if="error"
       mascot="bruno"
@@ -104,6 +112,12 @@ function fmtDateTime(iso: string | null | undefined) {
       </template>
       <template #cell-total="{ row }">
         <span class="font-black text-muted line-through">{{ formatMoney(Number(row.monto) + Number(row.propina)) }}</span>
+      </template>
+      <template #actions="{ row }">
+        <UiRowActions
+          :actions="[{ key: 'pdf', label: `Ver comprobante PDF de ${row.appointment.client ?? 'este cobro'}`, icon: 'text' }]"
+          @action="onRowAction($event, row)"
+        />
       </template>
     </UiDataTable>
     <UiPagination

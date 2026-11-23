@@ -1207,8 +1207,11 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /** Elimina un pago y su comprobante PDF asociado (si existe) del almacenamiento público. */
-        delete: operations["eliminaUnPagoYSuComprobantePDFAsociadosiExisteDelAlmacenamientoPblico"];
+        /**
+         * Anula un cobro (solo administrador).
+         * @description Anulación lógica: el cobro y su comprobante PDF se conservan con el motivo, quién lo anuló y la fecha; deja de contar en las sumas y la cita se puede volver a cobrar. Se consulta con GET /payments?anulados=1.
+         */
+        delete: operations["anulaUnCobrosoloAdministrador"];
         options?: never;
         head?: never;
         patch?: never;
@@ -6871,7 +6874,13 @@ export interface operations {
     };
     listaPaginadaDePagosConDatosDeCitaClienteBarberoYComprobanteFiltrablePorMtodoDePago: {
         parameters: {
-            query?: never;
+            query?: {
+                /**
+                 * @description Solo administrador: lista los cobros anulados (con motivo, autor y fecha en `anulacion`).
+                 * @example 1
+                 */
+                anulados?: boolean;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -7199,7 +7208,7 @@ export interface operations {
         };
         responses: never;
     };
-    eliminaUnPagoYSuComprobantePDFAsociadosiExisteDelAlmacenamientoPblico: {
+    anulaUnCobrosoloAdministrador: {
         parameters: {
             query?: never;
             header?: never;
@@ -7212,7 +7221,17 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": {
+                    /**
+                     * @description Motivo de la anulación (5 a 300 caracteres).
+                     * @example Cobro duplicado por error
+                     */
+                    motivo: string;
+                };
+            };
+        };
         responses: never;
     };
     cobrarUnCargoEnSucursal: {
