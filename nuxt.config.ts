@@ -99,6 +99,9 @@ export default defineNuxtConfig({
     '/manifest.webmanifest': { headers: { 'cache-control': 'no-cache' } },
     // Atajo compartible: /app lleva a la sección de la app móvil de la landing.
     '/app': { redirect: { to: '/#app', statusCode: 302 } },
+    // /barber/profile se eliminó (nov-2026; era un duplicado de /profile). Se conserva el
+    // atajo para marcadores antiguos.
+    '/barber/profile': { redirect: { to: '/profile', statusCode: 301 } },
     '/**': {
       headers: {
         'X-Content-Type-Options': 'nosniff',
@@ -144,7 +147,6 @@ export default defineNuxtConfig({
     '/social/**': { ssr: false },
     '/reviews': { ssr: false },
     '/system': { ssr: false },
-    '/brand': { ssr: false },
     '/profile': { ssr: false },
     '/complete-profile': { ssr: false },
     // Lee el token de Google del query string y toca cookies -- sin sentido

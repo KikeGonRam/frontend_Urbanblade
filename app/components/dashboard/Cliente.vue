@@ -268,7 +268,7 @@ const visitChartOptions = {
               <UiIcon name="pin" />
               Cómo llegar
             </a>
-            <NuxtLink to="/barbers" class="inline-flex min-h-11 items-center rounded-xl border border-line px-5 text-sm font-semibold text-ink transition-colors hover:border-gold/40">Nuestros barberos</NuxtLink>
+            <NuxtLink to="/equipo" class="inline-flex min-h-11 items-center rounded-xl border border-line px-5 text-sm font-semibold text-ink transition-colors hover:border-gold/40">Nuestros barberos</NuxtLink>
           </div>
         </template>
         <div v-else class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

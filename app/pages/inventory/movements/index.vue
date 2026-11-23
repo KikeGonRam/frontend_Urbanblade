@@ -41,14 +41,6 @@ interface ProductOption {
   id: string;
   nombre: string;
 }
-interface LowStockItem {
-  id: string;
-  nombre: string;
-  stock_actual: number;
-  stock_minimo: number;
-  pending_restock: boolean;
-}
-
 const exportColumns: CsvColumn<MovementRow>[] = [
   { header: "Fecha", value: (m) => m.fecha },
   { header: "Tipo", value: (m) => m.tipo },
@@ -118,12 +110,9 @@ const products = computed<ProductOption[]>(
     productsRes.value?.data.map((p) => ({ id: p.id, nombre: p.nombre })) ?? [],
 );
 
-const { data: lowStockRes, refresh: refreshLowStock } = await useAsyncData(
-  "inventory-movements-low-stock",
-  () => apiFetch<{ data: LowStockItem[] }>("/inventory/low-stock"),
-  { lazy: true },
-);
-const lowStockItems = computed(() => lowStockRes.value?.data ?? []);
+// Alerta de bajo stock compartida con /inventory/products (InventoryLowStockAlert).
+const lowStockAlert = ref<{ refresh: () => Promise<void> } | null>(null);
+const refreshLowStock = () => lowStockAlert.value?.refresh() ?? Promise.resolve();
 
 function clearFilters() {
   search.value = "";
@@ -146,24 +135,7 @@ function fmtDateTime(iso: string | null) {
   });
 }
 
-const marking = ref<string | null>(null);
 const actionError = ref("");
-async function markOrdered(item: LowStockItem) {
-  marking.value = item.id;
-  actionError.value = "";
-  try {
-    await apiFetch(`/inventory/products/${item.id}/mark-ordered`, {
-      method: "POST",
-    });
-    await refreshLowStock();
-  } catch (err: unknown) {
-    actionError.value =
-      (err as { data?: { message?: string } })?.data?.message ??
-      "No se pudo marcar el producto como pedido.";
-  } finally {
-    marking.value = null;
-  }
-}
 
 // ── Nuevo movimiento ──────────────────────────────────────────────────────
 const showForm = ref(false);
@@ -295,47 +267,11 @@ async function submitForm() {
       {{ actionError }}
     </p>
 
-    <section
-      v-if="lowStockItems.length"
-      class="mb-5 overflow-hidden rounded-2xl border border-warning/25 bg-warning/5"
-    >
-      <div
-        class="flex items-center gap-3 border-b border-warning/15 px-5 py-3"
-      >
-        <span class="text-sm font-black text-warning"
-          >Productos con stock bajo pendientes de atención</span
-        >
-      </div>
-      <ul class="divide-y divide-warning/10">
-        <li
-          v-for="item in lowStockItems"
-          :key="item.id"
-          class="flex flex-col gap-2 px-5 py-3 sm:flex-row sm:items-center sm:justify-between"
-        >
-          <div>
-            <p class="text-sm font-bold text-ink">{{ item.nombre }}</p>
-            <p class="text-xs text-muted">
-              {{ item.stock_actual }} / mín {{ item.stock_minimo }}
-            </p>
-          </div>
-          <span
-            v-if="item.pending_restock"
-            class="w-fit rounded-full border border-success/25 bg-success/10 px-3 py-1 text-xs font-black uppercase tracking-widest text-success"
-          >
-            Pedido en curso
-          </span>
-          <button
-            v-else
-            type="button"
-            :disabled="marking === item.id"
-            class="w-fit rounded-lg border border-warning/30 px-3 py-1.5 text-xs font-black uppercase tracking-widest text-warning hover:bg-warning/10 disabled:opacity-50"
-            @click="markOrdered(item)"
-          >
-            Marcar como pedido
-          </button>
-        </li>
-      </ul>
-    </section>
+    <InventoryLowStockAlert
+      ref="lowStockAlert"
+      @mark-start="actionError = ''"
+      @mark-error="actionError = $event"
+    />
 
     <section v-if="stats" class="mb-5 grid grid-cols-2 gap-4 sm:grid-cols-4">
       <div class="rounded-2xl border border-line bg-card p-4">

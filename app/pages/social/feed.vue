@@ -157,7 +157,7 @@ async function submitComment(work: WorkRow) {
           </div>
           <div class="min-w-0 flex-1">
             <NuxtLink
-              v-if="work.barber.slug" :to="`/barbers/${work.barber.slug}`"
+              v-if="work.barber.slug" :to="`/equipo/${work.barber.slug}`"
               class="truncate font-bold text-ink hover:text-gold"
             >
               {{ work.barber.name }}

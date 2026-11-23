@@ -2,8 +2,14 @@
 /*
  * Fase Analítica — puerto de Analytics\AnalyticsController (web) contra el
  * nuevo Api\Analytics\AnalyticsController en barber (creado en esta misma
- * fase; no existía ninguna API para esto antes). Los 4 roles la ven, cada
- * uno con su propio recorte (ver AnalyticsInsightService del lado servidor).
+ * fase; no existía ninguna API para esto antes). La página es solo para
+ * administrador y recepcionista (middleware `staff`, nov-2026): antes un
+ * cliente o ingeniero entraba escribiendo la URL. El backend sigue recortando
+ * el contenido por rol (AnalyticsInsightService); la vista simple de abajo se
+ * conserva por si una cuenta con varios roles recibe ese recorte.
+ *
+ * Las secciones técnicas «Flujo del análisis» y «Cobertura de
+ * visualizaciones» se quitaron (nov-2026): describían el motor, no el negocio.
  *
  * Simplificación deliberada frente al Blade original (401 líneas, con tabs+
  * mini-charts-en-header+heatmap/matrix/factor-list custom+panel de
@@ -19,15 +25,13 @@ import { UB_CATEGORICAL, chartScale, goldHex, inkRgba } from '~/utils/chartTheme
 
 ensureChartjsRegistered()
 
-definePageMeta({ middleware: ['auth'], layout: 'dashboard' })
+// Solo administrador y recepcionista; el resto vuelve a /dashboard con el aviso de acceso denegado.
+// (El barbero ya ve sus oportunidades en su dashboard; se quitó del menú el 26-sep.)
+definePageMeta({ middleware: ['auth', 'staff'], layout: 'dashboard' })
 
 useSeoMeta({ title: 'Analítica — UrbanBlade', robots: 'noindex' })
 
-// El barbero ya ve sus oportunidades en su dashboard; aquí solo se repetían (se quitó del menú el 26-sep).
 const { user: analyticsUser } = useAuth()
-if (analyticsUser.value?.roles?.length && analyticsUser.value.roles.every((r) => r === 'barbero')) {
-  await navigateTo('/dashboard', { replace: true })
-}
 
 interface InsightDto {
   tipo: string
@@ -59,23 +63,6 @@ interface KpiDto {
   message: string | null
 }
 
-interface SparkFlowStepDto {
-  titulo: string
-  descripcion: string
-  color: string
-  count: number
-  total: number
-  progress: number
-}
-
-interface VisualCoverageDto {
-  titulo: string
-  descripcion: string
-  color: string
-  tipo: string
-  count: number
-}
-
 interface AnalyticsResponse {
   operational?: {
     calculated_at: string
@@ -88,8 +75,6 @@ interface AnalyticsResponse {
   ultima_actualizacion: string | null
   secciones: Record<string, SeccionDto>
   diagnostico_insights: InsightDto[]
-  spark_flow: SparkFlowStepDto[]
-  visual_coverage: VisualCoverageDto[]
 }
 
 const TONE_CLASS: Record<string, string> = {
@@ -98,9 +83,6 @@ const TONE_CLASS: Record<string, string> = {
   success: 'border-success/25 bg-emerald-500/[0.06] text-success',
   warning: 'border-warning/25 bg-amber-500/[0.06] text-warning',
   danger: 'border-danger/25 bg-rose-500/[0.06] text-danger',
-}
-const BAR_COLOR: Record<string, string> = {
-  gold: 'bg-gold', info: 'bg-sky-400', success: 'bg-emerald-400', warning: 'bg-amber-400', danger: 'bg-rose-400',
 }
 
 const { apiFetch } = useApi()
@@ -236,20 +218,6 @@ const doughnutOptions = { responsive: true, maintainAspectRatio: false, plugins:
           </div>
         </section>
 
-        <section v-if="response?.spark_flow.length" class="ui-card mb-6 p-5">
-          <h2 class="mb-3 text-sm font-black uppercase tracking-wide text-ink">Flujo del análisis</h2>
-          <div class="grid grid-cols-1 gap-3 sm:grid-cols-5">
-            <div v-for="step in response.spark_flow" :key="step.titulo">
-              <p class="text-xs font-bold text-ink">{{ step.titulo }}</p>
-              <p class="mb-1.5 text-xs text-muted">{{ step.descripcion }}</p>
-              <div class="h-1.5 w-full overflow-hidden rounded-full bg-line/40">
-                <div class="h-full rounded-full" :class="BAR_COLOR[step.color] ?? BAR_COLOR.gold" :style="{ width: `${step.progress}%` }" />
-              </div>
-              <p class="mt-1 text-xs text-muted">{{ step.count }}/{{ step.total }}</p>
-            </div>
-          </div>
-        </section>
-
         <nav class="mb-5 flex flex-wrap gap-2">
           <button
             v-for="key in sectionKeys" :key="key" type="button"
@@ -283,16 +251,6 @@ const doughnutOptions = { responsive: true, maintainAspectRatio: false, plugins:
                   {{ label }}: <span class="text-ink">{{ insight.grafica.valores?.[idx] }}</span>
                 </li>
               </ul>
-            </div>
-          </div>
-        </section>
-
-        <section v-if="response?.visual_coverage.some((v) => v.count > 0)" class="mt-6 ui-card p-5">
-          <h2 class="mb-3 text-sm font-black uppercase tracking-wide text-ink">Cobertura de visualizaciones</h2>
-          <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <div v-for="family in response.visual_coverage.filter((v) => v.count > 0)" :key="family.tipo" class="rounded-xl border border-line p-3">
-              <p class="text-lg font-black text-ink">{{ family.count }}</p>
-              <p class="text-xs font-bold text-muted">{{ family.titulo }}</p>
             </div>
           </div>
         </section>

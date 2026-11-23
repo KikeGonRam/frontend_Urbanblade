@@ -224,7 +224,17 @@ const ICONO = { bien: '✓', atencion: '!', info: 'i' } as const
 
       <AnalyticsCohortsMatrix v-if="cohortes" :cohortes="cohortes" class="mb-4" />
 
-      <UiPeakHoursHeatmap />
+      <!-- El mapa de horas pico vive solo en Reportes (antes se repetía aquí con la misma petición). -->
+      <NuxtLink
+        to="/reports#horas-pico"
+        class="flex items-center justify-between gap-4 rounded-2xl border border-line bg-card p-5 transition hover:border-gold/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold sm:p-6"
+      >
+        <span>
+          <span class="block text-base font-semibold text-ink">Horas pico</span>
+          <span class="mt-0.5 block text-sm text-muted">Demanda de citas por día y hora, en Reportes.</span>
+        </span>
+        <span class="shrink-0 text-sm font-semibold text-gold">Ver en Reportes →</span>
+      </NuxtLink>
     </template>
   </section>
 </template>

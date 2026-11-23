@@ -1,4 +1,3 @@
-import { loadStripe, type Stripe, type StripeCardElement, type StripeElements } from '@stripe/stripe-js/pure'
 import type { ComputedRef, Ref } from 'vue'
 import type { PayChoice, PayOption } from '~/types/booking'
 
@@ -26,18 +25,25 @@ export interface BookingPayment {
  */
 export function useBookingPayment(): BookingPayment {
   const { apiFetch } = useApi()
-  const runtimeConfig = useRuntimeConfig()
 
   const payChoice = ref<PayChoice>('despues')
 
-  let stripe: Stripe | null = null
-  let elements: StripeElements | null = null
-  let cardElement: StripeCardElement | null = null
-  const cardElementRef = ref<HTMLDivElement | null>(null)
+  const cardError = ref('')
+  // Carga de Stripe.js, campo de tarjeta y confirmación: useStripeCard (compartido).
+  const card = useStripeCard({
+    onChangeError: (message) => { cardError.value = message },
+    // El iframe de Stripe es de otro origen: no puede heredar el color del tema
+    // ("inherit" lo dejaba oscuro sobre fondo oscuro), asi que se le pasa el
+    // color ya calculado del contenedor.
+    style: (container) => ({
+      base: { fontFamily: 'Figtree, sans-serif', fontSize: '15px', color: container ? getComputedStyle(container).color : '#ffffff', '::placeholder': { color: '#8a8a8a' } },
+      invalid: { color: '#f87171' },
+    }),
+  })
   function setCardElement(el: HTMLDivElement | null) {
-    cardElementRef.value = el
+    card.cardElementRef.value = el
   }
-  const stripeConfigured = Boolean(runtimeConfig.public.stripeKey)
+  const stripeConfigured = card.stripeConfigured
   // Mismos tres valores de siempre (el backend no cambia); solo se presentan como tarjetas.
   const payOptions = computed<PayOption[]>(() => [
     { value: 'despues', title: 'Pagar en el salón', detail: 'Efectivo, tarjeta o transferencia el día de tu cita', icon: 'salon' },
@@ -46,36 +52,15 @@ export function useBookingPayment(): BookingPayment {
       : []),
     { value: 'ahora_transferencia', title: 'Pagar ahora por transferencia', detail: 'Sube tu comprobante para confirmar', icon: 'transferencia' },
   ])
-  const cardError = ref('')
-  // `stripe` es una variable normal (no reactiva) a proposito, para no meter
-  // el objeto Stripe en un Proxy de Vue; este ref es lo que el template observa.
-  const stripeReady = ref(false)
+  // true cuando el formulario de tarjeta ya está montado (lo observa el template).
+  const stripeReady = card.cardReady
 
-  async function ensureStripeMounted() {
-    if (!stripeConfigured || cardElement) return
-    stripe = await loadStripe(runtimeConfig.public.stripeKey as string)
-    if (!stripe) return
-    elements = stripe.elements()
-    // El iframe de Stripe es de otro origen: no puede heredar el color del tema
-    // ("inherit" lo dejaba oscuro sobre fondo oscuro), asi que se le pasa el
-    // color ya calculado del contenedor.
-    const textColor = cardElementRef.value ? getComputedStyle(cardElementRef.value).color : '#ffffff'
-    cardElement = elements.create('card', {
-      style: { base: { fontFamily: 'Figtree, sans-serif', fontSize: '15px', color: textColor, '::placeholder': { color: '#8a8a8a' } }, invalid: { color: '#f87171' } },
-    })
-    if (cardElementRef.value) cardElement.mount(cardElementRef.value)
-    cardElement.on('change', ({ error: elError }) => { cardError.value = elError?.message ?? '' })
-    stripeReady.value = true
-  }
   function teardownStripe() {
-    cardElement?.unmount()
-    cardElement = null
-    elements = null
+    card.unmountCard()
     cardError.value = ''
-    stripeReady.value = false
   }
   watch(payChoice, async (choice) => {
-    if (choice === 'ahora_tarjeta') await nextTick().then(ensureStripeMounted)
+    if (choice === 'ahora_tarjeta') await nextTick().then(card.mountCard)
     else teardownStripe()
   })
   onUnmounted(() => teardownStripe())
@@ -92,23 +77,19 @@ export function useBookingPayment(): BookingPayment {
   const paymentWarning = ref('')
   const paymentConfirming = ref(false)
 
-  function isCardReady() {
-    return Boolean(stripe && cardElement)
-  }
+  const isCardReady = card.isCardReady
 
   async function chargeBookingPayment(code: string) {
     paymentConfirming.value = true
     paymentWarning.value = ''
     try {
       if (payChoice.value === 'ahora_tarjeta') {
-        if (!stripe || !cardElement) throw new Error('Stripe no está listo.')
+        if (!card.isCardReady()) throw new Error('Stripe no está listo.')
         const intentRes = await apiFetch<{ data: { client_secret: string } }>(
           `/appointments/${code}/deposit/stripe-intent`,
           { method: 'POST' },
         )
-        const result = await stripe.confirmCardPayment(intentRes.data.client_secret, {
-          payment_method: { card: cardElement },
-        })
+        const result = await card.confirmCardPayment(intentRes.data.client_secret)
         if (result.error) throw new Error(result.error.message ?? 'Error al procesar el pago.')
       }
       else if (payChoice.value === 'ahora_transferencia' && transferReceipt.value) {

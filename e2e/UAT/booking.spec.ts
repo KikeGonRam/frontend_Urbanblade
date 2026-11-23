@@ -79,7 +79,9 @@ test("reservar desde la ficha del barbero salta directo al horario", async ({
 }) => {
   await asLoggedInClient(page);
 
+  // /barbers/[slug] redirige a /equipo/[slug], la única ficha de barbero.
   await page.goto("/barbers/nava-panther");
+  await expect(page).toHaveURL(/\/equipo\/nava-panther$/);
   await page.getByRole("link", { name: /Reservar con/ }).click();
 
   await expect(page).toHaveURL(/\/my\/appointments\?barber=b-1$/);

@@ -4,8 +4,6 @@ export interface NavItem {
   icon: string
   primary: boolean
   badge: number | null
-  /** false = la página aún no existe en este repo (fases futuras); se muestra deshabilitado. */
-  implemented: boolean
 }
 
 export interface NavSection {
@@ -56,33 +54,19 @@ const ICONS: Record<string, string> = {
   waitlist: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/><path d="M3 3l3 3M21 3l-3 3"/>',
 }
 
-/** Único path real hoy — todo lo demás se muestra pero deshabilitado ("Próximamente") hasta su fase. */
-const IMPLEMENTED_PATHS = new Set([
-  '/dashboard', '/appointments', '/appointments/calendar', '/clients', '/payments', '/payments/corte',
-  '/orders', '/store', '/cart', '/my/orders', '/inventory/products', '/inventory/movements',
-  '/services', '/users', '/barbers/manage',
-  '/barber/agenda', '/barber/portfolio', '/barber/schedule', '/barber/profile',
-  '/my/appointments', '/barbers', '/my/invoices',
-  '/campaigns', '/raffles', '/logs', '/settings', '/reports', '/analytics',
-  '/social/feed', '/reviews', '/system', '/notifications', '/gift-cards', '/packages',
-  '/membership', '/admin/membership-plans', '/admin/moderacion', '/referrals', '/waitlist',
-])
-
 function collapsibleSection(key: string, title: string, items: NavItem[]): NavSection {
   return { key, title, collapsible: true, items }
 }
 
 function item(label: string, to: string, icon: string, primary = false, badge: number | null = null): NavItem {
-  return { label, to, icon: ICONS[icon] ?? '', primary, badge, implemented: IMPLEMENTED_PATHS.has(to) }
+  return { label, to, icon: ICONS[icon] ?? '', primary, badge }
 }
 
 /**
  * Mismas secciones/roles que barber/app/Helpers/NavigationMenu.php::sections(),
  * adaptado a rutas Nuxt (este repo elige su propio esquema de URLs, no
- * reutiliza los nombres de ruta de Laravel). Los ítems fuera de fase 3
- * (todo salvo /dashboard) quedan visibles pero `implemented: false` — el
- * shell ya muestra la navegación completa por rol, las páginas se activan
- * fase a fase.
+ * reutiliza los nombres de ruta de Laravel). Todas las rutas del menú existen
+ * en app/pages; ya no hay ítems «Próximamente» deshabilitados.
  */
 export function useNavigation() {
   const { user, hasRole } = useAuth()
@@ -202,8 +186,8 @@ export function useNavigation() {
           item('Mi Horario', '/barber/schedule', 'schedule', true),
           // "Mi Perfil" se quitó de aquí (25-oct, confuso tener dos "Mi Perfil"): /profile ya
           // cubre todo lo del barbero (POST /barber/profile, GET /barber/me) y se llega ahí desde
-          // el avatar del topbar/drawer, igual que cualquier otro rol. /barber/profile.vue ahora
-          // solo redirige, por si algún enlace guardado todavía apunta ahí.
+          // el avatar del topbar/drawer, igual que cualquier otro rol. /barber/profile se eliminó
+          // (nov-2026); nada en la app apuntaba ahí.
           // "Mi Analítica" se quitó (26-sep): solo repetía las oportunidades que ya salen en su dashboard.
         ],
       })
@@ -214,7 +198,7 @@ export function useNavigation() {
       out.push(
         collapsibleSection('cliente-reservar', 'Reservar', [
           item('Mis Citas', '/my/appointments', 'my_appointments', true),
-          item('Nuestros Barberos', '/barbers', 'barbers_client'),
+          item('Nuestros Barberos', '/equipo', 'barbers_client'),
           item('Lista de Espera', '/waitlist', 'waitlist'),
         ]),
         collapsibleSection('cliente-tienda', 'Tienda', [
