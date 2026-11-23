@@ -41,7 +41,8 @@ async function abrirCobro(page: Page) {
   await page.getByLabel("Correo").fill("staff@test.local");
   await page.locator("#password").fill("password");
   await page.getByRole("button", { name: "Ingresar" }).click();
-  await page.getByRole("button", { name: /Operación/ }).click();
+  // Pagos vive en la sección «Caja» del menú (rediseño de navegación, nov-2026; antes «Operación»).
+  await page.getByRole("button", { name: /^Caja/ }).click();
   await page.getByRole("link", { name: "Pagos", exact: true }).click();
   await expect(page).toHaveURL(/\/payments$/);
 

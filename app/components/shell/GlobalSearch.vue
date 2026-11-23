@@ -7,7 +7,8 @@
  *   - "Servicios": catálogo público (GET /services), filtrado aquí.
  * Flechas para moverse, Enter abre el resultado, Esc cierra.
  */
-const { sections } = useNavigation();
+// `shortcuts`: pantallas fuera del menú (carrito, recibos, calendario…) que se siguen encontrando aquí.
+const { sections, shortcuts } = useNavigation();
 const { user } = useAuth();
 const { apiFetch } = useApi();
 const router = useRouter();
@@ -36,8 +37,7 @@ const pages = computed<Result[]>(() => {
   const q = normalize(query.value.trim());
   if (!q) return [];
 
-  return sections.value
-    .flatMap((s) => s.items)
+  return [...sections.value.flatMap((s) => s.items), ...shortcuts.value]
     .filter((i) => normalize(i.label).includes(q))
     .slice(0, 5)
     .map((i) => ({ key: `p-${i.to}`, group: "Ir a", label: i.label, to: i.to }));

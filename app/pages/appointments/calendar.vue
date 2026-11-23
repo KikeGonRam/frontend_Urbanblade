@@ -244,6 +244,14 @@ function onEventClick(info: EventClickArg) {
           {{ ownCalendar ? "Tus citas por mes, semana y día." : "Vista mensual, semanal y diaria de la agenda." }}
         </p>
       </div>
+      <!-- La lista del barbero es su agenda; la del personal, /appointments. -->
+      <UiViewSwitch
+        label="Vista de la agenda"
+        :options="[
+          { label: 'Lista', to: ownCalendar ? '/barber/agenda' : '/appointments' },
+          { label: 'Calendario', to: '/appointments/calendar' },
+        ]"
+      />
     </header>
 
     <div class="space-y-5">

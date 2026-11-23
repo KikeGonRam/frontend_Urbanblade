@@ -23,6 +23,18 @@ Fuentes: [componentes](../app/components), [layouts](../app/layouts),
 - Reutilizar el kit existente antes de crear otro selector, modal, badge o tabla.
 - No sustituir datos ausentes por cifras o series inventadas.
 
+## Navegación (rediseño de noviembre de 2026)
+
+- El menú del personal usa los mismos grupos y el mismo orden que «Más» en la app Android: Clientes, Caja,
+  Inventario, Equipo y catálogo, Análisis y, al final, Sistema (configuración, logs y estado del servidor).
+- «Citas» es una sola entrada: la lista y el calendario se cambian con `UiViewSwitch` («Lista | Calendario»),
+  que son enlaces a sus rutas, no pestañas. El barbero tiene lo mismo entre su agenda y su calendario.
+- El menú del cliente tiene cinco entradas (Inicio, Mis citas, Tienda, Membresía y Notificaciones). Lo demás se
+  abre desde la pantalla a la que pertenece con `UiRelatedLinks` y sigue en el buscador (`shortcuts` de
+  `useNavigation`). Antes de agregar una entrada al menú, comprobar si cabe como acceso dentro de una pantalla.
+- El panel del administrador muestra primero lo de hoy; el desempeño por barbero, las predicciones y el uso de
+  Bladebot están en Análisis. Prueba: `e2e/UAT/navegacion.spec.ts`.
+
 ## Mascotas
 
 Nava representa orientación/estados vacíos; Bladebot, asistencia/espera/éxito;

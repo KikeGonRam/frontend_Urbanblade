@@ -10,20 +10,30 @@ const EXTRA_TITLES: Record<string, string> = {
   reservar: "Reservar cita",
   corte: "Corte de caja",
   pending: "Pagos pendientes",
+  anulados: "Cobros anulados",
   calendar: "Calendario",
   feed: "Muro Inspiración",
+  // Fuera del menú del cliente desde el rediseño de navegación (se abren desde su pantalla).
+  cart: "Carrito",
+  orders: "Mis pedidos",
+  invoices: "Mis recibos",
+  waitlist: "Lista de espera",
 };
 // El título sale del nombre en español del menú (el más específico que coincida con la ruta), no de la URL:
 // antes la barra decía "Appointments" o "Feed" en inglés.
 const pageName = computed(() => {
-  const match = sections.value
-    .flatMap((s) => s.items)
-    .filter((i) => route.path === i.to || route.path.startsWith(`${i.to}/`))
+  const items = sections.value.flatMap((s) => s.items);
+  const exact = items.find((i) => route.path === i.to);
+  if (exact) return exact.label;
+  const segment = route.path.split("/").filter(Boolean).at(-1) ?? "dashboard";
+  // Una subpantalla con nombre propio gana a su sección: /appointments/calendar es «Calendario», no «Citas».
+  if (EXTRA_TITLES[segment]) return EXTRA_TITLES[segment];
+  const match = items
+    .filter((i) => route.path.startsWith(`${i.to}/`))
     .sort((a, b) => b.to.length - a.to.length)[0];
   if (match) return match.label;
-  const segment = route.path.split("/").filter(Boolean).at(-1) ?? "dashboard";
 
-  const texto = EXTRA_TITLES[segment] ?? segment.replaceAll("-", " ");
+  const texto = segment.replaceAll("-", " ");
 
   // Solo la primera letra en mayúscula («Lista de espera»); antes `capitalize` ponía cada palabra («Lista De Espera»).
   return texto.charAt(0).toUpperCase() + texto.slice(1);
