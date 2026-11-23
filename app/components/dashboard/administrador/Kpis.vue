@@ -12,16 +12,11 @@ const { periodo, citasPorPeriodo, ingresosPorPeriodo, citasHint, ingresosHint, r
 
 <template>
   <div class="space-y-5">
-    <div class="flex items-center gap-3 px-1 pt-1">
-      <span class="text-xs font-black uppercase tracking-[0.22em] text-gold"
-        >Resumen</span
-      >
-      <span class="h-px flex-1 bg-ink/[0.06]" />
-    </div>
-
-    <div class="flex flex-wrap items-center justify-between gap-3">
-      <h2 class="text-sm font-black uppercase tracking-[0.18em] text-gold">Resumen</h2>
-      <UiFilterChips v-model="periodo" label="Periodo de las tarjetas" :options="PERIODOS" />
+    <!-- Un solo encabezado: antes había una etiqueta «Resumen» con línea y, justo debajo, otro «Resumen». -->
+    <div class="flex flex-wrap items-center gap-3 px-1 pt-1">
+      <h2 class="text-xs font-black uppercase tracking-[0.22em] text-gold">Resumen</h2>
+      <span class="hidden h-px flex-1 bg-ink/[0.06] sm:block" aria-hidden="true" />
+      <UiFilterChips v-model="periodo" class="ml-auto" label="Periodo de las tarjetas" :options="PERIODOS" />
     </div>
     <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Resumen">
       <UiStatCard

@@ -97,9 +97,10 @@ async function onSubmit() {
       </div>
 
       <div>
-        <div class="mb-1 flex items-center justify-between">
+        <!-- Sin mayúsculas espaciadas en el enlace: a 390 px se montaba sobre «Contraseña» y partía en dos líneas. -->
+        <div class="mb-1 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
           <label for="password" class="block text-sm text-muted">Contraseña</label>
-          <NuxtLink to="/forgot-password" class="text-xs font-bold uppercase tracking-widest text-muted hover:text-gold">¿Olvidaste tu contraseña?</NuxtLink>
+          <NuxtLink to="/forgot-password" class="text-xs font-semibold text-muted underline-offset-2 hover:text-gold hover:underline">¿Olvidaste tu contraseña?</NuxtLink>
         </div>
         <AuthPasswordField id="password" v-model="password" autocomplete="current-password" placeholder="••••••••" />
       </div>

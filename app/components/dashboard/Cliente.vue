@@ -262,8 +262,9 @@ const visitChartOptions = {
             <UiIcon name="pin" class="text-gold" />
             {{ shop.direccion }}
           </p>
-          <div class="mt-5 flex flex-wrap gap-2">
-            <NuxtLink to="/my/appointments" class="ui-btn min-h-11 gap-2 px-5 text-sm">
+          <!-- En teléfono, rejilla de dos columnas: antes cada botón tenía su propio ancho y quedaban disparejos. -->
+          <div class="mt-5 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+            <NuxtLink to="/my/appointments" class="ui-btn col-span-2 min-h-11 justify-center gap-2 px-5 text-sm sm:col-span-1">
               <UiIcon name="calendar" />
               Reagendar o cancelar
             </NuxtLink>
@@ -272,12 +273,17 @@ const visitChartOptions = {
               :href="mapsUrl"
               target="_blank"
               rel="noopener noreferrer"
-              class="inline-flex min-h-11 items-center gap-2 rounded-xl border border-line px-5 text-sm font-semibold text-ink transition-colors hover:border-gold/40"
+              class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-line px-4 text-sm font-semibold text-ink transition-colors hover:border-gold/40 sm:px-5"
             >
               <UiIcon name="pin" />
               Cómo llegar
             </a>
-            <NuxtLink to="/equipo" class="inline-flex min-h-11 items-center rounded-xl border border-line px-5 text-sm font-semibold text-ink transition-colors hover:border-gold/40">Nuestros barberos</NuxtLink>
+            <!-- «Ver barberos» cabe en media columna a 390 px; «Nuestros barberos» partía en dos líneas. -->
+            <NuxtLink
+              to="/equipo"
+              class="inline-flex min-h-11 items-center justify-center rounded-xl border border-line px-4 text-sm font-semibold text-ink transition-colors hover:border-gold/40 sm:px-5"
+              :class="mapsUrl ? '' : 'col-span-2'"
+            >Ver barberos</NuxtLink>
           </div>
         </template>
         <div v-else class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

@@ -168,10 +168,11 @@ const flowChartOptions = {
         </header>
         <p v-if="errorLlegada" role="alert" class="mb-2 text-xs text-danger">{{ errorLlegada }}</p>
         <ul v-if="data.nextAppointments.length" class="divide-y divide-line">
-          <li v-for="appt in data.nextAppointments" :key="appt.id" class="flex items-center gap-2">
+          <!-- En teléfono las acciones bajan a su propia línea: en una sola fila el nombre se cortaba en «Di…». -->
+          <li v-for="appt in data.nextAppointments" :key="appt.id" class="flex flex-wrap items-center gap-x-2 pb-3 sm:flex-nowrap sm:pb-0">
             <button
               type="button"
-              class="-mx-2 flex min-w-0 flex-1 items-center gap-3 rounded-lg px-2 py-3 text-left transition-colors hover:bg-ink/[0.04] focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold"
+              class="-mx-2 flex min-w-0 basis-full items-center gap-3 rounded-lg px-2 py-3 text-left sm:flex-1 sm:basis-auto transition-colors hover:bg-ink/[0.04] focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold"
               :aria-label="`Ver detalle de la cita de ${appt.cliente}`"
               @click="detailCode = appt.code"
             >
@@ -186,25 +187,27 @@ const flowChartOptions = {
                 {{ etiquetaRelativa(appt.hora_inicio, ahora) }}
               </span>
             </button>
-            <span v-if="enSala(appt)" class="shrink-0 rounded-full border border-success/30 bg-success/10 px-2.5 py-1 text-xs font-bold text-success">En sala</span>
-            <button
-              v-else
-              type="button"
-              :disabled="llegandoCodigo === appt.code"
-              class="flex min-h-10 shrink-0 items-center rounded-lg bg-gold px-3 text-xs font-bold text-black transition-colors hover:bg-gold-dim disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold"
-              :aria-label="`Marcar que ${appt.cliente} llegó`"
-              @click="marcarLlegada(appt)"
-            >
-              {{ llegandoCodigo === appt.code ? "…" : "Llegó" }}
-            </button>
-            <!-- Cobro directo desde la llegada: abre Pagos con la cita preseleccionada. -->
-            <NuxtLink
-              :to="`/payments?cita=${appt.id}`"
-              class="flex min-h-10 shrink-0 items-center rounded-lg border border-success/30 px-3 text-xs font-bold text-success transition-colors hover:bg-success/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold"
-              :aria-label="`Cobrar la cita de ${appt.cliente}`"
-            >
-              Cobrar
-            </NuxtLink>
+            <div class="ml-auto flex shrink-0 items-center gap-2">
+              <span v-if="enSala(appt)" class="shrink-0 rounded-full border border-success/30 bg-success/10 px-2.5 py-1 text-xs font-bold text-success">En sala</span>
+              <button
+                v-else
+                type="button"
+                :disabled="llegandoCodigo === appt.code"
+                class="flex min-h-10 shrink-0 items-center rounded-lg bg-gold px-3 text-xs font-bold text-black transition-colors hover:bg-gold-dim disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold"
+                :aria-label="`Marcar que ${appt.cliente} llegó`"
+                @click="marcarLlegada(appt)"
+              >
+                {{ llegandoCodigo === appt.code ? "…" : "Llegó" }}
+              </button>
+              <!-- Cobro directo desde la llegada: abre Pagos con la cita preseleccionada. -->
+              <NuxtLink
+                :to="`/payments?cita=${appt.id}`"
+                class="flex min-h-10 shrink-0 items-center rounded-lg border border-success/30 px-3 text-xs font-bold text-success transition-colors hover:bg-success/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold"
+                :aria-label="`Cobrar la cita de ${appt.cliente}`"
+              >
+                Cobrar
+              </NuxtLink>
+            </div>
           </li>
         </ul>
         <p
