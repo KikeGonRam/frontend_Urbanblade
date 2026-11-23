@@ -12,7 +12,7 @@ export interface BarberStatus {
   progress: number;
 }
 
-/** KPIs que GET /dashboard entrega a administrador e ingeniero. */
+/** KPIs que GET /dashboard entrega a administrador. */
 export interface DashboardKpis {
   appointments_today: number;
   appointments_week: number;
@@ -88,57 +88,4 @@ export interface AdminData {
   recentAppointments: RecentAppointment[];
   insights: SimpleInsightRow[];
   sparkHighlights: DashboardInsight[];
-}
-
-export interface ModuleTelemetryRaw {
-  window_days?: number;
-  payments?: {
-    verified_month?: number;
-    pending_review?: number;
-    rejected_month?: number;
-    amount_month?: number;
-  };
-  orders?: {
-    pending?: number;
-    delivered_month?: number;
-    cancelled_month?: number;
-  };
-  campaigns?: {
-    scheduled?: number;
-    sent_month?: number;
-    recipients_month?: number;
-    opens_month?: number;
-    clicks_month?: number;
-  };
-  raffles?: {
-    redeemable?: number;
-    claimed_month?: number;
-    expired_unclaimed?: number;
-  };
-  social?: {
-    works_month?: number;
-    reactions_month?: number;
-    comments_month?: number;
-    saves_month?: number;
-  };
-}
-
-export interface IngenieroData {
-  todayLabel: string;
-  kpis: DashboardKpis;
-  incomeChart: ChartSeriesData;
-  servicesChart: ChartSeriesData;
-  barberPerformance: BarberPerformanceData;
-  clientTrends: ChartSeriesData;
-  chatbotTelemetry: ChatbotTelemetry;
-  moduleTelemetry?: ModuleTelemetryRaw;
-  insights: SimpleInsightRow[];
-  sparkHighlights: DashboardInsight[];
-}
-
-export interface SystemStatusSummary {
-  database: { status: "up" | "down"; latency_ms: number | null };
-  redis: { status: "up" | "down"; latency_ms: number | null };
-  queue: { pending: number | null; failed: number | null };
-  scheduled_tasks: Array<{ status: "success" | "failed" | "unknown" }>;
 }

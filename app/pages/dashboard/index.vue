@@ -71,11 +71,6 @@ const fullName = computed(() => user.value?.name ?? "");
       :data="dashboard.data as any"
     />
 
-    <LazyDashboardIngeniero
-      v-else-if="dashboard?.role === 'ingeniero'"
-      :data="dashboard.data as any"
-    />
-
     <section v-else-if="dashboard" class="ui-card-premium p-5">
       <header class="mb-4">
         <h1 class="mt-1 text-2xl font-semibold text-ink">Dashboard</h1>

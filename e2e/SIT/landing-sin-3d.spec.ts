@@ -5,7 +5,7 @@ import { mockApi } from "../support/api-mock";
 /**
  * La portada ya no lleva el poste de barbería 3D (se quitó por innecesario y por peso): el héroe es
  * foto, texto y botones. Estas pruebas evitan que three.js vuelva a descargarse en la portada pública.
- * (El mapa 3D del ingeniero sigue usando three.js, pero solo dentro del panel.)
+ * (three.js se quitó del proyecto junto con el monitor 3D del rol ingeniero, nov-2026.)
  */
 
 /** Junta el código de los JS que baja la página, para saber si se descargó three.js. */

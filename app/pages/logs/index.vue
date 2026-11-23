@@ -7,7 +7,7 @@ import type { DataTableColumn } from "~/components/ui/DataTable.vue";
  * amplió en esta misma fase con event/fecha_desde/fecha_hasta/causer y el
  * bloque de stats para llegar a paridad con la vista Blade.
  */
-definePageMeta({ middleware: ["auth", "engineer"], layout: "dashboard" });
+definePageMeta({ middleware: ["auth", "admin"], layout: "dashboard" });
 useSeoMeta({ title: 'Logs — UrbanBlade', robots: 'noindex' })
 
 

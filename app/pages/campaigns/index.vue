@@ -5,7 +5,7 @@
  * de esta fase — se construyó Api\Campaign\CampaignController desde cero,
  * reutilizando el mismo CampaignDispatcher del lado servidor.
  */
-definePageMeta({ middleware: ['auth', 'admin'], layout: 'dashboard' })
+definePageMeta({ middleware: ['auth', 'admin', 'feature'], feature: 'campaigns', layout: 'dashboard' })
 
 useSeoMeta({ title: 'Campañas — UrbanBlade', robots: 'noindex' })
 

@@ -1,6 +1,8 @@
 # ADR-002: observabilidad para ingeniero
 
-Estado: aceptada; revisión estática del diseño el 28 de octubre de 2026.
+Estado: REEMPLAZADA el 23 de noviembre de 2026. El rol ingeniero, su panel y el monitor 3D se quitaron de la web
+(auditoría de funciones); el administrador conserva Reportes, Logs y Estado del Servidor en texto. Se conserva como
+historia. Estado anterior: aceptada; revisión estática del diseño el 28 de octubre de 2026.
 La decisión original del panel está fechada el 6 de septiembre de 2026.
 
 ## Decisión
@@ -22,9 +24,9 @@ Mostrar u ocultar un enlace en Nuxt no constituye una barrera suficiente.
 
 La UI se mantiene en [componentes](../app/components) y
 [app/pages/system/index.vue](../app/pages/system/index.vue).
-[e2e/UAT/dashboard-engineer.spec.ts](../e2e/UAT/dashboard-engineer.spec.ts) verifica
-el comportamiento con mocks. La disponibilidad actual y los permisos remotos
-requieren comprobarse en un entorno autorizado.
+La prueba `dashboard-engineer.spec.ts` que verificaba el panel con mocks se
+borró el 23 de noviembre de 2026 junto con el rol. La disponibilidad actual y
+los permisos remotos requieren comprobarse en un entorno autorizado.
 
 ## Consecuencias
 

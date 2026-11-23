@@ -14,7 +14,8 @@ tienda y reportes, con experiencias para administración, recepción, barberos y
 ## Funcionalidades
 
 - Reservas con consulta de disponibilidad por barbero, servicio y fecha.
-- Agenda y paneles por rol; el ingeniero tiene acceso de solo lectura.
+- Agenda y paneles por rol (administrador, recepción, barbero y cliente). Los módulos opcionales (paquetes, gift cards,
+  referidos, sorteos, muro social y campañas) se encienden con `features` de `GET /barbershop`; apagados no se muestran.
 - Cobros con efectivo, transferencia y tarjeta mediante Stripe.
 - Inventario, pedidos, recibos, lealtad y membresía digital.
 - Reportes, gráficas, analítica, reseñas y muro social.

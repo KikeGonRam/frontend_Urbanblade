@@ -4,7 +4,7 @@ import type { DataTableColumn } from "~/components/ui/DataTable.vue";
  * Fase 9.9 — Historial de sorteos mensuales, puerto de Loyalty\RaffleController
  * (web). No existía ninguna API para esto antes de esta fase.
  */
-definePageMeta({ middleware: ['auth', 'admin'], layout: 'dashboard' })
+definePageMeta({ middleware: ['auth', 'admin', 'feature'], feature: 'raffles', layout: 'dashboard' })
 
 useSeoMeta({ title: 'Sorteos — UrbanBlade', robots: 'noindex' })
 

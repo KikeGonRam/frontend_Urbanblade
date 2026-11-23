@@ -26,7 +26,7 @@ ensureChartjsRegistered();
  * ReportAdminController::exportReport()/listReports()/generateCustomReport(),
  * que son placeholders sin persistencia ni archivo real.
  */
-definePageMeta({ middleware: ["auth", "engineer"], layout: "dashboard" });
+definePageMeta({ middleware: ["auth", "admin"], layout: "dashboard" });
 useSeoMeta({ title: 'Reportes — UrbanBlade', robots: 'noindex' })
 
 

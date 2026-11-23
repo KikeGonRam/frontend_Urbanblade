@@ -56,6 +56,9 @@ const routes = {
       horario_cierre: "21:00",
       politica_cancelacion: 24,
       redes_sociales: { instagram: "urbanblade", facebook: null, tiktok: null },
+      // Interruptores de módulos (en producción/staging vienen apagados). Aquí todos encendidos para que
+      // las pruebas de esos módulos sigan cubriendo su interfaz; e2e/UAT/modulos-apagados.spec.ts prueba el caso apagado.
+      features: { packages: true, gift_cards: true, referrals: true, raffles: true, social: true, campaigns: true },
     },
   },
   "/dashboard": { role: "cliente", data: {} },

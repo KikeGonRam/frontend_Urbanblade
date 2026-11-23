@@ -138,6 +138,10 @@ export default defineNuxtConfig({
     '/barber/**': { ssr: false },
     '/barbers': { ssr: false },
     '/barbers/**': { ssr: false },
+    // Módulos con interruptor (middleware 'feature'): GET /barbershop solo se pide en el cliente.
+    '/packages': { ssr: false },
+    '/gift-cards': { ssr: false },
+    '/referrals': { ssr: false },
     '/campaigns': { ssr: false },
     '/raffles': { ssr: false },
     '/logs': { ssr: false },
@@ -145,6 +149,7 @@ export default defineNuxtConfig({
     '/reports': { ssr: false },
     '/analytics': { ssr: false },
     '/social/**': { ssr: false },
+    '/admin/moderacion': { ssr: false },
     '/reviews': { ssr: false },
     '/system': { ssr: false },
     '/profile': { ssr: false },

@@ -1,3 +1,5 @@
+import type { FeatureName } from '~/composables/useFeatures'
+
 export interface NavItem {
   label: string
   to: string
@@ -70,12 +72,14 @@ function item(label: string, to: string, icon: string, primary = false, badge: n
  */
 export function useNavigation() {
   const { user, hasRole } = useAuth()
+  // Módulos con interruptor (GET /barbershop → features): apagado o sin respuesta = fuera del menú.
+  const { isEnabled } = useFeatures()
+  const on = (name: FeatureName) => isEnabled(name)
 
   const isAdmin = computed(() => hasRole('administrador'))
   const isReception = computed(() => hasRole('recepcionista'))
   const isBarber = computed(() => hasRole('barbero'))
   const isClient = computed(() => hasRole('cliente'))
-  const isEngineer = computed(() => hasRole('ingeniero'))
 
   const sections = computed<NavSection[]>(() => {
     if (!user.value) return []
@@ -88,9 +92,7 @@ export function useNavigation() {
       collapsible: false,
       items: [
         item('Dashboard', '/dashboard', 'dashboard', true),
-        // El muro es editorial/operativo. Ingeniero ve telemetría agregada
-        // cuando exista, nunca publicaciones ni acciones del feed.
-        ...(isEngineer.value ? [] : [item('Muro Inspiración', '/social/feed', 'wall', isClient.value)]),
+        ...(on('social') ? [item('Muro Inspiración', '/social/feed', 'wall', isClient.value)] : []),
         item('Notificaciones', '/notifications', 'notifications'),
       ],
     })
@@ -107,8 +109,8 @@ export function useNavigation() {
           item('Pagos', '/payments', 'payments', true),
           item('Pedidos', '/orders', 'orders', isReception.value),
           item('Movimientos', '/inventory/movements', 'movements'),
-          item('Gift Cards', '/gift-cards', 'gift_cards'),
-          item('Paquetes', '/packages', 'packages'),
+          ...(on('gift_cards') ? [item('Gift Cards', '/gift-cards', 'gift_cards')] : []),
+          ...(on('packages') ? [item('Paquetes', '/packages', 'packages')] : []),
           item('Lista de Espera', '/waitlist', 'waitlist'),
           ...(isReception.value ? [item('Analítica', '/analytics', 'analytics')] : []),
         ],
@@ -124,7 +126,7 @@ export function useNavigation() {
           item('Barberos', '/barbers/manage', 'barbers'),
           item('Planes de Membresía', '/admin/membership-plans', 'membership'),
           item('Reseñas', '/reviews', 'reviews'),
-          item('Moderación del muro', '/admin/moderacion', 'reviews'),
+          ...(on('social') ? [item('Moderación del muro', '/admin/moderacion', 'reviews')] : []),
           item('Usuarios', '/users', 'users'),
           item('Servicios', '/services', 'services'),
           item('Productos', '/inventory/products', 'products'),
@@ -138,32 +140,14 @@ export function useNavigation() {
         items: [
           item('Analítica', '/analytics', 'analytics'),
           item('Reportes', '/reports', 'reports'),
-          item('Campañas', '/campaigns', 'campaigns'),
-          item('Sorteos', '/raffles', 'raffles'),
+          ...(on('campaigns') ? [item('Campañas', '/campaigns', 'campaigns')] : []),
+          ...(on('raffles') ? [item('Sorteos', '/raffles', 'raffles')] : []),
           item('Logs', '/logs', 'logs'),
         ],
       })
     }
 
-    // ingeniero: mismo criterio de solo lectura que el backend (guardrail
-    // #24 en barber/.claude/skills/urbanblade-guardrails) -- ve Reportes y
-    // Logs (los únicos ítems de "Análisis" que su rol también puede
-    // consultar en la API), más su propia sección de estado del servidor.
-    // Nunca ve "Gestión" ni el resto de "Análisis" (Analítica/Campañas/
-    // Sorteos), que siguen siendo solo administrador.
-    if (isEngineer.value) {
-      out.push({
-        key: 'analisis',
-        title: 'Análisis',
-        collapsible: true,
-        items: [
-          item('Reportes', '/reports', 'reports'),
-          item('Logs', '/logs', 'logs'),
-        ],
-      })
-    }
-
-    if (isAdmin.value || isEngineer.value) {
+    if (isAdmin.value) {
       out.push({
         key: 'sistema',
         title: 'Sistema',
@@ -209,9 +193,9 @@ export function useNavigation() {
         ]),
         collapsibleSection('cliente-beneficios', 'Beneficios', [
           item('Membresía', '/membership', 'membership'),
-          item('Paquetes', '/packages', 'packages'),
-          item('Gift Cards', '/gift-cards', 'gift_cards'),
-          item('Referidos', '/referrals', 'referrals'),
+          ...(on('packages') ? [item('Paquetes', '/packages', 'packages')] : []),
+          ...(on('gift_cards') ? [item('Gift Cards', '/gift-cards', 'gift_cards')] : []),
+          ...(on('referrals') ? [item('Referidos', '/referrals', 'referrals')] : []),
         ]),
       )
     }

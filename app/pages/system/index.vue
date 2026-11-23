@@ -1,14 +1,12 @@
 <script setup lang="ts">
 /*
- * Fase 4 del plan rol ingeniero — puerto de GET /api/v1/admin/system/status
- * (App\Http\Controllers\Api\Admin\System\SystemController, barber). Único
- * consumidor de este endpoint hoy; administrador e ingeniero comparten la
- * misma ruta y el mismo middleware 'engineer' (ver app/middleware/engineer.ts).
+ * Estado del servidor: puerto de GET /api/v1/admin/system/status (SystemController, barber).
+ * Solo administrador. El rol ingeniero y el monitor 3D se quitaron en nov-2026; aquí queda solo el estado en texto.
  */
 import type { Ref } from 'vue'
-import { buildSystemNodes, type SystemStatus } from '~/utils/systemMap'
+import type { SystemStatus } from '~/types/system'
 
-definePageMeta({ middleware: ['auth', 'engineer'], layout: 'dashboard' })
+definePageMeta({ middleware: ['auth', 'admin'], layout: 'dashboard' })
 
 useSeoMeta({ title: 'Estado del servidor — UrbanBlade', robots: 'noindex' })
 
@@ -20,17 +18,13 @@ const { data, pending, error, refresh } = await useAsyncData(
   { lazy: true },
 )
 
-// TT38: nodos del mapa del sistema (vista 3D + lista accesible).
-const mapNodes = computed(() => (data.value ? buildSystemNodes(data.value) : []))
-
 // Un monitor que hay que refrescar a mano no sirve: se actualiza solo cada 30 s (si la pestaña está visible)
 // y guarda las últimas lecturas de latencia de la sesión para ver la tendencia.
 const REFRESH_MS = 30_000
 const HISTORY_SIZE = 20
 const autoRefresh = ref(true)
 const updatedAt = ref<Date | null>(null)
-// Historial persistente (24 h) para las tendencias; dbHistory/redisHistory siguen siendo las últimas lecturas de la sesión.
-const history = useSystemHistory()
+// dbHistory/redisHistory guardan las últimas lecturas de latencia de la sesión.
 const dbHistory = ref<number[]>([])
 const redisHistory = ref<number[]>([])
 
@@ -41,7 +35,6 @@ function pushLatency(list: Ref<number[]>, ms: number | null) {
 watch(data, (value) => {
   if (!value) return
   updatedAt.value = new Date()
-  history.record(value)
   pushLatency(dbHistory, value.database.latency_ms)
   pushLatency(redisHistory, value.redis.latency_ms)
 }, { immediate: true })
@@ -69,7 +62,7 @@ function sparkPath(vals: number[]) {
   return 'M ' + vals.map((v, i) => `${((i * w) / (vals.length - 1)).toFixed(2)},${(h - 2 - ((v - min) / rng) * (h - 4)).toFixed(2)}`).join(' L ')
 }
 
-// Lo que falló va primero: es lo que el ingeniero necesita ver.
+// Lo que falló va primero: es lo que el administrador necesita ver.
 const sortedTasks = computed(() =>
   [...(data.value?.scheduled_tasks ?? [])].sort((a, b) => Number(b.status === 'failed') - Number(a.status === 'failed')),
 )
@@ -145,14 +138,9 @@ function fmtDate(iso: string | null) {
             <span class="mt-1 flex h-3 w-3 shrink-0 rounded-full" :class="health.dot" />
             <div><p class="text-xs font-black uppercase tracking-[0.2em] text-ink/45">Resumen de monitor</p><h2 class="mt-1 text-xl font-black text-ink">{{ health.label }}</h2><p class="mt-1 text-sm text-muted">{{ health.detail }}</p></div>
           </div>
-          <div class="flex flex-wrap gap-2"><NuxtLink to="/dashboard" class="rounded-xl border border-line bg-card px-3 py-2 text-xs font-black uppercase tracking-widest text-muted transition hover:border-gold/40 hover:text-gold">Módulos</NuxtLink><NuxtLink to="/reports" class="rounded-xl border border-line bg-card px-3 py-2 text-xs font-black uppercase tracking-widest text-muted transition hover:border-gold/40 hover:text-gold">Reportes</NuxtLink><NuxtLink to="/logs" class="rounded-xl border border-line bg-card px-3 py-2 text-xs font-black uppercase tracking-widest text-muted transition hover:border-gold/40 hover:text-gold">Logs</NuxtLink></div>
+          <div class="flex flex-wrap gap-2"><NuxtLink to="/reports" class="rounded-xl border border-line bg-card px-3 py-2 text-xs font-black uppercase tracking-widest text-muted transition hover:border-gold/40 hover:text-gold">Reportes</NuxtLink><NuxtLink to="/logs" class="rounded-xl border border-line bg-card px-3 py-2 text-xs font-black uppercase tracking-widest text-muted transition hover:border-gold/40 hover:text-gold">Logs</NuxtLink></div>
         </div>
       </section>
-
-      <!-- Primero la información (tendencias); el mapa 3D queda como vista de topología. -->
-      <SystemTrendsBoard :samples="history.samples.value" :incidents="history.incidents.value" @clear="history.clear" />
-
-      <SystemMap3D :nodes="mapNodes" />
 
       <section class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div class="rounded-2xl border border-ink/[0.06] bg-card p-4"><p class="text-xs font-black uppercase tracking-widest text-ink/50">Entorno</p><p class="mt-1 text-lg font-black text-ink">{{ data.app.env }}</p></div>

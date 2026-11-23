@@ -3,9 +3,9 @@ import DesktopTopbar from '~/components/shell/DesktopTopbar.vue'
 
 const route = useRoute()
 const { hasRole } = useAuth()
-// Administración, recepción e ingeniería viven en datos y tablas: carcasa corporativa (plana, densa, sin brillos).
+// Administración y recepción viven en datos y tablas: carcasa corporativa (plana, densa, sin brillos).
 // Cliente y barbero usan la carcasa amable de siempre (islas flotantes, esquinas suaves).
-const uiMode = computed(() => (hasRole('administrador') || hasRole('recepcionista') || hasRole('ingeniero') ? 'data' : 'friendly'))
+const uiMode = computed(() => (hasRole('administrador') || hasRole('recepcionista') ? 'data' : 'friendly'))
 const content = ref<HTMLElement | null>(null)
 const { aviso, limpiar } = useAccesoDenegado()
 watch(() => route.path, async () => {

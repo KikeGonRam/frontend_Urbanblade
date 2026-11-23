@@ -12,7 +12,7 @@
  * gift-cards/mine unas cuantas veces hasta que aparezca -- mismo patrón
  * de "esperar y refrescar" que /my/appointments usa para el autopago.
  */
-definePageMeta({ middleware: ["auth"], layout: "dashboard" });
+definePageMeta({ middleware: ["auth", "feature"], feature: "gift_cards", layout: "dashboard" });
 
 useSeoMeta({ title: 'Gift cards — UrbanBlade', robots: 'noindex' })
 

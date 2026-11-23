@@ -70,6 +70,15 @@ const props = defineProps<{
 }>();
 const saludo = useSaludo();
 
+// Beneficios y compras: Membresía siempre; el resto solo con su interruptor encendido (GET /barbershop → features).
+const { isEnabled } = useFeatures();
+const benefitLinks = computed(() => [
+  { label: "Membresía", to: "/membership" },
+  ...(isEnabled("packages") ? [{ label: "Paquetes", to: "/packages" }] : []),
+  ...(isEnabled("gift_cards") ? [{ label: "Gift Cards", to: "/gift-cards" }] : []),
+  ...(isEnabled("referrals") ? [{ label: "Referidos", to: "/referrals" }] : []),
+]);
+
 // Dirección de la barbería para el botón «Cómo llegar» (mismo endpoint público que la reserva).
 const { apiFetch } = useApi();
 const { data: shopRes } = await useAsyncData<{ data: { direccion?: string | null } }>(
@@ -398,7 +407,7 @@ const visitChartOptions = {
 
           <nav class="grid grid-cols-2 gap-2" aria-label="Tus beneficios y compras">
             <NuxtLink
-              v-for="l in [{ label: 'Membresía', to: '/membership' }, { label: 'Paquetes', to: '/packages' }, { label: 'Gift Cards', to: '/gift-cards' }, { label: 'Referidos', to: '/referrals' }]"
+              v-for="l in benefitLinks"
               :key="l.to"
               :to="l.to"
               class="flex min-h-11 items-center justify-between rounded-xl border border-line px-3 text-sm font-semibold text-ink transition-colors hover:border-gold/40"

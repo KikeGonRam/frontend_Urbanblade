@@ -6,7 +6,7 @@
  * canje real ocurre al cobrar la cita (ver payments/index.vue), no aquí --
  * esta página solo compra y consulta usos restantes.
  */
-definePageMeta({ middleware: ["auth"], layout: "dashboard" });
+definePageMeta({ middleware: ["auth", "feature"], feature: "packages", layout: "dashboard" });
 
 useSeoMeta({ title: 'Paquetes — UrbanBlade', robots: 'noindex' })
 
