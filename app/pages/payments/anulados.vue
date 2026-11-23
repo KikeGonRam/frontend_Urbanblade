@@ -20,7 +20,9 @@ const { data, pending, error, refresh } = await useAsyncData<PaymentsResponse>(
   { watch: [page], lazy: true },
 );
 
-const rows = computed(() => data.value?.data ?? []);
+// Solo filas que traen `anulacion`: una API anterior a la anulación lógica ignora ?anulados=1 y
+// devolvería los cobros vigentes, que aquí no deben aparecer como anulados.
+const rows = computed(() => (data.value?.data ?? []).filter((row) => row.anulacion));
 const meta = computed(() => data.value?.meta);
 
 const COLUMNAS: DataTableColumn[] = [
