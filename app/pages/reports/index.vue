@@ -361,7 +361,7 @@ async function downloadReport(type: string, format: "excel" | "pdf") {
       </section>
     </section>
 
-    <UiPeakHoursHeatmap class="mb-6" />
+    <UiPeakHoursHeatmap id="horas-pico" class="mb-6 scroll-mt-24" />
 
     <section class="ui-card mb-8 p-5">
       <div class="mb-3 flex items-center justify-between">

@@ -6,13 +6,6 @@
  * canje real ocurre al cobrar la cita (ver payments/index.vue), no aquí --
  * esta página solo compra y consulta usos restantes.
  */
-import {
-  loadStripe,
-  type Stripe,
-  type StripeCardElement,
-  type StripeElements,
-} from "@stripe/stripe-js/pure";
-
 definePageMeta({ middleware: ["auth"], layout: "dashboard" });
 
 useSeoMeta({ title: 'Paquetes — UrbanBlade', robots: 'noindex' })
@@ -52,8 +45,6 @@ const ESTADO_CLASS: Record<string, string> = {
 
 const { apiFetch } = useApi();
 const { user, hasRole, fetchMe } = useAuth();
-const config = useRuntimeConfig();
-const stripeConfigured = Boolean(config.public.stripeKey);
 const isClient = computed(() => hasRole("cliente"));
 
 // Igual que /gift-cards: si se entra directo a esta URL, "auth_user"
@@ -99,53 +90,35 @@ const buyProcessing = ref(false);
 const buySucceeded = ref(false);
 const buyWaiting = ref(false);
 
-let stripe: Stripe | null = null;
-let elements: StripeElements | null = null;
-let cardElement: StripeCardElement | null = null;
-const cardElementRef = ref<HTMLDivElement | null>(null);
+// Carga de Stripe.js, campo de tarjeta y confirmación: useStripeCard (compartido).
+const {
+  stripeConfigured,
+  cardElementRef,
+  mountCard,
+  unmountCard,
+  isCardReady,
+  confirmCardPayment,
+} = useStripeCard({
+  onChangeError: (message) => {
+    buyError.value = message;
+  },
+});
 
 async function openBuy(pkg: CatalogPackage) {
   buying.value = pkg;
   buyError.value = "";
   buySucceeded.value = false;
   await nextTick();
-  await ensureStripeMounted();
+  await mountCard();
 }
 
 function closeBuy() {
   buying.value = null;
-  teardownStripe();
+  unmountCard();
 }
-
-async function ensureStripeMounted() {
-  if (!stripeConfigured || cardElement) return;
-
-  stripe = await loadStripe(config.public.stripeKey);
-  if (!stripe) return;
-
-  elements = stripe.elements();
-  cardElement = elements.create("card", {
-    style: {
-      base: { fontFamily: "Figtree, sans-serif", fontSize: "15px" },
-      invalid: { color: "#f87171" },
-    },
-  });
-  if (cardElementRef.value) cardElement.mount(cardElementRef.value);
-  cardElement.on("change", ({ error: elError }) => {
-    buyError.value = elError?.message ?? "";
-  });
-}
-
-function teardownStripe() {
-  cardElement?.unmount();
-  cardElement = null;
-  elements = null;
-}
-
-onUnmounted(() => teardownStripe());
 
 async function buyWithCard() {
-  if (!buying.value || !stripe || !cardElement) return;
+  if (!buying.value || !isCardReady()) return;
 
   buyProcessing.value = true;
   buyError.value = "";
@@ -155,10 +128,7 @@ async function buyWithCard() {
       { method: "POST", body: { service_package_id: buying.value.id } },
     );
 
-    const result = await stripe.confirmCardPayment(
-      intentRes.data.client_secret,
-      { payment_method: { card: cardElement } },
-    );
+    const result = await confirmCardPayment(intentRes.data.client_secret);
 
     if (result.error) {
       buyError.value = result.error.message ?? "Error al procesar el pago.";

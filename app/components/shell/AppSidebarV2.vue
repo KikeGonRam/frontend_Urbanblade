@@ -127,7 +127,7 @@ async function onLogout() {
               :collapsed="railCollapsed"
             />
             <NuxtLink
-              v-else-if="item.implemented"
+              v-else
               :to="item.to"
               class="ub-sidebar__item"
               :class="{
@@ -136,22 +136,13 @@ async function onLogout() {
               }"
               :aria-current="isActive(item.to) ? 'page' : undefined"
               :title="railCollapsed ? item.label : undefined"
-              :prefetch="['/dashboard', '/appointments', '/store', '/cart', '/payments', '/clients', '/inventory/products', '/analytics', '/barbers'].includes(item.to)"
+              :prefetch="['/dashboard', '/appointments', '/store', '/cart', '/payments', '/clients', '/inventory/products', '/analytics', '/equipo'].includes(item.to)"
               ><ShellNavIcon :paths="item.icon" /><span
                 v-show="!railCollapsed"
                 >{{ item.label }}</span
               ><b v-if="item.badge && !railCollapsed">{{
                 item.badge > 99 ? "99+" : item.badge
               }}</b></NuxtLink
-            >
-            <span
-              v-else
-              class="ub-sidebar__item is-disabled"
-              :class="{ 'is-collapsed': railCollapsed }"
-              ><ShellNavIcon :paths="item.icon" /><span
-                v-show="!railCollapsed"
-                >{{ item.label }}</span
-              ><small v-show="!railCollapsed">Próx.</small></span
             >
           </li>
         </ul>

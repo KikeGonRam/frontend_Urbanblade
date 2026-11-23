@@ -1,15 +1,10 @@
-import {
-  loadStripe,
-  type Stripe,
-  type StripeCardElement,
-  type StripeElements,
-} from "@stripe/stripe-js/pure";
 import type { ChargeableAppointment, ChargeForm } from "~/types/payments";
 
 /*
  * Pago con tarjeta (beta) vía Stripe Elements dentro del cobro. El monto lo
  * calcula el backend en stripe-intent; aquí solo se confirma el intento y,
- * si sale bien, se delega en `submit` el registro del cobro.
+ * si sale bien, se delega en `submit` el registro del cobro. La carga de
+ * Stripe.js y el campo de tarjeta salen de useStripeCard (compartido).
  */
 export function usePaymentStripe(
   form: ChargeForm,
@@ -17,52 +12,29 @@ export function usePaymentStripe(
   submit: () => Promise<void>,
 ) {
   const { apiFetch } = useApi();
-  const config = useRuntimeConfig();
-
-  let stripe: Stripe | null = null;
-  let elements: StripeElements | null = null;
-  let cardElement: StripeCardElement | null = null;
-  const cardElementRef = ref<HTMLDivElement | null>(null);
   const stripeErrors = ref("");
   const stripeProcessing = ref(false);
-  const stripeConfigured = Boolean(config.public.stripeKey);
-
-  async function ensureStripeMounted() {
-    if (!stripeConfigured || cardElement) return;
-
-    stripe = await loadStripe(config.public.stripeKey);
-    if (!stripe) return;
-
-    elements = stripe.elements();
-    cardElement = elements.create("card", {
-      style: {
-        base: { fontFamily: "Figtree, sans-serif", fontSize: "15px" },
-        invalid: { color: "#f87171" },
-      },
-    });
-    await nextTick();
-    if (cardElementRef.value) cardElement.mount(cardElementRef.value);
-    cardElement.on("change", ({ error: elError }) => {
-      stripeErrors.value = elError?.message ?? "";
-    });
-  }
+  const card = useStripeCard({
+    onChangeError: (message) => {
+      stripeErrors.value = message;
+    },
+  });
+  const stripeConfigured = card.stripeConfigured;
 
   function teardownStripe() {
-    cardElement?.unmount();
-    cardElement = null;
-    elements = null;
+    card.unmountCard();
     stripeErrors.value = "";
   }
 
   watch(
     () => form.metodo,
     (m) => {
-      if (m === "tarjeta") void ensureStripeMounted();
+      if (m === "tarjeta") void card.mountCard();
     },
   );
 
   async function payWithCard() {
-    if (!selected.value || !stripe || !cardElement) return;
+    if (!selected.value || !card.isCardReady()) return;
 
     stripeProcessing.value = true;
     stripeErrors.value = "";
@@ -79,11 +51,8 @@ export function usePaymentStripe(
         },
       );
 
-      const result = await stripe.confirmCardPayment(
+      const result = await card.confirmCardPayment(
         intentRes.data.client_secret,
-        {
-          payment_method: { card: cardElement },
-        },
       );
 
       if (result.error) {
@@ -108,7 +77,7 @@ export function usePaymentStripe(
   onUnmounted(() => teardownStripe());
 
   return {
-    cardElementRef,
+    cardElementRef: card.cardElementRef,
     stripeErrors,
     stripeProcessing,
     stripeConfigured,

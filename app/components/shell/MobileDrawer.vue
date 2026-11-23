@@ -117,7 +117,6 @@ async function onLogout() {
         <ul class="space-y-0.5">
           <li v-for="navItem in section.items" :key="navItem.to">
             <NuxtLink
-              v-if="navItem.implemented"
               :to="navItem.to"
               class="flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm text-ink hover:bg-accent"
               @click="closeDrawer"
@@ -125,11 +124,6 @@ async function onLogout() {
               <ShellNavIcon :paths="navItem.icon" />
               {{ navItem.label }}
             </NuxtLink>
-            <span v-else class="flex cursor-not-allowed items-center gap-3 rounded-lg px-2.5 py-2 text-sm text-muted/50">
-              <ShellNavIcon :paths="navItem.icon" />
-              {{ navItem.label }}
-              <span class="ml-auto rounded-full border border-line px-1.5 py-0.5 text-xs text-muted">Próx.</span>
-            </span>
           </li>
         </ul>
       </div>

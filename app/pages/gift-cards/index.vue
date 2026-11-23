@@ -12,13 +12,6 @@
  * gift-cards/mine unas cuantas veces hasta que aparezca -- mismo patrón
  * de "esperar y refrescar" que /my/appointments usa para el autopago.
  */
-import {
-  loadStripe,
-  type Stripe,
-  type StripeCardElement,
-  type StripeElements,
-} from "@stripe/stripe-js/pure";
-
 definePageMeta({ middleware: ["auth"], layout: "dashboard" });
 
 useSeoMeta({ title: 'Gift cards — UrbanBlade', robots: 'noindex' })
@@ -46,8 +39,6 @@ const ESTADO_CLASS: Record<string, string> = {
 
 const { apiFetch } = useApi();
 const { user, hasRole, fetchMe } = useAuth();
-const config = useRuntimeConfig();
-const stripeConfigured = Boolean(config.public.stripeKey);
 const isClient = computed(() => hasRole("cliente"));
 
 // Si se entra directo a esta URL (no desde /dashboard), el estado
@@ -100,40 +91,25 @@ const buySucceeded = ref(false);
 const buyWaiting = ref(false);
 const revealedCode = ref<string | null>(null);
 
-let stripe: Stripe | null = null;
-let elements: StripeElements | null = null;
-let cardElement: StripeCardElement | null = null;
-const cardElementRef = ref<HTMLDivElement | null>(null);
-
-async function ensureStripeMounted() {
-  if (!stripeConfigured || cardElement) return;
-
-  stripe = await loadStripe(config.public.stripeKey);
-  if (!stripe) return;
-
-  elements = stripe.elements();
-  cardElement = elements.create("card", {
-    style: {
-      base: { fontFamily: "Figtree, sans-serif", fontSize: "15px" },
-      invalid: { color: "#f87171" },
-    },
-  });
-  await nextTick();
-  if (cardElementRef.value) cardElement.mount(cardElementRef.value);
-  cardElement.on("change", ({ error: elError }) => {
-    buyError.value = elError?.message ?? "";
-  });
-}
+// Carga de Stripe.js, campo de tarjeta y confirmación: useStripeCard (compartido).
+const {
+  stripeConfigured,
+  cardElementRef,
+  mountCard,
+  isCardReady,
+  confirmCardPayment,
+} = useStripeCard({
+  onChangeError: (message) => {
+    buyError.value = message;
+  },
+});
 
 onMounted(() => {
-  if (stripeConfigured) ensureStripeMounted();
-});
-onUnmounted(() => {
-  cardElement?.unmount();
+  if (stripeConfigured) void mountCard();
 });
 
 async function buyWithCard() {
-  if (!stripe || !cardElement) return;
+  if (!isCardReady()) return;
 
   if (buyForm.monto < MONTO_MIN || buyForm.monto > MONTO_MAX) {
     buyError.value = `El monto debe estar entre ${fmtMoney(MONTO_MIN)} y ${fmtMoney(MONTO_MAX)}.`;
@@ -157,10 +133,7 @@ async function buyWithCard() {
       },
     );
 
-    const result = await stripe.confirmCardPayment(
-      intentRes.data.client_secret,
-      { payment_method: { card: cardElement } },
-    );
+    const result = await confirmCardPayment(intentRes.data.client_secret);
 
     if (result.error) {
       buyError.value = result.error.message ?? "Error al procesar el pago.";

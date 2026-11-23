@@ -10,13 +10,6 @@
  * de gift-cards/packages, porque una membresía siempre la paga y la
  * cancela el propio dueño de la tarjeta guardada en Stripe.
  */
-import {
-  loadStripe,
-  type Stripe,
-  type StripeCardElement,
-  type StripeElements,
-} from "@stripe/stripe-js/pure";
-
 definePageMeta({ middleware: ["auth", "client"], layout: "dashboard" });
 
 useSeoMeta({ title: 'Membresía — UrbanBlade', robots: 'noindex' })
@@ -52,8 +45,6 @@ const ESTADO_CLASS: Record<string, string> = {
 
 const { apiFetch } = useApi();
 const { confirm } = useConfirm();
-const config = useRuntimeConfig();
-const stripeConfigured = Boolean(config.public.stripeKey);
 
 function fmtMoney(n: number) {
   return formatMoney(n)
@@ -98,53 +89,35 @@ const subscribeProcessing = ref(false);
 const subscribeSucceeded = ref(false);
 const subscribeWaiting = ref(false);
 
-let stripe: Stripe | null = null;
-let elements: StripeElements | null = null;
-let cardElement: StripeCardElement | null = null;
-const cardElementRef = ref<HTMLDivElement | null>(null);
+// Carga de Stripe.js, campo de tarjeta y confirmación: useStripeCard (compartido).
+const {
+  stripeConfigured,
+  cardElementRef,
+  mountCard,
+  unmountCard,
+  isCardReady,
+  confirmCardPayment,
+} = useStripeCard({
+  onChangeError: (message) => {
+    subscribeError.value = message;
+  },
+});
 
 async function openSubscribe(plan: Plan) {
   subscribing.value = plan;
   subscribeError.value = "";
   subscribeSucceeded.value = false;
   await nextTick();
-  await ensureStripeMounted();
+  await mountCard();
 }
 
 function closeSubscribe() {
   subscribing.value = null;
-  teardownStripe();
+  unmountCard();
 }
-
-async function ensureStripeMounted() {
-  if (!stripeConfigured || cardElement) return;
-
-  stripe = await loadStripe(config.public.stripeKey);
-  if (!stripe) return;
-
-  elements = stripe.elements();
-  cardElement = elements.create("card", {
-    style: {
-      base: { fontFamily: "Figtree, sans-serif", fontSize: "15px" },
-      invalid: { color: "#f87171" },
-    },
-  });
-  if (cardElementRef.value) cardElement.mount(cardElementRef.value);
-  cardElement.on("change", ({ error: elError }) => {
-    subscribeError.value = elError?.message ?? "";
-  });
-}
-
-function teardownStripe() {
-  cardElement?.unmount();
-  cardElement = null;
-  elements = null;
-}
-
-onUnmounted(() => teardownStripe());
 
 async function subscribeWithCard() {
-  if (!subscribing.value || !stripe || !cardElement) return;
+  if (!subscribing.value || !isCardReady()) return;
 
   subscribeProcessing.value = true;
   subscribeError.value = "";
@@ -154,9 +127,7 @@ async function subscribeWithCard() {
       { method: "POST", body: { membership_plan_id: subscribing.value.id } },
     );
 
-    const result = await stripe.confirmCardPayment(res.data.client_secret, {
-      payment_method: { card: cardElement },
-    });
+    const result = await confirmCardPayment(res.data.client_secret);
 
     if (result.error) {
       subscribeError.value = result.error.message ?? "Error al procesar el pago.";

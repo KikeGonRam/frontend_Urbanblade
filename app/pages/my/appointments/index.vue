@@ -5,20 +5,15 @@
  * cita ya no está pendiente/confirmada o ya inició) y cancelar respetando la
  * política de cancelación del negocio (BarbershopSetting.politica_cancelacion).
  *
- * La compra de productos como add-on al reservar (StoreClientAppointmentRequest
- * `productos[]`) se omite a propósito: Tienda/Carrito (Fase 9.4) ya cubre por
- * completo la compra de productos, y duplicarla aquí sería redundante.
+ * Los productos como add-on de la reserva (StoreClientAppointmentRequest
+ * `productos[]`) sí se envían: la reserva nueva usa el asistente embebido
+ * (<BookingWizard>, que manda `productos` en el POST /appointments desde
+ * useBookingWizard). Solo el formulario de reagendar de esta página no los toca.
  */
 import type {
     ApiAppointment,
     ApiClientAppointmentsResponse,
 } from "~/types/contract";
-import {
-    loadStripe,
-    type Stripe,
-    type StripeCardElement,
-    type StripeElements,
-} from "@stripe/stripe-js/pure";
 
 definePageMeta({ middleware: ["auth", "client"], layout: "dashboard" });
 
@@ -47,7 +42,6 @@ const ESTADO_CLASS: Record<string, string> = {
 
 const { apiFetch } = useApi();
 const { confirm } = useConfirm();
-const config = useRuntimeConfig();
 
 // Qué sigue en cada estado, en lenguaje claro (el cliente no ve los botones de la agenda del barbero).
 const ESTADO_AYUDA: Record<string, string> = {
@@ -314,7 +308,7 @@ async function loadSlots() {
 
 watch(() => [form.barber_id, form.service_id, form.fecha], loadSlots);
 
-// Entrada desde la ficha del barbero (/barbers/[slug] → "Reservar con X"):
+// Entrada desde la ficha del barbero (/equipo/[slug] → "Reservar con X"):
 // abre el modal con ese barbero ya seleccionado.
 const route = useRoute();
 onMounted(() => {
@@ -358,12 +352,6 @@ async function cancelAppointment(appt: AppointmentRow) {
 // registra el Payment en cuanto Stripe confirma el cobro, sin importar quién
 // creó el PaymentIntent. Por eso aquí solo hace falta refrescar el listado
 // hasta que has_payment se ponga en true.
-let stripe: Stripe | null = null;
-let elements: StripeElements | null = null;
-let cardElement: StripeCardElement | null = null;
-const cardElementRef = ref<HTMLDivElement | null>(null);
-const stripeConfigured = Boolean(config.public.stripeKey);
-
 const showPay = ref(false);
 const payingAppt = ref<AppointmentRow | null>(null);
 const payError = ref("");
@@ -374,6 +362,28 @@ const paySucceeded = ref(false);
 // tarjeta para el remanente (ver PaymentController::stripeIntent() en barber).
 const payGiftCardCode = ref("");
 
+// Carga de Stripe.js, campo de tarjeta y confirmación: useStripeCard (compartido).
+const {
+  stripeConfigured,
+  cardElementRef,
+  mountCard,
+  unmountCard,
+  isCardReady,
+  confirmCardPayment,
+} = useStripeCard({
+  onChangeError: (message) => {
+    payError.value = message;
+  },
+  style: () => ({
+    base: {
+      fontFamily: "Figtree, sans-serif",
+      fontSize: "15px",
+      color: "inherit",
+    },
+    invalid: { color: "#f87171" },
+  }),
+});
+
 async function openPay(appt: AppointmentRow) {
   payingAppt.value = appt;
   payError.value = "";
@@ -381,7 +391,7 @@ async function openPay(appt: AppointmentRow) {
   paySucceeded.value = false;
   showPay.value = true;
   await nextTick();
-  await ensureStripeMounted();
+  await mountCard();
 }
 
 function closePay() {
@@ -390,38 +400,13 @@ function closePay() {
   teardownStripe();
 }
 
-async function ensureStripeMounted() {
-  if (!stripeConfigured || cardElement) return;
-
-  stripe = await loadStripe(config.public.stripeKey);
-  if (!stripe) return;
-
-  elements = stripe.elements();
-  cardElement = elements.create("card", {
-    style: {
-      base: {
-        fontFamily: "Figtree, sans-serif",
-        fontSize: "15px",
-        color: "inherit",
-      },
-      invalid: { color: "#f87171" },
-    },
-  });
-  if (cardElementRef.value) cardElement.mount(cardElementRef.value);
-  cardElement.on("change", ({ error: elError }) => {
-    payError.value = elError?.message ?? "";
-  });
-}
-
 function teardownStripe() {
-  cardElement?.unmount();
-  cardElement = null;
-  elements = null;
+  unmountCard();
   payError.value = "";
 }
 
 async function payWithCard() {
-  if (!payingAppt.value || !stripe || !cardElement) return;
+  if (!payingAppt.value || !isCardReady()) return;
 
   payProcessing.value = true;
   payError.value = "";
@@ -437,12 +422,7 @@ async function payWithCard() {
       },
     );
 
-    const result = await stripe.confirmCardPayment(
-      intentRes.data.client_secret,
-      {
-        payment_method: { card: cardElement },
-      },
-    );
+    const result = await confirmCardPayment(intentRes.data.client_secret);
 
     if (result.error) {
       payError.value = result.error.message ?? "Error al procesar el pago.";

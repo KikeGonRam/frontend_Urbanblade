@@ -8,18 +8,16 @@
  * frontend_url desde el retiro del panel Blade (ver
  * .claude/skills/urbanblade-guardrails/SKILL.md, guardrail #18), así que el
  * click-through funciona sin ningún cambio adicional del lado de barber.
+ *
+ * La lista, el contador y el marcado salen de useNotifications (mismo estado
+ * que el desplegable del sidebar). Al abrir una notificación solo se navega a
+ * destinos del propio sitio, igual que en el desplegable.
  */
+import type { NotificationItem } from '~/composables/useNotifications'
+
 definePageMeta({ middleware: 'auth', layout: 'dashboard' })
 
 useSeoMeta({ title: 'Notificaciones — UrbanBlade', robots: 'noindex' })
-
-interface NotificationItem {
-  id: string
-  type: string
-  data: { title?: string, message?: string, url?: string }
-  read_at: string | null
-  created_at: string | null
-}
 
 interface Preferences {
   in_app: boolean
@@ -33,13 +31,10 @@ interface Preferences {
 const { apiFetch } = useApi()
 const { confirm } = useConfirm()
 
-const { data: response, pending, error, refresh } = await useAsyncData(
-  'notifications-list',
-  () => apiFetch<{ data: NotificationItem[], meta: { unread: number } }>('/notifications'),
-  { lazy: true },
-)
-const notifications = computed(() => response.value?.data ?? [])
-const unread = computed(() => response.value?.meta?.unread ?? 0)
+const {
+  notifications, unread, pending, error, refresh,
+  markingAll, busyId, markAllRead, openNotification, deleteNotification,
+} = useNotifications()
 
 const { data: prefsResponse, refresh: refreshPrefs } = await useAsyncData(
   'notifications-preferences',
@@ -76,34 +71,6 @@ async function togglePref(key: keyof Preferences, value: boolean) {
   }
 }
 
-const markingAll = ref(false)
-async function markAllRead() {
-  markingAll.value = true
-  try {
-    await apiFetch('/notifications/read-all', { method: 'POST' })
-    await refresh()
-  } finally {
-    markingAll.value = false
-  }
-}
-
-const busyId = ref<string | null>(null)
-
-async function openNotification(n: NotificationItem) {
-  if (!n.read_at) {
-    busyId.value = n.id
-    try {
-      await apiFetch(`/notifications/${n.id}/read`, { method: 'POST' })
-      await refresh()
-    } finally {
-      busyId.value = null
-    }
-  }
-  if (n.data.url) {
-    window.location.href = n.data.url
-  }
-}
-
 async function removeNotification(n: NotificationItem) {
   const ok = await confirm({
     title: 'Eliminar notificación',
@@ -113,13 +80,7 @@ async function removeNotification(n: NotificationItem) {
   })
   if (!ok) return
 
-  busyId.value = n.id
-  try {
-    await apiFetch(`/notifications/${n.id}`, { method: 'DELETE' })
-    await refresh()
-  } finally {
-    busyId.value = null
-  }
+  await deleteNotification(n)
 }
 
 function fmtDate(iso: string | null) {

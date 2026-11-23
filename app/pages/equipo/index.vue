@@ -2,9 +2,9 @@
 /*
  * Listado público del equipo -- puerto de barber's /equipo/{barber} (índice
  * implícito de la landing, Blade welcome). Consume CatalogController::barbers()
- * (ya público, mismo que usa la landing), sin cambios de backend. A
- * diferencia de /barbers (que exige sesión para el flujo de reserva dentro
- * de la app), esta página es para visitantes que aún no se registran.
+ * (ya público, mismo que usa la landing), sin cambios de backend. Es la única
+ * lista de barberos: /barbers (la copia con sesión) redirige aquí desde nov-2026,
+ * así que sirve tanto a visitantes como a clientes con sesión.
  */
 import { publicImageUrl } from '~/utils/publicImage'
 

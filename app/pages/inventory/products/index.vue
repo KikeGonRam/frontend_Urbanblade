@@ -32,16 +32,6 @@ interface Stats {
   sin_stock?: number;
 }
 
-interface LowStockItem {
-  id: string;
-  nombre: string;
-  stock_actual: number;
-  stock_minimo: number;
-  categoria: string;
-  pending_restock: boolean;
-  ordered_at: string | null;
-}
-
 interface ProductsResponse {
   data: ProductRow[];
   meta: {
@@ -131,12 +121,9 @@ watch([debouncedSearch, categoria, tipo, soloBajoStock], () => {
   page.value = 1;
 });
 
-const { data: lowStockRes, refresh: refreshLowStock } = await useAsyncData(
-  "inventory-low-stock",
-  () => apiFetch<{ data: LowStockItem[] }>("/inventory/low-stock"),
-  { lazy: true },
-);
-const lowStockItems = computed(() => lowStockRes.value?.data ?? []);
+// Alerta de bajo stock compartida con /inventory/movements (InventoryLowStockAlert).
+const lowStockAlert = ref<{ refresh: () => Promise<void> } | null>(null);
+const refreshLowStock = () => lowStockAlert.value?.refresh() ?? Promise.resolve();
 
 function clearFilters() {
   search.value = "";
@@ -150,25 +137,11 @@ function fmtMoney(n: number) {
   return formatMoney(n, 0)
 }
 
-const marking = ref<string | null>(null);
 const actionNotice = ref("");
 
-async function markOrdered(item: LowStockItem) {
-  marking.value = item.id;
-  actionNotice.value = "";
-  try {
-    await apiFetch(`/inventory/products/${item.id}/mark-ordered`, {
-      method: "POST",
-    });
-    actionNotice.value = `Producto "${item.nombre}" marcado como pedido en curso.`;
-    await Promise.all([refreshLowStock(), refresh()]);
-  } catch (err: unknown) {
-    const dataErr = (err as { data?: { message?: string } })?.data;
-    actionNotice.value =
-      dataErr?.message ?? "No se pudo marcar el producto como pedido.";
-  } finally {
-    marking.value = null;
-  }
+function onLowStockMarked(item: { nombre: string }) {
+  actionNotice.value = `Producto "${item.nombre}" marcado como pedido en curso.`;
+  void refresh();
 }
 
 // ── Crear / editar ───────────────────────────────────────────────────────
@@ -338,48 +311,12 @@ async function removeProduct(product: ProductRow) {
     </div>
 
     <!-- Alerta de bajo stock -->
-    <section
-      v-if="lowStockItems.length"
-      class="mb-5 overflow-hidden rounded-2xl border border-warning/25 bg-warning/5"
-    >
-      <div
-        class="flex items-center gap-3 border-b border-warning/15 px-5 py-3"
-      >
-        <span class="text-sm font-black text-warning"
-          >Productos con stock bajo pendientes de atención</span
-        >
-      </div>
-      <ul class="divide-y divide-warning/10">
-        <li
-          v-for="item in lowStockItems"
-          :key="item.id"
-          class="flex flex-col gap-2 px-5 py-3 sm:flex-row sm:items-center sm:justify-between"
-        >
-          <div>
-            <p class="text-sm font-bold text-ink">{{ item.nombre }}</p>
-            <p class="text-xs text-muted">
-              {{ item.stock_actual }} en existencia / mín
-              {{ item.stock_minimo }}
-            </p>
-          </div>
-          <span
-            v-if="item.pending_restock"
-            class="w-fit rounded-full border border-success/25 bg-success/10 px-3 py-1 text-xs font-black uppercase tracking-widest text-success"
-          >
-            Pedido en curso
-          </span>
-          <button
-            v-else
-            type="button"
-            :disabled="marking === item.id"
-            class="w-fit rounded-lg border border-warning/30 px-3 py-1 text-xs font-bold text-warning hover:bg-warning/10 disabled:opacity-50"
-            @click="markOrdered(item)"
-          >
-            {{ marking === item.id ? "Marcando…" : "Marcar como pedido" }}
-          </button>
-        </li>
-      </ul>
-    </section>
+    <InventoryLowStockAlert
+      ref="lowStockAlert"
+      @mark-start="actionNotice = ''"
+      @marked="onLowStockMarked"
+      @mark-error="actionNotice = $event"
+    />
 
     <!-- Tarjetas de resumen -->
     <section v-if="stats" class="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">

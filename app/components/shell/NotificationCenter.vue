@@ -1,31 +1,34 @@
 <script setup lang="ts">
-interface NotificationItem {
-  id: string
-  type: string
-  data: { title?: string, message?: string, url?: string }
-  read_at: string | null
-  created_at: string | null
-}
+/*
+ * Desplegable de notificaciones del sidebar: muestra las últimas
+ * LATEST_COUNT y enlaza a /notifications para ver todas. La carga y el
+ * marcado viven en useNotifications, compartido con esa página.
+ */
+import type { NotificationItem } from '~/composables/useNotifications'
+
+const LATEST_COUNT = 6
 
 defineProps<{ collapsed?: boolean }>()
 
-const { apiFetch } = useApi()
 const route = useRoute()
 const open = ref(false)
 const trigger = ref<HTMLButtonElement | null>(null)
 const panel = ref<HTMLElement | null>(null)
 const panelStyle = ref<Record<string, string>>({})
-const markingAll = ref(false)
-const busyId = ref<string | null>(null)
 
-const { data: response, pending, error, refresh } = await useLazyAsyncData(
-  'notification-center',
-  () => apiFetch<{ data: NotificationItem[], meta: { unread: number } }>('/notifications'),
-  { default: () => ({ data: [], meta: { unread: 0 } }) },
-)
+const {
+  notifications: allNotifications,
+  unread,
+  pending,
+  error,
+  refresh,
+  markingAll,
+  busyId,
+  markAllRead,
+  openNotification: openAndMark,
+} = useNotifications()
 
-const notifications = computed(() => response.value?.data.slice(0, 6) ?? [])
-const unread = computed(() => response.value?.meta?.unread ?? 0)
+const notifications = computed(() => allNotifications.value.slice(0, LATEST_COUNT))
 
 function placePanel() {
   if (!trigger.value) return
@@ -47,43 +50,8 @@ async function togglePanel() {
   await refresh()
 }
 
-async function markAllRead() {
-  markingAll.value = true
-  try {
-    await apiFetch('/notifications/read-all', { method: 'POST' })
-    await refresh()
-  } finally {
-    markingAll.value = false
-  }
-}
-
-/** Solo destinos del propio sitio: ruta interna o URL absoluta del mismo origen (nunca otro dominio). */
-function safeNotificationUrl(raw: unknown): string | null {
-  const internal = safeWebPath(raw)
-  if (internal) return internal
-  if (typeof raw !== 'string') return null
-  try {
-    const url = new URL(raw)
-    return url.origin === window.location.origin ? url.href : null
-  } catch {
-    return null
-  }
-}
-
-async function openNotification(notification: NotificationItem) {
-  busyId.value = notification.id
-  try {
-    if (!notification.read_at) {
-      await apiFetch(`/notifications/${notification.id}/read`, { method: 'POST' })
-      await refresh()
-    }
-  } finally {
-    busyId.value = null
-  }
-
-  open.value = false
-  const target = safeNotificationUrl(notification.data.url)
-  if (target) await navigateTo(target, { external: true })
+function openNotification(notification: NotificationItem) {
+  return openAndMark(notification, () => { open.value = false })
 }
 
 function fmtDate(iso: string | null) {

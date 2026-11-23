@@ -38,7 +38,7 @@ const pages = computed<Result[]>(() => {
 
   return sections.value
     .flatMap((s) => s.items)
-    .filter((i) => i.implemented && normalize(i.label).includes(q))
+    .filter((i) => normalize(i.label).includes(q))
     .slice(0, 5)
     .map((i) => ({ key: `p-${i.to}`, group: "Ir a", label: i.label, to: i.to }));
 });

@@ -3,10 +3,12 @@
  * Perfil público de barbero -- puerto de barber's /equipo/{barber} (Blade,
  * BarberController::show()): portafolio, reseñas y, solo si el visitante ya
  * inició sesión como cliente con una cita completada con él y no lo ha
- * reseñado, el formulario para dejar reseña. Mismo endpoint que
- * app/pages/barbers/[slug].vue (ya no requiere token desde que
- * GET barbers/{barber} salió de mobile.auth el 2026-09-09), pero sin
- * middleware ni layout de dashboard: cualquier visitante puede entrar aquí.
+ * reseñado, el formulario para dejar reseña. GET barbers/{barber} no requiere
+ * token desde que salió de mobile.auth el 2026-09-09. Sin middleware ni layout
+ * de dashboard: cualquier visitante puede entrar aquí. Es la única ficha de
+ * barbero: /barbers/[slug] (la copia con sesión) redirige aquí desde nov-2026.
+ * Con sesión de cliente, «Reservar» abre el asistente dentro de Mis Citas con el
+ * barbero ya elegido, como hacía aquella copia; sin sesión va a /reservar.
  */
 import { publicImageUrl } from '~/utils/publicImage'
 
@@ -52,6 +54,9 @@ const brokenWorkImages = reactive<Record<string, boolean>>({})
 const specialties = computed(() => (barber.value?.especialidades ?? '').split(',').map(item => item.trim()).filter(Boolean))
 const isClient = computed(() => hasRole('cliente'))
 const canReview = computed(() => isClient.value && (response.value?.can_review ?? false))
+const bookingLink = computed(() => isClient.value
+  ? `/my/appointments?barber=${barber.value?.id ?? ''}`
+  : `/reservar?barbero=${barber.value?.id ?? ''}`)
 
 function fmtDate(iso: string | null) {
   if (!iso) return '—'
@@ -134,8 +139,8 @@ async function submitReview() {
             </div>
             <p class="mt-5 max-w-xl text-sm leading-relaxed text-muted">{{ barber.descripcion || 'Especialista en crear una experiencia de grooming precisa, personal y a tu medida.' }}</p>
           </div>
-          <NuxtLink :to="`/reservar?barbero=${barber.id}`" class="ui-btn shrink-0 px-6 py-3 text-xs tracking-[0.16em] md:ml-auto">
-            Reservar cita <span aria-hidden="true">→</span>
+          <NuxtLink :to="bookingLink" class="ui-btn shrink-0 px-6 py-3 text-xs tracking-[0.16em] md:ml-auto">
+            {{ isClient ? `Reservar con ${(barber.user?.name ?? 'este barbero').split(' ')[0]}` : 'Reservar cita' }} <span aria-hidden="true">→</span>
           </NuxtLink>
         </div>
         <div class="relative z-10 mt-10 grid grid-cols-3 divide-x divide-line border-t border-line pt-6">
