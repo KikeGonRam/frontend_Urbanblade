@@ -1,14 +1,9 @@
 <script setup lang="ts">
 /*
- * Sección que promociona la app móvil. La app está en prueba cerrada de Google
- * Play, así que NO hay botón de descarga: la insignia dice "Próximamente".
- * Mientras tanto se ofrece el acceso anticipado (prueba cerrada) con enlace y QR.
- * Cuando se publique en producción, cambiar `available` y poner el enlace real.
+ * Sección que promociona la app móvil. La app ya está publicada en Google Play
+ * (com.urbanblade.mobile): botón de descarga + QR que abre la ficha de la tienda.
  */
-const available = false
-const storeUrl = ''
-// Enlace de la prueba cerrada de Play (solo funciona con cuentas de Google invitadas).
-const earlyAccessUrl = 'https://play.google.com/apps/testing/com.urbanblade.mobile'
+const storeUrl = 'https://play.google.com/store/apps/details?id=com.urbanblade.mobile'
 
 const shots = [
   { src: '/images/app/inicio.jpg', alt: 'Pantalla de inicio de la app con la próxima visita confirmada', label: 'Tu próxima visita' },
@@ -68,22 +63,19 @@ onBeforeUnmount(stop)
           </li>
         </ul>
 
-        <div class="mt-10 flex flex-wrap items-center gap-4">
-          <a
-            v-if="available && storeUrl" :href="storeUrl" target="_blank" rel="noopener noreferrer"
-            class="ui-btn px-8 py-4 text-[12px] tracking-[0.15em]"
-          >Descargar en Google Play</a>
-          <div v-else class="flex w-full max-w-md items-center gap-5 rounded-3xl border border-gold/30 bg-card p-4">
-            <a :href="earlyAccessUrl" target="_blank" rel="noopener noreferrer" class="shrink-0 rounded-2xl bg-white p-2" aria-label="Abrir el acceso anticipado en Google Play">
-              <img src="/images/app/qr-acceso-anticipado.svg" alt="Código QR del acceso anticipado a la app en Google Play" width="104" height="104" class="h-[104px] w-[104px]" loading="lazy">
-            </a>
-            <div class="min-w-0">
-              <p class="text-xs font-black uppercase tracking-[0.25em] text-gold">Acceso anticipado · Google Play</p>
-              <p class="mt-1 text-sm font-black text-ink">Escanea el QR desde tu Android</p>
-              <p class="mt-1 text-xs leading-snug text-muted">Prueba cerrada: entra con la cuenta de Google que el equipo registró. ¿Aún no la tienes? Pídela en recepción.</p>
-              <a :href="earlyAccessUrl" target="_blank" rel="noopener noreferrer" class="mt-1 inline-flex min-h-[44px] items-center text-xs font-black uppercase tracking-widest text-gold hover:text-ink">Abrir enlace &rarr;</a>
-            </div>
-          </div>        </div>
+        <div class="mt-10 flex w-full max-w-md items-center gap-5 rounded-3xl border border-gold/30 bg-card p-4">
+          <a :href="storeUrl" target="_blank" rel="noopener noreferrer" class="shrink-0 rounded-2xl bg-white p-2" aria-label="Abrir UrbanBlade en Google Play">
+            <img src="/images/app/qr-google-play.svg" alt="Código QR para descargar la app en Google Play" width="104" height="104" class="h-[104px] w-[104px]" loading="lazy">
+          </a>
+          <div class="min-w-0">
+            <p class="text-xs font-black uppercase tracking-[0.25em] text-gold">Disponible en Google Play</p>
+            <p class="mt-1 text-sm font-black text-ink">Escanea el QR desde tu Android</p>
+            <a
+              :href="storeUrl" target="_blank" rel="noopener noreferrer"
+              class="ui-btn mt-3 inline-flex px-6 py-3 text-[11px] tracking-[0.15em]"
+            >Descargar en Google Play</a>
+          </div>
+        </div>
       </div>
 
       <div class="order-1 flex flex-col items-center lg:order-2" @mouseenter="stop" @mouseleave="start">
