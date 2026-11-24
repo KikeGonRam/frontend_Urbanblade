@@ -4271,6 +4271,21 @@ export interface operations {
                                 /** @example null */
                                 tiktok?: string | null;
                             };
+                            /** @description Interruptores de módulos (config/features.php). false = el módulo está apagado y sus rutas responden 404. */
+                            features?: {
+                                /** @example false */
+                                packages?: boolean;
+                                /** @example false */
+                                gift_cards?: boolean;
+                                /** @example false */
+                                referrals?: boolean;
+                                /** @example false */
+                                raffles?: boolean;
+                                /** @example false */
+                                social?: boolean;
+                                /** @example false */
+                                campaigns?: boolean;
+                            };
                         };
                     };
                 };
