@@ -494,6 +494,17 @@ onUnmounted(() => teardownStripe());
       </div>
     </header>
 
+    <!-- Fuera del menú desde el rediseño de navegación: se abren desde aquí, donde el cliente las busca. -->
+    <UiRelatedLinks
+      class="mb-5"
+      label="Más sobre tus citas"
+      :links="[
+        { label: 'Lista de espera', to: '/waitlist' },
+        { label: 'Mis recibos', to: '/my/invoices' },
+        { label: 'Nuestros barberos', to: '/equipo' },
+      ]"
+    />
+
     <!-- Resumen en una sola línea y solo si ya hay citas: cuatro tarjetas con ceros no dicen nada. -->
     <ul
       v-if="!pending && !error && stats.total > 0"

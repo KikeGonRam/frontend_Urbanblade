@@ -99,17 +99,26 @@ onBeforeUnmount(() => {
           Productos de cuidado disponibles para llevar a casa.
         </p>
       </div>
-      <NuxtLink
-        to="/cart"
-        class="relative rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-black hover:bg-gold-dim"
-      >
-        Ver carrito
-        <span
-          v-if="cart.count.value > 0"
-          class="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-black px-1 text-xs font-black text-gold"
-          >{{ cart.count.value }}</span
+      <div class="flex flex-wrap items-center gap-2">
+        <!-- «Mis pedidos» salió del menú del cliente (rediseño de navegación): se abre desde la tienda. -->
+        <NuxtLink
+          to="/my/orders"
+          class="inline-flex min-h-10 items-center rounded-lg border border-line px-4 py-2 text-sm font-semibold text-ink hover:border-gold/40"
         >
-      </NuxtLink>
+          Mis pedidos
+        </NuxtLink>
+        <NuxtLink
+          to="/cart"
+          class="relative inline-flex min-h-10 items-center rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-black hover:bg-gold-dim"
+        >
+          Ver carrito
+          <span
+            v-if="cart.count.value > 0"
+            class="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-black px-1 text-xs font-black text-gold"
+            >{{ cart.count.value }}</span
+          >
+        </NuxtLink>
+      </div>
     </header>
 
     <section class="mb-5 flex flex-wrap items-center gap-3">

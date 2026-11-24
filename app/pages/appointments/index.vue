@@ -444,13 +444,20 @@ onBeforeUnmount(() => {
           Gestiona la agenda completa de la barbería.
         </p>
       </div>
-      <button
-        type="button"
-        class="rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-black hover:bg-gold-dim"
-        @click="openCreate"
-      >
-        + Nueva Cita
-      </button>
+      <div class="flex flex-wrap items-center gap-2">
+        <!-- Lista y calendario son una sola entrada del menú («Citas»): aquí se cambia de vista. -->
+        <UiViewSwitch
+          label="Vista de la agenda"
+          :options="[{ label: 'Lista', to: '/appointments' }, { label: 'Calendario', to: '/appointments/calendar' }]"
+        />
+        <button
+          type="button"
+          class="min-h-10 rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-black hover:bg-gold-dim"
+          @click="openCreate"
+        >
+          + Nueva Cita
+        </button>
+      </div>
     </header>
 
     <section class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center">

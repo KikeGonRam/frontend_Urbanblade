@@ -81,10 +81,20 @@ export function useNavigation() {
   const isBarber = computed(() => hasRole('barbero'))
   const isClient = computed(() => hasRole('cliente'))
 
+  /*
+   * Rediseño de navegación (nov-2026), tras apagar los módulos que no se usaban:
+   * - Personal: los mismos grupos que «Más» en la app Android (Clientes, Caja, Inventario, Equipo y catálogo,
+   *   Análisis) y «Sistema» al final. Antes eran «Operación» y «Gestión», que mezclaban inventario, clientes y
+   *   pagos, y lo técnico (Logs, Estado del servidor) quedaba al nivel de las citas.
+   * - «Citas» y «Calendario» son una sola entrada: la página tiene el selector «Lista | Calendario».
+   * - Cliente: cinco entradas. Carrito, pedidos, recibos, lista de espera y barberos se abren desde la pantalla
+   *   a la que pertenecen (UiRelatedLinks) y desde el buscador (`shortcuts`).
+   */
   const sections = computed<NavSection[]>(() => {
     if (!user.value) return []
 
     const out: NavSection[] = []
+    const staff = isAdmin.value || isReception.value
 
     out.push({
       key: 'principal',
@@ -93,120 +103,124 @@ export function useNavigation() {
       items: [
         // «Inicio» y no «Dashboard»: la guía de voz pide español sin jerga y la app Android ya lo llama así.
         item('Inicio', '/dashboard', 'dashboard', true),
+        ...(staff ? [item('Citas', '/appointments', 'appointments', true)] : []),
+        ...(isClient.value ? [item('Mis citas', '/my/appointments', 'my_appointments', true)] : []),
         ...(on('social') ? [item('Muro Inspiración', '/social/feed', 'wall', isClient.value)] : []),
+        ...(isClient.value
+          ? [item('Tienda', '/store', 'products', true), item('Membresía', '/membership', 'membership', true)]
+          : []),
         item('Notificaciones', '/notifications', 'notifications'),
       ],
     })
 
-    if (isAdmin.value || isReception.value) {
+    if (isBarber.value) {
+      // Lo central del barbero: abierto siempre (antes «Mi Espacio» podía quedar plegado).
       out.push({
-        key: 'operacion',
-        title: 'Operación',
-        collapsible: true,
+        key: 'mi-trabajo',
+        title: 'Mi trabajo',
+        collapsible: false,
         items: [
-          item('Citas', '/appointments', 'appointments', true),
-          item('Calendario', '/appointments/calendar', 'calendar'),
+          // La agenda tiene el selector «Lista | Calendario»; el calendario ya no es otra entrada.
+          item('Agenda', '/barber/agenda', 'agenda', true),
+          item('Horario', '/barber/schedule', 'schedule', true),
+          item('Portafolio', '/barber/portfolio', 'wall', true),
+          // "Mi Perfil" vive en /profile (avatar del topbar/drawer), igual que en cualquier otro rol.
+        ],
+      })
+    }
+
+    if (staff) {
+      out.push(
+        collapsibleSection('clientes', 'Clientes', [
           item('Clientes', '/clients', 'clients', isAdmin.value),
+          item('Lista de espera', '/waitlist', 'waitlist'),
+          ...(isAdmin.value ? [item('Reseñas', '/reviews', 'reviews')] : []),
+          ...(isAdmin.value && on('social') ? [item('Moderación del muro', '/admin/moderacion', 'reviews')] : []),
+        ]),
+        collapsibleSection('caja', 'Caja', [
           item('Pagos', '/payments', 'payments', true),
           item('Pedidos', '/orders', 'orders', isReception.value),
+          item('Corte de caja', '/payments/corte', 'reports'),
+          ...(on('gift_cards') ? [item('Gift Cards', '/gift-cards', 'gift_cards')] : []),
+          ...(on('packages') ? [item('Paquetes', '/packages', 'packages')] : []),
+        ]),
+        collapsibleSection('inventario', 'Inventario', [
+          ...(isAdmin.value ? [item('Productos', '/inventory/products', 'products')] : []),
           item('Movimientos', '/inventory/movements', 'movements'),
-          ...(on('gift_cards') ? [item('Gift Cards', '/gift-cards', 'gift_cards')] : []),
-          ...(on('packages') ? [item('Paquetes', '/packages', 'packages')] : []),
-          item('Lista de Espera', '/waitlist', 'waitlist'),
-          ...(isReception.value ? [item('Analítica', '/analytics', 'analytics')] : []),
-        ],
-      })
-    }
-
-    if (isAdmin.value) {
-      out.push({
-        key: 'gestion',
-        title: 'Gestión',
-        collapsible: true,
-        items: [
-          item('Barberos', '/barbers/manage', 'barbers'),
-          item('Planes de Membresía', '/admin/membership-plans', 'membership'),
-          item('Reseñas', '/reviews', 'reviews'),
-          ...(on('social') ? [item('Moderación del muro', '/admin/moderacion', 'reviews')] : []),
-          item('Usuarios', '/users', 'users'),
-          item('Servicios', '/services', 'services'),
-          item('Productos', '/inventory/products', 'products'),
-          item('Configuración', '/settings', 'settings'),
-        ],
-      })
-      out.push({
-        key: 'analisis',
-        title: 'Análisis',
-        collapsible: true,
-        items: [
-          item('Analítica', '/analytics', 'analytics'),
-          item('Reportes', '/reports', 'reports'),
-          ...(on('campaigns') ? [item('Campañas', '/campaigns', 'campaigns')] : []),
-          ...(on('raffles') ? [item('Sorteos', '/raffles', 'raffles')] : []),
-          item('Logs', '/logs', 'logs'),
-        ],
-      })
-    }
-
-    if (isAdmin.value) {
-      out.push({
-        key: 'sistema',
-        title: 'Sistema',
-        collapsible: true,
-        items: [
-          item('Estado del Servidor', '/system', 'system', true),
-        ],
-      })
-    }
-
-    if (isBarber.value) {
-      out.push({
-        key: 'mi-espacio',
-        title: 'Mi Espacio',
-        collapsible: true,
-        items: [
-          item('Mi Agenda', '/barber/agenda', 'agenda', true),
-          item('Mi Calendario', '/appointments/calendar', 'calendar', true),
-          item('Mi Portafolio', '/barber/portfolio', 'wall', true),
-          item('Mi Horario', '/barber/schedule', 'schedule', true),
-          // "Mi Perfil" se quitó de aquí (25-oct, confuso tener dos "Mi Perfil"): /profile ya
-          // cubre todo lo del barbero (POST /barber/profile, GET /barber/me) y se llega ahí desde
-          // el avatar del topbar/drawer, igual que cualquier otro rol. /barber/profile se eliminó
-          // (nov-2026); nada en la app apuntaba ahí.
-          // "Mi Analítica" se quitó (26-sep): solo repetía las oportunidades que ya salen en su dashboard.
-        ],
-      })
-    }
-
-    if (isClient.value) {
-      // Antes eran 12 enlaces en una sola lista. Se agrupan por lo que el cliente quiere hacer.
-      out.push(
-        collapsibleSection('cliente-reservar', 'Reservar', [
-          item('Mis Citas', '/my/appointments', 'my_appointments', true),
-          item('Nuestros Barberos', '/equipo', 'barbers_client'),
-          item('Lista de Espera', '/waitlist', 'waitlist'),
-        ]),
-        collapsibleSection('cliente-tienda', 'Tienda', [
-          item('Tienda', '/store', 'products', true),
-          item('Carrito', '/cart', 'cart'),
-          item('Mis Pedidos', '/my/orders', 'orders'),
-          item('Mis Recibos', '/my/invoices', 'invoices'),
-        ]),
-        collapsibleSection('cliente-beneficios', 'Beneficios', [
-          item('Membresía', '/membership', 'membership'),
-          ...(on('packages') ? [item('Paquetes', '/packages', 'packages')] : []),
-          ...(on('gift_cards') ? [item('Gift Cards', '/gift-cards', 'gift_cards')] : []),
-          ...(on('referrals') ? [item('Referidos', '/referrals', 'referrals')] : []),
         ]),
       )
     }
 
+    if (isAdmin.value) {
+      out.push(
+        collapsibleSection('equipo', 'Equipo y catálogo', [
+          item('Barberos', '/barbers/manage', 'barbers'),
+          item('Servicios', '/services', 'services'),
+          item('Planes de membresía', '/admin/membership-plans', 'membership'),
+          item('Usuarios', '/users', 'users'),
+        ]),
+      )
+    }
+
+    if (staff) {
+      out.push(
+        collapsibleSection('analisis', 'Análisis', [
+          item('Analítica', '/analytics', 'analytics'),
+          ...(isAdmin.value ? [item('Reportes', '/reports', 'reports')] : []),
+          ...(isAdmin.value && on('campaigns') ? [item('Campañas', '/campaigns', 'campaigns')] : []),
+          ...(isAdmin.value && on('raffles') ? [item('Sorteos', '/raffles', 'raffles')] : []),
+        ]),
+      )
+    }
+
+    if (isAdmin.value) {
+      out.push(
+        collapsibleSection('sistema', 'Sistema', [
+          item('Configuración', '/settings', 'settings'),
+          item('Logs', '/logs', 'logs'),
+          item('Estado del servidor', '/system', 'system'),
+        ]),
+      )
+    }
+
+    // Beneficios del cliente con interruptor: solo aparece la sección si alguno está encendido.
+    if (isClient.value) {
+      const beneficios = [
+        ...(on('packages') ? [item('Paquetes', '/packages', 'packages')] : []),
+        ...(on('gift_cards') ? [item('Gift Cards', '/gift-cards', 'gift_cards')] : []),
+        ...(on('referrals') ? [item('Referidos', '/referrals', 'referrals')] : []),
+      ]
+      if (beneficios.length) out.push(collapsibleSection('cliente-beneficios', 'Beneficios', beneficios))
+    }
+
     return out
+  })
+
+  /**
+   * Pantallas que no están en el menú pero sí en el buscador (Ctrl K): se abren desde la página a la que
+   * pertenecen. Sin duplicar lo que ya está en `sections`.
+   */
+  const shortcuts = computed<NavItem[]>(() => {
+    if (!user.value) return []
+    const staff = isAdmin.value || isReception.value
+    const out: NavItem[] = []
+    if (staff || isBarber.value) out.push(item('Calendario', '/appointments/calendar', 'calendar'))
+    if (isClient.value) {
+      out.push(
+        item('Carrito', '/cart', 'cart'),
+        item('Mis pedidos', '/my/orders', 'orders'),
+        item('Mis recibos', '/my/invoices', 'invoices'),
+        item('Lista de espera', '/waitlist', 'waitlist'),
+        item('Nuestros barberos', '/equipo', 'barbers_client'),
+      )
+    }
+    const enMenu = new Set(sections.value.flatMap((s) => s.items.map((i) => i.to)))
+    return out.filter((i) => !enMenu.has(i.to))
   })
 
   const primaryItems = computed<NavItem[]>(() =>
     sections.value.flatMap((s) => s.items.filter((i) => i.primary)).slice(0, 4),
   )
 
-  return { sections, primaryItems }
+  return { sections, shortcuts, primaryItems }
 }

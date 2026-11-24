@@ -22,6 +22,7 @@
 import { ensureChartjsRegistered } from '~/utils/registerChartjs'
 import { Bar, Doughnut, Line } from 'vue-chartjs'
 import { UB_CATEGORICAL, chartScale, goldHex, inkRgba } from '~/utils/chartTheme'
+import type { ChatbotTelemetry } from '~/types/dashboard'
 
 ensureChartjsRegistered()
 
@@ -92,6 +93,18 @@ const { data: response, pending, error, refresh } = await useAsyncData(
   { lazy: true },
 )
 
+// Predicciones y uso de Bladebot: salieron del panel del administrador (rediseño, nov-2026) y viven aquí. El uso
+// del asistente solo viene en GET /dashboard (DashboardService::chatbotTelemetrySummary), así que se pide aparte.
+const esAdmin = computed(() => analyticsUser.value?.roles?.includes('administrador') ?? false)
+const { data: tableroAdmin } = await useAsyncData(
+  'analytics-chatbot',
+  () => (esAdmin.value
+    ? apiFetch<{ data?: { chatbotTelemetry?: ChatbotTelemetry } }>('/dashboard')
+    : Promise.resolve(null)),
+  { lazy: true },
+)
+const telemetria = computed(() => tableroAdmin.value?.data?.chatbotTelemetry ?? null)
+
 const rolLabel = computed(() => response.value?.rol_label ?? 'invitado')
 const isSimpleView = computed(() => ['cliente', 'barbero'].includes(rolLabel.value))
 const secciones = computed(() => response.value?.secciones ?? {})
@@ -158,7 +171,18 @@ const doughnutOptions = { responsive: true, maintainAspectRatio: false, plugins:
     </header>
 
     <!-- Tablero con gráficas y lectura automática: solo administración (usa los reportes de /admin). -->
-    <AnalyticsAdminBoard v-if="analyticsUser?.roles?.includes('administrador')" />
+    <AnalyticsAdminBoard v-if="esAdmin" />
+
+    <section v-if="esAdmin" class="mb-8 space-y-4" aria-labelledby="predicciones-asistente">
+      <header>
+        <h2 id="predicciones-asistente" class="text-lg font-black text-ink">Predicciones y asistente</h2>
+        <p class="mt-0.5 text-sm text-muted">Lo que se espera para los próximos 7 días y cómo responde Bladebot.</p>
+      </header>
+      <div class="grid grid-cols-1 gap-5 lg:grid-cols-12">
+        <DashboardAdministradorAiPredictions />
+        <DashboardAdministradorChatbotUsage v-if="telemetria" :telemetry="telemetria" />
+      </div>
+    </section>
 
     <section v-if="!pending && !error && response?.operational" class="mb-8 space-y-4" aria-label="Análisis operativo actual">
       <div>

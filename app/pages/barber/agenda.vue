@@ -174,7 +174,12 @@ async function openTicket(appt: Appointment) {
         <h1 class="mt-1 text-2xl font-semibold text-ink">Mi <span class="text-gold">Agenda</span></h1>
         <p class="mt-1 text-sm text-muted">{{ response?.range.label ?? 'Tus citas programadas' }}</p>
       </div>
-      <div class="flex gap-2">
+      <div class="flex flex-wrap items-center gap-2">
+        <!-- El calendario ya no es otra entrada del menú: se abre desde aquí. -->
+        <UiViewSwitch
+          label="Vista de la agenda"
+          :options="[{ label: 'Lista', to: '/barber/agenda' }, { label: 'Calendario', to: '/appointments/calendar' }]"
+        />
         <button class="rounded-lg border border-line px-3 py-2 text-sm text-muted" @click="offset -= period === 'week' ? 7 : 1">Anterior</button>
         <button class="rounded-lg border border-line px-3 py-2 text-sm text-ink" @click="offset = 0">Hoy</button>
         <button class="rounded-lg border border-line px-3 py-2 text-sm text-muted" @click="offset += period === 'week' ? 7 : 1">Siguiente</button>
