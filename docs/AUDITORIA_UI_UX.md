@@ -262,7 +262,7 @@ apagados, como staging): sitio público y los cuatro roles, en `noir` y `libreta
 | «Próximas llegadas» (recepción) a 390 px: el nombre del cliente se cortaba en «Di…» | En teléfono, «Llegó» y «Cobrar» bajan a su propia línea |
 | «Lo que dicen tus datos» a 390 px: el título quedaba en una columna de 120 px | En teléfono, el enlace va debajo del título |
 | Botones de «Tu próxima cita» (cliente) con anchos disparejos en teléfono | Rejilla de dos columnas; la acción principal a lo ancho |
-| Una pantalla que recibe datos con otra forma se queda en blanco (visto en Reportes y «Mi agenda» con la API simulada) | **Pendiente.** Un marco de error global en el layout también atrapaba errores leves de botones y tapaba pantallas que funcionan (7 pruebas e2e fallaron); hay que acotarlo a errores de dibujo |
+| Una pantalla que recibe datos con otra forma se queda en blanco (visto en Reportes y «Mi agenda» con la API simulada) | **Resuelto (25-nov).** `UiRenderBoundary` en `layouts/dashboard.vue` solo atrapa errores de dibujo (setup, render, actualización; `utils/errorDibujo.ts`) y muestra «Esta sección no se pudo mostrar» con «Reintentar»; los errores de botones y eventos siguen su camino. El intento anterior con `NuxtErrorBoundary` atrapaba todo y rompió 7 pruebas e2e |
 | Panel para un rol sin pantalla: decía que seguía «en la versión Inertia de barber» (retirada) | Explica que la cuenta no tiene panel y lleva al perfil |
 | «Uso de Bladebot»: «OK» en verde siempre, «$0.0000» y fuentes en inglés y mayúsculas | Estado según la tasa de error, «Sin costo» y nombres en español |
 | «Predicciones IA»: «N/A», «Insights», «Sin insights disponibles.» | «—» con una línea que explica por qué, «Hallazgos» y textos de la guía de voz |
