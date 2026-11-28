@@ -33,7 +33,7 @@ function fmtMoney(n: number | string) {
       </div>
       <div v-else-if="form.usarPaquete" class="flex justify-between">
         <span class="text-xs font-bold uppercase text-muted"
-          >Paquete prepagado</span
+          >{{ selected.paquete_disponible?.origen === "membresia" ? "Incluido en su membresía" : "Paquete prepagado" }}</span
         ><span class="text-info"
           >-{{ fmtMoney(selected.precio) }}</span
         >

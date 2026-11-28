@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { includedLabel, includedSavings, type IncludedService, type MembershipUse } from "~/utils/membership";
 /*
  * Membresía recurrente (roadmap de mercado, ver barber/.claude/skills/
  * urbanblade-market-web/SKILL.md): suscripción mensual real (Stripe
@@ -20,6 +21,8 @@ interface Plan {
   descripcion: string | null;
   precio_mensual: number;
   descuento_pct: number;
+  servicios_incluidos?: IncludedService[];
+  valor_lista?: number;
 }
 
 interface Membership {
@@ -27,7 +30,8 @@ interface Membership {
   estado: "pendiente" | "activa" | "pago_fallido" | "cancelada";
   cancelar_al_finalizar: boolean;
   periodo_actual_fin: string | null;
-  plan: { id: string; nombre: string; precio_mensual: number; descuento_pct: number };
+  plan: { id: string; nombre: string; precio_mensual: number; descuento_pct: number; servicios_incluidos?: IncludedService[] };
+  usos?: MembershipUse[];
 }
 
 const ESTADO_LABEL: Record<string, string> = {
@@ -222,7 +226,12 @@ async function cancelMembership() {
       <p class="mt-2 text-2xl font-black text-gold">
         {{ fmtMoney(membership.plan.precio_mensual) }}<span class="text-sm text-muted">/mes</span>
       </p>
-      <p class="mt-1 text-sm text-ink/80">{{ membership.plan.descuento_pct }}% de descuento en cada servicio</p>
+      <p class="mt-1 text-sm text-ink/80">{{ membership.plan.descuento_pct }}% de descuento {{ membership.plan.servicios_incluidos?.length ? "en lo que no incluye tu plan" : "en cada servicio" }}</p>
+      <ul v-if="membership.usos?.length" class="mt-3 space-y-1 text-sm text-ink" aria-label="Usos incluidos">
+        <li v-for="uso in membership.usos" :key="uso.service_id">
+          {{ uso.nombre }}: te {{ uso.restantes === 1 ? "queda" : "quedan" }} {{ uso.restantes }} de {{ uso.totales }} (vence {{ fmtDate(uso.vence_en) }})
+        </li>
+      </ul>
 
       <p v-if="membership.estado === 'pago_fallido'" class="mt-4 rounded-xl border border-danger/25 bg-danger/10 p-3 text-xs text-danger">
         Tu último cobro falló. Stripe reintentará automáticamente; si sigue fallando, actualiza tu método de pago con tu banco.
@@ -263,7 +272,13 @@ async function cancelMembership() {
           <p class="mt-3 text-2xl font-black text-gold">
             {{ fmtMoney(plan.precio_mensual) }}<span class="text-sm text-muted">/mes</span>
           </p>
-          <p class="mt-1 text-sm text-ink/80">{{ plan.descuento_pct }}% de descuento en cada servicio</p>
+          <ul v-if="plan.servicios_incluidos?.length" class="mt-2 space-y-1 text-sm text-ink">
+            <li v-for="item in plan.servicios_incluidos" :key="item.service_id">{{ includedLabel(item) }}</li>
+          </ul>
+          <p v-if="includedSavings(plan.valor_lista ?? 0, plan.precio_mensual) > 0" class="mt-1 text-xs text-success">
+            Ahorras {{ fmtMoney(includedSavings(plan.valor_lista ?? 0, plan.precio_mensual)) }} al mes si usas todo.
+          </p>
+          <p class="mt-1 text-sm text-ink/80">{{ plan.descuento_pct }}% de descuento {{ plan.servicios_incluidos?.length ? "en lo demás" : "en cada servicio" }}</p>
           <button
             type="button"
             class="ui-btn mt-4 justify-center"

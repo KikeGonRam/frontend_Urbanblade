@@ -39,7 +39,7 @@ const {
 } = pricing
 const {
   payChoice, payOptions, cardError, stripeReady, setCardElement, onTransferFileChange,
-  paymentWarning, paymentConfirming,
+  paymentWarning, paymentConfirming, includedInPlan,
 } = payment
 </script>
 
@@ -55,6 +55,7 @@ const {
       :time="time"
       :products-warning="productsWarning"
       :payment-warning="paymentWarning"
+      :included-in-plan="includedInPlan"
       :pay-choice="payChoice"
       :cancellation-hours="shop?.politica_cancelacion"
     />
