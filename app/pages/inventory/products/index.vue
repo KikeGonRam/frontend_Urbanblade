@@ -44,6 +44,15 @@ interface ProductsResponse {
   };
 }
 
+// La API todavía puede devolver los tipos antiguos (venta, uso_interno): se
+// traducen igual que Product::normalizedType en barber.
+const TIPOS_ANTIGUOS: Record<string, string> = {
+  venta: "venta_cliente",
+  uso_interno: "insumo_trabajo",
+};
+const tipoActual = (t: string) => TIPOS_ANTIGUOS[t] ?? t;
+const etiquetaTipo = (t: string) => (tipoActual(t) === "venta_cliente" ? "Venta" : "Insumo");
+
 const exportColumns: CsvColumn<ProductRow>[] = [
   { header: "Producto", value: (p) => p.nombre },
   { header: "Categoría", value: (p) => p.categoria },
@@ -109,7 +118,7 @@ const categorias = computed(() => response.value?.meta.categorias ?? []);
 const tipos = computed(() => response.value?.meta.tipos ?? []);
 const tipoOpciones = computed(() => [
   { value: "", label: "Todos", icon: "box" },
-  ...tipos.value.map((t) => ({ value: t, label: t === "venta_cliente" ? "Venta" : "Insumo" })),
+  ...tipos.value.map((t) => ({ value: t, label: etiquetaTipo(t) })),
 ]);
 const categoriaOpciones = computed(() => [
   { value: "", label: "Todas" },
@@ -199,7 +208,7 @@ function openEdit(product: ProductRow) {
   form.precio_venta = product.precio_venta;
   form.stock_actual = product.stock_actual;
   form.stock_minimo = product.stock_minimo;
-  form.tipo = product.tipo;
+  form.tipo = tipoActual(product.tipo);
   form.imagenFile = null;
   form.activo = product.activo ?? true;
   formError.value = "";
@@ -410,7 +419,7 @@ async function removeProduct(product: ProductRow) {
         </span>
       </template>
       <template #cell-tipo="{ row }">
-        <span class="rounded-full border border-line bg-ink/5 px-2 py-0.5 text-xs font-black uppercase text-muted">{{ row.tipo === "venta_cliente" ? "Venta" : "Insumo" }}</span>
+        <span class="rounded-full border border-line bg-ink/5 px-2 py-0.5 text-xs font-black uppercase text-muted">{{ etiquetaTipo(row.tipo) }}</span>
       </template>
       <template #actions="{ row }">
         <UiRowActions
@@ -474,7 +483,7 @@ async function removeProduct(product: ProductRow) {
             <UiFormField field-id="prod-tipo" label="Tipo de producto" icon="users">
               <select id="prod-tipo" v-model="form.tipo" aria-label="Tipo de producto" class="ui-input w-full">
                 <option value="venta_cliente">Venta al cliente</option>
-                <option value="insumo_barberia">Insumo interno de barbería</option>
+                <option value="insumo_trabajo">Insumo interno de barbería</option>
               </select>
             </UiFormField>
           </div>
