@@ -65,7 +65,7 @@ export interface ChargeableAppointment {
   nivel_pct: number;
   puntos_disponibles: number;
   premio_rifa: string | null;
-  paquete_disponible: { id: string; usos_restantes: number } | null;
+  paquete_disponible: { id: string; usos_restantes: number; origen?: 'paquete' | 'membresia' } | null;
 }
 
 export interface PaymentBarber {

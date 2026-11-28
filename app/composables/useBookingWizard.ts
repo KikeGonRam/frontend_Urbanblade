@@ -163,7 +163,7 @@ export function useBookingWizard(options: BookingWizardOptions): BookingWizard {
 
     saving.value = true
     try {
-      const res = await apiFetch<{ data: { code: string }, productos_error?: string | null }>('/appointments', {
+      const res = await apiFetch<{ data: { code: string }, productos_error?: string | null, incluido_en_membresia?: boolean }>('/appointments', {
         method: 'POST',
         body: {
           barber_id: barberId.value,
@@ -191,7 +191,8 @@ export function useBookingWizard(options: BookingWizardOptions): BookingWizard {
       // cambia la vista a "cita registrada", que desmonta el campo de tarjeta
       // de Stripe y el confirmCardPayment falla con "Element not mounted"
       // (detectado en una prueba real en AWS).
-      if (code && payment.payChoice.value !== 'despues') {
+      payment.includedInPlan.value = res.incluido_en_membresia === true
+      if (code && payment.payChoice.value !== 'despues' && !payment.includedInPlan.value) {
         await payment.chargeBookingPayment(code)
       }
 

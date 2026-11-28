@@ -9,6 +9,7 @@ defineProps<{
   time: string
   productsWarning: string
   paymentWarning: string
+  includedInPlan?: boolean
   payChoice: PayChoice
   cancellationHours: number | null | undefined
 }>()
@@ -40,6 +41,9 @@ defineProps<{
     </dl>
     <p v-if="productsWarning" role="alert" class="mt-4 rounded-xl border border-warning/30 bg-warning/10 p-3 text-xs text-warning">
       Tu cita quedó confirmada, pero no pudimos agregar los productos: {{ productsWarning }}
+    </p>
+    <p v-if="includedInPlan" class="mt-4 rounded-xl border border-success/30 bg-success/10 p-3 text-xs text-success">
+      Este servicio está incluido en tu membresía: no tienes que pagarlo. El uso se descuenta al atenderte.
     </p>
     <p v-if="paymentWarning" role="alert" class="mt-4 rounded-xl border border-warning/30 bg-warning/10 p-3 text-xs text-warning">
       Tu cita quedó confirmada, pero no pudimos procesar el pago: {{ paymentWarning }} Podrás pagar en el salón.

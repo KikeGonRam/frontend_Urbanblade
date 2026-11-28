@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { includedLabel, includedSavings, includedValue, type IncludedService } from "~/utils/membership";
 /*
  * Administración mínima de planes de membresía recurrente (roadmap de
  * mercado): crear y desactivar. Cada plan crea un Product+Price real en
@@ -19,6 +20,8 @@ interface Plan {
   precio_mensual: number;
   descuento_pct: number;
   activo: boolean;
+  servicios_incluidos?: IncludedService[];
+  valor_lista?: number;
 }
 
 const { apiFetch } = useApi();
@@ -36,6 +39,20 @@ function fmtMoney(n: number) {
 
 const showCreate = ref(false);
 const form = reactive({ nombre: "", descripcion: "", precio_mensual: 299, descuento_pct: 10 });
+
+// Planes Club: servicios incluidos cada mes (opcional). Sin filas, el plan es solo de descuento.
+const included = ref<{ service_id: string; usos: number }[]>([]);
+const { data: catalog } = await useAsyncData(
+  "admin-membership-services",
+  () => apiFetch<{ data: { id: string; nombre: string; precio: number }[] }>("/services"),
+  { lazy: true },
+);
+const services = computed(() => catalog.value?.data ?? []);
+const chosen = computed(() => included.value.filter((row) => row.service_id && row.usos > 0));
+const listValue = computed(() =>
+  includedValue(chosen.value.map((row) => ({ usos: row.usos, precio: services.value.find((s) => s.id === row.service_id)?.precio ?? 0 }))),
+);
+const savings = computed(() => includedSavings(listValue.value, form.precio_mensual));
 const createError = ref("");
 const saving = ref(false);
 
@@ -44,6 +61,7 @@ function openCreate() {
   form.descripcion = "";
   form.precio_mensual = 299;
   form.descuento_pct = 10;
+  included.value = [];
   createError.value = "";
   showCreate.value = true;
 }
@@ -59,6 +77,7 @@ async function submitCreate() {
         descripcion: form.descripcion || undefined,
         precio_mensual: form.precio_mensual,
         descuento_pct: form.descuento_pct,
+        servicios_incluidos: chosen.value.length ? chosen.value : undefined,
       },
     });
     showCreate.value = false;
@@ -132,7 +151,10 @@ async function deactivate(plan: Plan) {
         <p class="mt-2 text-xl font-black text-gold">
           {{ fmtMoney(plan.precio_mensual) }}<span class="text-xs text-muted">/mes</span>
         </p>
-        <p class="text-sm text-ink/80">{{ plan.descuento_pct }}% de descuento</p>
+        <ul v-if="plan.servicios_incluidos?.length" class="mt-2 space-y-1 text-sm text-ink">
+          <li v-for="item in plan.servicios_incluidos" :key="item.service_id">{{ includedLabel(item) }}</li>
+        </ul>
+        <p class="text-sm text-ink/80">{{ plan.descuento_pct }}% de descuento{{ plan.servicios_incluidos?.length ? " en lo demás" : "" }}</p>
         <button
           v-if="plan.activo"
           type="button"
@@ -173,6 +195,22 @@ async function deactivate(plan: Plan) {
             <input id="plan-descuento" v-model.number="form.descuento_pct" aria-label="Descuento (%)" type="number" min="1" max="100" step="1" required class="ui-input w-full">
           </UiFormField>
         </div>
+        <fieldset class="m-0 space-y-2 border-0 p-0">
+          <legend class="ub-form-section__title">Servicios incluidos cada mes (opcional)</legend>
+          <div v-for="(row, index) in included" :key="index" class="flex items-center gap-2">
+            <select v-model="row.service_id" :aria-label="`Servicio incluido ${index + 1}`" class="ui-input min-w-0 flex-1">
+              <option value="" disabled>Elige un servicio</option>
+              <option v-for="s in services" :key="s.id" :value="s.id">{{ s.nombre }} ({{ fmtMoney(s.precio) }})</option>
+            </select>
+            <input v-model.number="row.usos" :aria-label="`Usos al mes ${index + 1}`" type="number" min="1" max="31" step="1" class="ui-input w-20">
+            <button type="button" class="ui-btn-secondary text-xs" @click="included.splice(index, 1)">Quitar</button>
+          </div>
+          <button type="button" class="ui-btn-secondary text-xs" :disabled="included.length >= 10" @click="included.push({ service_id: '', usos: 2 })">+ Añadir servicio</button>
+          <p v-if="chosen.length" class="text-xs" :class="savings > 0 ? 'text-muted' : 'text-warning'">
+            Valor de lista: {{ fmtMoney(listValue) }}.
+            {{ savings > 0 ? `El cliente ahorra ${fmtMoney(savings)} al mes.` : "La cuota iguala o supera lo incluido: al cliente no le conviene." }}
+          </p>
+        </fieldset>
         <div class="ub-apptcard" aria-label="Vista previa del plan">
           <span class="ub-apptcard__avatar"><UiIcon name="tag" /></span>
           <span class="min-w-0 flex-1">

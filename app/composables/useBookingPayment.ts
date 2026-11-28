@@ -11,6 +11,7 @@ export interface BookingPayment {
   transferReceipt: Ref<File | null>
   onTransferFileChange: (e: Event) => void
   paymentWarning: Ref<string>
+  includedInPlan: Ref<boolean>
   paymentConfirming: Ref<boolean>
   /** true cuando el formulario de tarjeta de Stripe ya está montado. */
   isCardReady: () => boolean
@@ -75,6 +76,8 @@ export function useBookingPayment(): BookingPayment {
   }
 
   const paymentWarning = ref('')
+  // El servidor avisa cuando el servicio está incluido en la membresía: no se cobra nada.
+  const includedInPlan = ref(false)
   const paymentConfirming = ref(false)
 
   const isCardReady = card.isCardReady
@@ -119,6 +122,7 @@ export function useBookingPayment(): BookingPayment {
     transferReceipt,
     onTransferFileChange,
     paymentWarning,
+    includedInPlan,
     paymentConfirming,
     isCardReady,
     chargeBookingPayment,
