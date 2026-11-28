@@ -18,6 +18,7 @@ tienda y reportes, con experiencias para administración, recepción, barberos y
   referidos, sorteos, muro social y campañas) se encienden con `features` de `GET /barbershop`; apagados no se muestran.
 - Cobros con efectivo, transferencia y tarjeta mediante Stripe.
 - Inventario, pedidos, recibos, lealtad y membresía digital.
+- Membresías mensuales de descuento y planes Club con servicios incluidos (se canjean al cobrar la cita).
 - Reportes, gráficas, analítica, reseñas y muro social.
 - Sitio público con SSR, PWA y cuatro temas visuales.
 

@@ -91,6 +91,10 @@ notificaciones, muro, reportes y observabilidad tienen pantallas propias.
 Chart.js y FullCalendar cubren gráficas y agenda; Stripe.js confirma pagos
 con clave publicable. Las claves secretas y la validación final quedan en backend.
 
+En membresías, `app/utils/membership.ts` describe los servicios incluidos de un plan
+Club; la administración los define, el cliente ve sus usos restantes y el cobro
+ofrece «Usar uso de la membresía». Qué está incluido lo decide la API.
+
 Los temas `noir`, `acero`, `salon` y `libreta` comparten navegación y permisos.
 Consultar [interfaz](INTERFAZ.md) y
 [observabilidad de ingeniero, reemplazada](ADR-002-OBSERVABILIDAD-INGENIERO.md).
