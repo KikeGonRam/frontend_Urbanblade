@@ -40,7 +40,9 @@ watch(() => route.path, async () => {
           <span>{{ aviso }}</span>
           <button type="button" class="font-semibold underline" @click="limpiar">Entendido</button>
         </div>
-        <slot />
+        <UiRenderBoundary>
+          <slot />
+        </UiRenderBoundary>
       </main>
     </div>
 
